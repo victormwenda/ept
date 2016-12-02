@@ -1,0 +1,18 @@
+CREATE TABLE `response_result_tb` (
+  `shipment_map_id` int(11) NOT NULL,
+  `sample_id` varchar(45) NOT NULL,
+  `date_tested` date DEFAULT NULL,
+  `mtb_detected` varchar(255) DEFAULT NULL,
+  `rif_resistance` varchar(255) DEFAULT NULL,
+  `probe_d` varchar(255) DEFAULT NULL,
+  `probe_c` varchar(255) DEFAULT NULL,
+  `probe_e` varchar(255) DEFAULT NULL,
+  `probe_b` varchar(255) DEFAULT NULL,
+  `spc` varchar(255) DEFAULT NULL,
+  `probe_a` varchar(255) DEFAULT NULL,
+  `calculated_score` varchar(45) DEFAULT NULL,
+  `created_by` varchar(45) DEFAULT NULL,
+  `created_on` datetime DEFAULT NULL,
+  `updated_by` varchar(45) DEFAULT NULL,
+  `updated_on` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1
