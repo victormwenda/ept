@@ -69,7 +69,7 @@
                 <label class="col-lg-3 control-label">Enable View -Only Access<span class="mandatory">*</span></label>
                 <div class="col-lg-5" style="padding-top:10px;">
                     <input type="radio" id="viewOnlyAccess" name="viewOnlyAccess" value="yes" <?php echo ($this->rsUser['view_only_access']=="yes") ? " checked='checked' " : ""; ?>><b> Yes</b>&nbsp;&nbsp;
-                    <input type="radio" class="isRequired" name="viewOnlyAccess" value="no" <?php echo (!isset($this->rsUser['enable_choosing_mode_of_receipt']) || trim($this->rsUser['enable_choosing_mode_of_receipt']) == null || trim($this->rsUser['enable_choosing_mode_of_receipt']) == ""  || trim($this->rsUser['view_only_access'])=="no") ? " checked='checked' " : ""; ?> title="Please choose view only access option"><b> No</b>
+                    <input type="radio" class="isRequired" name="viewOnlyAccess" value="no" <?php echo (!isset($this->rsUser['view_only_access']) || trim($this->rsUser['view_only_access']) == null || trim($this->rsUser['view_only_access']) == ""  || trim($this->rsUser['view_only_access'])=="no") ? " checked='checked' " : ""; ?> title="Please choose view only access option"><b> No</b>
                 </div>
             </div>
         <div class="form-group">
