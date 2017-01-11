@@ -1,4 +1,4 @@
-By Amit on 15 Sep 2013
+-- By Amit on 15 Sep 2013
 ALTER TABLE  `users` DROP PRIMARY KEY;
 ALTER TABLE  `users` ADD PRIMARY KEY (  `UserSystemID` );
 ALTER TABLE  `users` CHANGE  `UserSystemID`  `UserSystemID` INT NOT NULL AUTO_INCREMENT;
@@ -1449,7 +1449,7 @@ ALTER TABLE  `data_manager` ADD  `institute` VARCHAR( 500 ) NULL DEFAULT NULL AF
 -- by Amit Dec 30 2013
 ALTER TABLE  `scheme_list` ADD  `status` VARCHAR( 255 ) NULL DEFAULT NULL;
 
---by Ilahir JAN 22 2014
+-- by Ilahir JAN 22 2014
 
 CREATE TABLE IF NOT EXISTS `reference_dbs_wb` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -1503,37 +1503,37 @@ CREATE TABLE IF NOT EXISTS `reference_dts_wb` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1;
 
---ilahir 8-Feb-2014
+-- ilahir 8-Feb-2014
 
 ALTER TABLE  `shipment_participant_map` ADD  `report_generated` VARCHAR( 100 ) NULL DEFAULT NULL;
 
---ilahir 12-Feb-2014
+-- ilahir 12-Feb-2014
 
 CREATE TABLE IF NOT EXISTS `report_config` (
   `name` varchar(255) DEFAULT NULL,
   `value` text
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
---ilahir 24-Feb-2014
+-- ilahir 24-Feb-2014
 
 INSERT INTO `report_config` (`name`, `value`) VALUES
 ('report-header', '<div style=""><div style="text-align: center;"><b>DEPARTMENT OF HEALTH AND HUMAN SERVICES</b></div><div style="text-align: center;">International Laboratory Branch</div><div style="text-align: center;">Division of Global HIV/AIDS, CDC-Atlanta</div></div>\r\n\r\n'),
 ('logo', '');
 
---Guna 25-Mar-2014
+-- Guna 25-Mar-2014
 ALTER TABLE  `shipment_participant_map` CHANGE  `participant_supervisor`  `participant_supervisor` VARCHAR( 255 ) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
 
---Ilahir 27-Mar-2014
+-- Ilahir 27-Mar-2014
 ALTER TABLE  `shipment_participant_map` ADD  `created_on_user` DATETIME NULL DEFAULT NULL AFTER  `created_by_admin`;
 
---Ilahir 07-Apr-2014
+-- Ilahir 07-Apr-2014
 
 INSERT INTO `global_config` (`name`, `value`) VALUES ('map-center', '0,0'), ('map-zoom', '2');
 
 
 ALTER TABLE  `shipment_participant_map` CHANGE  `evaluation_comment`  `evaluation_comment` INT( 11 ) NULL DEFAULT 0;
 
---Guna 28-may-2014
+-- Guna 28-may-2014
 CREATE TABLE IF NOT EXISTS `countries` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `iso_name` varchar(255) COLLATE utf8_bin NOT NULL,
@@ -1805,7 +1805,7 @@ ALTER TABLE  `participant` ADD  `funding_source` VARCHAR( 255 ) NULL DEFAULT NUL
 ADD  `testing_volume` VARCHAR( 255 ) NULL DEFAULT NULL AFTER  `funding_source` ,
 ADD  `region` VARCHAR( 255 ) NULL DEFAULT NULL AFTER  `testing_volume`;
 
---Guna 11-june-2014
+-- Guna 11-june-2014
 ALTER TABLE  `data_manager` ADD  `created_on` DATETIME NULL DEFAULT NULL AFTER  `status` ,
 ADD  `created_by` VARCHAR( 255 ) NULL DEFAULT NULL AFTER  `created_on` ,
 ADD  `updated_on` DATETIME NULL DEFAULT NULL AFTER  `created_by` ,
@@ -1823,11 +1823,11 @@ ADD  `updated_by` VARCHAR( 255 ) NULL DEFAULT NULL AFTER  `updated_on`;
 
 
 
---- Amit 15-Jul-2014
+-- Amit 15-Jul-2014
 
 ALTER TABLE  `shipment_participant_map` ADD  `is_followup` VARCHAR( 255 ) NULL DEFAULT  'no' AFTER  `optional_eval_comment`;
 
----Guna 22-july-2014
+-- Guna 22-july-2014
 ALTER TABLE  `participant` ADD  `enrolled_programs` VARCHAR( 255 ) NULL DEFAULT NULL AFTER  `testing_volume` ,
 ADD  `site_type` VARCHAR( 255 ) NULL DEFAULT NULL AFTER  `enrolled_programs`;
 
@@ -1869,9 +1869,9 @@ INSERT INTO `r_enrolled_programs` (`enrolled_programs`) VALUES
 
 ALTER TABLE `shipment_participant_map` ADD `is_excluded` VARCHAR(255) NOT NULL DEFAULT 'no' AFTER `is_followup`;
 
---Guna Agu 23 2014
+-- Guna Agu 23 2014
 ALTER TABLE  `participant` ADD  `individual` VARCHAR( 255 ) NULL DEFAULT NULL AFTER  `unique_identifier`;
---Guna oct 2 2014
+-- Guna oct 2 2014
 CREATE TABLE IF NOT EXISTS `reference_dts_rapid_hiv` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `shipment_id` varchar(255) NOT NULL,
@@ -1883,16 +1883,16 @@ CREATE TABLE IF NOT EXISTS `reference_dts_rapid_hiv` (
   PRIMARY KEY (`id`)
 );
 
---Guna Oct 24 2014
+-- Guna Oct 24 2014
 UPDATE  `global_config` SET  `name` =  'admin_email' WHERE  `global_config`.`name` =  'admin-email';
 INSERT INTO `global_config` (`name`, `value`) VALUES ('response_after_evaluate', 'yes');
 
 
---Amit Nov 06 2014
+-- Amit Nov 06 2014
 ALTER TABLE  `shipment_participant_map` ADD  `documentation_score` DECIMAL( 5, 2 ) NULL AFTER  `shipment_score` ;
 ALTER TABLE  `shipment_participant_map` CHANGE  `shipment_score`  `shipment_score` DECIMAL( 5, 2 ) NULL DEFAULT NULL ;
 
---Guna Nov 29 2014
+-- Guna Nov 29 2014
 ALTER TABLE `r_testkitname_dts`  ADD `testkit_1` INT(11) NOT NULL DEFAULT '0' AFTER `CountryAdapted`,  ADD `testkit_2` INT(11) NOT NULL DEFAULT '0' AFTER `testkit_1`,  ADD `testkit_3` INT(11) NOT NULL DEFAULT '0' AFTER `testkit_2`;
 
 -- Amit Nov 30 2014
@@ -1981,7 +1981,7 @@ CREATE TABLE IF NOT EXISTS `response_result_tb` (
   `updated_on` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
---Guna 16-May-2015---
+-- Guna 16-May-2015---
 
 CREATE TABLE IF NOT EXISTS `mail_template` (
   `mail_temp_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -1995,7 +1995,7 @@ CREATE TABLE IF NOT EXISTS `mail_template` (
   `mail_footer` text,
   PRIMARY KEY (`mail_temp_id`)
 );
----Guna 18-Apirl-2015----
+-- Guna 18-Apirl-2015----
 CREATE TABLE IF NOT EXISTS `temp_mail` (
   `temp_id` int(11) NOT NULL AUTO_INCREMENT,
   `message` text,
@@ -2024,10 +2024,10 @@ INSERT INTO `report_config` (`name`, `value`) VALUES ('logo-right', NULL);
 
 ALTER TABLE  `shipment_participant_map` CHANGE  `final_result`  `final_result` INT( 11 ) NULL DEFAULT  '0';
 
---Guna 21 Apirl 2015
+-- Guna 21 Apirl 2015
 ALTER TABLE  `shipment_participant_map` CHANGE  `shipment_test_date`  `shipment_test_date` DATE NULL DEFAULT  '0000-00-00';
 
---Amit 22 April 2015
+-- Amit 22 April 2015
 INSERT INTO `r_results` (`result_id`, `result_name`) VALUES ('3', 'Excluded');
 ALTER TABLE `shipment` ADD `average_score` VARCHAR(255) NULL DEFAULT '0' AFTER `max_score`;
 
@@ -2127,7 +2127,7 @@ ALTER TABLE `reference_vl_calculation` ADD PRIMARY KEY( `shipment_id`, `sample_i
 ALTER TABLE `reference_vl_calculation` ADD `use_range` VARCHAR(255) NOT NULL DEFAULT 'calculated' ;
 
 
---ilahir 07-JUN-2016
+-- ilahir 07-JUN-2016
 
 INSERT INTO `global_config` (`name`, `value`) VALUES ('qc_access', 'yes');
 ALTER TABLE  `data_manager` ADD  `qc_access` VARCHAR( 100 ) NULL DEFAULT NULL AFTER  `force_password_reset` ;
@@ -2156,12 +2156,12 @@ INSERT INTO `r_modes_of_receipt` (`mode_id`, `mode_name`) VALUES
 
 ALTER TABLE  `shipment_participant_map` ADD  `mode_id` INT NULL DEFAULT NULL ;
 
---Pal 24th-JUN-2016
+-- Pal 24th-JUN-2016
 ALTER TABLE `data_manager` ADD `enable_adding_test_response_date` VARCHAR(45) NULL DEFAULT NULL AFTER `qc_access`;
 
 INSERT INTO `r_modes_of_receipt` (`mode_id`, `mode_name`) VALUES (NULL, 'Online Response');
 
---Pal 25th-JUN-2016
+-- Pal 25th-JUN-2016
 ALTER TABLE `shipment_participant_map` CHANGE `qc_done_by` `qc_done_by` VARCHAR(255) NULL DEFAULT NULL;
 
 ALTER TABLE `shipment_participant_map` ADD `qc_done` VARCHAR(45) NULL DEFAULT NULL AFTER `last_not_participated_mail_count`;
@@ -2177,7 +2177,7 @@ INSERT INTO `r_modes_of_receipt` (`mode_id`, `mode_name`) VALUES
 (4, 'Scan'),
 (5, 'SMS');
 
---Pal 2nd-JUL-2016
+-- Pal 2nd-JUL-2016
 INSERT INTO `global_config` (`name`, `value`) VALUES ('text_under_logo', '');
 
 CREATE TABLE IF NOT EXISTS `publications` (
@@ -2199,7 +2199,7 @@ CREATE TABLE IF NOT EXISTS `home_banner` (
 INSERT INTO `home_banner` (`banner_id`, `image`) VALUES
 (1, '');
 
---Pal 4th-JUL-2016
+-- Pal 4th-JUL-2016
 
 ALTER TABLE `data_manager` ADD `enable_choosing_mode_of_receipt` VARCHAR(45) NULL DEFAULT NULL AFTER `enable_adding_test_response_date`;
 
@@ -2219,13 +2219,13 @@ INSERT INTO `partners` (`partner_id`, `partner_name`, `link`, `added_by`, `added
 -- Amit Jul 5 2016
 ALTER TABLE `data_manager` ADD `last_login` DATETIME NULL DEFAULT NULL AFTER `updated_by`;
 
---ilahir Jul 19 2016
+-- ilahir Jul 19 2016
 ALTER TABLE  `reference_vl_calculation` ADD  `manual_mean` DOUBLE( 20, 10 ) NOT NULL AFTER  `calculated_on` ;
 ALTER TABLE  `reference_vl_calculation` ADD  `manual_sd` DOUBLE( 20, 10 ) NOT NULL AFTER  `manual_mean` ;
 ALTER TABLE  `reference_vl_calculation` ADD  `manual_cv` DOUBLE( 20, 10 ) NOT NULL AFTER  `manual_sd` ;
 
 
---ilahir Jul 25 2016
+-- ilahir Jul 25 2016
 
 ALTER TABLE  `reference_vl_calculation` ADD  `manual_q1` DOUBLE( 20, 10 ) NULL DEFAULT NULL AFTER  `calculated_on` ;
 ALTER TABLE  `reference_vl_calculation` ADD  `manual_q3` DOUBLE( 20, 10 ) NULL DEFAULT NULL AFTER  `manual_q1` ,
@@ -2242,15 +2242,15 @@ INSERT INTO `r_eid_detection_assay` (`id`, `name`) VALUES (NULL, 'Other');
 INSERT INTO `r_eid_extraction_assay` (`id`, `name`) VALUES (NULL, 'Other');
 INSERT INTO `r_results` (`result_id`, `result_name`) VALUES ('4', 'Not Evaluated');
 
---Ilahir Aug 25 2016
+-- Ilahir Aug 25 2016
 ALTER TABLE  `data_manager` ADD  `view_only_access` VARCHAR( 45 ) NULL DEFAULT NULL AFTER  `enable_choosing_mode_of_receipt` ;
 
---Pal 12th-Sep-2016
+-- Pal 12th-Sep-2016
 ALTER TABLE `publications` ADD `sort_order` INT(11) NULL DEFAULT NULL AFTER `file_name`;
 
 ALTER TABLE `partners` ADD `sort_order` INT(11) NULL DEFAULT NULL AFTER `link`;
 
---Pal 15th-Sep-2016
+-- Pal 15th-Sep-2016
 ALTER TABLE `r_eid_detection_assay` ADD `status` VARCHAR(45) NOT NULL DEFAULT 'active' AFTER `name`;
 
 ALTER TABLE `r_eid_extraction_assay` ADD `status` VARCHAR(45) NOT NULL DEFAULT 'active' AFTER `name`;

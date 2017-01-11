@@ -1,0 +1,6 @@
+#IDE Generated Files
+.idea/
+.settings/
+
+#Cache Files
+application/cache
