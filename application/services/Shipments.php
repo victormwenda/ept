@@ -588,9 +588,9 @@ class Application_Service_Shipments {
             error_log($e->getTraceAsString());
         }
     }
-    
+
     public function updateVlResults($params) {
-       //print_r($params);die;
+
         if (!$this->isShipmentEditable($params['shipmentId'], $params['participantId'])) {
             return false;
         }
@@ -618,7 +618,7 @@ class Application_Service_Shipments {
 	    if(isset($params['otherAssay']) && $params['otherAssay'] != ""){
 		    $attributes['other_assay'] = $params['otherAssay'];
 	    }
-	    
+
 	    if(!isset($params['modeOfReceipt'])){
 		$params['modeOfReceipt'] = NULL;
 	    }
@@ -652,7 +652,7 @@ class Application_Service_Shipments {
 		$data['pt_test_not_performed_comments'] = NULL;
 		$data['pt_support_comments'] = NULL;
 	    }
-	    
+
 	    if(isset($authNameSpace->qc_access) && $authNameSpace->qc_access =='yes'){
 		$data['qc_done'] = $params['qcDone'];
 		if(isset($data['qc_done']) && trim($data['qc_done']) == "yes"){
@@ -665,7 +665,7 @@ class Application_Service_Shipments {
 			$data['qc_created_on'] = NULL;
 		}
 	    }
-	    
+
             $noOfRowsAffected = $shipmentParticipantDb->updateShipment($data, $params['smid'], $params['hdLastDate']);
 
             $eidResponseDb = new Application_Model_DbTable_ResponseVl();

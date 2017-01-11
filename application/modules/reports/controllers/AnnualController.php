@@ -22,8 +22,5 @@ class Reports_AnnualController extends Zend_Controller_Action
         }
         $scheme = new Application_Service_Schemes();
         $this->view->schemes = $scheme->getAllSchemes();
-        
     }
-    
-
 }

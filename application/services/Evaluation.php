@@ -1314,6 +1314,8 @@ class Application_Service_Evaluation {
 				}
 				
 				$query=$db->select()->from(array('refvl' => 'reference_result_vl'),array('refvl.sample_score'))
+
+								->where('refvl.control!=1')
 								->where('refvl.shipment_id = ? ',$shipmentId);
 				$smpleResult=$db->fetchAll($query);
 				$shipmentResult['no_of_samples']=count($smpleResult);

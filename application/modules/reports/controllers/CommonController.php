@@ -26,7 +26,7 @@ class Reports_CommonController extends Zend_Controller_Action
             $this->view->shipmentList = $response;
         }        
     }
-    
+
     public function getShipmentsByDateAction()
     {
         if ($this->getRequest()->isPost()) {
@@ -36,9 +36,8 @@ class Reports_CommonController extends Zend_Controller_Action
             $reportService = new Application_Service_Reports();
             $response=$reportService->getShipmentsByDate($schemeType,$startDate,$endDate);
             $this->view->shipmentList = $response;
-        }        
+        }
     }
-
 }
 
 

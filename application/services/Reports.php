@@ -4066,7 +4066,7 @@ class Application_Service_Reports {
 	}
 	return $totalResult;
     }
-	
+
 	public function getShipmentsByDate($schemeType,$startDate,$endDate) {
         $resultArray = array();
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
@@ -4084,22 +4084,22 @@ class Application_Service_Reports {
 			}
             $sQuery = $sQuery->where($sWhere);
         }
-		
+
         $resultArray = $db->fetchAll($sQuery);
         return $resultArray;
     }
-	
+
 	public function getAnnualReport($params){
 		if(isset($params['startDate']) && trim($params['startDate'])!="" && trim($params['endDate'])!=""){
 			$startDate=$params['startDate'];
 			$endDate=$params['endDate'];
-			
+
 			$db = Zend_Db_Table_Abstract::getDefaultAdapter();
 			$query = $db->select()->from(array('s' => 'shipment'), array('s.shipment_id', 's.shipment_code', 's.scheme_type', 's.shipment_date',))
 								->where("DATE(s.shipment_date) >= ?", $startDate)
 								->where("DATE(s.shipment_date) <= ?", $endDate)
 								->order("s.shipment_id");
-			
+
 			if(isset($params['scheme']) && count($params['scheme'])>0) {
 				$sWhere="";
 				foreach($params['scheme'] as $val){
@@ -4116,12 +4116,12 @@ class Application_Service_Reports {
 				$shipmentIdArray[]=$val['shipment_id'];
 				$impShipmentId=implode(",",$shipmentIdArray);
 			}
-			
+
 			$sQuery = $db->select()->from(array('spm' => 'shipment_participant_map'), array('spm.map_id','spm.shipment_id','spm.participant_id','spm.shipment_score','spm.final_result'))
 									->join(array('s' => 'shipment'),'s.shipment_id=spm.shipment_id',array('shipment_code','scheme_type'))
 									->join(array('p' => 'participant'),'p.participant_id=spm.participant_id',array('unique_identifier','first_name','last_name','email','city','state','address','institute_name'))
 									->joinLeft(array('c' => 'countries'),'c.id=p.country',array('iso_name'));
-			
+
 			if(isset($params['shipmentId']) && count($params['shipmentId'])>0) {
 				$impShipmentId=implode(",",$params['shipmentId']);
 				$sQuery->where('spm.shipment_id IN ('.$impShipmentId.')');
@@ -4134,7 +4134,7 @@ class Application_Service_Reports {
 			return $this->generateAnnualReport($sQuery,$startDate,$endDate);
 		}
 	}
-	
+
 	public function generateAnnualReport($sQuery,$startDate,$endDate){
 		$db = Zend_Db_Table_Abstract::getDefaultAdapter();
 		$shipmentParticipantResult=$db->fetchAll($sQuery);
@@ -4154,7 +4154,7 @@ class Application_Service_Reports {
 		//		$shipmentFailResult[$shipment['shipment_code']][$shipment['unique_identifier']][]=$shipment['first_name'];
 		//	}
 		//}
-		
+
 		$excel = new PHPExcel();
 		$cacheMethod = PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp;
 		$cacheSettings = array('memoryCacheSize' => '80MB');
@@ -4182,14 +4182,14 @@ class Application_Service_Reports {
 				),
 			)
 		);
-		
+
 		$colNo = 0;
 		$firstSheet->mergeCells('A1:I1');
 		$firstSheet->getCellByColumnAndRow(0, 1)->setValueExplicit(html_entity_decode('Annual Report', ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-		
+
 		$firstSheet->getCellByColumnAndRow(0, 3)->setValueExplicit(html_entity_decode('Selected Date Range', ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
         $firstSheet->getCellByColumnAndRow(1, 3)->setValueExplicit(html_entity_decode(Pt_Commons_General::humanDateFormat($startDate)." to ".Pt_Commons_General::humanDateFormat($endDate), ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-		
+
 		$firstSheet->getStyleByColumnAndRow(0, 1)->getFont()->setBold(true);
 		$firstSheet->getStyleByColumnAndRow(0, 2)->getFont()->setBold(true);
 		$firstSheet->getStyleByColumnAndRow(0, 3)->getFont()->setBold(true);
@@ -4215,7 +4215,7 @@ class Application_Service_Reports {
 				$firstSheetRow[]=$shipment['city'];
 				$output[] = $firstSheetRow;
 			}
-			
+
 			if($shipment['final_result']==4){
 				$secondSheetRow[]=$shipment['shipment_code'];
 				$secondSheetRow[]=$shipment['unique_identifier'];
@@ -4227,7 +4227,7 @@ class Application_Service_Reports {
 				$secondSheetRow[]=$shipment['city'];
 				$secondSheetOutput[] = $secondSheetRow;
 			}
-			
+
 			if($shipment['final_result']==2 || $shipment['final_result']==0){
 				$thirdSheetRow[]=$shipment['shipment_code'];
 				$thirdSheetRow[]=$shipment['unique_identifier'];
@@ -4240,10 +4240,10 @@ class Application_Service_Reports {
 				$thirdSheetOutput[] = $thirdSheetRow;
 			}
 		}
-		
+
 		//foreach($shipmentPassResult as $shipmentKey=>$shipment){
 		//	//$row[]=$shipmentKey;
-		//	
+		//
 		//	foreach($shipment as $val){
 		//		$row = array();
 		//		//echo $val[0];
@@ -4252,7 +4252,7 @@ class Application_Service_Reports {
 		//		$output[] = $row;
 		//	}
 		//}
-		
+
 		foreach ($output as $rowNo => $rowData) {
 			$colNo = 0;
 			foreach ($rowData as $field => $value) {
@@ -4267,7 +4267,7 @@ class Application_Service_Reports {
 				$colNo++;
 			}
 		}
-		
+
 		$secondSheet = new PHPExcel_Worksheet($excel, 'Fail Result');
 		$excel->addSheet($secondSheet, 1);
 		$secondSheet->setTitle('Excluded Result');
@@ -4279,7 +4279,7 @@ class Application_Service_Reports {
 			$secondSheet->getStyleByColumnAndRow($colNo, 2)->getFont()->setBold(true);
 			$colNo++;
 		}
-		
+
 		foreach ($secondSheetOutput as $rowNo => $rowData) {
 			$colNo = 0;
 			foreach ($rowData as $field => $value) {
@@ -4294,7 +4294,7 @@ class Application_Service_Reports {
 				$colNo++;
 			}
 		}
-		
+
 		$thirdSheet = new PHPExcel_Worksheet($excel, 'Fail Result');
 		$excel->addSheet($thirdSheet, 2);
 		$thirdSheet->setTitle('Fail Result');
@@ -4306,7 +4306,7 @@ class Application_Service_Reports {
 			$thirdSheet->getStyleByColumnAndRow($colNo, 2)->getFont()->setBold(true);
 			$colNo++;
 		}
-		
+
 		foreach ($thirdSheetOutput as $rowNo => $rowData) {
 			$colNo = 0;
 			foreach ($rowData as $field => $value) {
@@ -4321,11 +4321,11 @@ class Application_Service_Reports {
 				$colNo++;
 			}
 		}
-		
+
 		if (!file_exists(UPLOAD_PATH) && !is_dir(UPLOAD_PATH)) {
 			mkdir(UPLOAD_PATH);
 		}
-		
+
 		if (!file_exists(UPLOAD_PATH. DIRECTORY_SEPARATOR."annual-reports") && !is_dir(UPLOAD_PATH. DIRECTORY_SEPARATOR."annual-reports")) {
 			mkdir(UPLOAD_PATH. DIRECTORY_SEPARATOR."annual-reports");
 		}
@@ -4334,6 +4334,6 @@ class Application_Service_Reports {
 		$filename = 'Annual Report-'.date('d-M-Y H:i:s').'.xls';
 		$writer->save(UPLOAD_PATH. DIRECTORY_SEPARATOR."annual-reports". DIRECTORY_SEPARATOR . $filename);
 		return $filename;
-		
+
 	}
 }

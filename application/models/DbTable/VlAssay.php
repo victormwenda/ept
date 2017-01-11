@@ -5,7 +5,7 @@ class Application_Model_DbTable_VlAssay extends Zend_Db_Table_Abstract
 
     protected $_name = 'r_vl_assay';
     protected $_primary = 'id';
-    
+
     public function addVlAssayDetails($params){
         $id = 0;
         if(isset($params['name']) && trim($params['name'])!= ''){
@@ -102,7 +102,7 @@ class Application_Model_DbTable_VlAssay extends Zend_Db_Table_Abstract
          */
 
         $sQuery = $this->getAdapter()->select()->from(array('vl_asay' => $this->_name));
-	
+
         if (isset($sWhere) && $sWhere != "") {
             $sQuery = $sQuery->where($sWhere);
         }
@@ -152,11 +152,11 @@ class Application_Model_DbTable_VlAssay extends Zend_Db_Table_Abstract
 
         echo json_encode($output);
     }
-    
+
     public function fetchVlAssay($id){
         return $this->fetchRow("id = ".$id);
     }
-    
+
     public function updateVlAssayDetails($params){
         $id = 0;
         if(isset($params['vlAssayId']) && trim($params['vlAssayId'])!= '') {

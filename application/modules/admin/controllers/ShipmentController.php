@@ -312,7 +312,7 @@ class Admin_ShipmentController extends Zend_Controller_Action
             $this->view->result=$clientsServices->exportShipmentRespondedParticipantsDetails($params);
         }
     }
-    
+
     public function exportShipmentNotRespondedParticipantsAction(){
         if ($this->getRequest()->isPost()) {
             $params = $this->_getAllParams();

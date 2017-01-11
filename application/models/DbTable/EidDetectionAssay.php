@@ -13,7 +13,7 @@ class Application_Model_DbTable_EidDetectionAssay extends Zend_Db_Table_Abstract
         }
       return $id;
     }
-    
+
     public function fetchAllEidDetectionAssay($parameters){
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
          * you want to insert a non-database field (for example a counter or static image)
@@ -98,7 +98,7 @@ class Application_Model_DbTable_EidDetectionAssay extends Zend_Db_Table_Abstract
          */
 
         $sQuery = $this->getAdapter()->select()->from(array('eid_dt_asay' => $this->_name));
-	
+
         if (isset($sWhere) && $sWhere != "") {
             $sQuery = $sQuery->where($sWhere);
         }
@@ -142,17 +142,17 @@ class Application_Model_DbTable_EidDetectionAssay extends Zend_Db_Table_Abstract
             $fromSource = 'detection';
             $row[] = ucwords($aRow['name']);
             $row[] = '<select onchange="changeNameStatus(\''.$fromSource.'\','.$aRow['id'].',this.value);"><option value="active" ' . ($aRow['status'] == "active" ? "selected=selected" : "") . '>Active</option><option value="inactive" ' . ($aRow['status'] == "inactive" ? "selected=selected" : "") . '>Inactive</option></select>';
-            
+
             $output['aaData'][] = $row;
         }
 
         echo json_encode($output);
     }
-    
+
     public function fetchEidDetectionAssay($id){
         return $this->fetchRow("id = ".$id);
     }
-    
+
     public function updateEidDetectionNameStatus($params){
         return $this->update(array("status"=>$params['switchStatus']),"id = ".$params['id']);
     }

@@ -844,7 +844,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
         /* Data set length after filtering */
         $sQuery = $sQuery->reset(Zend_Db_Select::LIMIT_COUNT);
         $sQuery = $sQuery->reset(Zend_Db_Select::LIMIT_OFFSET);
-		
+
 		$sQuerySession = new Zend_Session_Namespace('respondedParticipantsExcel');
 		$sQuerySession->shipmentRespondedParticipantQuery = $sQuery;
 		//error_log($sQuery);
@@ -997,10 +997,10 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
         /* Data set length after filtering */
         $sQuery = $sQuery->reset(Zend_Db_Select::LIMIT_COUNT);
         $sQuery = $sQuery->reset(Zend_Db_Select::LIMIT_OFFSET);
-		
+
 		$sQuerySession = new Zend_Session_Namespace('notRespondedParticipantsExcel');
 		$sQuerySession->shipmentRespondedParticipantQuery = $sQuery;
-		
+
         $aResultFilterTotal = $this->getAdapter()->fetchAll($sQuery);
         $iFilteredTotal = count($aResultFilterTotal);
 

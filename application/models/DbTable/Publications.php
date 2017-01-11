@@ -232,7 +232,7 @@ class Application_Model_DbTable_Publications extends Zend_Db_Table_Abstract
 				    $sortOrderResult = $this->update(array('sort_order'=>$bSOrder),'publication_id = '.$pubOrder['publication_id']);
 				}
 			    }
-			   $b++; 
+			   $b++;
 			}
 		    }elseif($params['sortOrder'] > $sqlResult['sort_order']){
 			$b = 1;
@@ -245,12 +245,12 @@ class Application_Model_DbTable_Publications extends Zend_Db_Table_Abstract
 				    $sortOrderResult = $this->update(array('sort_order'=>$bSOrder),'publication_id = '.$pubOrder['publication_id']);
 				}
 			    }
-			   $b++; 
+			   $b++;
 			}
 		    }
 		}
 	    }
-	    
+
             if(isset($_FILES['document']['name']) && trim($_FILES['document']['name'])!= ''){
                 if (!file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'document') && !is_dir(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'document')) {
                     mkdir(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'document');

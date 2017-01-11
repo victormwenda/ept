@@ -243,7 +243,7 @@ $count++;  ?>
 				<li>For negative or undetectable result (TND), please enter 0.00.</li>
 				<li>For result value that is &lt;LOD, please enter the value of assay LOD (such as 1.6 for &lt;40 copies/mL) and provide “&lt;40 copies/mL” under comment section</li>
 			</ul>
-			
+
 			<div class="vlResultSection" style="width:100%;padding-left:20%;"><label style="font-size:16px;">Viral Load Calculator (Convert copies/ml to Log<sub>10</sub>)<label></div>
 			<div class="vlResultSection" style="width:100%;padding-left:20%;"><input type="text" class="form-control checkNum" id="vlResultToLog" name="vlResultToLog" placeholder="Enter a result value to calculate the log value" style="width:80%;"/><span class="mandatory logValFormVl" style="font-size:16px;display:none;"></span></div>
 		</td>
@@ -251,7 +251,7 @@ $count++;  ?>
 	<tr align="center" class="" >
 		<th style="width:50%;">Control/Sample</th>
 		<th>Viral Load (log<sub>10</sub> copies/ml)</th>		
-		<th>TND(Target Not Detected)</th>		
+		<th>TND(Target Not Detected)</th>
 	</tr>
 </thead>
 <tfoot>
@@ -260,7 +260,7 @@ $count++;  ?>
 <?php $count =0;  
 foreach($this->allSamples as $sample){
 	if(isset($this->shipment['is_pt_test_not_performed']) && $this->shipment['is_pt_test_not_performed'] == 'yes'){
-	   $sample['mandatory'] = 0;	
+	   $sample['mandatory'] = 0;
 	}
 	$vlResult = $sample['reported_viral_load'];
 	if($sample['is_tnd'] =='yes'){
@@ -287,7 +287,7 @@ $count++;
 <?php } ?>
       <tr class="ptNotPerformedSection" style="<?php echo (isset($this->shipment['is_pt_test_not_performed']) && $this->shipment['is_pt_test_not_performed'] == 'yes')?'':'display:none;'; ?>background:none;">
 	<td colspan="3">
-		<label>Reason for not testing the PT Panel</label> <span class="mandatory">*</span> : 
+		<label>Reason for not testing the PT Panel</label> <span class="mandatory">*</span> :
 		<select id="vlNotTestedReason" name="vlNotTestedReason" class="form-control" title="Please select reason" style="width:60%;">
 			<option value="">--Select--</option>
 			<?php
@@ -492,7 +492,7 @@ $dtFormat=  $genderHelper->getDateFormat();
 		$("#qcDoneBy").removeClass("isRequired");
 	   }
 	}
-	
+
 	//TND---0.00 prepopulate
 	$('.tnd').change(function () {
 	   var selfVal = this.value;
@@ -506,7 +506,7 @@ $dtFormat=  $genderHelper->getDateFormat();
 		$('#vlResult'+selfVal).prop("readonly",false);
 	   }
         });
-	
+
 	//PT not performed case
 	$('#isPtTestNotPerformed').change(function () {
 	   if ($(this).is(':checked')) {
@@ -527,12 +527,12 @@ $dtFormat=  $genderHelper->getDateFormat();
 	        $('#ptNotTestedComments').removeClass('isRequired');
 	   }
         });
-	
+
 	jQuery(".checkNum").keydown(function (e) {
 	      // Allow: backspace, delete, tab, escape, enter and .
 	      if ($.inArray(e.keyCode, [46, 8, 9, 27, 13, 110, 190]) !== -1 ||
 		       // Allow: Ctrl+A
-		      (e.keyCode == 65 && e.ctrlKey === true) || 
+		      (e.keyCode == 65 && e.ctrlKey === true) ||
 		       // Allow: home, end, left, right
 		      (e.keyCode >= 35 && e.keyCode <= 39)) {
 			       // let it happen, don't do anything
@@ -543,7 +543,7 @@ $dtFormat=  $genderHelper->getDateFormat();
 		      e.preventDefault();
 	      }
        });
-	
+
 	jQuery(".checkVlVal").keypress(function (event) {
 		var $this = $(this);
 		if ((event.which != 46 || $this.val().indexOf('.') != -1) &&
@@ -551,7 +551,7 @@ $dtFormat=  $genderHelper->getDateFormat();
 		   (event.which != 0 && event.which != 8))) {
 		       event.preventDefault();
 		}
-	    
+
 		var text = $(this).val();
 		if ((event.which == 46) && (text.indexOf('.') == -1)) {
 		    setTimeout(function() {
@@ -560,22 +560,22 @@ $dtFormat=  $genderHelper->getDateFormat();
 			}
 		    }, 1);
 		}
-	    
+
 		if ((text.indexOf('.') != -1) &&
 		    (text.substring(text.indexOf('.')).length > 2) &&
 		    (event.which != 0 && event.which != 8) &&
 		    ($(this)[0].selectionStart >= text.length - 2)) {
 			event.preventDefault();
-		}      
+		}
 	});
-	
+
 	jQuery("#vlResultToLog").on("keypress",function (event) {
 	        var vlVal = $("#vlResultToLog").val();
 		if(vlVal != "" && vlVal != 0){
-	          $(".logValFormVl").show();		
+	          $(".logValFormVl").show();
 		  $(".logValFormVl").html(Math.round(Math.log10(vlVal) * 100) / 100);
 		}else{
-                  $(".logValFormVl").hide();		
+                  $(".logValFormVl").hide();
 		  $(".logValFormVl").html("");
 		}
 	});

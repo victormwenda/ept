@@ -209,7 +209,7 @@ class MYPDF extends TCPDF {
 				$labInfo.='<td style="text-align:left;font-weight:bold;width:25%;"> If Yes, &nbsp;&nbsp;Reason</td>';
 				$labInfo.='<td style="text-align:left;width:75%;">';
 				foreach($this->allNotTestedReason as $reason){
-			           $isCurrentCheckedReason = '';		
+			           $isCurrentCheckedReason = '';
 				   if($this->shipment['vl_not_tested_reason'] == $reason['vl_not_tested_reason_id']){
 					$isCurrentCheckedReason = 'checked="checked"';
 				   }
@@ -227,7 +227,7 @@ class MYPDF extends TCPDF {
 				$labInfo.='<td style="text-align:left;">'.ucfirst($this->shipment['pt_support_comments']).'</td>';
 			$labInfo.='</tr>';
 		$labInfo.='</table><br/><br/>';
-		
+
 		$labInfo.='<table border="1" style="font-size:13px;width:100%;" cellspacing="0" cellpadding="4">';
 			$labInfo.='<tr style="background-color:#CCCCCC;">';
 				$labInfo.='<td style="font-weight:bold;">Supervisor Review</td>';

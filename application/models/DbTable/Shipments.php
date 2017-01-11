@@ -248,7 +248,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
         /*
          * Ordering
          */
-		
+
 		$sOrder = "";
         if (isset($parameters['iSortCol_0'])) {
             for ($i = 0; $i < intval($parameters['iSortingCols']); $i++) {
@@ -258,8 +258,6 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
             }
             $sOrder = substr_replace($sOrder, "", -1);
         }
-		
-        
 
         /*
          * Filtering
@@ -1628,7 +1626,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
 
         echo json_encode($output);
     }
-    
+
     public function fetchParticipantSchemesBySchemeId($parameters){
 	/* Array of database columns which should be read and sent back to DataTables. Use a space where
          * you want to insert a non-database field (for example a counter or static image)
@@ -1716,7 +1714,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
          * SQL queries
          * Get data to display
          */
-        
+
          $sQuery = $this->getAdapter()->select()->from(array('s' => 'shipment'), array('s.scheme_type', 's.shipment_date', 's.shipment_code', 's.lastdate_response', 's.shipment_id','s.status','s.response_switch'))
 			->join(array('spm' => 'shipment_participant_map'), 'spm.shipment_id=s.shipment_id', array('spm.report_generated','spm.map_id', "spm.evaluation_status","qc_date", "spm.participant_id", "RESPONSEDATE" => "DATE_FORMAT(spm.shipment_test_report_date,'%Y-%m-%d')",'spm.shipment_score'))
 			->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('scheme_name'))
@@ -1731,7 +1729,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
         if (isset($sWhere) && $sWhere != "") {
             $sQuery = $sQuery->where($sWhere);
         }
-	
+
         if (isset($sOrder) && $sOrder != "") {
             $sQuery = $sQuery->order($sOrder);
         }
@@ -1739,7 +1737,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
         if (isset($sLimit) && isset($sOffset)) {
             $sQuery = $sQuery->limit($sLimit, $sOffset);
         }
-        
+
         $rResult = $this->getAdapter()->fetchAll($sQuery);
 
         /* Data set length after filtering */
@@ -1764,7 +1762,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
 	    }
 	}
         $iTotal = count($aResultTotal);
-        
+
         /*
          * Output
          */

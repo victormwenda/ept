@@ -217,7 +217,7 @@ class Application_Model_DbTable_Partners extends Zend_Db_Table_Abstract
 				    $sortOrderResult = $this->update(array('sort_order'=>$bSOrder),'partner_id = '.$ptOrder['partner_id']);
 				}
 			    }
-			   $b++; 
+			   $b++;
 			}
 		    }elseif($params['sortOrder'] > $sqlResult['sort_order']){
 			$b = 1;
@@ -230,7 +230,7 @@ class Application_Model_DbTable_Partners extends Zend_Db_Table_Abstract
 				    $sortOrderResult = $this->update(array('sort_order'=>$bSOrder),'partner_id = '.$ptOrder['partner_id']);
 				}
 			    }
-			   $b++; 
+			   $b++;
 			}
 		    }
 		}

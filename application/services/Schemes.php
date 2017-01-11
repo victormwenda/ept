@@ -235,7 +235,7 @@ class Application_Service_Schemes {
                 ->where('sp.participant_id = ? ', $pId);
         return $db->fetchAll($sql);
     }
-    
+
     public function getTbSamples($sId, $pId) {
 
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
@@ -394,7 +394,7 @@ class Application_Service_Schemes {
             if (!isset($sampleWise[$vlAssayId])) {
                 continue;
             }
-            
+
             foreach ($sampleWise[$vlAssayId] as $sample => $reportedVl) {
 
                 if ($reportedVl != "" && $reportedVl != null && count($reportedVl) > 7) {
@@ -636,11 +636,11 @@ class Application_Service_Schemes {
             error_log($e->getMessage());
         }
     }
-    
+
     public function getVlNotTestedReasons(){
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sql = $db->select()->from(array('response_vl_not_tested_reason'))
                  ->where('status = ? ', 'active');
-        return $db->fetchAll($sql);  
+        return $db->fetchAll($sql);
     }
 }

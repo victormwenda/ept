@@ -21,10 +21,10 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
     <h1> Dashboard </h1>
 </section>
 <section class="content">
-              <?php
-	      if(count($activeSchemes) > 0 && in_array('vl',$activeSchemes)) {
-	      ?>
-                <div class="box">
+        <?php
+	    if(count($activeSchemes) > 0 && in_array('vl',$activeSchemes)) {
+	    ?>
+        <div class="box">
 		    <div class="box-body">
 			    <h3 class="txt text-info">Dried Tube Specimen - HIV Viral Load</h3>
 			    <table cellpadding="0" cellspacing="0" border="0" class="display datatable table table-bordered table-hover table-striped " id="dtsViralLoadTable">
@@ -224,8 +224,6 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
 			</table>
 				</div>
 			</div>
-		
-			
 </section>
 
 <div class="deleteAction dialog" id="migrateBox">
@@ -266,7 +264,7 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
 			"bInfo": true,
 			"bScrollCollapse": true,
 			"sPaginationType": "full_numbers",
-			"bRetrieve": true,                        
+			"bRetrieve": true,
 			"aoColumns": [
 			    {"sClass":"center"},
 			    {"sClass":"center"},
@@ -314,7 +312,7 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
 				"data": aoData,
 				"success": function(json){
 				//    if(json.shipmentArray.length >0){
-				//	
+				//
 				//    }
 				    fnCallback(json);
 				}
@@ -338,7 +336,7 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
 			"bInfo": true,
 			"bScrollCollapse": true,
 			"sPaginationType": "full_numbers",
-			"bRetrieve": true,                        
+			"bRetrieve": true,
 			"aoColumns": [
 			    {"sClass":"center"},
 			    {"sClass":"center"},
@@ -405,7 +403,7 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
 			"bInfo": true,
 			"bScrollCollapse": true,
 			"sPaginationType": "full_numbers",
-			"bRetrieve": true,                        
+			"bRetrieve": true,
 			"aoColumns": [
 			    {"sClass":"center"},
 			    {"sClass":"center"},
@@ -472,7 +470,7 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
 			"bInfo": true,
 			"bScrollCollapse": true,
 			"sPaginationType": "full_numbers",
-			"bRetrieve": true,                        
+			"bRetrieve": true,
 			"aoColumns": [
 			    {"sClass":"center"},
 			    {"sClass":"center"},
@@ -539,7 +537,7 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
 			"bInfo": true,
 			"bScrollCollapse": true,
 			"sPaginationType": "full_numbers",
-			"bRetrieve": true,                        
+			"bRetrieve": true,
 			"aoColumns": [
 			    {"sClass":"center"},
 			    {"sClass":"center"},
@@ -618,7 +616,7 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
 	     dbsHIVSerologySchemes();
 	    <?php } ?>
 	});
-	
+
 	var oTable = null;
 	function overviewSchemes(){
 		oTable = $('#overviewTable').dataTable({
@@ -658,7 +656,7 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
 	$(document).ready(function(){
 		overviewSchemes();
 	});
-	
+
     var schemeTable = null;
 	var selectedQc=[];
 	function allSchemes(){
@@ -772,7 +770,7 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
 		if (participantMapId!="" && qcDate!="") {
             $.post("<?php echo $this->url(array('module'=>'default','controller' =>'participant', 'action' => 'add-qc')); ?>", { mapId: participantMapId,qcDate:qcDate,format: "html" },
 			function(data){
-			if(data>0){
+			if (data>0) {
 				schemeTable.fnDraw();
 				$("#countChecksPending").text("0");
 				selectedQc = '';

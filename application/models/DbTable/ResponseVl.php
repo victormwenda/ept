@@ -17,7 +17,7 @@ class Application_Model_DbTable_ResponseVl extends Zend_Db_Table_Abstract
                 $params['vlResult'][$key] = '';
             }else if(isset($params['tndReference'][$key]) && $params['tndReference'][$key]== 'yes'){
                 $tnd = 'yes';
-                $params['vlResult'][$key] = '0.00'; 
+                $params['vlResult'][$key] = '0.00';
             }
             if($res == null || count($res) == 0){
                 $this->insert(array(

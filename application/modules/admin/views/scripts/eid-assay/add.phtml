@@ -33,27 +33,26 @@
     $(document).ready(function(){
         getCategoryValue('<?php echo $this->source; ?>');
     });
-    
+
     var duplicated = false;
     function checkDuplicate(tableName, fieldName, obj, fnct, msg) {
-	objValue=document.getElementById(obj).value;
-	if($.trim(objValue)!= '') {
-	    $.post("<?php echo $this->url(array('module' => 'default', 'controller' => 'common', 'action' => 'check-duplicate')); ?>", { tableName: tableName, fieldName: fieldName, value: objValue, fnct: fnct, format: "html" },
-		function (data) {
-		    if (data > 0) {
-			alert(msg, "err");
-			duplicated = true;
-			$("#"+obj).val("");
-			$("#"+obj).focus();
-		    }
-		    else {
-			duplicated = false;
-		    }
-		    return duplicated;
-		});
-	}
+        objValue=document.getElementById(obj).value;
+        if($.trim(objValue)!= '') {
+            $.post("<?php echo $this->url(array('module' => 'default', 'controller' => 'common', 'action' => 'check-duplicate')); ?>", { tableName: tableName, fieldName: fieldName, value: objValue, fnct: fnct, format: "html" },
+                function (data) {
+                    if (data > 0) {
+                        alert(msg, "err");
+                        duplicated = true;
+                        $("#"+obj).val("");
+                        $("#"+obj).focus();
+                    }
+                    else {
+                        duplicated = false;
+                    }
+                    return duplicated;
+                });
+        }
     }
-
     function getCategoryValue(Val){
         $("#name").val("");
         if(Val == "extraction"){
@@ -61,10 +60,10 @@
         }else if(Val == "detection"){
             $("#name").attr("onblur","checkDuplicate('r_eid_detection_assay','name','name',null, 'The name that you entered already exist. Please try something else.')");
         }else{
-           $("#name").removeAttr("onblur");
+            $("#name").removeAttr("onblur");
         }
     }
-    
+
     function validateNow() {
         flag = deforayValidator.init({
             formId: 'addEidVlAssayForm'
