@@ -3,7 +3,7 @@
 .settings/
 nbproject/
 
-#Cache Files
+#Generated Files
 application/cache
 
 #Uploads

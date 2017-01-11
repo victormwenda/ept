@@ -410,22 +410,17 @@ class Application_Service_Evaluation {
 
         $participantData = $participantService->getParticipantDetails($participantId);
         $shipmentData = $schemeService->getShipmentData($shipmentId, $participantId);
-       
+
+        $possibleResults = $schemeService->getPossibleResults($scheme);
+        $evalComments = $schemeService->getSchemeEvaluationComments($scheme);
         if ($scheme == 'eid') {
-            $possibleResults = $schemeService->getPossibleResults('eid');
-            $evalComments = $schemeService->getSchemeEvaluationComments('eid');
             $results = $schemeService->getEidSamples($shipmentId, $participantId);
         } else if ($scheme == 'vl') {
             $possibleResults = "";
-            $evalComments = $schemeService->getSchemeEvaluationComments('vl');
             $results = $schemeService->getVlSamples($shipmentId, $participantId);
         } else if ($scheme == 'dts') {
-            $possibleResults = $schemeService->getPossibleResults('dts');
-            $evalComments = $schemeService->getSchemeEvaluationComments('dts');
             $results = $schemeService->getDtsSamples($shipmentId, $participantId);
         } else if ($scheme == 'dbs') {
-            $possibleResults = $schemeService->getPossibleResults('dbs');
-            $evalComments = $schemeService->getSchemeEvaluationComments('dbs');
             $results = $schemeService->getDbsSamples($shipmentId, $participantId);
         }
 
@@ -475,11 +470,8 @@ class Application_Service_Evaluation {
         $schemeService = new Application_Service_Schemes();
         $shipmentService = new Application_Service_Shipments();
 
-
         $participantData = $participantService->getParticipantDetails($participantId);
         $shipmentData = $schemeService->getShipmentData($shipmentId, $participantId);
-
-
 
         if ($scheme == 'eid') {
             $possibleResults = $schemeService->getPossibleResults('eid');
@@ -499,7 +491,6 @@ class Application_Service_Evaluation {
             $results = $schemeService->getDtsSamples($shipmentId, $participantId);
         }
 
-
         $controlRes = array();
         $sampleRes = array();
 
@@ -512,7 +503,6 @@ class Application_Service_Evaluation {
                 }
             }
         }
-
 
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $config = new Zend_Config_Ini(APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini", APPLICATION_ENV);
@@ -1193,7 +1183,7 @@ class Application_Service_Evaluation {
 					$shipmentResult['participant_count']=$totParticipantsRes['participant_count'];
 					//Zend_Debug::dump($shipmentResult);die;
 				}
-				
+
 				$sQuery = $db->select()->from(array('spm' => 'shipment_participant_map'), array('spm.map_id', 'spm.shipment_id', 'spm.shipment_score', 'spm.documentation_score', 'spm.attributes'))
                         //->join(array('p' => 'participant'), 'p.participant_id=spm.participant_id', array('p.unique_identifier', 'p.first_name', 'p.last_name', 'p.status'))
                         ->joinLeft(array('res' => 'r_results'), 'res.result_id=spm.final_result', array('result_name'))
@@ -1324,8 +1314,6 @@ class Application_Service_Evaluation {
 				}
 				
 				$query=$db->select()->from(array('refvl' => 'reference_result_vl'),array('refvl.sample_score'))
-								
-								->where('refvl.control!=1')
 								->where('refvl.shipment_id = ? ',$shipmentId);
 				$smpleResult=$db->fetchAll($query);
 				$shipmentResult['no_of_samples']=count($smpleResult);

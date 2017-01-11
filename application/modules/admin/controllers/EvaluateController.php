@@ -2,7 +2,6 @@
 
 class Admin_EvaluateController extends Zend_Controller_Action
 {
-
     public function init()
     {
         $ajaxContext = $this->_helper->getHelper('AjaxContext');
