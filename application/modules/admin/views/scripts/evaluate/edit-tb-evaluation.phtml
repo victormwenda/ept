@@ -138,7 +138,7 @@ $dtFormat=  $dateFormatHelper->getDateFormat();
                 <td style="vertical-align: middle;text-align: center;width: 7%;">
                     <input type="text" name="probeA[]" class="form-control oneDecimal input-sm numberInput" value="<?php echo $result['res_probe_a']; ?>" title="Please enter the Probe A value for <?php echo $result['sample_label']; ?>" />
                 </td>
-                <td style="vertical-align: middle;text-align: center;width: 8%;">
+                <td rowspan="2" style="vertical-align: middle;text-align: center;width: 8%;">
                     <?php
                     if(isset($result['res_mtb_detected']) && isset($result['res_rif_resistance'])){
                         if($result['res_mtb_detected'] == $result['ref_mtb_detected'] &&
@@ -230,21 +230,6 @@ $dtFormat=  $dateFormatHelper->getDateFormat();
                 <td style="vertical-align: middle;text-align: right;">
                     <?php
                     echo $result['res_probe_a'];
-                    ?>
-                </td>
-                <td style="vertical-align: middle;text-align: center;">
-                    <?php
-                    if(isset($result['res_mtb_detected']) && isset($result['res_rif_resistance'])){
-                        if($result['res_mtb_detected'] == $result['ref_mtb_detected'] &&
-                            $result['res_rif_resistance'] == $result['ref_rif_resistance']){
-                            echo "Yes";
-                        }else{
-                            echo "No";
-                        }
-
-                    }else{
-                        echo "N/A";
-                    }
                     ?>
                 </td>
             </tr>
