@@ -1491,9 +1491,8 @@ class Application_Service_Shipments {
                   ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('SCHEME' => 'sl.scheme_name'))
                   ->where("sp.shipment_id = ?", $sid)
                   ->group("p.participant_id");
-        echo $sQuery;die;
+        //echo $sQuery;die;
         $participantEmails=$db->fetchAll($sQuery);
-        
         foreach($participantEmails as $participantDetails){
             if($participantDetails['email']!=''){
             $surveyDate=$general->humanDateFormat($participantDetails['distribution_date']);
@@ -1515,6 +1514,7 @@ class Application_Service_Shipments {
         }
         return $return;
     }
+
     public function getShipmentNotParticipated($sid) {
        
         $commonServices = new Application_Service_Common();
@@ -1554,10 +1554,12 @@ class Application_Service_Shipments {
         }
         return $return;
     }
+
     public function enrollShipmentParticipant($shipmentId,$participantId) {
         $db = new Application_Model_DbTable_ShipmentParticipantMap();
         return $db->enrollShipmentParticipant($shipmentId,$participantId);
     }
+
     public function getShipmentRowData($shipmentId) {
         $shipmentDb = new Application_Model_DbTable_Shipments();
         return $shipmentDb->getShipmentRowInfo($shipmentId);

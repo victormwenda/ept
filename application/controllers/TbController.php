@@ -38,7 +38,7 @@ class TbController extends Zend_Controller_Action
             $this->view->participant = $participantService->getParticipantDetails($pID);
             $this->view->allSamples =$schemeService->getTbSamples($sID,$pID);
             $shipment = $schemeService->getShipmentData($sID,$pID);
-	    $shipment['attributes'] = json_decode($shipment['attributes'],true);
+	        $shipment['attributes'] = json_decode($shipment['attributes'],true);
             $this->view->shipment = $shipment;
             $this->view->shipId = $sID;
             $this->view->participantId = $pID;
@@ -46,9 +46,9 @@ class TbController extends Zend_Controller_Action
     
             $this->view->isEditable = $shipmentService->isShipmentEditable($sID,$pID);
 	    
-	    $commonService = new Application_Service_Common();
-	    $this->view->modeOfReceipt=$commonService->getAllModeOfReceipt();
-	    $this->view->globalQcAccess=$commonService->getConfig('qc_access');
+            $commonService = new Application_Service_Common();
+            $this->view->modeOfReceipt=$commonService->getAllModeOfReceipt();
+            $this->view->globalQcAccess=$commonService->getConfig('qc_access');
     	}
     }
 

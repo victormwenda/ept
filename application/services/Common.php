@@ -73,11 +73,13 @@ class Application_Service_Common {
 			$randStr .= $alphabet[$n];
 		}
 		return $randStr; //turn the array into a string
-    }	
+    }
+
 	public static function getConfig($name) {
 		$gc = new Application_Model_DbTable_GlobalConfig();
 		return $gc->getValue($name);
-    }		
+    }
+
 	public function contactForm($params) {
 		$message = "<h3>The following details were entered by ".$params['first_name']." " .$params['last_name']."</h3>";
 		$message .= "Name : ".$params['first_name']." " .$params['last_name']."<br/>";
@@ -104,6 +106,7 @@ class Application_Service_Common {
 			return 0;
 		}		
     }
+
     public function checkDuplicate($params) {
         $session = new Zend_Session_Namespace('credo');
         $tableName = $params['tableName'];
@@ -133,6 +136,7 @@ class Application_Service_Common {
         }
         return $data;
     }
+
     public function removespecials($url){
         $url=str_replace(" ","-",$url);
         
@@ -149,18 +153,22 @@ class Application_Service_Common {
 	$countriesDb = new Application_Model_DbTable_Countries();
 	return $countriesDb->getAllCountries();
     }
+
     public function getAllnetwork(){
 	$networkDb = new Application_Model_DbTable_NetworkTires();
 	return $networkDb->getAllnetwork();
     }
+
     public function getAllParticipantAffiliates(){
 	$participantAffiliateDb = new Application_Model_DbTable_ParticipantAffiliates();
 	return $participantAffiliateDb->getAllParticipantAffiliates();
     }
+
     public function getGlobalConfigDetails() {
 	$db = new Application_Model_DbTable_GlobalConfig();
 	return $db->getGlobalConfig();
     }
+
     public function getFullSchemesDetails() {
 	$db = new Application_Model_DbTable_SchemeList();
 	return $db->getFullSchemeList();
@@ -170,10 +178,12 @@ class Application_Service_Common {
 	$db = new Application_Model_DbTable_GlobalConfig();
 	$db->updateConfigDetails($params);
     }
+
     public function getEmailTemplate($purpose){
         $db = new Application_Model_DbTable_MailTemplate();
         return $db->getEmailTemplateDetails($purpose);
     }
+
     public function updateTemplate($params){
         $filterRules = array(
                     '*' => 'StripTags',
@@ -198,6 +208,7 @@ class Application_Service_Common {
             }
         }        
     }
+
     public function insertTempMail($to, $cc,$bcc, $subject, $message, $fromMail = null, $fromName = null) {
         $db = new Application_Model_DbTable_TempMail();
         return $db->insertTempMailDetails($to, $cc,$bcc, $subject, $message, $fromMail, $fromName);
