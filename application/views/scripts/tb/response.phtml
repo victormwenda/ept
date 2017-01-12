@@ -26,7 +26,7 @@ if(isset($this->shipment["shipment_test_report_date"]) && trim($this->shipment["
 
 <section class="content">
 <div class="box">
-<form name="tbResponseForm" id="tbResponseForm" method="post"   action="<?php echo $this->url(array("controller"=>"tb","action"=>"response"),null,true) ?>" onsubmit="return validateNow();return false;">
+<form name="tbResponseForm" id="tbResponseForm" method="post" action="<?php echo $this->url(array("controller"=>"tb","action"=>"response"),null,true) ?>" onsubmit="return validateNow();return false;">
 <div class="box-body">
 <input type="hidden" id ="hdLastDate" name="hdLastDate" value="<?php echo $this->shipment['lastdate_response'];?>" />
 <input type="hidden" id ="smid" name="smid" value="<?php echo $this->shipment['map_id'];?>" />
@@ -176,7 +176,7 @@ $count++;  ?>
 <table class="table table-bordered table-striped" style="width:100%;margin:10px auto;">
 <thead>
 	<tr align="CENTER" class="dark" >
-		<th style="width:5%;">Control/Sample</th>
+		<th>Sample</th>
 		<th>Date Tested</th>		
 		<th>MTB Detected</th>		
 		<th>Rif Resistance</th>		
@@ -185,7 +185,7 @@ $count++;  ?>
 		<th>Probe E</th>		
 		<th>Probe B</th>		
 		<th>SPC</th>		
-		<th>Probe A</th>		
+		<th>Probe A</th>
 	</tr>
 </thead>
 
@@ -201,44 +201,45 @@ $count++;
 			<input type="hidden" id ="sample<?php echo $count; ?>" name="sampleId[]" value="<?php echo $sample['sample_id'];?>" />
 		</th>
 		<td>
-			<input type="text" class="form-control datepicker sampleTestDate" readonly="readonly" name="dateTested[]" value="<?php echo $this->dateFormat($sample['date_tested']); ?>" title="Please enter the Test Date for <?php echo $sample['sample_label']; ?>" />
+			<input type="text" class="form-control datepicker sampleTestDate" readonly="readonly" name="dateTested[]" value="<?php echo $this->dateFormat($sample['res_date_tested']); ?>" title="Please enter the Test Date for <?php echo $sample['sample_label']; ?>" />
 		</td>
 		<td>
 			<select name="mtbDetected[]" class="isRequired form-control input-sm"  title="Please enter the MTB Detected for this sample" placeholder="Please enter the MTB Detected for this sample">
 				<option value="">-- Select --</option>
-				<option value="high" <?php echo ($sample['mtb_detected'] == 'high' ? "selected='selected'" : ""); ?>>High</option>
-				<option value="medium" <?php echo ($sample['mtb_detected'] == 'medium' ? "selected='selected'" : ""); ?>>Medium</option>
-				<option value="low" <?php echo ($sample['mtb_detected'] == 'low' ? "selected='selected'" : ""); ?>>Low</option>
-				<option value="veryLow" <?php echo ($sample['mtb_detected'] == 'veryLow' ? "selected='selected'" : ""); ?>>veryLow</option>
-				<option value="notDetected" <?php echo ($sample['mtb_detected'] == 'notDetected' ? "selected='selected'" : ""); ?>>Not Detected</option>
-				<option value="noResult" <?php echo ($sample['mtb_detected'] == 'noResult' ? "selected='selected'" : ""); ?>>No Result</option>
+				<option value="high" <?php echo ($sample['res_mtb_detected'] == 'high' ? "selected='selected'" : ""); ?>>High</option>
+				<option value="medium" <?php echo ($sample['res_mtb_detected'] == 'medium' ? "selected='selected'" : ""); ?>>Medium</option>
+				<option value="low" <?php echo ($sample['res_mtb_detected'] == 'low' ? "selected='selected'" : ""); ?>>Low</option>
+				<option value="veryLow" <?php echo ($sample['res_mtb_detected'] == 'veryLow' ? "selected='selected'" : ""); ?>>Very Low</option>
+				<option value="notDetected" <?php echo ($sample['res_mtb_detected'] == 'notDetected' ? "selected='selected'" : ""); ?>>Not Detected</option>
+				<option value="noResult" <?php echo ($sample['res_mtb_detected'] == 'noResult' ? "selected='selected'" : ""); ?>>No Result</option>
+                <option value="invalid" <?php echo ($sample['res_mtb_detected'] == 'invalid' ? "selected='selected'" : ""); ?>>Invalid</option>
 			</select>
 		</td>
 		<td>
 			<select name="rifResistance[]" class="isRequired form-control input-sm"  title="Please enter the Rif Resistance for this sample" placeholder="Please enter the Rif Resistance for this sample">
 				<option value="">-- Select --</option>
-				<option value="detected" <?php echo ($sample['rif_resistance'] == 'detected' ? "selected='selected'" : ""); ?>>Detected</option>
-				<option value="notDetected"  <?php echo ($sample['rif_resistance'] == 'notDetected' ? "selected='selected'" : ""); ?>>Not Detected</option>
-				<option value="na"  <?php echo ($sample['rif_resistance'] == 'na' ? "selected='selected'" : ""); ?>>N/A</option>
+				<option value="detected" <?php echo ($sample['res_rif_resistance'] == 'detected' ? "selected='selected'" : ""); ?>>Detected</option>
+				<option value="notDetected"  <?php echo ($sample['res_rif_resistance'] == 'notDetected' ? "selected='selected'" : ""); ?>>Not Detected</option>
+				<option value="na"  <?php echo ($sample['res_rif_resistance'] == 'na' ? "selected='selected'" : ""); ?>>N/A</option>
 			</select>
 		</td>
 		<td>
-			<input type="text" name="probeD[]" class="form-control oneDecimal" value="<?php echo $sample['probe_d']; ?>" title="Please enter the Probe D value for <?php echo $sample['sample_label']; ?>" />
+			<input type="text" name="probeD[]" class="form-control oneDecimal numberInput" value="<?php echo $sample['res_probe_d']; ?>" title="Please enter the Probe D value for <?php echo $sample['sample_label']; ?>" />
 		</td>
 		<td>
-			<input type="text" name="probeC[]" class="form-control oneDecimal" value="<?php echo $sample['probe_c']; ?>" title="Please enter the Probe C value for <?php echo $sample['sample_label']; ?>" />
+			<input type="text" name="probeC[]" class="form-control oneDecimal numberInput" value="<?php echo $sample['res_probe_c']; ?>" title="Please enter the Probe C value for <?php echo $sample['sample_label']; ?>" />
 		</td>
 		<td>
-			<input type="text" name="probeE[]" class="form-control oneDecimal" value="<?php echo $sample['probe_e']; ?>" title="Please enter the Probe E value for <?php echo $sample['sample_label']; ?>" />
+			<input type="text" name="probeE[]" class="form-control oneDecimal numberInput" value="<?php echo $sample['res_probe_e']; ?>" title="Please enter the Probe E value for <?php echo $sample['sample_label']; ?>" />
 		</td>
 		<td>
-			<input type="text" name="probeB[]" class="form-control oneDecimal" value="<?php echo $sample['probe_b']; ?>" title="Please enter the Probe B value for <?php echo $sample['sample_label']; ?>" />
+			<input type="text" name="probeB[]" class="form-control oneDecimal numberInput" value="<?php echo $sample['res_probe_b']; ?>" title="Please enter the Probe B value for <?php echo $sample['sample_label']; ?>" />
 		</td>
 		<td>
-			<input type="text" name="spc[]" class="form-control oneDecimal" value="<?php echo $sample['spc']; ?>" title="Please enter the SPC value for <?php echo $sample['sample_label']; ?>" />
+			<input type="text" name="spc[]" class="form-control oneDecimal numberInput" value="<?php echo $sample['res_spc']; ?>" title="Please enter the SPC value for <?php echo $sample['sample_label']; ?>" />
 		</td>
 		<td>
-			<input type="text" name="probeA[]" class="form-control oneDecimal" value="<?php echo $sample['probe_a']; ?>" title="Please enter the Probe A value for <?php echo $sample['sample_label']; ?>" />
+			<input type="text" name="probeA[]" class="form-control oneDecimal numberInput" value="<?php echo $sample['res_probe_a']; ?>" title="Please enter the Probe A value for <?php echo $sample['sample_label']; ?>" />
 		</td>
     </tr>
 

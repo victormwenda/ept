@@ -73,3 +73,6 @@ td.center{
 	text-align:center !important;
 }
 
+input.numberInput {
+	text-align: right;
+}

@@ -422,6 +422,8 @@ class Application_Service_Evaluation {
             $results = $schemeService->getDtsSamples($shipmentId, $participantId);
         } else if ($scheme == 'dbs') {
             $results = $schemeService->getDbsSamples($shipmentId, $participantId);
+        } else if ($scheme == 'tb') {
+            $results = $schemeService->getTbSamples($shipmentId, $participantId);
         }
 
 
@@ -577,7 +579,7 @@ class Application_Service_Evaluation {
 			
 			if(isset($params['customField2']) && trim($params['customField2']) != ""){
 				$mapData['custom_field_2'] = $params['customField2'];
-			}				
+			}
 
             $db->update('shipment_participant_map', $mapData, "map_id = " . $params['smid']);
 			
@@ -708,11 +710,36 @@ class Application_Service_Evaluation {
                     'updated_by' => $admin,
                     'updated_on' => new Zend_Db_Expr('now()')), "shipment_map_id = " . $params['smid'] . " AND sample_id = " . $params['sampleId'][$i]);
             }
+        } else if ($params['scheme'] == 'tb') {
+            for ($i = 0; $i < $size; $i++) {
+                $db->update('response_result_tb', array(
+                    'date_tested' => Pt_Commons_General::dateFormat($params['dateTested'][$i]),
+                    'mtb_detected' => $params['mtbDetected'][$i],
+                    'rif_resistance' => $params['rifResistance'][$i],
+                    'probe_d' => $params['probeD'][$i],
+                    'probe_c' => $params['probeC'][$i],
+                    'probe_e' => $params['probeE'][$i],
+                    'probe_b' => $params['probeB'][$i],
+                    'spc' => $params['spc'][$i],
+                    'probe_a' => $params['probeA'][$i],
+                    'updated_by' => $admin,
+                    'updated_on' => new Zend_Db_Expr('now()')
+                ), "shipment_map_id = " . $params['smid'] . " and sample_id = " . $params['sampleId'][$i]);
+            }
         }
 
         $params['isFollowUp'] = (isset($params['isFollowUp']) && $params['isFollowUp'] != "" ) ? $params['isFollowUp'] : "no";
 
-		$updateArray = array('evaluation_comment' => $params['comment'], 'optional_eval_comment' => $params['optionalComments'], 'is_followup' => $params['isFollowUp'], 'is_excluded' => $params['isExcluded'], 'updated_by_admin' => $admin, 'updated_on_admin' => new Zend_Db_Expr('now()'));
+		$updateArray = array(
+            'optional_eval_comment' => $params['optionalComments'],
+            'is_followup' => $params['isFollowUp'],
+            'is_excluded' => $params['isExcluded'],
+            'updated_by_admin' => $admin,
+            'updated_on_admin' => new Zend_Db_Expr('now()')
+        );
+        if(isset($params['comment']) && $params['comment'] != ""){
+            $updateArray['evaluation_comment'] = $params['comment'];
+        }
 		if($params['isExcluded'] == 'yes'){
 			$updateArray['final_result'] = 3;
 		}

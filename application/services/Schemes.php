@@ -8,11 +8,10 @@ class Application_Service_Schemes {
     }
 
     public function getAllDtsTestKit($countryAdapted = false) {
-
         $testkitsDb = new Application_Model_DbTable_TestkitnameDts();
         return $testkitsDb->getActiveTestKitsNamesForScheme('dts',$countryAdapted);
-    
     }
+
     public function getAllDtsTestKitList($countryAdapted = false) {
 
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
@@ -62,7 +61,6 @@ class Application_Service_Schemes {
         }
     }
 
-
     public function getEidExtractionAssay() {
 
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
@@ -106,6 +104,7 @@ class Application_Service_Schemes {
         }
         return $response;
     }
+
     public function getDtsCorrectiveActions() {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $res = $db->fetchAll($db->select()->from('r_dts_corrective_actions'));
@@ -132,7 +131,8 @@ class Application_Service_Schemes {
         $sql = $db->select()->from(array('ref' => 'reference_result_dts'))
                 ->join(array('s' => 'shipment'), 's.shipment_id=ref.shipment_id')
                 ->join(array('sp' => 'shipment_participant_map'), 's.shipment_id=sp.shipment_id')
-                ->joinLeft(array('res' => 'response_result_dts'), 'res.shipment_map_id = sp.map_id and res.sample_id = ref.sample_id', array('test_kit_name_1',
+                ->joinLeft(array('res' => 'response_result_dts'), 'res.shipment_map_id = sp.map_id and res.sample_id = ref.sample_id', array(
+                    'test_kit_name_1',
                     'lot_no_1',
                     'exp_date_1',
                     'test_result_1',
@@ -185,7 +185,8 @@ class Application_Service_Schemes {
         $sql = $db->select()->from(array('ref' => 'reference_result_dbs'))
                 ->join(array('s' => 'shipment'), 's.shipment_id=ref.shipment_id')
                 ->join(array('sp' => 'shipment_participant_map'), 's.shipment_id=sp.shipment_id')
-                ->joinLeft(array('res' => 'response_result_dbs'), 'res.shipment_map_id = sp.map_id and res.sample_id = ref.sample_id', array('eia_1',
+                ->joinLeft(array('res' => 'response_result_dbs'), 'res.shipment_map_id = sp.map_id and res.sample_id = ref.sample_id', array(
+                    'eia_1',
                     'lot_no_1',
                     'exp_date_1',
                     'od_1',
@@ -237,21 +238,45 @@ class Application_Service_Schemes {
         $sql = $db->select()->from(array('ref' => 'reference_result_vl'))
                 ->join(array('s' => 'shipment'), 's.shipment_id=ref.shipment_id')
                 ->join(array('sp' => 'shipment_participant_map'), 's.shipment_id=sp.shipment_id')
-                ->joinLeft(array('res' => 'response_result_vl'), 'res.shipment_map_id = sp.map_id and res.sample_id = ref.sample_id', array('reported_viral_load','is_tnd', 'responseDate' => 'res.created_on'))
+                ->joinLeft(array('res' => 'response_result_vl'), 'res.shipment_map_id = sp.map_id and res.sample_id = ref.sample_id',
+                    array('reported_viral_load','is_tnd', 'responseDate' => 'res.created_on'))
                 ->where('sp.shipment_id = ? ', $sId)
                 ->where('sp.participant_id = ? ', $pId);
         return $db->fetchAll($sql);
     }
 
     public function getTbSamples($sId, $pId) {
-
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
-        $sql = $db->select()->from(array('ref' => 'reference_result_tb'))
-                ->join(array('s' => 'shipment'), 's.shipment_id=ref.shipment_id')
-                ->join(array('sp' => 'shipment_participant_map'), 's.shipment_id=sp.shipment_id')
-                ->joinLeft(array('res' => 'response_result_tb'), 'res.shipment_map_id = sp.map_id and res.sample_id = ref.sample_id', array('date_tested','mtb_detected','rif_resistance','probe_d','probe_c','probe_e','probe_b','spc','probe_a','responseDate' => 'res.created_on'))
-                ->where('sp.shipment_id = ? ', $sId)
-                ->where('sp.participant_id = ? ', $pId);
+        $sql = $db->select()->from(array('ref' => 'reference_result_tb'),
+            array(
+                'sample_label', 'mandatory', 'sample_id', 'control',
+                'ref_mtb_detected' => 'ref.mtb_detected',
+                'ref_rif_resistance' => 'ref.rif_resistance',
+                'ref_probe_d' => 'ref.probe_d',
+                'ref_probe_c' => 'ref.probe_c',
+                'ref_probe_e' => 'ref.probe_e',
+                'ref_probe_b' => 'ref.probe_b',
+                'ref_spc' => 'ref.spc',
+                'ref_probe_a' => 'ref.probe_a'
+            ))
+            ->join(array('s' => 'shipment'), 's.shipment_id=ref.shipment_id')
+            ->join(array('sp' => 'shipment_participant_map'), 's.shipment_id=sp.shipment_id')
+            ->joinLeft(array('res' => 'response_result_tb'),
+                'res.shipment_map_id = sp.map_id and res.sample_id = ref.sample_id',
+                array(
+                    'res_date_tested' => 'res.date_tested',
+                    'res_mtb_detected' => 'res.mtb_detected',
+                    'res_rif_resistance' => 'res.rif_resistance',
+                    'res_probe_d' => 'res.probe_d',
+                    'res_probe_c' => 'res.probe_c',
+                    'res_probe_e' => 'res.probe_e',
+                    'res_probe_b' => 'res.probe_b',
+                    'res_spc' => 'res.spc',
+                    'res_probe_a' => 'res.probe_a',
+                    'responseDate' => 'res.created_on'
+                ))
+            ->where('sp.shipment_id = ? ', $sId)
+            ->where('sp.participant_id = ? ', $pId);
         return $db->fetchAll($sql);
     }
 
@@ -377,22 +402,20 @@ class Application_Service_Schemes {
     }
 
     public function setVlRange($sId) {
-
-
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
-
-
         $vlAssayArray = $this->getVlAssay();
-
         foreach ($vlAssayArray as $vlAssayId => $vlAssayName) {
-            $sql = $db->select()->from(array('ref' => 'reference_result_vl'), array('shipment_id', 'sample_id'))
-                      ->join(array('s' => 'shipment'), 's.shipment_id=ref.shipment_id', array())
-                      ->join(array('sp' => 'shipment_participant_map'), 's.shipment_id=sp.shipment_id', array('participant_id'))
-                      ->joinLeft(array('res' => 'response_result_vl'), 'res.shipment_map_id = sp.map_id and res.sample_id = ref.sample_id', array('reported_viral_load'))
-                      ->where('sp.shipment_id = ? ', $sId)
-                      ->where("sp.is_excluded = 'no' ")
-                      ->where('sp.attributes like ? ', '%"vl_assay":"' . $vlAssayId . '"%');
-                      //echo $sql;die;
+            $sql = $db->select()->from(array('ref' => 'reference_result_vl'),
+                array('shipment_id', 'sample_id'))
+            ->join(array('s' => 'shipment'), 's.shipment_id=ref.shipment_id', array())
+            ->join(array('sp' => 'shipment_participant_map'), 's.shipment_id=sp.shipment_id',
+                array('participant_id'))
+            ->joinLeft(array('res' => 'response_result_vl'), 'res.shipment_map_id = sp.map_id and res.sample_id = ref.sample_id',
+                array('reported_viral_load'))
+            ->where('sp.shipment_id = ? ', $sId)
+            ->where("sp.is_excluded = 'no' ")
+            ->where('sp.attributes like ? ', '%"vl_assay":"' . $vlAssayId . '"%');
+            //echo $sql;die;
             $response = $db->fetchAll($sql);
             $sampleWise = array();
             foreach ($response as $row) {
@@ -401,18 +424,14 @@ class Application_Service_Schemes {
             if (!isset($sampleWise[$vlAssayId])) {
                 continue;
             }
-
             foreach ($sampleWise[$vlAssayId] as $sample => $reportedVl) {
-
                 if ($reportedVl != "" && $reportedVl != null && count($reportedVl) > 7) {
-                    
                     $rvcRow = $db->fetchRow($db->select()->from('reference_vl_calculation')
                                                       ->where('shipment_id = ?', $sId)
                                                       ->where('sample_id = ?', $sample)
                                                       ->where('vl_assay = ?', $vlAssayId)
                                          );
                     $inputArray = $origArray = $reportedVl;
-
                     sort($inputArray);
                     $q1 = $this->getQuartile($inputArray, 0.25);
                     $q3 = $this->getQuartile($inputArray, 0.75);
@@ -429,11 +448,6 @@ class Application_Service_Schemes {
                             $removeArray[] = $a;
                         }
                     }
-                    
-
-                    //Zend_Debug::dump("Under Assay $vlAssayId-Sample $sample - COUNT AFTER REMOVING OUTLIERS: ".count($newArray) . " FOLLOWING ARE OUTLIERS");
-                    //Zend_Debug::dump($removeArray);
-                    
                     $avg = $this->getAverage($newArray);
                     $sd = $this->getStdDeviation($newArray);
                     
@@ -519,14 +533,6 @@ class Application_Service_Schemes {
         return $db->getShipmentData($sId, $pId);
     }
 
-    //public function getShipmentVl($sId,$pId){
-    //	
-    //	$db = new Application_Model_DbTable_ShipmentVl();
-    //	return $db->getShipmentVl($sId,$pId);
-    //	
-    //}
-
-
     public function getSchemeControls($schemeId) {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         return $db->fetchAll($db->select()->from('r_control')->where("for_scheme='$schemeId'"));
@@ -546,6 +552,7 @@ class Application_Service_Schemes {
         $schemeListDb = new Application_Model_DbTable_SchemeList();
         return $schemeListDb->countEnrollmentSchemes();
     }
+
     public function getScheme($sid) {
         if($sid != null){
             $schemeListDb = new Application_Model_DbTable_SchemeList();
@@ -580,6 +587,7 @@ class Application_Service_Schemes {
             error_log($e->getMessage());
         }
     }
+
     public function updateTestkitStage($params) {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $db->beginTransaction();

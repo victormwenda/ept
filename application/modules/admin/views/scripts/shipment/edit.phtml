@@ -1699,11 +1699,8 @@ function addNewReferenceResultBlock(sampleId) {
 	</thead>
 	<tbody>
 		<?php $counter =1;  
-		foreach($shipmentData['reference'] as $reference){ 
-		
+		foreach($shipmentData['reference'] as $reference){
 		?>
-		
-		
 			<tr align="center">
 				<td style="text-align: center">
 					<input type="text" name="sampleName[]" class="isRequired input-sm form-control" value="<?php echo $reference['sample_label']; ?>"/>
@@ -1715,9 +1712,10 @@ function addNewReferenceResultBlock(sampleId) {
 						<option value="high" <?php echo ($reference['mtb_detected'] == 'high' ? "selected='selected'" : ""); ?>>High</option>
 						<option value="medium" <?php echo ($reference['mtb_detected'] == 'medium' ? "selected='selected'" : ""); ?>>Medium</option>
 						<option value="low" <?php echo ($reference['mtb_detected'] == 'low' ? "selected='selected'" : ""); ?>>Low</option>
-						<option value="veryLow" <?php echo ($reference['mtb_detected'] == 'veryLow' ? "selected='selected'" : ""); ?>>veryLow</option>
+						<option value="veryLow" <?php echo ($reference['mtb_detected'] == 'veryLow' ? "selected='selected'" : ""); ?>>Very Low</option>
 						<option value="notDetected" <?php echo ($reference['mtb_detected'] == 'notDetected' ? "selected='selected'" : ""); ?>>Not Detected</option>
 						<option value="noResult" <?php echo ($reference['mtb_detected'] == 'noResult' ? "selected='selected'" : ""); ?>>No Result</option>
+                        <option value="invalid" <?php echo ($reference['mtb_detected'] == 'invalid' ? "selected='selected'" : ""); ?>>Invalid</option>
 					</select>					
 				</td>
 				<td>
@@ -1799,9 +1797,10 @@ function addNewReferenceResultBlock(sampleId) {
 						<option value="high">High</option> \
 						<option value="medium">Medium</option> \
 						<option value="low">Low</option> \
-						<option value="veryLow">veryLow</option> \
+						<option value="veryLow">Very Low</option> \
 						<option value="notDetected">Not Detected</option> \
 						<option value="noResult">No Result</option> \
+						<option value="invalid">Invalid</option> \
 					</select> \
 				</td> \
 				<td> \
