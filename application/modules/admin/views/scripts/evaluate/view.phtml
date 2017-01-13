@@ -1,10 +1,8 @@
 <?php
-//Zend_Debug::dump($this->evaluateData);die;
 $evSession = new Zend_Session_Namespace('evalShipmentList');
 $urlListArray = $evSession->viewUrlList;
 $this->currentUrl;
 $pos = array_search($this->currentUrl, $urlListArray);
-
 $prev = $pos - 1;
 $next = $pos + 1;
 $previousLink = $nextLink = "";
@@ -24,17 +22,13 @@ $reportDate = explode(" ", $this->evaluateData['shipment']['shipment_test_report
     <strong>Participant/Lab Name :</strong> <?php echo $this->evaluateData['participant']['first_name'] . " " . $this->evaluateData['participant']['last_name']; ?>
     <span class="pull-right"><strong>Reported on :</strong> <?php echo $this->dateFormat($reportDate[0]); ?></span>
 </h5>
-
 <input type="hidden" name="shipmentId" id="shipmentId" value="<?php echo $this->evaluateData['shipment']['shipment_id']; ?>" />
 <input type="hidden" name="participantId" id="participantId" value="<?php echo $this->evaluateData['shipment']['participant_id']; ?>" />
 <input type="hidden" name="smid" id="smid" value="<?php echo $this->evaluateData['shipment']['map_id']; ?>" />
 <input type="hidden" name="scheme" id="scheme" value="<?php echo $this->scheme; ?>" />  
 <?php
 if ($this->scheme == 'eid') {
-
-    $attributes = json_decode($this->evaluateData['shipment']['attributes'], true);
-    ?>
-
+    $attributes = json_decode($this->evaluateData['shipment']['attributes'], true); ?>
     <table class="table table-bordered table-striped" style="width:100%;margin:0 auto 10px auto;">
         <tr>
             <th>Shipment Code</th>
@@ -54,11 +48,9 @@ if ($this->scheme == 'eid') {
             <th>Samples Tested on</th>
             <td><?php echo $this->dateFormat($this->evaluateData['shipment']['shipment_test_date']); ?></td>
         </tr>
-        
         <tr>
             <th>Extraction Assay</th>
             <td>
-
                 <?php
                 foreach ($this->extractionAssay as $eAssayId => $eAssayName) {
                     if (isset($attributes['extraction_assay']) && $attributes['extraction_assay'] == $eAssayId) {
@@ -115,24 +107,22 @@ if ($this->scheme == 'eid') {
 			<td colspan="3"><?php echo $this->evaluateData['shipment']['user_comment']; ?></td>
 		</tr>
 		<tr>
-		<th>Uploaded File (if any)</th>
-		<td>
-			<?php
-			if(isset($attributes['uploaded_file']) && $attributes['uploaded_file'] != "" &&
-			   file_exists(UPLOAD_PATH.DIRECTORY_SEPARATOR.$attributes['uploaded_file'])
-			   ){
-				?>
-					<a href="/uploads/<?php echo $attributes['uploaded_file'] ?>" download><?php echo basename($attributes['uploaded_file']); ?></a>
-				<?php
-				}
-				?>
-			</td>
-		<td></td>
-		<td></td>
-	</tr>	        
+            <th>Uploaded File (if any)</th>
+            <td>
+                <?php
+                if(isset($attributes['uploaded_file']) && $attributes['uploaded_file'] != "" &&
+                   file_exists(UPLOAD_PATH.DIRECTORY_SEPARATOR.$attributes['uploaded_file'])
+                   ){
+                    ?>
+                        <a href="/uploads/<?php echo $attributes['uploaded_file'] ?>" download><?php echo basename($attributes['uploaded_file']); ?></a>
+                    <?php
+                    }
+                    ?>
+                </td>
+            <td></td>
+            <td></td>
+        </tr>
     </table>
-
-
     <?php
     $possibleResults = array();
     foreach ($this->evaluateData['possibleResults'] as $pr) {
@@ -141,45 +131,38 @@ if ($this->scheme == 'eid') {
         }
     }
     ?>
-
     <?php
-    if (isset($this->evaluateData['controlResults']) && sizeof($this->evaluateData['controlResults'])) {
-        ?>		
-        <table class="table table-bordered table-striped table-hover" style="width:70%;margin:0 auto;">
-            <caption><legend>Controls</legend></caption>
-            <tr>
-                <th style="text-align: center;font-size:17px;">Control</th>
-                <th style="text-align: center;font-size:17px;">Reference</th>
-                <th style="text-align: center;font-size:17px;">Response</th>
-            </tr>
-        <?php
-        $counter = 1;
+    if (isset($this->evaluateData['controlResults']) && sizeof($this->evaluateData['controlResults'])) { ?>
+    <table class="table table-bordered table-striped table-hover" style="width:70%;margin:0 auto;">
+        <caption><legend>Controls</legend></caption>
+        <tr>
+            <th style="text-align: center;font-size:17px;">Control</th>
+            <th style="text-align: center;font-size:17px;">Reference</th>
+            <th style="text-align: center;font-size:17px;">Response</th>
+        </tr>
+    <?php
+    $counter = 1;
         foreach ($this->evaluateData['controlResults'] as $result) {
             if (($counter % 2) == 0) {
                 $class = "evenResult";
             } else {
                 $class = "oddResult";
-            }
-            ?>
-                <tr class="<?php echo $class ?>">
-                    <td style="vertical-align: middle;text-align: center;"><?php echo $result['sample_label']; ?></td>
-                    <td style="vertical-align: middle;text-align: center;"><?php echo $this->dropdownSelectedText($possibleResults, $result['reference_result'], true); ?></td>
-                    <td style="vertical-align: middle;text-align: center;">
-                        <?php echo $this->dropdownSelectedText($possibleResults, $result['reported_result'], true); ?>
-                        <input type="hidden" name="sampleId[]" value="<?php echo $result['sample_id']; ?>" />
-                    </td>
-                </tr>
-            <?php
-            $counter++;
-        }
-        ?>
-        </table>
-        <br/><br/>
-
-            <?php
-        }
-        ?>
-
+            } ?>
+        <tr class="<?php echo $class ?>">
+            <td style="vertical-align: middle;text-align: center;"><?php echo $result['sample_label']; ?></td>
+            <td style="vertical-align: middle;text-align: center;"><?php echo $this->dropdownSelectedText($possibleResults, $result['reference_result'], true); ?></td>
+            <td style="vertical-align: middle;text-align: center;">
+                <?php echo $this->dropdownSelectedText($possibleResults, $result['reported_result'], true); ?>
+                <input type="hidden" name="sampleId[]" value="<?php echo $result['sample_id']; ?>" />
+            </td>
+        </tr>
+        <?php
+        $counter++;
+        } ?>
+    </table>
+    <br/><br/>
+        <?php
+    } ?>
     <table class="table table-bordered table-striped table-hover" style="width:70%;margin:0 auto;">
         <caption><legend>Samples</legend></caption>
         <tr>
@@ -188,7 +171,6 @@ if ($this->scheme == 'eid') {
             <th style="text-align: center;font-size:17px;">Response</th>
             <th style="text-align: center;font-size:17px;">Pass/Fail</th>
         </tr>
-
     <?php
     $total = 0;
     $counter = 1;
@@ -202,7 +184,6 @@ if ($this->scheme == 'eid') {
             <tr class="<?php echo $class ?>">
                 <td style="vertical-align: middle;text-align: center;"><?php echo $result['sample_label']; ?></td>
                 <td style="vertical-align: middle;text-align: center;"><?php echo $this->dropdownSelectedText($possibleResults, $result['reference_result'], true); ?></td>
-                
                 <td style="vertical-align: middle;text-align: center;">
                     <?php echo $this->dropdownSelectedText($possibleResults, $result['reported_result'], true); ?>
                     <input type="hidden" name="sampleId[]" value="<?php echo $result['sample_id']; ?>" />
@@ -213,13 +194,10 @@ if ($this->scheme == 'eid') {
         $counter++;
     }
     ?>
-
     </table>
-        <?php
-    } else if ($this->scheme == 'dts') {
-        $attributes = json_decode($this->evaluateData['shipment']['attributes'], true);
-        ?>
-
+    <?php
+} else if ($this->scheme == 'dts') {
+    $attributes = json_decode($this->evaluateData['shipment']['attributes'], true); ?>
     <table class="table table-bordered table-striped" style="width:100%;margin:0 auto 10px auto;">
         <tr>
             <th>Shipment Code</th>
@@ -260,7 +238,6 @@ if ($this->scheme == 'eid') {
             <td colspan="3"><?php echo $this->evaluateData['shipment']["user_comment"]; ?></td>
         </tr>
     </table>
-
     <?php
     $possibleResults = '';
     foreach ($this->evaluateData['possibleResults'] as $pr) {
@@ -273,50 +250,34 @@ if ($this->scheme == 'eid') {
         if ($pr['scheme_sub_group'] == 'DTS_FINAL') {
             $possibleFinalResults[$pr['id']] = $pr['response'];
         }
-    }
-    ?>
-
-
+    } ?>
     <table class="table table-striped table-bordered">
-
         <thead>
             <tr align="CENTER" class="dark" >
                 <th></th>
                 <th style="text-align: center" >Test-1</th>
                 <th  style="text-align: center">Test-2</th>
                 <th  style="text-align: center">Test-3</th>
-
             </tr>
         </thead>
         <tr style="text-align:center" >
             <th> Kit Name</th>
             <td style="vertical-align: middle;">
-    <?php $this->dropdownSelectedText($this->allTestKits, $this->evaluateData['results'][0]["test_kit_name_1"], true); ?>
+                <?php $this->dropdownSelectedText($this->allTestKits, $this->evaluateData['results'][0]["test_kit_name_1"], true); ?>
             </td>
             <td style="vertical-align: middle;">
-
-    <?php $this->dropdownSelectedText($this->allTestKits, $this->evaluateData['results'][0]["test_kit_name_2"], true); ?>
-
+                <?php $this->dropdownSelectedText($this->allTestKits, $this->evaluateData['results'][0]["test_kit_name_2"], true); ?>
             </td>
             <td style="vertical-align: middle;">
-
-    <?php $this->dropdownSelectedText($this->allTestKits, $this->evaluateData['results'][0]["test_kit_name_3"], true); ?>
-
+                <?php $this->dropdownSelectedText($this->allTestKits, $this->evaluateData['results'][0]["test_kit_name_3"], true); ?>
             </td>
-
-
-
         </tr>
         <tr align="CENTER" class="dark" >
             <th>Lot No.</th>
             <td style="vertical-align: middle;"><?php echo( $this->evaluateData['results'][0]["lot_no_1"]); ?></td>
             <td style="vertical-align: middle;"><?php echo( $this->evaluateData['results'][0]["lot_no_2"]); ?></td>
             <td style="vertical-align: middle;"><?php echo( $this->evaluateData['results'][0]["lot_no_3"]); ?></td>
-
-
-
         </tr>
-
         <tr style="text-align:center">
             <th>Exp Date</th>
             <td style="vertical-align: middle;"><?php echo $this->dateFormat($this->evaluateData['results'][0]["exp_date_1"]); ?></td>
@@ -335,55 +296,44 @@ if ($this->scheme == 'eid') {
                 <!--<th style="text-align: center">Score</th>-->
             </tr>
         </thead>
-
     <?php
     $count = 1;
     if (count($this->evaluateData['controlResults']) > 0) {
-        ?>
-            <tr>
-                <td colspan="7" style="text-align: center;">
-                    <strong>Controls</strong>
-                </td>
-            </tr>
-        <?php
+    ?>
+        <tr>
+            <td colspan="7" style="text-align: center;">
+                <strong>Controls</strong>
+            </td>
+        </tr>
+    <?php
     }
-
     foreach ($this->evaluateData['controlResults'] as $sample) {
         $count++;
-        ?>
-
-            <tr style="text-align:center;vertical-align: middle;" >
-
-                <th style="white-space: nowrap;vertical-align: middle;">
-        <?php echo ($sample['sample_label']); ?> <?php echo ($sample['mandatory'] == 1) ? " <span class='mandatory'>*</span>" : "&nbsp;&nbsp;"; ?>
-                    <input type="hidden" id ="sample<?php echo $count; ?>" name="sampleId[]" value="<?php echo $sample['sample_id']; ?>" />
-                </th>
-
-                <td style="vertical-align: middle;">
-            <?php $this->dropdownSelectedText($possibleResults, $sample['test_result_1'], true); ?>
-                </td>
-                <td style="vertical-align: middle;">
-            <?php $this->dropdownSelectedText($possibleResults, $sample['test_result_2'], true); ?>
-
-                </td>
-                <td style="vertical-align: middle;">
-        <?php $this->dropdownSelectedText($possibleResults, $sample['test_result_3'], true); ?>
-                </td>
-
-                <td style="vertical-align: middle;">
-                    <?php $this->dropdownSelectedText($possibleFinalResults, $sample['reported_result'], true); ?>
-                </td>
-
-                <td style="vertical-align: middle;">
-
-                    <?php $this->dropdownSelectedText($possibleFinalResults, $sample['reference_result'], true); ?>
-
-                </td>
-                <td style="vertical-align: middle;">-</td>
-            </tr>
-    <?php } ?>	
-
-
+    ?>
+        <tr style="text-align:center;vertical-align: middle;" >
+            <th style="white-space: nowrap;vertical-align: middle;">
+                <?php echo ($sample['sample_label']); ?> <?php echo ($sample['mandatory'] == 1) ? " <span class='mandatory'>*</span>" : "&nbsp;&nbsp;"; ?>
+                <input type="hidden" id ="sample<?php echo $count; ?>" name="sampleId[]" value="<?php echo $sample['sample_id']; ?>" />
+            </th>
+            <td style="vertical-align: middle;">
+                <?php $this->dropdownSelectedText($possibleResults, $sample['test_result_1'], true); ?>
+            </td>
+            <td style="vertical-align: middle;">
+                <?php $this->dropdownSelectedText($possibleResults, $sample['test_result_2'], true); ?>
+            </td>
+            <td style="vertical-align: middle;">
+                <?php $this->dropdownSelectedText($possibleResults, $sample['test_result_3'], true); ?>
+            </td>
+            <td style="vertical-align: middle;">
+                <?php $this->dropdownSelectedText($possibleFinalResults, $sample['reported_result'], true); ?>
+            </td>
+            <td style="vertical-align: middle;">
+                <?php $this->dropdownSelectedText($possibleFinalResults, $sample['reference_result'], true); ?>
+            </td>
+            <td style="vertical-align: middle;">-</td>
+        </tr>
+    <?php
+    } ?>
         <tr>
             <td colspan="7" style="text-align: center;">
                 <strong>Samples</strong>
@@ -392,61 +342,37 @@ if ($this->scheme == 'eid') {
     <?php
     $total = 0;
     $count = 1;
-
     foreach ($this->evaluateData['results'] as $sample) {
         $count++;
         ?>
-
-            <tr style="text-align:center" >
-
-                <th style="white-space: nowrap;vertical-align: middle;">
-        <?php echo ($sample['sample_label']); ?> <?php echo ($sample['mandatory'] == 1) ? " <span class='mandatory'>*</span>" : "&nbsp;&nbsp;"; ?>
-                    <input type="hidden" id ="sample<?php echo $count; ?>" name="sampleId[]" value="<?php echo $sample['sample_id']; ?>" />
-                </th>
-
-                <td style="vertical-align: middle;">
-            <?php $this->dropdownSelectedText($possibleResults, $sample['test_result_1'], true); ?>
-                </td>
-                <td style="vertical-align: middle;">
-            <?php $this->dropdownSelectedText($possibleResults, $sample['test_result_2'], true); ?>
-                </td>
-                <td style="vertical-align: middle;">
-            <?php $this->dropdownSelectedText($possibleResults, $sample['test_result_3'], true); ?>
-                </td>
-
-                <td style="vertical-align: middle;">
-            <?php $this->dropdownSelectedText($possibleFinalResults, $sample['reported_result'], true); ?>
-                </td>
-
-                <td style="vertical-align: middle;">
-
-                    <?php $this->dropdownSelectedText($possibleFinalResults, $sample['reference_result'], true); ?>
-
-                </td>
-                        <!--<td style="vertical-align: middle;">
-                    <?php echo $score = ($sample['reference_result'] == $sample['reported_result']) ? $sample['sample_score'] : 0;
-                    $total+= $score; ?>
-                        </td>-->
-            </tr>
-                <?php } ?>
-        <!--<tr style="text-align:center" >
-                <td colspan="6" style="text-align: right;">Total</td>
-                <td style="vertical-align: middle;"><?php echo $total; ?></td>
-        </tr>-->
+        <tr style="text-align:center">
+            <th style="white-space: nowrap;vertical-align: middle;">
+                <?php echo($sample['sample_label']); ?> <?php echo ($sample['mandatory'] == 1) ? " <span class='mandatory'>*</span>" : "&nbsp;&nbsp;"; ?>
+                <input type="hidden" id="sample<?php echo $count; ?>" name="sampleId[]"
+                       value="<?php echo $sample['sample_id']; ?>"/>
+            </th>
+            <td style="vertical-align: middle;">
+                <?php $this->dropdownSelectedText($possibleResults, $sample['test_result_1'], true); ?>
+            </td>
+            <td style="vertical-align: middle;">
+                <?php $this->dropdownSelectedText($possibleResults, $sample['test_result_2'], true); ?>
+            </td>
+            <td style="vertical-align: middle;">
+                <?php $this->dropdownSelectedText($possibleResults, $sample['test_result_3'], true); ?>
+            </td>
+            <td style="vertical-align: middle;">
+                <?php $this->dropdownSelectedText($possibleFinalResults, $sample['reported_result'], true); ?>
+            </td>
+            <td style="vertical-align: middle;">
+                <?php $this->dropdownSelectedText($possibleFinalResults, $sample['reference_result'], true); ?>
+            </td>
+        </tr>
+    <?php
+    } ?>
     </table>
-
-
-
-
-
-
-
-
     <?php
 } else if ($this->scheme == 'vl') {
-    $attributes = json_decode($this->evaluateData['shipment']['attributes'], true);
-    ?>
-
+    $attributes = json_decode($this->evaluateData['shipment']['attributes'], true); ?>
     <table class="table table-bordered table-striped" style="width:100%;margin:0 auto 10px auto;">
         <tr>
             <th>Shipment Code</th>
@@ -461,30 +387,25 @@ if ($this->scheme == 'eid') {
             <td><?php echo $this->dateFormat($this->evaluateData['shipment']['lastdate_response']); ?></td>
         </tr>
         <tr>
-		<th>Shipment Received on</th>
-		<td>
-		
-			<?php echo $this->dateFormat($this->evaluateData['shipment']["shipment_receipt_date"]); ?>
-			
-		</td>
-		<td><label>Sample Rehydration Date</label></td>
-		<td>
-			<?php  echo  $this->dateFormat($attributes["sample_rehydration_date"]); ?>
-		</td>
-	</tr>
-	<tr>
-		<th><label>Samples Tested on</label></th> 
-		<td>
-			<?php  echo  $this->dateFormat($this->evaluateData['shipment']["shipment_test_date"]); ?>
-			
-		</td>		
-
-		<th><label>Specimen Volume</label></th> 
-		<td>
-			<?php echo $attributes['specimen_volume'];?>
-		</td>
-	</tr>
-			
+            <th>Shipment Received on</th>
+            <td>
+                <?php echo $this->dateFormat($this->evaluateData['shipment']["shipment_receipt_date"]); ?>
+            </td>
+            <td><label>Sample Rehydration Date</label></td>
+            <td>
+                <?php  echo  $this->dateFormat($attributes["sample_rehydration_date"]); ?>
+            </td>
+        </tr>
+        <tr>
+            <th><label>Samples Tested on</label></th>
+            <td>
+                <?php  echo  $this->dateFormat($this->evaluateData['shipment']["shipment_test_date"]); ?>
+            </td>
+            <th><label>Specimen Volume</label></th>
+            <td>
+                <?php echo $attributes['specimen_volume'];?>
+            </td>
+        </tr>
 		<tr>
 		<td><label>Viral Load Assay</label></td>
 		<td>
@@ -493,237 +414,490 @@ if ($this->scheme == 'eid') {
                 echo ($attributes['vl_assay'] == $id) ? $name : "";
 			}
 			?>
-		</select>
 		</td>
-        <?php if(isset($attributes['other_assay']) && ($attributes['other_assay'] != "")) { ?>
+        <?php
+        if(isset($attributes['other_assay']) && ($attributes['other_assay'] != "")) {
+        ?>
 		<td class=""><label>Other Assay Name</label></td> 
 		<td class="">
             <?php echo (isset($attributes['other_assay']) && ($attributes['other_assay'] != "")) ? $attributes['other_assay'] : ""; ?>
 		</td>
-		<?php } else{
-            ?>
+		<?php
+        } else {
+        ?>
             <td></td>
             <td></td>
-            <?php
-        } ?>
-	</tr>		
+        <?php
+        }
+        ?>
+    	</tr>
 		<tr>
 			<th>Assay Expiration Date</th>
 			<td>
 				<?php echo $this->dateFormat($attributes['assay_expiration_date']);?>
-				
 			</td>
-		<th><label>Assay Lot Number</label></th> 
-		<td>
-			<?php echo $attributes['assay_lot_number'];?>
-		</td>
-		</tr>
-    <tr>
-         <th>Supervisor Review</th>
-        <td>
-            <?php echo strtoupper($this->evaluateData['shipment']['supervisor_approval']); ?>
-        </td>
-        <th>Supervisor Name</th>
-        <td>
-            <?php echo $this->evaluateData['shipment']['participant_supervisor']; ?>
-        </td>
-    </tr>
-    <tr>
-        <th>User Comments</th>
-        <td colspan="3"><?php echo $this->evaluateData['shipment']['user_comment']; ?></td>
-    </tr>
-	<tr>
-		<th>Uploaded File (if any)</th>
-		<td>
-			<?php
-			if(isset($attributes['uploaded_file']) &&
-			   $attributes['uploaded_file'] != "" &&
-			   file_exists(UPLOAD_PATH.DIRECTORY_SEPARATOR.$attributes['uploaded_file'])
-			   )
-			{
-				?>
-				
-					<a href="/uploads/<?php echo $attributes['uploaded_file'] ?>" download><?php echo basename($attributes['uploaded_file']); ?></a>
-				
-				
-				<?php
-			}
-			?>
-			</td>
-		<td></td>
-		<td></td>
-	</tr>    
+    		<th><label>Assay Lot Number</label></th>
+	    	<td>
+		    	<?php echo $attributes['assay_lot_number'];?>
+            </td>
+            </tr>
+            <tr>
+            <th>Supervisor Review</th>
+            <td>
+                <?php echo strtoupper($this->evaluateData['shipment']['supervisor_approval']); ?>
+            </td>
+            <th>Supervisor Name</th>
+            <td>
+                <?php echo $this->evaluateData['shipment']['participant_supervisor']; ?>
+            </td>
+        </tr>
+        <tr>
+            <th>User Comments</th>
+            <td colspan="3"><?php echo $this->evaluateData['shipment']['user_comment']; ?></td>
+        </tr>
+        <tr>
+            <th>Uploaded File (if any)</th>
+            <td>
+                <?php
+                if(isset($attributes['uploaded_file']) &&
+                   $attributes['uploaded_file'] != "" &&
+                   file_exists(UPLOAD_PATH.DIRECTORY_SEPARATOR.$attributes['uploaded_file']))
+                {
+                ?>
+                <a href="/uploads/<?php echo $attributes['uploaded_file'] ?>" download><?php echo basename($attributes['uploaded_file']); ?></a>
+                <?php
+                }
+                ?>
+            </td>
+            <td></td>
+            <td></td>
+        </tr>
     </table>
     <br/>
     <?php
-       if(isset($this->evaluateData['shipment']['is_pt_test_not_performed']) && $this->evaluateData['shipment']['is_pt_test_not_performed'] == 'yes'){
-       ?>
+        if(isset($this->evaluateData['shipment']['is_pt_test_not_performed']) &&
+            $this->evaluateData['shipment']['is_pt_test_not_performed'] == 'yes') { ?>
 	<table class="table table-bordered table-striped table-hover" style="width:70%;margin:0 auto;">
 	     <caption style="text-align:left;"><legend><i class="icon-check"></i> PT Testing not performed</legend></caption>
 	     <tr>
-		 <th style="text-align:left;width:30%;">Reason</th>
-		 <td style="text-align:left;width:70%;"><?php echo ucfirst($this->evaluateData['shipment']['vlNotTestedReason']); ?></td>
+             <th style="text-align:left;width:30%;">Reason</th>
+             <td style="text-align:left;width:70%;"><?php echo ucfirst($this->evaluateData['shipment']['vlNotTestedReason']); ?></td>
 	     </tr>
 	     <tr>
-		 <th style="text-align:left;">Comments</th>
-		 <td style="text-align:left;"><?php echo ucfirst($this->evaluateData['shipment']['pt_test_not_performed_comments']); ?></td>
+             <th style="text-align:left;">Comments</th>
+             <td style="text-align:left;"><?php echo ucfirst($this->evaluateData['shipment']['pt_test_not_performed_comments']); ?></td>
 	     </tr>
 	     <tr>
-		 <th style="text-align:left;">Do you need any support from the PT Provider ?</th>
-		 <td style="text-align:left;"><?php echo ucfirst($this->evaluateData['shipment']['pt_support_comments']); ?></td>
+             <th style="text-align:left;">Do you need any support from the PT Provider ?</th>
+             <td style="text-align:left;"><?php echo ucfirst($this->evaluateData['shipment']['pt_support_comments']); ?></td>
 	     </tr>
 	</table>
 	<br/>
-    <?php } ?>
-
     <?php
-    if (isset($this->evaluateData['controlResults']) && sizeof($this->evaluateData['controlResults'])) {
-        ?>
+        }
+        if (isset($this->evaluateData['controlResults']) && sizeof($this->evaluateData['controlResults'])) {
+            ?>
         <table class="table table-bordered table-striped table-hover" style="width:70%;margin:0 auto;">
-            <caption><legend>Controls</legend></caption>
-                <tr>
-					<th style="text-align: center;font-size:17px;">Control</th>
-					<th style="text-align: center;font-size:17px;">Lower Limit</th>
-					<th style="text-align: center;font-size:17px;">Higher Limit</th>
-					<th style="text-align: center;font-size:17px;">Response</th>
-					<th style="text-align: center;font-size:17px;">Acceptable ?</th>
-				</tr>
-
-                    <?php
-                    $counter = 1;
-                    foreach ($this->evaluateData['controlResults'] as $result) {
-                        if (($counter % 2) == 0) {
-                            $class = "evenResult";
-                        } else {
-                            $class = "oddResult";
-                        }
-                        ?>
+            <caption>
+                <legend>Controls</legend>
+            </caption>
+            <tr>
+                <th style="text-align: center;font-size:17px;">Control</th>
+                <th style="text-align: center;font-size:17px;">Lower Limit</th>
+                <th style="text-align: center;font-size:17px;">Higher Limit</th>
+                <th style="text-align: center;font-size:17px;">Response</th>
+                <th style="text-align: center;font-size:17px;">Acceptable ?</th>
+            </tr>
+            <?php
+            $counter = 1;
+            foreach ($this->evaluateData['controlResults'] as $result) {
+                if (($counter % 2) == 0) {
+                    $class = "evenResult";
+                } else {
+                    $class = "oddResult";
+                } ?>
                 <tr class="<?php echo $class ?>">
                     <td style="vertical-align: middle;"><?php echo $result['sample_label']; ?></td>
                     <td style="vertical-align: middle;">
                         <?php
-                            if (isset($this->vlRange[$attributes['vl_assay']])) {
-                                echo $this->vlRange[$attributes['vl_assay']][$result['sample_id']]['low'];
-                            } else {
-                                echo "Not enough responses for this VL Assay";
-                            }
-                        ?>
-                    </td>
-                    <td style="vertical-align: middle;">
-                        <?php
-                            if (isset($this->vlRange[$attributes['vl_assay']])) {
-                                echo $this->vlRange[$attributes['vl_assay']][$result['sample_id']]['high'];
-                            } else {
-                                echo "Not enough responses for this VL Assay";
-                            }
-                        ?>
-                    </td>
-                    <td style="vertical-align: middle;"><?php echo $result['reported_viral_load']; ?></td>
-                    <td style="vertical-align: middle;">
-						
-					<?php
-						if(isset($this->vlRange[$attributes['vl_assay']])){
-								$hi = $this->vlRange[$attributes['vl_assay']][$result['sample_id']]['high'];
-								$lo = $this->vlRange[$attributes['vl_assay']][$result['sample_id']]['low'];
-								if($result['reported_viral_load'] <= $hi && $result['reported_viral_load'] >= $lo){
-									echo "Yes";
-								}else{
-									echo "No";
-								}							
-								
-							}else{
-								echo "N/A";
-							}
-						?>						
-					
-					</td>
-					
-					
-                </tr>
-                
-            <?php
-            $counter++;
-        }
-        ?>
-        </table>
-        <br/><br/>
-            <?php
-        }
-        ?>
-
-    <table class="table table-bordered table-striped table-hover" style="width:70%;margin:0 auto;">
-        <caption><legend>Samples</legend></caption>
-        <tr>
-            <th style="text-align: center;font-size:17px;">Sample</th>
-            <th style="text-align: center;font-size:17px;">Lower Limit</th>
-            <th style="text-align: center;font-size:17px;">Higher Limit</th>
-            <th style="text-align: center;font-size:17px;">Response</th>
-            <th style="text-align: center;font-size:17px;">Acceptable?</th>
-        </tr>
-
-    <?php
-    $total = 0;
-    $counter = 1;
-    foreach ($this->evaluateData['results'] as $result) {
-        if (($counter % 2) == 0) {
-            $class = "evenResult";
-        } else {
-            $class = "oddResult";
-        }
-        ?>
-            <tr class="<?php echo $class ?>">
-                <td style="vertical-align: middle;"><?php echo $result['sample_label']; ?></td>
-                <td style="vertical-align: middle;text-align:center;">
-                    <?php
                         if (isset($this->vlRange[$attributes['vl_assay']])) {
                             echo $this->vlRange[$attributes['vl_assay']][$result['sample_id']]['low'];
                         } else {
                             echo "Not enough responses for this VL Assay";
                         }
-                    ?>
-                </td>
-                <td style="vertical-align: middle;text-align:center;">
-                    <?php
+                        ?>
+                    </td>
+                    <td style="vertical-align: middle;">
+                        <?php
                         if (isset($this->vlRange[$attributes['vl_assay']])) {
                             echo $this->vlRange[$attributes['vl_assay']][$result['sample_id']]['high'];
                         } else {
                             echo "Not enough responses for this VL Assay";
                         }
-                    ?>
-                </td>
-                <td style="vertical-align: middle;text-align:center;">
-                    <?php echo $result['reported_viral_load']; ?>
-                    <input type="hidden" name="sampleId[]" value="<?php echo $result['sample_id']; ?>" />
-                </td>                
-                <td style="vertical-align: middle;text-align: center;">
-<?php
-						if(isset($this->vlRange[$attributes['vl_assay']])){
-								$hi = $this->vlRange[$attributes['vl_assay']][$result['sample_id']]['high'];
-								$lo = $this->vlRange[$attributes['vl_assay']][$result['sample_id']]['low'];
-								if($result['reported_viral_load'] <= $hi && $result['reported_viral_load'] >= $lo){
-									echo "Yes";
-								}else{
-									echo "No";
-								}							
-								
-							}else{
-								echo "N/A";
-							}
-						?>
-                </td>
-            </tr>
-
-                    <?php
-                    $counter++;
-                }
-                ?>
+                        ?>
+                    </td>
+                    <td style="vertical-align: middle;"><?php echo $result['reported_viral_load']; ?></td>
+                    <td style="vertical-align: middle;">
+                        <?php
+                        if (isset($this->vlRange[$attributes['vl_assay']])) {
+                            $hi = $this->vlRange[$attributes['vl_assay']][$result['sample_id']]['high'];
+                            $lo = $this->vlRange[$attributes['vl_assay']][$result['sample_id']]['low'];
+                            if ($result['reported_viral_load'] <= $hi && $result['reported_viral_load'] >= $lo) {
+                                echo "Yes";
+                            } else {
+                                echo "No";
+                            }
+                        } else {
+                            echo "N/A";
+                        }
+                        ?>
+                    </td>
+                </tr>
+                <?php
+                $counter++;
+            }
+            ?>
+        </table>
+        <br/><br/>
+    <?php
+        }
+} else if ($this->scheme == 'tb') {
+    $attributes = json_decode($this->evaluateData['shipment']['attributes'], true); ?>
+    <table class="table table-bordered table-striped" style="width:100%;margin:0 auto 10px auto;">
+        <tr>
+            <th style="width: 30%;">Shipment Code</th>
+            <td style="width: 20%;"><?php echo $this->evaluateData['shipment']['shipment_code']; ?></td>
+            <th style="width: 30%;">Scheme Type</th>
+            <td style="width: 20%;"><?php echo strtoupper($this->evaluateData['shipment']['scheme_type']); ?></td>
+        </tr>
+        <tr>
+            <th>Shipment Date</th>
+            <td><?php echo $this->dateFormat($this->evaluateData['shipment']['shipment_date']); ?></td>
+            <th>Result Due Date</th>
+            <td><?php echo $this->dateFormat($this->evaluateData['shipment']['lastdate_response']); ?></td>
+        </tr>
+        <tr>
+            <th>Shipment Received on</th>
+            <td>
+                <?php echo $this->dateFormat($this->evaluateData['shipment']["shipment_receipt_date"]); ?>
+            </td>
+            <td><label>Sample Rehydration Date</label></td>
+            <td>
+                <?php  echo  $this->dateFormat($attributes["sample_rehydration_date"]); ?>
+            </td>
+        </tr>
+        <tr>
+            <th><label>Samples Tested on</label></th>
+            <td>
+                <?php echo  $this->dateFormat($this->evaluateData['shipment']["shipment_test_date"]); ?>
+            </td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <th><label>MTB/RIF Kit Lot No</label></th>
+            <td>
+                <?php echo $attributes['mtb_rif_kit_lot_no'];?>
+            </td>
+            <td><label>Expiry Date:</label></td>
+            <td>
+                <?php echo $attributes['expiry_date']; ?>
+            </td>
+        </tr>
+        <tr>
+            <td><label>Assay</label></td>
+            <td>
+                <?php
+                if(isset($attributes['assay'])) {
+                    foreach($this->assays as $id => $name) {
+                        if($attributes['assay'] == $id) {
+                            echo $name;
+                        }
+                    }
+                } ?>
+            </td>
+            <td><label>How many Xpert MTB/RIF tests have been conducted by this site in the last full month?</label></td>
+            <td>
+                <?php if(isset($attributes['count_tests_conducted_over_month'])) {
+                    echo $attributes['count_tests_conducted_over_month'];
+                }?>
+            </td>
+        </tr>
+        <tr>
+            <td><label>How many errors occurred during testing in the last full month?</label></td>
+            <td>
+                <?php if(isset($attributes['count_errors_encountered_over_month'])) {
+                    echo $attributes['count_errors_encountered_over_month'];
+                }?>
+            </td>
+            <td><label>What were the error codes?</label></td>
+            <td>
+                <?php if(isset($attributes['error_codes_encountered_over_month'])) {
+                    echo $attributes['error_codes_encountered_over_month'];
+                }?>
+            </td>
+        </tr>
+        <tr>
+            <th>Supervisor Review</th>
+            <td>
+                <?php echo strtoupper($this->evaluateData['shipment']['supervisor_approval']); ?>
+            </td>
+            <th>Supervisor Name</th>
+            <td>
+                <?php echo $this->evaluateData['shipment']['participant_supervisor']; ?>
+            </td>
+        </tr>
+        <tr>
+            <th>User Comments</th>
+            <td colspan="3"><?php echo $this->evaluateData['shipment']['user_comment']; ?></td>
+        </tr>
     </table>
-                    <?php
-                } else {
-                    echo "<br/><br/><br/><h4 style='text-align:center;'>Evaluation for this scheme is not yet implemented</h4><br/><br/><br/>";
-                }
-                ?>
+    <br/>
+    <table class="table table-bordered table-striped table-hover" style="width:100%;margin:0 auto;">
+        <caption>
+            <legend>Samples</legend>
+        </caption>
+    <?php
+        $total = 0;
+        $counter = 1;
+        foreach ($this->evaluateData['results'] as $result) {
+            if (($counter % 2) == 0) {
+                $class = "evenResult";
+            } else {
+                $class = "oddResult";
+            }
+        ?>
+        <tr class="<?php echo $class ?>">
+            <td>
+                <table class="table" style="background-color: transparent;">
+                    <tr>
+                        <th colspan="11" style="white-space: nowrap;background-color: transparent;">
+                            <?php echo $result['sample_label']; ?>
+                        </th>
+                    </tr>
+                    <tr style="background-color: transparent;">
+                        <th style="background-color: transparent;">Date Tested</th>
+                        <th style="background-color: transparent;">MTB Detected</th>
+                        <th style="background-color: transparent;">Error Code</th>
+                        <th style="background-color: transparent;">Rif Resistance</th>
+                        <th style="background-color: transparent;">Probe D</th>
+                        <th style="background-color: transparent;">Probe C</th>
+                        <th style="background-color: transparent;">Probe E</th>
+                        <th style="background-color: transparent;">Probe B</th>
+                        <th style="background-color: transparent;">SPC</th>
+                        <th style="background-color: transparent;">Probe A</th>
+                        <th style="text-align: center;font-size:17px;">Acceptable?</th>
+                    </tr>
+                    <tr>
+                        <td style="vertical-align: middle;text-align: center;width: 14%;background-color: transparent;">
+                            <?php echo $this->dateFormat($result['res_date_tested']); ?>
+                        </td>
+                        <td style="vertical-align: middle;text-align: center;width: 13%;background-color: transparent;">
+                            <?php
+                            switch ($result['res_mtb_detected']) {
+                                case "high":
+                                    echo "High";
+                                    break;
+                                case "medium":
+                                    echo "Medium";
+                                    break;
+                                case "low":
+                                    echo "Low";
+                                    break;
+                                case "veryLow":
+                                    echo "Very Low";
+                                    break;
+                                case "notDetected":
+                                    echo "Not Detected";
+                                    break;
+                                case "noResult":
+                                    echo "No Result";
+                                    break;
+                                case "invalid":
+                                    echo "Invalid";
+                                    break;
+                                default:
+                                    echo "Unknown";
+                            }
+                            ?>
+                        </td>
+                        <td style="vertical-align: middle;text-align: center;width: 11%;">
+                            <?php echo $result['res_error_code']; ?>
+                        </td>
+                        <td style="vertical-align: middle;text-align:center;width: 13%;">
+                            <?php
+                            switch ($result['res_rif_resistance']) {
+                                case "detected":
+                                    echo "Detected";
+                                    break;
+                                case "notDetected":
+                                    echo "Not Detected";
+                                    break;
+                                case "na":
+                                    echo "N/A";
+                                    break;
+                                default:
+                                    echo "Unknown";
+                            }
+                            ?>
+                        </td>
+                        <td style="vertical-align: middle;text-align: right;width: 7%;">
+                            <?php echo $result['res_probe_d']; ?>
+                        </td>
+                        <td style="vertical-align: middle;text-align: right;width: 7%;">
+                            <?php echo $result['res_probe_c']; ?>
+                        </td>
+                        <td style="vertical-align: middle;text-align: right;width: 7%;">
+                            <?php echo $result['res_probe_e']; ?>
+                        </td>
+                        <td style="vertical-align: middle;text-align: right;width: 7%;">
+                            <?php echo $result['res_probe_b']; ?>
+                        </td>
+                        <td style="vertical-align: middle;text-align: right;width: 7%;">
+                            <?php echo $result['res_spc']; ?>
+                        </td>
+                        <td style="vertical-align: middle;text-align: right;width: 7%;">
+                            <?php echo $result['res_probe_a']; ?>
+                        </td>
+                        <td rowspan="2" style="vertical-align: middle;text-align: center;width: 7%;font-weight: bold;">
+                            <?php
+                            if(isset($result['res_mtb_detected']) && isset($result['res_rif_resistance'])){
+                                if($result['res_mtb_detected'] == $result['ref_mtb_detected'] &&
+                                    $result['res_rif_resistance'] == $result['ref_rif_resistance']){
+                                    echo "Yes";
+                                }else{
+                                    echo "No";
+                                }
 
+                            }else{
+                                echo "N/A";
+                            }
+                            ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="vertical-align: middle;text-align: right;">Reference Values:</td>
+                        <td style="vertical-align: middle;text-align: center;">
+                            <?php
+                            switch ($result['ref_mtb_detected']) {
+                                case "high":
+                                    echo "High";
+                                    break;
+                                case "medium":
+                                    echo "Medium";
+                                    break;
+                                case "low":
+                                    echo "Low";
+                                    break;
+                                case "veryLow":
+                                    echo "Very Low";
+                                    break;
+                                case "notDetected":
+                                    echo "Not Detected";
+                                    break;
+                                case "noResult":
+                                    echo "No Result";
+                                    break;
+                                case "invalid":
+                                    echo "Invalid";
+                                    break;
+                                default:
+                                    echo "Unknown";
+                            }
+                            ?>
+                        </td>
+                        <td></td>
+                        <td style="vertical-align: middle;text-align:center;">
+                            <?php
+                            switch ($result['ref_rif_resistance']) {
+                                case "detected":
+                                    echo "Detected";
+                                    break;
+                                case "notDetected":
+                                    echo "Not Detected";
+                                    break;
+                                case "na":
+                                    echo "N/A";
+                                    break;
+                                default:
+                                    echo "Unknown";
+                            }
+                            ?>
+                        </td>
+                        <td style="vertical-align: middle;text-align: right;">
+                            <?php
+                            echo $result['res_probe_d'];
+                            ?>
+                        </td>
+                        <td style="vertical-align: middle;text-align: right;">
+                            <?php
+                            echo $result['res_probe_c'];
+                            ?>
+                        </td>
+                        <td style="vertical-align: middle;text-align: right;">
+                            <?php
+                            echo $result['res_probe_e'];
+                            ?>
+                        </td>
+                        <td style="vertical-align: middle;text-align: right;">
+                            <?php
+                            echo $result['res_probe_b'];
+                            ?>
+                        </td>
+                        <td style="vertical-align: middle;text-align: right;">
+                            <?php
+                            echo $result['res_spc'];
+                            ?>
+                        </td>
+                        <td style="vertical-align: middle;text-align: right;">
+                            <?php
+                            echo $result['res_probe_a'];
+                            ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th colspan="2" style="vertical-align: bottom;">Serial Number</th>
+                        <th style="vertical-align: bottom;">Installed</th>
+                        <th style="vertical-align: bottom;">Last Calibrated</th>
+                        <th style="vertical-align: bottom;">Module Name</th>
+                        <th colspan="2" style="vertical-align: bottom;">Instrument User</th>
+                        <th colspan="2" style="vertical-align: bottom;">Cartridge Expires</th>
+                        <th colspan="2" style="vertical-align: bottom;">Reagent Lot ID</th>
+                    </tr>
+                    <tr style="background-color: transparent;">
+                        <th colspan="2" style="white-space: nowrap;background-color: transparent;">
+                            <?php echo $result['res_instrument_serial']; ?>
+                        </th>
+                        <td style="background-color: transparent;">
+                            <?php echo $this->dateFormat($result['res_instrument_installed_on']); ?>
+                        </td>
+                        <td style="background-color: transparent;">
+                            <?php echo $this->dateFormat($result['res_instrument_last_calibrated_on']); ?>
+                        </td>
+                        <th style="white-space: nowrap;background-color: transparent;">
+                            <?php echo $result['res_module_name']; ?>
+                        </th>
+                        <th colspan="2" style="white-space: nowrap;background-color: transparent;">
+                            <?php echo $result['res_instrument_user']; ?>
+                        </th>
+                        <td colspan="2" style="background-color: transparent;">
+                            <?php echo $this->dateFormat($result['res_cartridge_expiration_date']); ?>
+                        </td>
+                        <th colspan="2" style="white-space: nowrap;background-color: transparent;">
+                            <?php echo $result['res_reagent_lot_id']; ?>
+                        </th>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <?php
+            $counter++;
+        } ?>
+    </table>
+<?php
+} else {
+    echo "<br/><br/><br/><h4 style='text-align:center;'>Evaluation for this scheme is not yet implemented</h4><br/><br/><br/>";
+} ?>
 <?php
 $evalComments = array();
 if (isset($this->evaluateData['evalComments'])) {
@@ -732,72 +906,65 @@ if (isset($this->evaluateData['evalComments'])) {
     }
 }
 ?>
-
 <table class="table table-bordered table-striped" style="width:80%;margin:0 auto;">
     <tr>
         <td style="width:25%;vertical-align: middle">Notes</td>
         <td>
-			<?php 
-				if(isset($this->evaluateData['shipment']['failure_reason']) && $this->evaluateData['shipment']['failure_reason'] != "[]"){
-
-					$warnings = json_decode($this->evaluateData['shipment']['failure_reason'],true);
-					if($warnings != "" && $warnings != null){
-						echo "<table class='table table-bordered'>";
-						echo "<tr><th>Failure Reasons (or) Warnings</th><th>Corrective Actions (if any)</th></tr>";
-						foreach($warnings as $warning){
-							?>
-							<tr>
-							   <td><?php echo (isset($warning['warning']) ? $warning['warning'] : ""); ?></td>
-							   <td><?php echo (isset($warning['correctiveAction']) ? $warning['correctiveAction'] : ""); ?></td>
-							</tr>
-							<?php
-						}
-						echo "</table>";
-					}else{
-						echo " No Warnings or Corrective Actions ";
-					}
-					
-				}else{
-					echo " No Warnings or Corrective Actions ";
-				}
-				?>
+			<?php
+            if(isset($this->evaluateData['shipment']['failure_reason']) && $this->evaluateData['shipment']['failure_reason'] != "[]"){
+                $warnings = json_decode($this->evaluateData['shipment']['failure_reason'],true);
+                if($warnings != "" && $warnings != null){
+                    echo "<table class='table table-bordered'>";
+                    echo "<tr><th>Failure Reasons (or) Warnings</th><th>Corrective Actions (if any)</th></tr>";
+                    foreach($warnings as $warning){
+                        ?>
+                        <tr>
+                           <td><?php echo (isset($warning['warning']) ? $warning['warning'] : ""); ?></td>
+                           <td><?php echo (isset($warning['correctiveAction']) ? $warning['correctiveAction'] : ""); ?></td>
+                        </tr>
+                        <?php
+                    }
+                    echo "</table>";
+                }else{
+                    echo " No Warnings or Corrective Actions ";
+                }
+            }else{
+                echo " No Warnings or Corrective Actions ";
+            }
+            ?>
 		</td>		
-</tr>	
-<tr>
-    <td style="width:25%;vertical-align: middle">Evaluation Comment</td>
-    <td>
-<?php echo $this->dropdownSelectedText($evalComments, $this->evaluateData['shipment']['evaluation_comment'], true); ?>
-    </td>		
-</tr>
-<tr>
-    <td style="vertical-align: middle;">
-        Optional Extra Comments
-    </td>
-    <td style="text-align:left;"><?php echo $this->evaluateData['shipment']['optional_eval_comment']; ?></td>
-</tr>
+    </tr>
+    <tr>
+        <td style="width:25%;vertical-align: middle">Evaluation Comment</td>
+        <td>
+            <?php echo $this->dropdownSelectedText($evalComments, $this->evaluateData['shipment']['evaluation_comment'], true); ?>
+        </td>
+    </tr>
+    <tr>
+        <td style="vertical-align: middle;">
+            Optional Extra Comments
+        </td>
+        <td style="text-align:left;"><?php echo $this->evaluateData['shipment']['optional_eval_comment']; ?></td>
+    </tr>
 </table>
-  <?php if(isset($this->haveCustom) && $this->haveCustom == 'yes') { ?>
-  <fieldset>
-	<legend>Custom Fields</legend>
-        <table>
-			
-            <tr>
-                <th style="width:250px;padding:5px;"><?php echo $this->customField1; ?> </th>
-                <td style="padding:5px;"><?php echo  $this->evaluateData['shipment']['custom_field_1']; ?></td>
-            </tr>
-            <?php if(isset($this->customField2) && $this->customField2 != ""){ ?>
-            <tr>
-                <th style="width:250px;padding:5px;"><?php echo $this->customField2; ?> </th>
-                <td style="padding:5px;"><?php echo  $this->evaluateData['shipment']['custom_field_1']; ?>/></td>
-            </tr>
-            <?php } ?>
-        </table>
-	</fieldset>
+<?php if(isset($this->haveCustom) && $this->haveCustom == 'yes') { ?>
+<fieldset>
+    <legend>Custom Fields</legend>
+    <table>
+        <tr>
+            <th style="width:250px;padding:5px;"><?php echo $this->customField1; ?> </th>
+            <td style="padding:5px;"><?php echo  $this->evaluateData['shipment']['custom_field_1']; ?></td>
+        </tr>
+        <?php if(isset($this->customField2) && $this->customField2 != "") { ?>
+        <tr>
+            <th style="width:250px;padding:5px;"><?php echo $this->customField2; ?> </th>
+            <td style="padding:5px;"><?php echo  $this->evaluateData['shipment']['custom_field_1']; ?>/></td>
+        </tr>
         <?php } ?>
-<?php
-$config = new Zend_Config_Ini(APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini", APPLICATION_ENV);
-?>
-
+    </table>
+</fieldset>
+<?php } ?>
+<?php $config = new Zend_Config_Ini(APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini", APPLICATION_ENV); ?>
 <?php if ($this->scheme == 'dts') { ?>
 <legend>Summary of all Laboratory Scores</legend>
 <table class="table table-bordered table-striped">
@@ -824,20 +991,19 @@ $config = new Zend_Config_Ini(APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs"
 <?php } ?>
 <div id="respond" style="margin: 10px auto 10px auto; text-align: center;" align="center">
     <h5>Currently viewing result <?php echo $pos + 1 . " of " . count($urlListArray); ?> </h5>
-<?php
-if (isset($previousLink) && $previousLink != "") {
-    ?>	
-        <a href="javascript:void(0)" class="btn btn-primary" onclick="$.blockUI();
-                                    document.location.href = '<?php echo $previousLink; ?>';"><span><i class="icon-chevron-left"></i> View Previous Result</span></a>
     <?php
-}
-
-if (isset($nextLink) && $nextLink != "") {
-    ?>	
-        <a href="javascript:void(0)" class="btn btn-primary" onclick="$.blockUI();
-                                    document.location.href = '<?php echo $nextLink; ?>';"><span>View Next Result <i class="icon-chevron-right"></i></span></a>
-    <?php
-}
-?>			
+    if (isset($previousLink) && $previousLink != "") {
+        ?>
+            <a href="javascript:void(0)" class="btn btn-primary" onclick="$.blockUI();
+                                        document.location.href = '<?php echo $previousLink; ?>';"><span><i class="icon-chevron-left"></i> View Previous Result</span></a>
+        <?php
+    }
+    if (isset($nextLink) && $nextLink != "") {
+        ?>
+            <a href="javascript:void(0)" class="btn btn-primary" onclick="$.blockUI();
+                 document.location.href = '<?php echo $nextLink; ?>';"><span>View Next Result <i class="icon-chevron-right"></i></span></a>
+        <?php
+    }
+    ?>
     <input class="btn btn-danger" type="button" onclick="document.location = '/admin/evaluate/shipment/sid/<?php echo base64_encode($this->evaluateData['shipment']['shipment_id']); ?>'" value="Back to Listing"/>
 </div>

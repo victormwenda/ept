@@ -55,7 +55,7 @@ $dtFormat=  $dateFormatHelper->getDateFormat();
                 <?php
                 foreach($this->assays as $id => $name) {
                     ?>
-                    <option value="<?php echo $id; ?>" <?php if(isset($this->shipment['attributes']['assay'])) { echo ($this->shipment['attributes']['assay'] == $id) ? "selected='selected'" : ""; } ?>><?php echo $name; ?></option>
+                    <option value="<?php echo $id; ?>" <?php if(isset($attributes['assay'])) { echo ($attributes['assay'] == $id) ? "selected='selected'" : ""; } ?>><?php echo $name; ?></option>
                     <?php
                 }
                 ?>

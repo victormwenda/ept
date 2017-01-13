@@ -475,22 +475,19 @@ class Application_Service_Evaluation {
         $participantData = $participantService->getParticipantDetails($participantId);
         $shipmentData = $schemeService->getShipmentData($shipmentId, $participantId);
 
+
+        $possibleResults = $schemeService->getPossibleResults($scheme);
+        $evalComments = $schemeService->getSchemeEvaluationComments($scheme);
         if ($scheme == 'eid') {
-            $possibleResults = $schemeService->getPossibleResults('eid');
-            $evalComments = $schemeService->getSchemeEvaluationComments('eid');
             $results = $schemeService->getEidSamples($shipmentId, $participantId);
         } else if ($scheme == 'vl') {
-            $possibleResults = "";
-            $evalComments = $schemeService->getSchemeEvaluationComments('vl');
             $results = $schemeService->getVlSamples($shipmentId, $participantId);
         } else if ($scheme == 'dts') {
-            $possibleResults = $schemeService->getPossibleResults('dts');
-            $evalComments = $schemeService->getSchemeEvaluationComments('dts');
             $results = $schemeService->getDtsSamples($shipmentId, $participantId);
         } else if ($scheme == 'dbs') {
-            $possibleResults = $schemeService->getPossibleResults('dbs');
-            $evalComments = $schemeService->getSchemeEvaluationComments('dbs');
             $results = $schemeService->getDtsSamples($shipmentId, $participantId);
+        } else if ($scheme == 'tb') {
+            $results = $schemeService->getTbSamples($shipmentId, $participantId);
         }
 
         $controlRes = array();
