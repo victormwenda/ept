@@ -85,9 +85,18 @@ class Application_Service_Schemes {
     }
 
     public function getVlAssay() {
-
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $res = $db->fetchAll($db->select()->from('r_vl_assay'));
+        $response = array();
+        foreach ($res as $row) {
+            $response[$row['id']] = $row['name'];
+        }
+        return $response;
+    }
+
+    public function getTbAssay() {
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $res = $db->fetchAll($db->select()->from('r_tb_assay'));
         $response = array();
         foreach ($res as $row) {
             $response[$row['id']] = $row['name'];
@@ -267,6 +276,14 @@ class Application_Service_Schemes {
                     'res_date_tested' => 'res.date_tested',
                     'res_mtb_detected' => 'res.mtb_detected',
                     'res_rif_resistance' => 'res.rif_resistance',
+                    'res_error_code' => 'res.error_code',
+                    'res_instrument_serial' => 'res.instrument_serial',
+                    'res_instrument_installed_on' => 'res.instrument_installed_on',
+                    'res_instrument_last_calibrated_on' => 'res.instrument_last_calibrated_on',
+                    'res_module_name' => 'res.module_name',
+                    'res_instrument_user' => 'res.instrument_user',
+                    'res_cartridge_expiration_date' => 'res.cartridge_expiration_date',
+                    'res_reagent_lot_id' => 'res.reagent_lot_id',
                     'res_probe_d' => 'res.probe_d',
                     'res_probe_c' => 'res.probe_c',
                     'res_probe_e' => 'res.probe_e',

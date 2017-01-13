@@ -22,9 +22,7 @@ class TbController extends Zend_Controller_Action
     	{
 
     	    $data = $this->getRequest()->getPost();
-           
-            //Zend_Debug::dump($data);die;
-           
+
             $shipmentService->updateTbResults($data);
             $this->_redirect("/participant/dashboard");
     		
@@ -39,6 +37,7 @@ class TbController extends Zend_Controller_Action
             $this->view->allSamples =$schemeService->getTbSamples($sID,$pID);
             $shipment = $schemeService->getShipmentData($sID,$pID);
 	        $shipment['attributes'] = json_decode($shipment['attributes'],true);
+            $this->view->assays = $schemeService->getTbAssay();
             $this->view->shipment = $shipment;
             $this->view->shipId = $sID;
             $this->view->participantId = $pID;

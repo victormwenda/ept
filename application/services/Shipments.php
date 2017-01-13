@@ -527,7 +527,6 @@ class Application_Service_Shipments {
     }
 
     public function updateTbResults($params) {
-
         if (!$this->isShipmentEditable($params['shipmentId'], $params['participantId'])) {
             return false;
         }
@@ -538,9 +537,15 @@ class Application_Service_Shipments {
         try {
             $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
             $authNameSpace = new Zend_Session_Namespace('datamanagers');
-            $attributes = array("sample_rehydration_date" => Pt_Commons_General::dateFormat($params['sampleRehydrationDate']),
+            $attributes = array(
+                "sample_rehydration_date" => Pt_Commons_General::dateFormat($params['sampleRehydrationDate']),
                 "mtb_rif_kit_lot_no" => $params['mtbRifKitLotNo'],
-                "expiry_date" => $params['expiryDate']);
+                "expiry_date" => $params['expiryDate'],
+                "assay" => $params['assay'],
+                "count_tests_conducted_over_month" => $params['countTestsConductedOverMonth'],
+                "count_errors_encountered_over_month" => $params['countErrorsEncounteredOverMonth'],
+                "error_codes_encountered_over_month" => $params['errorCodesEncounteredOverMonth']
+            );
             $attributes = json_encode($attributes);
             $data = array(
                 "shipment_receipt_date" => Pt_Commons_General::dateFormat($params['receiptDate']),

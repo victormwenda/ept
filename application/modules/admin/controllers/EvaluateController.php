@@ -2,7 +2,6 @@
 
 class Admin_EvaluateController extends Zend_Controller_Action
 {
-
     public function init()
     {
         $ajaxContext = $this->_helper->getHelper('AjaxContext');
@@ -140,6 +139,10 @@ class Admin_EvaluateController extends Zend_Controller_Action
                     $schemeService = new Application_Service_Schemes();
                     $this->view->vlRange = $schemeService->getVlRange($sid);
                     $this->view->vlAssay = $schemeService->getVlAssay();              
+                }
+                else if($scheme == 'tb'){
+                    $schemeService = new Application_Service_Schemes();
+                    $this->view->assays = $schemeService->getTbAssay();
                 }
                 $evalService = new Application_Service_Evaluation();
                 $this->view->evaluateData = $evalService->editEvaluation($sid,$pid,$scheme);

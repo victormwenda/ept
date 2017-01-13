@@ -1503,18 +1503,18 @@ CREATE TABLE IF NOT EXISTS `reference_dts_wb` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1;
 
--- ilahir 8-Feb-2014
+-- Ilahir 8-Feb-2014
 
 ALTER TABLE  `shipment_participant_map` ADD  `report_generated` VARCHAR( 100 ) NULL DEFAULT NULL;
 
--- ilahir 12-Feb-2014
+-- Ilahir 12-Feb-2014
 
 CREATE TABLE IF NOT EXISTS `report_config` (
   `name` varchar(255) DEFAULT NULL,
   `value` text
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
--- ilahir 24-Feb-2014
+-- Ilahir 24-Feb-2014
 
 INSERT INTO `report_config` (`name`, `value`) VALUES
 ('report-header', '<div style=""><div style="text-align: center;"><b>DEPARTMENT OF HEALTH AND HUMAN SERVICES</b></div><div style="text-align: center;">International Laboratory Branch</div><div style="text-align: center;">Division of Global HIV/AIDS, CDC-Atlanta</div></div>\r\n\r\n'),
@@ -2127,8 +2127,7 @@ ALTER TABLE `reference_vl_calculation` ADD PRIMARY KEY( `shipment_id`, `sample_i
 ALTER TABLE `reference_vl_calculation` ADD `use_range` VARCHAR(255) NOT NULL DEFAULT 'calculated' ;
 
 
--- ilahir 07-JUN-2016
-
+-- Ilahir 07-JUN-2016
 INSERT INTO `global_config` (`name`, `value`) VALUES ('qc_access', 'yes');
 ALTER TABLE  `data_manager` ADD  `qc_access` VARCHAR( 100 ) NULL DEFAULT NULL AFTER  `force_password_reset` ;
 
@@ -2255,10 +2254,10 @@ ALTER TABLE `r_eid_detection_assay` ADD `status` VARCHAR(45) NOT NULL DEFAULT 'a
 
 ALTER TABLE `r_eid_extraction_assay` ADD `status` VARCHAR(45) NOT NULL DEFAULT 'active' AFTER `name`;
 
---Pal 28th-OCT-2016
+-- Pal 28th-OCT-2016
 ALTER TABLE `shipment_participant_map` CHANGE `participant_supervisor` `participant_supervisor` VARCHAR(255) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL;
 
---Pal 21st-DEC-2016
+-- Pal 21st-DEC-2016
 ALTER TABLE `response_result_vl` ADD `is_tnd` VARCHAR(45) NULL DEFAULT NULL AFTER `calculated_score`;
 
 ALTER TABLE `shipment_participant_map` ADD `is_pt_test_not_performed` VARCHAR(45) NULL DEFAULT NULL AFTER `shipment_test_date`, ADD `vl_not_tested_reason`INT(11) NULL DEFAULT NULL AFTER `is_pt_test_not_performed`, ADD `pt_test_not_performed_comments` TEXT NULL DEFAULT NULL AFTER `vl_not_tested_reason`;
@@ -2280,5 +2279,25 @@ ALTER TABLE `response_vl_not_tested_reason`
 ALTER TABLE `response_vl_not_tested_reason`
   MODIFY `vl_not_tested_reason_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
---Pal 24th-DEC-2016
+-- Pal 24th-DEC-2016
 ALTER TABLE `shipment_participant_map` ADD `pt_support_comments` TEXT NULL DEFAULT NULL AFTER `pt_test_not_performed_comments`;
+
+-- Bryan Richards: 13 Jan 2017
+ALTER TABLE `response_result_tb`
+	ADD `instrument_serial` VARCHAR(45) NULL DEFAULT NULL AFTER `sample_id`,
+	ADD `instrument_installed_on` DATE NULL DEFAULT NULL AFTER `instrument_serial`,
+	ADD `instrument_last_calibrated_on` DATE NULL DEFAULT NULL AFTER `instrument_installed_on`,
+	ADD `reagent_lot_id` VARCHAR(20) NULL DEFAULT NULL AFTER `instrument_last_calibrated_on`,
+	ADD `cartridge_expiration_date` DATE NULL DEFAULT NULL AFTER `reagent_lot_id`,
+	ADD `module_name` VARCHAR(2) NULL DEFAULT NULL AFTER `cartridge_expiration_date`,
+	ADD `instrument_user` VARCHAR(100) NULL DEFAULT NULL AFTER `module_name`,
+	ADD `error_code` VARCHAR(5) NULL DEFAULT NULL AFTER `instrument_user`;
+
+CREATE TABLE `r_tb_assay` (
+	`id` int(11) NOT NULL AUTO_INCREMENT,
+	`name` varchar(255) NOT NULL,
+	`short_name` varchar(255) NOT NULL,
+	PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+INSERT INTO `eanalyze`.`r_tb_assay` (`name`, `short_name`) VALUES ('Xpert MTB/RIF', 'MTB/RIF');

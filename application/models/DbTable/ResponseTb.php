@@ -25,6 +25,14 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
                     'probe_b' => $params['probeB'][$key],
                     'spc' => $params['spc'][$key],
                     'probe_a' => $params['probeA'][$key],
+                    'instrument_serial' => $params['instrumentSerial'][$key],
+                    'instrument_installed_on' => Pt_Commons_General::dateFormat($params['instrumentInstalledOn'][$key]),
+                    'instrument_last_calibrated_on' => Pt_Commons_General::dateFormat($params['instrumentLastCalibratedOn'][$key]),
+                    'module_name' => $params['moduleName'][$key],
+                    'instrument_user' => $params['instrumentUser'][$key],
+                    'cartridge_expiration_date' => Pt_Commons_General::dateFormat($params['cartridgeExpirationDate'][$key]),
+                    'reagent_lot_id' => $params['reagentLotId'][$key],
+                    'error_code' => $params['errorCode'][$key],
                     'created_by' => $authNameSpace->dm_id,
                     'created_on' => new Zend_Db_Expr('now()')
                 ));
@@ -41,6 +49,14 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
                     'probe_b' => $params['probeB'][$key],
                     'spc' => $params['spc'][$key],
                     'probe_a' => $params['probeA'][$key],
+                    'instrument_serial' => $params['instrumentSerial'][$key],
+                    'instrument_installed_on' => Pt_Commons_General::dateFormat($params['instrumentInstalledOn'][$key]),
+                    'instrument_last_calibrated_on' => Pt_Commons_General::dateFormat($params['instrumentLastCalibratedOn'][$key]),
+                    'module_name' => $params['moduleName'][$key],
+                    'instrument_user' => $params['instrumentUser'][$key],
+                    'cartridge_expiration_date' => Pt_Commons_General::dateFormat($params['cartridgeExpirationDate'][$key]),
+                    'reagent_lot_id' => $params['reagentLotId'][$key],
+                    'error_code' => $params['errorCode'][$key],
                     'updated_by' => $authNameSpace->UserID,
                     'updated_on' => new Zend_Db_Expr('now()')
                         ), "shipment_map_id = " . $params['smid'] . " and sample_id = " . $sampleId);

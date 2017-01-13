@@ -542,9 +542,7 @@ class Application_Service_Evaluation {
         $admin = $authNameSpace->primary_email;
         $size = count($params['sampleId']);
 
-
         if ($params['scheme'] == 'eid') {
-			
             $attributes = array("sample_rehydration_date" => Pt_Commons_General::dateFormat($params['sampleRehydrationDate']),
                 "extraction_assay" => $params['extractionAssay'],
                 "detection_assay" => $params['detectionAssay'],
@@ -587,8 +585,6 @@ class Application_Service_Evaluation {
                 $db->update('response_result_eid', array('reported_result' => $params['reported'][$i], 'updated_by' => $admin, 'updated_on' => new Zend_Db_Expr('now()')), "shipment_map_id = " . $params['smid'] . " AND sample_id = " . $params['sampleId'][$i]);
             }
         } else if ($params['scheme'] == 'dts') {
-			
-			
 			$attributes["sample_rehydration_date"] = Pt_Commons_General::dateFormat($params['rehydrationDate']);
 			$attributes["algorithm"] = $params['algorithm'];
 			$attributes = json_encode($attributes);
@@ -631,7 +627,6 @@ class Application_Service_Evaluation {
                     'updated_on' => new Zend_Db_Expr('now()')), "shipment_map_id = " . $params['smid'] . " AND sample_id = " . $params['sampleId'][$i]);
             }
         } else if ($params['scheme'] == 'vl') {
-		   
 			$attributes = array(
 				"sample_rehydration_date" => Pt_Commons_General::dateFormat($params['sampleRehydrationDate']),
                 "vl_assay" => $params['vlAssay'],
@@ -711,6 +706,38 @@ class Application_Service_Evaluation {
                     'updated_on' => new Zend_Db_Expr('now()')), "shipment_map_id = " . $params['smid'] . " AND sample_id = " . $params['sampleId'][$i]);
             }
         } else if ($params['scheme'] == 'tb') {
+            $attributes = array(
+                "sample_rehydration_date" => Pt_Commons_General::dateFormat($params['sampleRehydrationDate']),
+                "mtb_rif_kit_lot_no" => $params['mtbRifKitLotNo'],
+                "expiry_date" => $params['expiryDate'],
+                "assay" => $params['assay'],
+                "count_tests_conducted_over_month" => $params['countTestsConductedOverMonth'],
+                "count_errors_encountered_over_month" => $params['countErrorsEncounteredOverMonth'],
+                "error_codes_encountered_over_month" => $params['errorCodesEncounteredOverMonth']
+            );
+
+            $attributes = json_encode($attributes);
+            $mapData = array(
+                "shipment_receipt_date" => Pt_Commons_General::dateFormat($params['receiptDate']),
+                "shipment_test_date" => Pt_Commons_General::dateFormat($params['testDate']),
+                "attributes" => $attributes,
+                "supervisor_approval" => $params['supervisorApproval'],
+                "participant_supervisor" => $params['participantSupervisor'],
+                "user_comment" => $params['userComments'],
+                "updated_by_admin" => $admin,
+                "updated_on_admin" => new Zend_Db_Expr('now()')
+            );
+
+            if(isset($params['customField1']) && trim($params['customField1']) != ""){
+                $mapData['custom_field_1'] = $params['customField1'];
+            }
+
+            if(isset($params['customField2']) && trim($params['customField2']) != ""){
+                $mapData['custom_field_2'] = $params['customField2'];
+            }
+
+            $db->update('shipment_participant_map', $mapData, "map_id = " . $params['smid']);
+
             for ($i = 0; $i < $size; $i++) {
                 $db->update('response_result_tb', array(
                     'date_tested' => Pt_Commons_General::dateFormat($params['dateTested'][$i]),
@@ -722,6 +749,14 @@ class Application_Service_Evaluation {
                     'probe_b' => $params['probeB'][$i],
                     'spc' => $params['spc'][$i],
                     'probe_a' => $params['probeA'][$i],
+                    'instrument_serial' => $params['instrumentSerial'][$i],
+                    'instrument_installed_on' => Pt_Commons_General::dateFormat($params['instrumentInstalledOn'][$i]),
+                    'instrument_last_calibrated_on' => Pt_Commons_General::dateFormat($params['instrumentLastCalibratedOn'][$i]),
+                    'module_name' => $params['moduleName'][$i],
+                    'instrument_user' => $params['instrumentUser'][$i],
+                    'cartridge_expiration_date' => Pt_Commons_General::dateFormat($params['cartridgeExpirationDate'][$i]),
+                    'reagent_lot_id' => $params['reagentLotId'][$i],
+                    'error_code' => $params['errorCode'][$i],
                     'updated_by' => $admin,
                     'updated_on' => new Zend_Db_Expr('now()')
                 ), "shipment_map_id = " . $params['smid'] . " and sample_id = " . $params['sampleId'][$i]);
