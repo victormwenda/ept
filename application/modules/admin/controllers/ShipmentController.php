@@ -61,9 +61,7 @@ class Admin_ShipmentController extends Zend_Controller_Action
     public function getSampleFormAction()
     {
         if ($this->getRequest()->isPost()) {
-
             $this->view->scheme = $sid = strtolower($this->_getParam('sid'));
-
             if ($sid == 'vl') {
                 $scheme = new Application_Service_Schemes();
                 $this->view->vlControls = $scheme->getSchemeControls($sid);
@@ -76,14 +74,11 @@ class Admin_ShipmentController extends Zend_Controller_Action
                 $scheme = new Application_Service_Schemes();
                 $this->view->dtsPossibleResults = $scheme->getPossibleResults($sid);
                 $this->view->allTestKits = $scheme->getAllDtsTestKit();
-
                 $this->view->wb = $scheme->getDbsWb();
                 $this->view->eia = $scheme->getDbsEia();
             } else if ($sid == 'dbs') {
                 $scheme = new Application_Service_Schemes();
                 $this->view->dtsPossibleResults = $scheme->getPossibleResults($sid);
-
-
                 $this->view->wb = $scheme->getDbsWb();
                 $this->view->eia = $scheme->getDbsEia();
             }

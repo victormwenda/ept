@@ -1,7 +1,6 @@
 <?php
 
 class Application_Service_Shipments {
-
     public function getAllShipments($parameters) {
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
          * you want to insert a non-database field (for example a counter or static image)
@@ -377,6 +376,7 @@ class Application_Service_Shipments {
             error_log($e->getTraceAsString());
         }
     }
+
     public function removeDtsResults($mapId) {
         try {
             $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
@@ -468,7 +468,6 @@ class Application_Service_Shipments {
     }	
 
     public function updateDbsResults($params) {
-
         if (!$this->isShipmentEditable($params['shipmentId'], $params['participantId'])) {
             return false;
         }
@@ -687,21 +686,18 @@ class Application_Service_Shipments {
     }
 
     public function addShipment($params) {
-
         //Zend_Debug::dump($params);die;
         $scheme = $params['schemeId'];
         $authNameSpace = new Zend_Session_Namespace('administrators');
         $db = new Application_Model_DbTable_Shipments();
         $distroService = new Application_Service_Distribution();
         $distro = $distroService->getDistribution($params['distribution']);
-
 		$controlCount = 0;
 		foreach($params['control'] as $control){
 			if($control == 1){
 				$controlCount+=1;
 			}
 		}
-
         $data = array(
             'shipment_code' => $params['shipmentCode'],
             'distribution_id' => $params['distribution'],
@@ -851,7 +847,6 @@ class Application_Service_Shipments {
                 // ------------------>
             }
         } else if ($params['schemeId'] == 'dbs') {
-
             for ($i = 0; $i < $size; $i++) {
 				if(isset($params['score'][$i]) && $params['score'][$i] != null && $params['score'][$i] != ""){
 					$sampScore = $params['score'][$i];
@@ -922,7 +917,7 @@ class Application_Service_Shipments {
                 // ------------------>
             }
         } else if ($params['schemeId'] == 'tb') {
-	    for ($i = 0; $i < $size; $i++) {
+	        for ($i = 0; $i < $size; $i++) {
                 $dbAdapter->insert('reference_result_tb', array(
                     'shipment_id' => $lastId,
                     'sample_id' => ($i + 1),
@@ -935,14 +930,13 @@ class Application_Service_Shipments {
                     'probe_b' => $params['probeB'][$i],
                     'spc' => $params['spc'][$i],
                     'probe_a' => $params['probeA'][$i],
-                    'control' => $params['control'][$i],
-                    'mandatory' => $params['mandatory'][$i],
+                    'control' => 0,
+                    'mandatory' => 1,
                     'sample_score' => (isset($params['score'][$i]) ? $params['score'][$i] : 0)
                     )
                 );
-            }	    
-	}
-
+            }
+	    }
         $distroService->updateDistributionStatus($params['distribution'], 'pending');
     }
 
@@ -958,7 +952,6 @@ class Application_Service_Shipments {
 
     public function removeShipment($sid) {
         try {
-
             $shipmentDb = new Application_Model_DbTable_Shipments();
             $row = $shipmentDb->fetchRow('shipment_id=' . $sid);
             $db = Zend_Db_Table_Abstract::getDefaultAdapter();
@@ -1006,7 +999,6 @@ class Application_Service_Shipments {
     }
 
     public function getShipmentForEdit($sid) {
-
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $shipment = $db->fetchRow($db->select()->from(array('s' => 'shipment'))
                         ->join(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id', array('distribution_code', 'distribution_date'))
@@ -1078,25 +1070,16 @@ class Application_Service_Shipments {
 
     public function updateShipment($params) {
         //Zend_Debug::dump($params);die;
-
-
         $dbAdapter = Zend_Db_Table_Abstract::getDefaultAdapter();
         $shipmentRow = $dbAdapter->fetchRow($dbAdapter->select()->from(array('s' => 'shipment'))->where('shipment_id = ' . $params['shipmentId']));
-
         $scheme = $shipmentRow['scheme_type'];
-
         $size = count($params['sampleName']);
-		
-
 		$controlCount = 0;
 		foreach($params['control'] as $control){
 			if($control == 1){
 				$controlCount+=1;
 			}
 		}
-		
-		//$size = $size - $controlCount;
-		
         if ($scheme == 'eid') {
             $dbAdapter->delete('reference_result_eid', 'shipment_id = ' . $params['shipmentId']);
             for ($i = 0; $i < $size; $i++) {
@@ -1143,12 +1126,9 @@ class Application_Service_Shipments {
 										);
 						}
 					}
-				}				
-				
-				
-				
+				}
             }
-        }else if ($scheme == 'tb') {
+        } else if ($scheme == 'tb') {
             $dbAdapter->delete('reference_result_tb', 'shipment_id = ' . $params['shipmentId']);
             for ($i = 0; $i < $size; $i++) {
                 $dbAdapter->insert('reference_result_tb', array(
@@ -1163,8 +1143,8 @@ class Application_Service_Shipments {
                     'probe_b' => $params['probeB'][$i],
                     'spc' => $params['spc'][$i],
                     'probe_a' => $params['probeA'][$i],
-                    'control' => $params['control'][$i],
-                    'mandatory' => $params['mandatory'][$i],
+                    'control' => 0,
+                    'mandatory' => 1,
                     'sample_score' => (isset($params['score'][$i]) ? $params['score'][$i] : 0)
                     )
                 );
@@ -1205,7 +1185,6 @@ class Application_Service_Shipments {
                         }
                     }
                 }
-
                 // <------ Insert reference_dbs_wb table
                 if (isset($params['wb'][$i + 1]['wb'])) {
                     $wbSize = sizeof($params['wb'][$i + 1]['wb']);
@@ -1256,7 +1235,6 @@ class Application_Service_Shipments {
                         }
                     }
                 }
-
                 // ------------------>
             }
         } else if ($scheme == 'dbs') {
