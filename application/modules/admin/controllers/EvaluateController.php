@@ -57,104 +57,83 @@ class Admin_EvaluateController extends Zend_Controller_Action
         }
     }
 
-    public function viewAction()
-    {
-            if($this->_hasParam('sid') && $this->_hasParam('pid')  && $this->_hasParam('scheme') ){
-                $this->view->currentUrl = "/admin/evaluate/view/sid/".$this->_getParam('sid')."/pid/".$this->_getParam('pid')."/scheme/".$this->_getParam('scheme');
-                $sid = (int)base64_decode($this->_getParam('sid'));
-                $pid = (int)base64_decode($this->_getParam('pid'));
-                $this->view->scheme = $scheme = base64_decode($this->_getParam('scheme'));
-                if($scheme == 'eid'){
-                    
-                    $schemeService = new Application_Service_Schemes();        
-                    $this->view->extractionAssay = $schemeService->getEidExtractionAssay();
-                    $this->view->detectionAssay = $schemeService->getEidDetectionAssay();
-                    
-                }
-                if($scheme == 'dts'){
-                    $schemeService = new Application_Service_Schemes(); 
-                    $this->view->allTestKits = $schemeService->getAllDtsTestKit();                    
-                }
-                else if($scheme == 'vl'){
-                    $schemeService = new Application_Service_Schemes();
-                    $this->view->vlRange = $schemeService->getVlRange($sid);
-                    $this->view->vlAssay = $schemeService->getVlAssay();              
-                }
-                $evalService = new Application_Service_Evaluation();
-                $this->view->evaluateData = $evalService->viewEvaluation($sid,$pid,$scheme);
-                
-		$globalConfigDb = new Application_Model_DbTable_GlobalConfig();
-        $this->view->customField1 = $globalConfigDb->getValue('custom_field_1');
-        $this->view->customField2 = $globalConfigDb->getValue('custom_field_2');
-        $this->view->haveCustom = $globalConfigDb->getValue('custom_field_needed');
-                
-            }else{
-                $this->_redirect("/admin/evaluate/");
-            }        
+    public function viewAction() {
+        if($this->_hasParam('sid') && $this->_hasParam('pid')  && $this->_hasParam('scheme') ){
+            $this->view->currentUrl = "/admin/evaluate/view/sid/".$this->_getParam('sid')."/pid/".$this->_getParam('pid')."/scheme/".$this->_getParam('scheme');
+            $sid = (int)base64_decode($this->_getParam('sid'));
+            $pid = (int)base64_decode($this->_getParam('pid'));
+            $this->view->scheme = $scheme = base64_decode($this->_getParam('scheme'));
+            $schemeService = new Application_Service_Schemes();
+            if($scheme == 'eid'){
+                $this->view->extractionAssay = $schemeService->getEidExtractionAssay();
+                $this->view->detectionAssay = $schemeService->getEidDetectionAssay();
+
+            } else if($scheme == 'dts'){
+                $this->view->allTestKits = $schemeService->getAllDtsTestKit();
+            }
+            else if($scheme == 'vl'){
+                $this->view->vlRange = $schemeService->getVlRange($sid);
+                $this->view->vlAssay = $schemeService->getVlAssay();
+            }
+            else if($scheme == 'tb'){
+                $this->view->assays = $schemeService->getTbAssay();
+            }
+            $evalService = new Application_Service_Evaluation();
+            $this->view->evaluateData = $evalService->viewEvaluation($sid,$pid,$scheme);
+            $globalConfigDb = new Application_Model_DbTable_GlobalConfig();
+            $this->view->customField1 = $globalConfigDb->getValue('custom_field_1');
+            $this->view->customField2 = $globalConfigDb->getValue('custom_field_2');
+            $this->view->haveCustom = $globalConfigDb->getValue('custom_field_needed');
+        }else{
+            $this->_redirect("/admin/evaluate/");
+        }
     }
 
     public function editAction()
     {
-        if($this->getRequest()->isPost()){
-            
+        if ($this->getRequest()->isPost()) {
             $params = $this->getRequest()->getPost();
             $evalService = new Application_Service_Evaluation();
             $evalService->updateShipmentResults($params);
             $shipmentId = base64_encode($params['shipmentId']);
-            $participantId = base64_encode($params['participantId']);
-            $scheme = base64_encode($params['scheme']);
             $alertMsg = new Zend_Session_Namespace('alertSpace');
             $alertMsg->message = "Shipment Results updated successfully";
-            if(isset($params['whereToGo']) && $params['whereToGo'] != ""){
+            if (isset($params['whereToGo']) && $params['whereToGo'] != "") {
                $this->_redirect($params['whereToGo']); 
-            }else{
+            } else {
                 $this->_redirect("/admin/evaluate/shipment/sid/$shipmentId");    
             }
             
-        }else{
-            if($this->_hasParam('sid') && $this->_hasParam('pid')  && $this->_hasParam('scheme') ){
-                
+        } else {
+            if ($this->_hasParam('sid') && $this->_hasParam('pid')  && $this->_hasParam('scheme')) {
                 $this->view->currentUrl = "/admin/evaluate/edit/sid/".$this->_getParam('sid')."/pid/".$this->_getParam('pid')."/scheme/".$this->_getParam('scheme');
-                
                 $sid = (int)base64_decode($this->_getParam('sid'));
                 $pid = (int)base64_decode($this->_getParam('pid'));
                 $this->view->scheme = $scheme = base64_decode($this->_getParam('scheme'));
-                if($scheme == 'eid'){
-                    
-                    $schemeService = new Application_Service_Schemes();        
+                $schemeService = new Application_Service_Schemes();
+                if ($scheme == 'eid') {
                     $this->view->extractionAssay = $schemeService->getEidExtractionAssay();
                     $this->view->detectionAssay = $schemeService->getEidDetectionAssay();
-                    
-                }
-                else if($scheme == 'dts'){
-                    $schemeService = new Application_Service_Schemes(); 
-                    $this->view->allTestKits = $schemeService->getAllDtsTestKit();                    
-                }
-                else if($scheme == 'dbs'){
-                    $schemeService = new Application_Service_Schemes(); 
+                } else if ($scheme == 'dts') {
+                    $this->view->allTestKits = $schemeService->getAllDtsTestKit();
+                } else if ($scheme == 'dbs') {
                     $this->view->wb = $schemeService->getDbsWb();
-                    $this->view->eia = $schemeService->getDbsEia();              
-                }
-                else if($scheme == 'vl'){
-                    $schemeService = new Application_Service_Schemes();
+                    $this->view->eia = $schemeService->getDbsEia();
+                } else if ($scheme == 'vl') {
                     $this->view->vlRange = $schemeService->getVlRange($sid);
-                    $this->view->vlAssay = $schemeService->getVlAssay();              
-                }
-                else if($scheme == 'tb'){
-                    $schemeService = new Application_Service_Schemes();
+                    $this->view->vlAssay = $schemeService->getVlAssay();
+                } else if ($scheme == 'tb') {
                     $this->view->assays = $schemeService->getTbAssay();
                 }
                 $evalService = new Application_Service_Evaluation();
                 $this->view->evaluateData = $evalService->editEvaluation($sid,$pid,$scheme);
-                
                 $globalConfigDb = new Application_Model_DbTable_GlobalConfig();
                 $this->view->customField1 = $globalConfigDb->getValue('custom_field_1');
                 $this->view->customField2 = $globalConfigDb->getValue('custom_field_2');
                 $this->view->haveCustom = $globalConfigDb->getValue('custom_field_needed');
-                
-            }else{
+            } else {
                 $this->_redirect("/admin/evaluate/");
-            }            
+            }
         }
         
 
