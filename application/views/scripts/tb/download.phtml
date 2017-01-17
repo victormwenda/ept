@@ -217,6 +217,31 @@ class MYPDF extends TCPDF {
                     $labInfo.='<td colspan="4"></td>';
                     $labInfo.='<td colspan="4"></td>';
 				$labInfo.='</tr>';
+                $labInfo.='<tr style="background-color:#CCCCCC;">';
+                    $labInfo.='<td colspan="24" style="font-weight:bold;text-align:center;">Instrument &amp; Cartridge Information</td>';
+                $labInfo.='</tr>';
+                $labInfo.='<tr style="background-color:#CCCCCC;">';
+                    $labInfo.='<td colspan="7" style="font-weight:bold;">Instrument Serial Number</td>';
+                    $labInfo.='<td colspan="17" style="background-color:#F7F7F7;"></td>';
+                $labInfo.='</tr>';
+                $labInfo.='<tr style="background-color:#CCCCCC;">';
+                    $labInfo.='<td colspan="7" style="font-weight:bold;">Date Installed</td>';
+                    $labInfo.='<td colspan="5" style="background-color:#F7F7F7;"></td>';
+                    $labInfo.='<td colspan="7" style="font-weight:bold;">Date Last Calibrated</td>';
+                    $labInfo.='<td colspan="5" style="background-color:#F7F7F7;"></td>';
+                $labInfo.='</tr>';
+                $labInfo.='<tr style="background-color:#CCCCCC;">';
+                    $labInfo.='<td colspan="7" style="font-weight:bold;">Module Name</td>';
+                    $labInfo.='<td colspan="5" style="background-color:#F7F7F7;"></td>';
+                    $labInfo.='<td colspan="7" style="font-weight:bold;">Instrument User</td>';
+                    $labInfo.='<td colspan="5" style="background-color:#F7F7F7;"></td>';
+                $labInfo.='</tr>';
+                $labInfo.='<tr style="background-color:#CCCCCC;">';
+                    $labInfo.='<td colspan="7" style="font-weight:bold;">Cartridge Expiry Date</td>';
+                    $labInfo.='<td colspan="5" style="background-color:#F7F7F7;"></td>';
+                    $labInfo.='<td colspan="7" style="font-weight:bold;">Reagent Lot ID</td>';
+                    $labInfo.='<td colspan="5" style="background-color:#F7F7F7;"></td>';
+                $labInfo.='</tr>';
             $labInfo.='</table><br /><br/>';
 		}
 
