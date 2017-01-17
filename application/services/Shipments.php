@@ -588,8 +588,6 @@ class Application_Service_Shipments {
                         'instrument_installed_on' => $params['instrumentInstalledOn'][$key],
                         'instrument_last_calibrated_on' => $params['instrumentLastCalibratedOn'][$key]
                     );
-                    error_log(serialize($instrumentDetails), 0);
-
                     $instrumentsDb->upsertInstrument($params['participantId'], $instrumentDetails);
                 }
             }

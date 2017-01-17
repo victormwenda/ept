@@ -103,7 +103,6 @@ class Admin_EvaluateController extends Zend_Controller_Action
             } else {
                 $this->_redirect("/admin/evaluate/shipment/sid/$shipmentId");    
             }
-            
         } else {
             if ($this->_hasParam('sid') && $this->_hasParam('pid')  && $this->_hasParam('scheme')) {
                 $this->view->currentUrl = "/admin/evaluate/edit/sid/".$this->_getParam('sid')."/pid/".$this->_getParam('pid')."/scheme/".$this->_getParam('scheme');

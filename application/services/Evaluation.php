@@ -630,7 +630,7 @@ class Application_Service_Evaluation {
                 "assay_lot_number" => $params['assayLotNumber'],
                 "assay_expiration_date" => Pt_Commons_General::dateFormat($params['assayExpirationDate']),
                 "specimen_volume" => $params['specimenVolume']
-				);
+			);
 			
 			if(isset($params['otherAssay']) && $params['otherAssay'] != ""){
 				$attributes['other_assay'] = $params['otherAssay'];
@@ -735,7 +735,18 @@ class Application_Service_Evaluation {
 
             $db->update('shipment_participant_map', $mapData, "map_id = " . $params['smid']);
 
+            $instrumentsDb = new Application_Model_DbTable_Instruments();
             for ($i = 0; $i < $size; $i++) {
+                $instrumentInstalledOn = Pt_Commons_General::dateFormat($params['instrumentInstalledOn'][$i]);
+                if (!isset($params['instrumentInstalledOn'][$i]) ||
+                    $params['instrumentInstalledOn'][$i] == "") {
+                    $instrumentInstalledOn = null;
+                }
+                $instrumentLastCalibratedOn = Pt_Commons_General::dateFormat($params['instrumentLastCalibratedOn'][$i]);
+                if (!isset($params['instrumentLastCalibratedOn'][$i]) ||
+                    $params['instrumentLastCalibratedOn'][$i] == "") {
+                    $instrumentLastCalibratedOn = null;
+                }
                 $db->update('response_result_tb', array(
                     'date_tested' => Pt_Commons_General::dateFormat($params['dateTested'][$i]),
                     'mtb_detected' => $params['mtbDetected'][$i],
@@ -747,8 +758,8 @@ class Application_Service_Evaluation {
                     'spc' => $params['spc'][$i],
                     'probe_a' => $params['probeA'][$i],
                     'instrument_serial' => $params['instrumentSerial'][$i],
-                    'instrument_installed_on' => Pt_Commons_General::dateFormat($params['instrumentInstalledOn'][$i]),
-                    'instrument_last_calibrated_on' => Pt_Commons_General::dateFormat($params['instrumentLastCalibratedOn'][$i]),
+                    'instrument_installed_on' => $instrumentInstalledOn,
+                    'instrument_last_calibrated_on' => $instrumentLastCalibratedOn,
                     'module_name' => $params['moduleName'][$i],
                     'instrument_user' => $params['instrumentUser'][$i],
                     'cartridge_expiration_date' => Pt_Commons_General::dateFormat($params['cartridgeExpirationDate'][$i]),
@@ -757,6 +768,16 @@ class Application_Service_Evaluation {
                     'updated_by' => $admin,
                     'updated_on' => new Zend_Db_Expr('now()')
                 ), "shipment_map_id = " . $params['smid'] . " and sample_id = " . $params['sampleId'][$i]);
+
+                if (isset($params['instrumentSerial'][$i]) &&
+                    $params['instrumentSerial'][$i] != "") {
+                    $instrumentDetails = array(
+                        'instrument_serial' => $params['instrumentSerial'][$i],
+                        'instrument_installed_on' => $params['instrumentInstalledOn'][$i],
+                        'instrument_last_calibrated_on' => $params['instrumentLastCalibratedOn'][$i]
+                    );
+                    $instrumentsDb->upsertInstrument($params['participantId'], $instrumentDetails);
+                }
             }
         }
 
