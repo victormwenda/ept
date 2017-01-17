@@ -2,7 +2,6 @@
 include_once "PHPExcel.php";
 
 class Application_Service_Participants {
-	
 	public function getUsersParticipants($userSystemId = null){
 		if($userSystemId == null){
 			$authNameSpace = new Zend_Session_Namespace('datamanagers');
@@ -114,7 +113,7 @@ class Application_Service_Participants {
 		$enrollments = new Application_Model_DbTable_Enrollments();
 		return $enrollments->enrollParticipants($params);
 	}
-        public function addParticipantManagerMap($params){
+    public function addParticipantManagerMap($params){
 		$db = new Application_Model_DbTable_Participants();
 		return $db->addParticipantManager($params);
 	}
@@ -180,7 +179,7 @@ class Application_Service_Participants {
 		$participantDb = new Application_Model_DbTable_Participants();
 		return $participantDb->getShipmentNotRespondedParticipants($params);
 	}
-        public function getShipmentNotEnrolledParticipants($params){
+    public function getShipmentNotEnrolledParticipants($params){
 		$participantDb = new Application_Model_DbTable_Participants();
 		return $participantDb->getShipmentNotEnrolledParticipants($params);
 	}

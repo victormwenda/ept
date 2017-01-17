@@ -2,7 +2,6 @@
 
 class Application_Model_DbTable_GlobalConfig extends Zend_Db_Table_Abstract
 {
-
     protected $_name = 'global_config';
     protected $_primary = 'name';
 
@@ -43,6 +42,5 @@ class Application_Model_DbTable_GlobalConfig extends Zend_Db_Table_Abstract
     public function getTextUnderLogoContent(){
         return $this->fetchRow('name = "text_under_logo"');
     }
-
 }
 

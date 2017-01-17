@@ -2301,3 +2301,19 @@ CREATE TABLE `r_tb_assay` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 INSERT INTO `eanalyze`.`r_tb_assay` (`name`, `short_name`) VALUES ('Xpert MTB/RIF', 'MTB/RIF');
+
+-- Bryan Richards: 16 Jan 2017
+CREATE TABLE `instrument` (
+	`instrument_id` int(11) NOT NULL AUTO_INCREMENT,
+	`participant_id` int(11) NOT NULL,
+	`instrument_serial` varchar(45) DEFAULT NULL,
+	`instrument_installed_on` date DEFAULT NULL,
+	`instrument_last_calibrated_on` date DEFAULT NULL,
+	`created_by` varchar(45) DEFAULT NULL,
+	`created_on` datetime DEFAULT NULL,
+	`updated_by` varchar(45) DEFAULT NULL,
+	`updated_on` datetime DEFAULT NULL,
+	PRIMARY KEY (`instrument_id`),
+	KEY `participant_id` (`participant_id`),
+	CONSTRAINT `instrument_ibfk_2` FOREIGN KEY (`participant_id`) REFERENCES `participant` (`participant_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;

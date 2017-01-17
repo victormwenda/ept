@@ -225,7 +225,6 @@ class Admin_EvaluateController extends Zend_Controller_Action
 		$sampleId = $this->_getParam('sample');
 		
 		$schemeService = new Application_Service_Schemes();
-		//$this->view->sampleVldata = $schemeService->getVlRangeInformation($shipmentId,$sampleId);
 		$this->view->vlRange = $schemeService->getVlRange($shipmentId,$sampleId);
 		$this->view->shipmentId = $shipmentId;
 		$this->view->sampleId = $sampleId;

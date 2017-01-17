@@ -6,12 +6,21 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
     protected $_primary = array('shipment_map_id', 'sample_id');
 
     public function updateResults($params) {
-
         $sampleIds = $params['sampleId'];
-
+        $authNameSpace = new Zend_Session_Namespace('datamanagers');
+        $dataManagerId = $authNameSpace->dm_id;
         foreach ($sampleIds as $key => $sampleId) {
             $res = $this->fetchRow("shipment_map_id = " . $params['smid'] . " and sample_id = " . $sampleId);
-            $authNameSpace = new Zend_Session_Namespace('datamanagers');
+            $instrumentInstalledOn = Pt_Commons_General::dateFormat($params['instrumentInstalledOn'][$key]);
+            if (!isset($params['instrumentInstalledOn'][$key]) ||
+                $params['instrumentInstalledOn'][$key] == "") {
+                $instrumentInstalledOn = null;
+            }
+            $instrumentLastCalibratedOn = Pt_Commons_General::dateFormat($params['instrumentLastCalibratedOn'][$key]);
+            if (!isset($params['instrumentLastCalibratedOn'][$key]) ||
+                $params['instrumentLastCalibratedOn'][$key] == "") {
+                $instrumentLastCalibratedOn = null;
+            }
             if ($res == null || count($res) == 0) {
                 $this->insert(array(
                     'shipment_map_id' => $params['smid'],
@@ -26,14 +35,14 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
                     'spc' => $params['spc'][$key],
                     'probe_a' => $params['probeA'][$key],
                     'instrument_serial' => $params['instrumentSerial'][$key],
-                    'instrument_installed_on' => Pt_Commons_General::dateFormat($params['instrumentInstalledOn'][$key]),
-                    'instrument_last_calibrated_on' => Pt_Commons_General::dateFormat($params['instrumentLastCalibratedOn'][$key]),
+                    'instrument_installed_on' => $instrumentInstalledOn,
+                    'instrument_last_calibrated_on' => $instrumentLastCalibratedOn,
                     'module_name' => $params['moduleName'][$key],
                     'instrument_user' => $params['instrumentUser'][$key],
                     'cartridge_expiration_date' => Pt_Commons_General::dateFormat($params['cartridgeExpirationDate'][$key]),
                     'reagent_lot_id' => $params['reagentLotId'][$key],
                     'error_code' => $params['errorCode'][$key],
-                    'created_by' => $authNameSpace->dm_id,
+                    'created_by' => $dataManagerId,
                     'created_on' => new Zend_Db_Expr('now()')
                 ));
             } else {
@@ -50,16 +59,16 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
                     'spc' => $params['spc'][$key],
                     'probe_a' => $params['probeA'][$key],
                     'instrument_serial' => $params['instrumentSerial'][$key],
-                    'instrument_installed_on' => Pt_Commons_General::dateFormat($params['instrumentInstalledOn'][$key]),
-                    'instrument_last_calibrated_on' => Pt_Commons_General::dateFormat($params['instrumentLastCalibratedOn'][$key]),
+                    'instrument_installed_on' => $instrumentInstalledOn,
+                    'instrument_last_calibrated_on' => $instrumentLastCalibratedOn,
                     'module_name' => $params['moduleName'][$key],
                     'instrument_user' => $params['instrumentUser'][$key],
                     'cartridge_expiration_date' => Pt_Commons_General::dateFormat($params['cartridgeExpirationDate'][$key]),
                     'reagent_lot_id' => $params['reagentLotId'][$key],
                     'error_code' => $params['errorCode'][$key],
-                    'updated_by' => $authNameSpace->UserID,
+                    'updated_by' => $dataManagerId,
                     'updated_on' => new Zend_Db_Expr('now()')
-                        ), "shipment_map_id = " . $params['smid'] . " and sample_id = " . $sampleId);
+                ), "shipment_map_id = " . $params['smid'] . " and sample_id = " . $sampleId);
             }
         }
     }

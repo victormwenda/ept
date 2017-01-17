@@ -20,7 +20,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
                                 ->where("sp.participant_id = ?", $pId));
     }
     
-     public function getShipmentRowInfo($sId) {
+    public function getShipmentRowInfo($sId) {
 		$result=$this->getAdapter()->fetchRow($this->getAdapter()->select()->from(array('s' => 'shipment'))
                 ->join(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id', array('distribution_code', 'distribution_date'))
 			->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('sl.scheme_name'))
@@ -77,14 +77,6 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
          */
 
         $aColumns = array('year(shipment_date)', 'scheme_name');
-
-        /* Indexed column (used for fast and accurate table cardinality) */
-         $sIndexColumn = $this->_primary;
-
-        $sTable = $this->_name;
-        /*
-         * Paging
-         */
         $sLimit = "";
         if (isset($parameters['iDisplayStart']) && $parameters['iDisplayLength'] != '-1') {
             $sOffset = $parameters['iDisplayStart'];
@@ -101,9 +93,9 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
             for ($i = 0; $i < intval($parameters['iSortingCols']); $i++) {
                 if ($parameters['bSortable_' . intval($parameters['iSortCol_' . $i])] == "true") {
                     if ($parameters['iSortCol_' . $i] == 0) {
-                        $sOrder .= "shipment_date " . ( $parameters['sSortDir_' . $i] ) . ", ";
+                        $sOrder .= "MAX(shipment_date) " . ( $parameters['sSortDir_' . $i] ) . ", ";
                     } else {
-                        $sOrder .= $aColumns[intval($parameters['iSortCol_' . $i])] . "
+                        $sOrder .= "MAX(".$aColumns[intval($parameters['iSortCol_' . $i])] . ")
 				 	" . ( $parameters['sSortDir_' . $i] ) . ", ";
                     }
                 }
@@ -158,8 +150,8 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
          * Get data to display */
         $sQuery = $this->getAdapter()->select()->from(array('s' => 'shipment'), array('s.scheme_type', 'SHIP_YEAR' => 'year(s.shipment_date)', 'TOTALSHIPMEN' => new Zend_Db_Expr("COUNT('s.shipment_id')")))
                 ->joinLeft(array('sp' => 'shipment_participant_map'), 's.shipment_id=sp.shipment_id', array('ONTIME' => new Zend_Db_Expr("COUNT(CASE substr(sp.evaluation_status,3,1) WHEN 1 THEN 1 END)"), 'NORESPONSE' => new Zend_Db_Expr("COUNT(CASE substr(sp.evaluation_status,2,1) WHEN 9 THEN 1 END)"), 'reported_count' => new Zend_Db_Expr("SUM(shipment_test_date <> '0000-00-00')")))
-                ->joinLeft(array('pmm' => 'participant_manager_map'), 'pmm.participant_id=sp.participant_id')
-				->joinLeft(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type')
+                ->joinLeft(array('pmm' => 'participant_manager_map'), 'pmm.participant_id=sp.participant_id', array())
+				->joinLeft(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('scheme_name'))
                 ->where("s.status='shipped' OR s.status='evaluated' OR s.status='finalized'")
                 ->where("year(s.shipment_date)  + 5 > year(CURDATE())")
                 ->where("pmm.dm_id=?", $this->_session->dm_id)
@@ -177,7 +169,6 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
         if (isset($sLimit) && isset($sOffset)) {
             $sQuery = $sQuery->limit($sLimit, $sOffset);
         }
-        //error_log($sQuery);
         $rResult = $this->getAdapter()->fetchAll($sQuery);
 
         /* Data set length after filtering */
@@ -189,8 +180,8 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
         /* Total data set length */
         $sQuery = $this->getAdapter()->select()->from(array('s' => 'shipment'), array('s.scheme_type', 'SHIP_YEAR' => 'year(s.shipment_date)', 'TOTALSHIPMEN' => new Zend_Db_Expr("COUNT('s.shipment_id')")))
                 ->joinLeft(array('sp' => 'shipment_participant_map'), 's.shipment_id=sp.shipment_id', array('ONTIME' => new Zend_Db_Expr("COUNT(CASE substr(sp.evaluation_status,3,1) WHEN 1 THEN 1 END)"), 'NORESPONSE' => new Zend_Db_Expr("COUNT(CASE substr(sp.evaluation_status,2,1) WHEN 9 THEN 1 END)"), 'reported_count' => new Zend_Db_Expr("SUM(shipment_test_date <> '0000-00-00')")))
-                ->joinLeft(array('pmm' => 'participant_manager_map'), 'pmm.participant_id=sp.participant_id')
-				->joinLeft(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type')
+                ->joinLeft(array('pmm' => 'participant_manager_map'), 'pmm.participant_id=sp.participant_id', array())
+				->joinLeft(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array())
                 ->where("s.status='shipped' OR s.status='evaluated' OR s.status='finalized'")
                 ->where("year(s.shipment_date)  + 5 > year(CURDATE())")
                 ->where("pmm.dm_id=?", $this->_session->dm_id)

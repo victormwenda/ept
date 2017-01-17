@@ -71,7 +71,6 @@ class VlController extends Zend_Controller_Action
 			
             $participantService = new Application_Service_Participants();
             $this->view->participant = $participantService->getParticipantDetails($pID);
-            //Zend_Debug::dump($schemeService->getVlSamples($sID,$pID));
             $this->view->allSamples =$schemeService->getVlSamples($sID,$pID);
             $this->view->allNotTestedReason =$schemeService->getVlNotTestedReasons();
             $shipment = $schemeService->getShipmentData($sID,$pID);

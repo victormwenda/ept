@@ -2,7 +2,6 @@
 
 class TbController extends Zend_Controller_Action
 {
-
     public function init()
     {
         /* Initialize action controller here */
@@ -20,13 +19,9 @@ class TbController extends Zend_Controller_Action
         
     	if($this->getRequest()->isPost())
     	{
-
     	    $data = $this->getRequest()->getPost();
-
             $shipmentService->updateTbResults($data);
             $this->_redirect("/participant/dashboard");
-    		
-    		//die;            
         }else{
             $sID= $this->getRequest()->getParam('sid');
             $pID= $this->getRequest()->getParam('pid');
@@ -38,6 +33,8 @@ class TbController extends Zend_Controller_Action
             $shipment = $schemeService->getShipmentData($sID,$pID);
 	        $shipment['attributes'] = json_decode($shipment['attributes'],true);
             $this->view->assays = $schemeService->getTbAssay();
+            $instrumentDb = new Application_Model_DbTable_Instruments();
+            $this->view->instruments = $instrumentDb->getInstruments($pID);
             $this->view->shipment = $shipment;
             $this->view->shipId = $sID;
             $this->view->participantId = $pID;

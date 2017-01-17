@@ -1,7 +1,6 @@
 <?php
 date_default_timezone_set('America/New_York');
 $authNameSpace = new Zend_Session_Namespace('datamanagers');
-
 if(isset($this->shipment["shipment_test_report_date"]) && trim($this->shipment["shipment_test_report_date"])!=""){
 	$expTestReceiptDate=explode(" ",$this->shipment["shipment_test_report_date"]);
 	$testReceiptDate=$this->dateFormat($expTestReceiptDate[0]);
@@ -23,7 +22,6 @@ if(isset($this->shipment["shipment_test_report_date"]) && trim($this->shipment["
 <section class="content-header">
     <h1><?php echo $this->shipment['scheme_name'];?></h1>
 </section>
-
 <section class="content">
 <div class="box">
 <form name="tbResponseForm" id="tbResponseForm" method="post" action="<?php echo $this->url(array("controller"=>"tb","action"=>"response"),null,true) ?>" onsubmit="return validateNow();return false;">
@@ -38,7 +36,6 @@ foreach($this->allSamples as $sample){
 $count++;  ?>
 <input type="hidden" id ="<?php echo $count . "_hdSampleId"; ?>" name="<?php echo $count . "_hdSampleId"; ?>" value="<?php echo $sample['sample_id'];?>" />	 
 <?php } ?>
-
 <?php 
 //  $dt= DateTime::createFromFormat('Y-m-d',$this->shipment["ShipmentReceiptDate"]); echo $dt->format('d-M-Y'); 
 ?>
@@ -182,19 +179,19 @@ $count++;  ?>
     ?>
     <tr id="qcSection" class="light" style="<?php echo $display; ?>">
         <td><label>QC Date</label></td>
-            <td>
-                <input type="text" id="qcDate" name="qcDate" size="11" maxlength="11" style="width:180px;float:left;" value="<?php echo $this->dateFormat($this->shipment["qc_date"]); ?>" class="form-control datepicker <?php echo $isRquired; ?>" readonly="readonly" title="Please enter QC Date"  />
-                <i class="icon-remove-sign" style="cursor:pointer;margin-top:10px;margin-left:10px;float:left;" alt="Clear Date" title="Clear Date"  onclick="clearDate('qcDate')"> Clear</i>
-            </td>
-            <td><label>QC Done By</label></td>
-            <td>
-                <input type="text" id="qcDoneBy" name="qcDoneBy" class="form-control <?php echo $isRquired; ?>" title="Please enter QC done by name"  value="<?php echo $this->shipment["qc_done_by"]; ?>"/>
-            </td>
+        <td>
+            <input type="text" id="qcDate" name="qcDate" size="11" maxlength="11" style="width:180px;float:left;" value="<?php echo $this->dateFormat($this->shipment["qc_date"]); ?>" class="form-control datepicker <?php echo $isRquired; ?>" readonly="readonly" title="Please enter QC Date"  />
+            <i class="icon-remove-sign" style="cursor:pointer;margin-top:10px;margin-left:10px;float:left;" alt="Clear Date" title="Clear Date"  onclick="clearDate('qcDate')"> Clear</i>
+        </td>
+        <td><label>QC Done By</label></td>
+        <td>
+            <input type="text" id="qcDoneBy" name="qcDoneBy" class="form-control <?php echo $isRquired; ?>" title="Please enter QC done by name"  value="<?php echo $this->shipment["qc_done_by"]; ?>"/>
+        </td>
      </tr>
      <?php } ?>
 </table>
 <hr>
-<div style="overflow-x:auto;">
+<div>
 <table class="table table-bordered table-striped" style="width:100%;margin:10px auto;" cellpadding="0">
 <?php $count =0;
 foreach($this->allSamples as $sample){
@@ -206,21 +203,21 @@ $count++;
                 <tr>
                     <th colspan="11" style="white-space: nowrap;background-color: transparent;">
                         <?php echo $sample['sample_label']; ?> <?php echo ($sample['mandatory'] == 1) ? " <span class='mandatory'>*</span>" : "&nbsp;&nbsp;"; ?>
-                        <input type="hidden" id ="sample<?php echo $count; ?>" name="sampleId[]" value="<?php echo $sample['sample_id'];?>" />
+                        <input type="hidden" id="sample<?php echo $count; ?>" name="sampleId[]" value="<?php echo $sample['sample_id'];?>" />
                     </th>
                 </tr>
                 <tr>
-                    <th rowspan="2">Result Details</th>
-                    <th>Date Tested</th>
-                    <th>MTB Detected</th>
-                    <th class="errorCode">Error Code</th>
-                    <th>Rif Resistance</th>
-                    <th>Probe D</th>
-                    <th>Probe C</th>
-                    <th>Probe E</th>
-                    <th>Probe B</th>
-                    <th>SPC</th>
-                    <th>Probe A</th>
+                    <th rowspan="2" style="vertical-align: middle;">Result Details</th>
+                    <th style="vertical-align: bottom;">Date Tested</th>
+                    <th style="vertical-align: bottom;">MTB Detected</th>
+                    <th class="errorCode" style="vertical-align: bottom;">Error Code</th>
+                    <th style="vertical-align: bottom;">Rif Resistance</th>
+                    <th style="vertical-align: bottom;">Probe D</th>
+                    <th style="vertical-align: bottom;">Probe C</th>
+                    <th style="vertical-align: bottom;">Probe E</th>
+                    <th style="vertical-align: bottom;">Probe B</th>
+                    <th style="vertical-align: bottom;">SPC</th>
+                    <th style="vertical-align: bottom;">Probe A</th>
                 </tr>
                 <tr style="background-color: transparent;">
                     <td style="background-color: transparent;">
@@ -269,24 +266,51 @@ $count++;
                     </td>
                 </tr>
                 <tr>
-                    <th rowspan="2">Instrument/Cartridge Details</th>
-                    <th colspan="2">Serial Number</th>
-                    <th>Installed</th>
-                    <th>Last Calibrated</th>
-                    <th>Module Name</th>
-                    <th colspan="2">Instrument User</th>
-                    <th>Cartridge Expires</th>
-                    <th colspan="2">Reagent Lot ID</th>
+                    <th rowspan="2" style="vertical-align: middle;">Instrument/Cartridge Details</th>
+                    <th colspan="2" style="vertical-align: bottom;">Serial Number</th>
+                    <th style="vertical-align: bottom;">Installed</th>
+                    <th style="vertical-align: bottom;">Last Calibrated</th>
+                    <th style="vertical-align: bottom;">Module Name</th>
+                    <th colspan="2" style="vertical-align: bottom;">Instrument User</th>
+                    <th style="vertical-align: bottom;">Cartridge Expires</th>
+                    <th colspan="2" style="vertical-align: bottom;">Reagent Lot ID</th>
                 </tr>
                 <tr style="background-color: transparent;">
                     <th colspan="2" style="white-space: nowrap;background-color: transparent;">
-                        <input type="text" name="instrumentSerial[]" class="form-control input-sm" value="<?php echo $sample['res_instrument_serial']; ?>" title="Please enter the instrument serial number for <?php echo $sample['sample_label']; ?>" />
+                        <input type="text" id="instrumentSerial<?php echo $count; ?>" name="instrumentSerial[]" class="form-control input-sm" value="<?php echo $sample['res_instrument_serial']; ?>" title="Please enter the instrument serial number for <?php echo $sample['sample_label']; ?>" style="display: <?php if (!isset($this->instruments) || count($this->instruments) == 0) { echo "block"; } else { echo "none"; }?>;" />
+                        <?php
+                        if (isset($this->instruments) && count($this->instruments) > 0) { ?>
+                        <div id="instrumentDropDown<?php echo $count; ?>" class="btn-group" style="display: block; border: solid 1px #ccc; width: 100%; height: 2.13em;">
+                            <a class="btn dropdown-toggle" data-toggle="dropdown" href="#" style="width: 100%; padding-top: 3px;">
+                                <span class="dropdownText"><?php echo (isset($sample['res_instrument_serial']) && $sample['res_instrument_serial'] != "" ? $sample['res_instrument_serial'] : "-- Select --") ?></span>
+                                <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <?php
+                                foreach($this->instruments as $id => $instrument_details) {
+                                ?>
+                                <li>
+                                    <a href="" onClick="return changeInstrument({serial: '<?php echo $instrument_details["instrument_serial"]; ?>', installedOn: '<?php echo $this->dateFormat($instrument_details["instrument_installed_on"]); ?>', lastCalibratedOn: '<?php echo $this->dateFormat($instrument_details["instrument_last_calibrated_on"]); ?>', dropDownId: 'instrumentDropDown<?php echo $count; ?>', serialTextFieldId: 'instrumentSerial<?php echo $count; ?>', installedOnTextFieldId: 'instrumentInstalledOn<?php echo $count; ?>', lastCalibratedOnTextFieldId: 'instrumentLastCalibratedOn<?php echo $count; ?>'})">
+                                        <?php echo $instrument_details['instrument_serial']; ?>
+                                    </a>
+                                </li>
+                                <?php
+                                }
+                                ?>
+                                <li role="separator" class="divider"></li>
+                                <li>
+                                    <a href="" onClick="return newInstrument({dropDownId: 'instrumentDropDown<?php echo $count; ?>', serialTextFieldId: 'instrumentSerial<?php echo $count; ?>', installedOnTextFieldId: 'instrumentInstalledOn<?php echo $count; ?>', lastCalibratedOnTextFieldId: 'instrumentLastCalibratedOn<?php echo $count; ?>'})">New Instrument</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <?php
+                        } ?>
                     </th>
                     <td style="background-color: transparent;">
-                        <input type="text" class="form-control datepicker input-sm" readonly="readonly" name="instrumentInstalledOn[]" value="<?php echo $this->dateFormat($sample['res_instrument_installed_on']); ?>" title="Please enter the instrument installation date for <?php echo $sample['sample_label']; ?>" />
+                        <input type="text" id="instrumentInstalledOn<?php echo $count; ?>" class="form-control datepicker input-sm" readonly="readonly" name="instrumentInstalledOn[]" value="<?php echo $this->dateFormat($sample['res_instrument_installed_on']); ?>" title="Please enter the instrument installation date for <?php echo $sample['sample_label']; ?>" />
                     </td>
                     <td style="background-color: transparent;">
-                        <input type="text" class="form-control datepicker input-sm" readonly="readonly" name="instrumentLastCalibratedOn[]" value="<?php echo $this->dateFormat($sample['res_instrument_last_calibrated_on']); ?>" title="Please enter the date that the instrument was last calibrated for <?php echo $sample['sample_label']; ?>" />
+                        <input type="text" id="instrumentLastCalibratedOn<?php echo $count; ?>" class="form-control datepicker input-sm" readonly="readonly" name="instrumentLastCalibratedOn[]" value="<?php echo $this->dateFormat($sample['res_instrument_last_calibrated_on']); ?>" title="Please enter the date that the instrument was last calibrated for <?php echo $sample['sample_label']; ?>" />
                     </td>
                     <th style="white-space: nowrap;background-color: transparent;">
                         <input type="text" name="moduleName[]" class="form-control input-sm" value="<?php echo $sample['res_module_name']; ?>" title="Please enter the module name for <?php echo $sample['sample_label']; ?>" />
@@ -331,13 +355,11 @@ $count++;
 </table>
 <?php if($this->isEditable){ ?>
 <div id="respond" style="margin: 0px auto 0px auto; text-align: center;">
-            <p>
-
-                <input name="submitbtn" class="btn btn-primary" type="submit" value="Submit"  />
-                &nbsp;&nbsp;&nbsp;
-                <input name="cancel" class="btn btn-danger" type="button" id="reset" value="Cancel" onclick="javascript:goto_dashboard()" />
-
-            </p>
+    <p>
+        <input name="submitbtn" class="btn btn-primary" type="submit" value="Submit"  />
+        &nbsp;&nbsp;&nbsp;
+        <input name="cancel" class="btn btn-danger" type="button" id="reset" value="Cancel" onclick="javascript:goto_dashboard()" />
+    </p>
 </div>
 <?php } ?>
 </div>
@@ -365,9 +387,10 @@ $dtFormat=  $genderHelper->getDateFormat();
 	var timeOut;
 
 	$(function() {
-  	    $(".datepicker" ).datepicker({dateFormat: '<?php echo $dtFormat;?>', maxDate: '0', minDate : new Date('<?php echo $this->shipment['shipment_date']; ?>')});
-  	    $("#expiryDate" ).datepicker( "option", "maxDate", null);
-		<?php if(!$this->isEditable){
+  	    $(".datepicker:not(#expiryDate, input[name='cartridgeExpirationDate[]'], input[name='instrumentLastCalibratedOn[]'], input[name='instrumentInstalledOn[]'])").datepicker({dateFormat: '<?php echo $dtFormat;?>', maxDate: '0', minDate : new Date('<?php echo $this->shipment['shipment_date']; ?>')});
+  	    $("#expiryDate, input[name='cartridgeExpirationDate[]']").datepicker({dateFormat: '<?php echo $dtFormat;?>', minDate : new Date('<?php echo $this->shipment['shipment_date']; ?>')});
+		$("input[name='instrumentLastCalibratedOn[]'], input[name='instrumentInstalledOn[]']").datepicker({dateFormat: '<?php echo $dtFormat;?>'});
+        <?php if(!$this->isEditable){
 			?>
 			$("#tbResponseForm").find("input:enabled, select:enabled, textarea:enabled").attr("disabled", "disabled");
 			<?php
@@ -415,9 +438,7 @@ $dtFormat=  $genderHelper->getDateFormat();
 	function validateNow(){
 		var dates=[];
 			$(".sampleTestDate").each(function(){
-				
 				dates.push(new Date($(this).val()))
-
 			});
 			var maxDate=new Date(Math.max.apply(null,dates));
 			$("#testDate").val(moment(maxDate).format('DD-MMM-YYYY'));
@@ -425,7 +446,7 @@ $dtFormat=  $genderHelper->getDateFormat();
 				alert('Testing Date has to come after the Shipment Receipt Date');
 				return false;
 			}
-			$(".oneDecimal, .zeroDecimal").each(function(){
+			$(".oneDecimal").each(function(){
 				if(!$.isNumeric($(this).val())){
 					alert('Please ensure all SPC and Probe values are valid numbers');
 					return false;	
@@ -468,5 +489,23 @@ $dtFormat=  $genderHelper->getDateFormat();
 		     $("#qcDate").removeClass("isRequired");
 		     $("#qcDoneBy").removeClass("isRequired");
 		}
+    }
+
+    function changeInstrument(details) {
+        $("#" + details.serialTextFieldId).val(details.serial);
+        $("#" + details.installedOnTextFieldId).val(details.installedOn);
+        $("#" + details.lastCalibratedOnTextFieldId).val(details.lastCalibratedOn);
+        $("#" + details.dropDownId + " a span.dropdownText").text(details.serial);
+        return false;
+    }
+
+    function newInstrument(details) {
+        $("#" + details.serialTextFieldId).val('');
+        $("#" + details.installedOnTextFieldId).val('');
+        $("#" + details.lastCalibratedOnTextFieldId).val('');
+        $("#" + details.dropDownId).css('display', 'none');
+        $("#" + details.serialTextFieldId).css('display', 'block');
+        $("#" + details.serialTextFieldId).focus();
+        return false;
     }
 </script>

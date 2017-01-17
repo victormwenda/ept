@@ -2,11 +2,9 @@
 
 class Application_Model_DbTable_Partners extends Zend_Db_Table_Abstract
 {
-
     protected $_name = 'partners';
     protected $_primary = 'partner_id';
 
-    
     public function addPartnerDetails($params){
         $partnerId = 0;
         $authNameSpace = new Zend_Session_Namespace('administrators');

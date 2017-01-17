@@ -529,9 +529,7 @@ class Application_Service_Shipments {
         if (!$this->isShipmentEditable($params['shipmentId'], $params['participantId'])) {
             return false;
         }
-
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
-
         $db->beginTransaction();
         try {
             $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
@@ -558,29 +556,44 @@ class Application_Service_Shipments {
                 "updated_by_user" => $authNameSpace->dm_id,
                 "updated_on_user" => new Zend_Db_Expr('now()')
             );
-               
-	    if(isset($params['testReceiptDate']) && trim($params['testReceiptDate'])!= ''){
-		$data['shipment_test_report_date'] = Pt_Commons_General::dateFormat($params['testReceiptDate']);
-	    }else{
-		$data['shipment_test_report_date'] = new Zend_Db_Expr('now()');
-	    }
-	    
-	    if(isset($authNameSpace->qc_access) && $authNameSpace->qc_access =='yes'){
-		$data['qc_done'] = $params['qcDone'];
-		if(isset($data['qc_done']) && trim($data['qc_done'])=="yes"){
-			$data['qc_date'] = Pt_Commons_General::dateFormat($params['qcDate']);
-			$data['qc_done_by'] = trim($params['qcDoneBy']);
-			$data['qc_created_on'] = new Zend_Db_Expr('now()');
-		}else{
-			$data['qc_date']=NULL;
-			$data['qc_done_by'] = NULL;
-			$data['qc_created_on'] = NULL;
-		}
-	    }
+            if (isset($params['testReceiptDate']) && trim($params['testReceiptDate'])!= '') {
+                $data['shipment_test_report_date'] = Pt_Commons_General::dateFormat($params['testReceiptDate']);
+            } else {
+                $data['shipment_test_report_date'] = new Zend_Db_Expr('now()');
+            }
+            if (isset($authNameSpace->qc_access) && $authNameSpace->qc_access =='yes') {
+                $data['qc_done'] = $params['qcDone'];
+                if (isset($data['qc_done']) && trim($data['qc_done'])=="yes") {
+                    $data['qc_date'] = Pt_Commons_General::dateFormat($params['qcDate']);
+                    $data['qc_done_by'] = trim($params['qcDoneBy']);
+                    $data['qc_created_on'] = new Zend_Db_Expr('now()');
+                } else {
+                    $data['qc_date']=NULL;
+                    $data['qc_done_by'] = NULL;
+                    $data['qc_created_on'] = NULL;
+                }
+            }
             $noOfRowsAffected = $shipmentParticipantDb->updateShipment($data, $params['smid'], $params['hdLastDate']);
 
             $tbResponseDb = new Application_Model_DbTable_ResponseTb();
             $tbResponseDb->updateResults($params);
+
+            $sampleIds = $params['sampleId'];
+            $instrumentsDb = new Application_Model_DbTable_Instruments();
+            foreach ($sampleIds as $key => $sampleId) {
+                if (isset($params['instrumentSerial'][$key]) &&
+                    $params['instrumentSerial'][$key] != "") {
+                    $instrumentDetails = array(
+                        'instrument_serial' => $params['instrumentSerial'][$key],
+                        'instrument_installed_on' => $params['instrumentInstalledOn'][$key],
+                        'instrument_last_calibrated_on' => $params['instrumentLastCalibratedOn'][$key]
+                    );
+                    error_log(serialize($instrumentDetails), 0);
+
+                    $instrumentsDb->upsertInstrument($params['participantId'], $instrumentDetails);
+                }
+            }
+
             $db->commit();
         } catch (Exception $e) {
             // If any of the queries failed and threw an exception,

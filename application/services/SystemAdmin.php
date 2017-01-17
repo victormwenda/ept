@@ -1,7 +1,6 @@
 <?php
 
 class Application_Service_SystemAdmin {
-	
 	public function getAllAdmin($params){
 		$adminDb = new Application_Model_DbTable_SystemAdmin();
 		return $adminDb->getAllAdmin($params);
@@ -18,6 +17,5 @@ class Application_Service_SystemAdmin {
 		$adminDb = new Application_Model_DbTable_SystemAdmin();
 		return $adminDb->getSystemAdminDetails($adminId);		
 	}
-
 }
 

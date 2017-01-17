@@ -64,39 +64,8 @@ try {
                  "uploadedFilePath" => "",
                  "testReceiptDate" => $row[37]
                  );
-        
         $shipmentService->updateVlResults($arr);
-        
     }
-    //
-    //$arr = array( "hdLastDate" => "2016-07-31",
-    //             "smid" => 105,
-    //             "shipmentId" => 2,
-    //             "participantId" => 3195,
-    //             "evId" => "19121190",
-    //             "schemeCode" => "VL0616-1",
-    //             "comingFrom" => "",
-    //             "1_hdSampleId" => 1,
-    //             "2_hdSampleId" => 2,
-    //             "3_hdSampleId" => 3,
-    //             "4_hdSampleId" => 4,
-    //             "5_hdSampleId" => 5,
-    //             "receiptDate" => "19-Jun-2016",
-    //             "sampleRehydrationDate" => "19-Jun-2016",
-    //             "testDate" => "19-Jun-2016",
-    //             "specimenVolume" => "",
-    //             "vlAssay" => 2,
-    //             "otherAssay" =>"",
-    //             "assayExpirationDate" => "19-Jun-2016",
-    //             "assayLotNumber" => "T12903",
-    //             "modeOfReceipt" => 1,
-    //             "sampleId" => array( "0" => 1, "1" => 2 ,"2" => 3, "3" => 4, "4" => 5 ),
-    //             "vlResult" => array ( "0" => 3.08, "1" => 4.41, "2" => 0 ,"3" => 2.67, "4" => 4.41 ),
-    //             "MAX_FILE_SIZE" => 5000000,
-    //             "supervisorApproval" => "no",
-    //             "participantSupervisor" => "",
-    //             "userComments" =>"",
-    //             "uploadedFilePath" => "");
     
     
 } catch (Exception $e) {

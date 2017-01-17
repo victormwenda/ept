@@ -123,6 +123,7 @@
           <dbTableFile dbTableName="TestkitnameDts"/>
           <dbTableFile dbTableName="MailTemplate"/>
           <dbTableFile dbTableName="TempMail"/>
+          <dbTableFile dbTableName="Instruments"/>
         </dbTableDirectory>
         <modelFile modelName="DTSResponse"/>
       </modelsDirectory>

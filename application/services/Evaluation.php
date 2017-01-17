@@ -911,9 +911,6 @@ class Application_Service_Evaluation {
 						->where("refeid.control = 0")
                         ->where("reseid.shipment_map_id = ?", $res['map_id'])
 						->order(array('refeid.sample_id'));
-			
-				//$vlAssayResultSet[$responseAssay['vl_assay']]
-                //error_log($sQuery);
                 $shipmentResult[$i]['responseResult'] = $db->fetchAll($sQuery);
 				
             } else if ($res['scheme_type'] == 'vl') {
@@ -922,7 +919,6 @@ class Application_Service_Evaluation {
 				
                 $vlRange = $schemeService->getVlRange($shipmentId);
                 $results = $schemeService->getVlSamples($shipmentId, $res['participant_id']);
-                //$assayResults = $schemeService->getShipmentParticipantBassedAssay($shipmentId);
 				
                 $attributes = json_decode($res['attributes'], true);
 				

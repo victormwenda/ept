@@ -70,7 +70,6 @@ class EidController extends Zend_Controller_Action
 
             $participantService = new Application_Service_Participants();
             $this->view->participant = $participantService->getParticipantDetails($pID);
-            //Zend_Debug::dump($schemeService->getEidSamples($sID,$pID));
 
 	    $this->view->eidPossibleResults = $schemeService->getPossibleResults('eid');
 

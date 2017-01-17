@@ -1,7 +1,6 @@
 <?php
 
 class Application_Service_Schemes {
-
     public function getAllSchemes() {
         $schemeListDb = new Application_Model_DbTable_SchemeList();
         return $schemeListDb->getAllSchemes();

@@ -1,7 +1,6 @@
 <?php
 
 class Application_Service_Common {
-
 	public function sendMail($to, $cc, $bcc, $subject, $message, $fromMail = null, $fromName = null, $attachments = array()) {
         //Send to email
         $to = explode(",",$to);
