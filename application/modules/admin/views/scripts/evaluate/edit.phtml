@@ -31,38 +31,33 @@ if($next < count($urlListArray)){
 	<input type="hidden" name="scheme" id="scheme" value="<?php echo $this->scheme; ?>" />   
 	<input type="hidden" name="whereToGo" id="whereToGo" value="" />   
 <?php
-if($this->scheme == 'eid'){
+if ($this->scheme == 'eid') {
 	include('edit-eid-evaluation.phtml');
 }
-else if($this->scheme == 'dts'){
+else if ($this->scheme == 'dts') {
 	include('edit-dts-evaluation.phtml');
 }
-else if($this->scheme == 'dbs'){
+else if ($this->scheme == 'dbs') {
 	include('edit-dbs-evaluation.phtml');
 }
-else if($this->scheme == 'vl'){
+else if ($this->scheme == 'vl') {
 	include('edit-vl-evaluation.phtml');
 }
-else if($this->scheme == 'tb'){
+else if ($this->scheme == 'tb') {
     include('edit-tb-evaluation.phtml');
 }
 else{
 	echo "<br/><br/><br/><h4 style='text-align:center;'>Evaluation for this scheme (" . $this->scheme . ") is not yet implemented</h4><br/><br/><br/>";
 }
-
 ?>
-
 <?php
-
 $evalComments = array();
 if(isset($this->evaluateData['evalComments'])){
 	foreach($this->evaluateData['evalComments'] as $ec){
 		$evalComments[$ec['comment_id']]= $ec['comment'];
 	}
 }
-
 ?>
-
 <table class="table table-bordered" style="width:<?php if($this->scheme == 'tb') { echo "100%"; } else { echo "70%"; } ?>;margin:0 auto;">
 	<tr>
 		<td style="width:25%;vertical-align: middle">Notes</td>
