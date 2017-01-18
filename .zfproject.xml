@@ -90,6 +90,9 @@
           <actionMethod actionName="index"/>
           <actionMethod actionName="download"/>
         </controllerFile>
+        <controllerFile controllerName="Instruments">
+          <actionMethod actionName="index"/>
+        </controllerFile>
       </controllersDirectory>
       <formsDirectory enabled="false"/>
       <layoutsDirectory>
@@ -767,6 +770,9 @@
           </viewControllerScriptsDirectory>
           <viewControllerScriptsDirectory forControllerName="Common">
             <viewScriptFile forActionName="deleteResponse"/>
+          </viewControllerScriptsDirectory>
+          <viewControllerScriptsDirectory forControllerName="Instruments">
+            <viewScriptFile forActionName="index"/>
           </viewControllerScriptsDirectory>
         </viewScriptsDirectory>
         <viewHelpersDirectory/>

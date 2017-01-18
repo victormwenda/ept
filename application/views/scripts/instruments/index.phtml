@@ -1,0 +1,182 @@
+<?php
+$authNameSpace = new Zend_Session_Namespace('datamanagers');
+$dateHelper = $this->getHelper('DateFormat');
+$dtFormat = $dateHelper->getDateFormat();
+?>
+<section class="content-header">
+    <h1>Instruments</h1>
+</section>
+<section class="content">
+    <div class="box">
+        <div class="box-body">
+            <form name="instrumentsForm" id="instrumentsForm" method="post" action="<?php echo $this->url(array("controller"=>"instruments","action"=>"index"),null,true) ?>" onsubmit="return validateNow();">
+                <table style="width: 100%;margin: 0 auto;" border="1" class="table table-bordered table-striped clearfix" id="instrumentTable">
+                    <thead>
+                        <tr align="center">
+                            <th style="text-align: center;vertical-align:middle;">
+                                Instrument Serial Number
+                                <span class='mandatory'>*</span>
+                            </th>
+                            <th style="text-align: center;vertical-align:middle;">
+                                Participant
+                                <span class='mandatory'>*</span>
+                            </th>
+                            <th style="text-align: center;vertical-align:middle;">Date Installed</th>
+                            <th style="text-align: center;vertical-align:middle;">Date Last Calibrated</th>
+                            <th style="width:5%;text-align: center;vertical-align:middle;">Add/Remove</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        foreach($this->instruments as $id => $instrument_details) {
+                        ?>
+                        <tr align="center">
+                            <th>
+                                <input type="hidden" name="instrumentId[]"
+                                       value="<?php echo $id; ?>" />
+                                <input type="text" name="instrumentSerial[]"
+                                       value="<?php echo $instrument_details['instrument_serial']; ?>"
+                                       class="isRequired form-control input-sm instrumentSerial" placeholder="Instrument Serial"
+                                       title="Instrument Serial"/>
+                            </th>
+                            <td>
+                                <select name="participant[]" class="isRequired form-control input-sm participant"
+                                        title="Participant" placeholder="Participant">
+                                    <?php
+                                    if (count($this->participants) > 1) { ?>
+                                        <option value="">-- Select --</option>
+                                        <?php
+                                    }
+                                    foreach ($this->participants as $participant_details) { ?>
+                                        <option value="<?php echo $participant_details['participant_id']; ?>" <?php echo ($instrument_details['participant_id'] == $participant_details['participant_id'] ? "selected='selected'" : ""); ?>>
+                                            <?php
+                                            echo $participant_details['first_name'];
+                                            if (isset($participant_details['last_name']) &&
+                                                $participant_details['last_name'] != ""
+                                            ) {
+                                                echo " " . $participant_details['last_name'];
+                                            }
+                                            ?>
+                                        </option>
+                                        <?php
+                                    }
+                                    ?>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="text" class="form-control datepicker input-sm" readonly="readonly"
+                                       name="dateInstalled[]"
+                                       value="<?php echo $this->dateFormat($instrument_details['instrument_installed_on']); ?>"
+                                       title="Date Installed"/>
+                            </td>
+                            <td>
+                                <input type="text" class="form-control datepicker input-sm" readonly="readonly"
+                                       name="dateLastCalibrated[]"
+                                       value="<?php echo $this->dateFormat($instrument_details['instrument_last_calibrated_on']); ?>"
+                                       title="Date Last Calibrated"/>
+                            </td>
+                            <td>
+                                <a href="javascript:void(0);" onclick="addInstrumentRow(this);"
+                                   class="btn btn-xs btn-info">
+                                    <i class="icon-plus"></i>
+                                </a>&nbsp;&nbsp;
+                                <a href="javascript:void(0);" onclick="removeInstrumentRow(this)" class="btn btn-xs btn-danger"
+                                   title="Remove this instrument" alt="Remove this instrument">
+                                    <i class="icon-minus"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        <?php
+                        } ?>
+                    </tbody>
+                </table>
+                <br />
+                <br />
+                <div style="margin: 0px auto 0px auto; text-align: center;">
+                    <p>
+                        <input name="submitbtn" class="btn btn-primary" type="submit" value="Submit"  />
+                        &nbsp;&nbsp;&nbsp;
+                        <input name="cancel" class="btn btn-danger" type="button" id="reset" value="Cancel" onClick="javascript:goto_dashboard()" />
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+<script>
+    function goto_dashboard(){
+        window.history.back();
+    }
+
+    $(function() {
+        $(".datepicker").datepicker({dateFormat: '<?php echo $dtFormat;?>', maxDate: '0'});
+    });
+
+    function addInstrumentRow(obj) {
+        var participantOptions = '';
+        <?php
+        if (count($this->participants) > 1) {
+            echo "participantOptions += '\\n                    <option value=\"\">-- Select --</option>';";
+        }
+        foreach ($this->participants as $participant_details) {
+            echo "\n        participantOptions += '\\n                    <option value=\"" . $participant_details['participant_id'] . "\">';";
+            echo "\n        participantOptions += '\\n                        ".$participant_details['first_name']."';";
+            if (isset($participant_details['last_name']) && $participant_details['last_name'] != "") {
+                echo "\n        participantOptions += ' ".$participant_details['last_name']."';";
+            }
+            echo "\n        participantOptions += '\\n                    </option>';";
+        }
+        ?>
+
+        $(obj.parentNode.parentNode).after('<tr align="center">\
+            <th>\
+                <input type="hidden" name="instrumentId[]" value="0" />\
+                <input type="text" name="instrumentSerial[]" value="" class="isRequired form-control input-sm instrumentSerial" placeholder="Instrument Serial" title="Instrument Serial"/>\
+            </th>\
+            <td>\
+                <select name="participant[]" class="isRequired form-control input-sm participant" title="Participant" placeholder="Participant">\
+' + participantOptions + '\
+                </select>\
+            </td>\
+            <td>\
+                <input type="text" class="form-control datepicker input-sm" readonly="readonly" name="dateInstalled[]"  title="Date Installed"/>\
+            </td>\
+            <td>\
+                <input type="text" class="form-control datepicker input-sm" readonly="readonly" name="dateLastCalibrated[]" title="Date Last Calibrated"/>\
+            </td>\
+            <td>\
+                <a href="javascript:void(0);" onclick="addInstrumentRow(this);" class="btn btn-xs btn-info">\
+                <i class="icon-plus"></i>\
+                </a>&nbsp;&nbsp;\
+                <a href="javascript:void(0);" onclick="removeInstrumentRow(this)" class="btn btn-xs btn-danger" title="Remove this instrument" alt="Remove this instrument">\
+                    <i class="icon-minus"></i>\
+                </a>\
+            </td>\
+         </tr>');
+    }
+
+    function removeInstrumentRow(obj) {
+        $(obj.parentNode.parentNode).fadeOut("normal",function(){
+            $(this).remove();
+        });
+    }
+
+    function validateNow(){
+        $(".instrumentSerial").each(function(){
+            if(!$(this).val()){
+                alert('Please ensure that all instrument\'s serial numbers have been specified.');
+                return false;
+            }
+        });
+        $(".participant").each(function(){
+            if(!$(this).val()){
+                alert('Please ensure that all instrument\'s have been assigned to a participant.');
+                return false;
+            }
+        });
+        var flag = deforayValidator.init({
+            formId: 'instrumentsForm'
+        });
+        return flag;
+    }
+</script>

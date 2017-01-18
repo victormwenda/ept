@@ -133,6 +133,11 @@ $activeSubMenu = isset($this->layout()->activeSubMenu) ? $this->layout()->active
 				  <i class="icon icon-list-ul"></i> <span>All Schemes</span>
 				</a>
 			  </li>
+              <li class="<?php echo ($activeMenu == 'instruments') ? ' active ' : '';  ?>">
+                  <a href="<?php echo $this->url(array("controller"=>"instruments","action"=>"index"),null,true) ?>">
+                      <i class="icon icon-gears"></i> <span>Instruments</span>
+                  </a>
+              </li>
 			  <li class="<?php echo ($activeMenu == 'defaulted-schemes') ? ' active ' : '';  ?>">
 				<a href="<?php echo $this->url(array("controller"=>"participant","action"=>"defaulted-schemes"),null,true) ?>">
 				  <i class="icon icon-exclamation"></i> <span>Defaulted Schemes</span>
