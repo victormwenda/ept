@@ -23,13 +23,11 @@ class Admin_ShipmentController extends Zend_Controller_Action
         $this->_helper->layout()->pageName = 'manageMenu';
     }
 
-    public function indexAction()
-    {
+    public function indexAction() {
+        $shipmentService = new Application_Service_Shipments();
         if ($this->getRequest()->isPost()) {
             $params = $this->_getAllParams();
-            //Zend_Debug::dump($params);die;
-            $shipmentService = new Application_Service_Shipments();
-            $shipmentService->getAllShipments($params);
+            $shipmentService->echoAllShipments($params);
         } else if ($this->_hasParam('searchString')) {
             $this->view->searchData = $this->_getParam('searchString');
         }
@@ -40,6 +38,7 @@ class Admin_ShipmentController extends Zend_Controller_Action
         } else {
             $this->view->selectedDistribution = "";
         }
+        $this->view->tbShipments = $shipmentService->getShipmentsForScheme('tb');
         $distro = new Application_Service_Distribution();
         $this->view->unshippedDistro = $distro->getUnshippedDistributions();
     }
@@ -50,6 +49,7 @@ class Admin_ShipmentController extends Zend_Controller_Action
             $params = $this->getRequest()->getPost();
             $shipmentService = new Application_Service_Shipments();
             $shipmentService->addShipment($params);
+            $this->view->tbShipments = $shipmentService->getShipmentsForScheme('tb');
             if (isset($params['selectedDistribution']) && $params['selectedDistribution'] != "" && $params['selectedDistribution'] != null) {
                 $this->_redirect("/admin/shipment/index/did/" . base64_encode($params['selectedDistribution']));
             } else {

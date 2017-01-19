@@ -23,8 +23,6 @@ class InstrumentsController extends Zend_Controller_Action
                     }
                 }
                 foreach ($instrumentIds as $key => $instrumentId) {
-                    error_log($instrumentId, 0);
-                    error_log($data['participant'][$key], 0);
                     $instrumentDetails = array(
                         'instrument_id' => $instrumentId,
                         'instrument_serial' => $data['instrumentSerial'][$key],

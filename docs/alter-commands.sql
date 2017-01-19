@@ -2317,3 +2317,14 @@ CREATE TABLE `instrument` (
 	KEY `participant_id` (`participant_id`),
 	CONSTRAINT `instrument_ibfk_2` FOREIGN KEY (`participant_id`) REFERENCES `participant` (`participant_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- Bryan Richards: 18 Jan 2017
+ALTER TABLE `eanalyze`.`shipment`
+ADD COLUMN `follows_up_from` INT(11) NULL DEFAULT NULL AFTER `status`,
+ADD INDEX `shipment_ibfk_3_idx` (`follows_up_from` ASC);
+ALTER TABLE `eanalyze`.`shipment`
+ADD CONSTRAINT `shipment_ibfk_3`
+  FOREIGN KEY (`follows_up_from`)
+  REFERENCES `eanalyze`.`shipment` (`shipment_id`)
+  ON DELETE SET NULL
+  ON UPDATE NO ACTION;

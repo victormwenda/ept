@@ -173,5 +173,4 @@ class Application_Model_DbTable_ShipmentParticipantMap extends Zend_Db_Table_Abs
         
         
     }
-
 }
