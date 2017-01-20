@@ -1,0 +1,183 @@
+<div class="well">
+    <form name="editPtccProfileForm" id="editPtccProfileForm" method="post" action="<?php echo $this->url(array("module" => "admin", "controller" => "ptcc-profiles", "action" => "edit"),'default', true) ?>" class="form-horizontal bs-example" role="form" onsubmit="validateNow();return false;">
+        <fieldset>
+            <legend>
+                <?php
+                if (isset($this->ptccProfile['ptcc_profile_id'])) {
+                    echo "Update ";
+                } else {
+                    echo "Create ";
+                } ?>
+                PT Country Coordinator
+            </legend>
+            <div class="form-group">
+                <label class="col-lg-3 control-label">First Name <span class="mandatory">*</span></label>
+                <div class="col-lg-5">
+                    <input type="text" id="firstName" name="firstName" size="50" maxlength="45"
+                           class="isRequired form-control" title="Please enter the first name here"
+                           value="<?php echo $this->ptccProfile['first_name']; ?>"
+                           placeholder="Please enter the first name here"/>
+                </div>
+                <input type="hidden" id="ptccProfileId" name="ptccProfileId" size="50" maxlength="45"
+                       class="form-control" value="<?php if (isset($this->ptccProfile['ptcc_profile_id'])) { echo $this->ptccProfile['ptcc_profile_id']; } ?>"/>
+            </div>
+            <div class="form-group">
+                <label class="col-lg-3 control-label">Last Name <span class="mandatory">*</span></label>
+                <div class="col-lg-5">
+                    <input type="text" id="lastName" name="lastName" size="50" maxlength="45"
+                           class="isRequired form-control" title="Please enter the last name here"
+                           value="<?php echo $this->ptccProfile['last_name']; ?>"
+                           placeholder="Please enter the last name here"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-lg-3 control-label">Primary Email <span class="mandatory">*</span></label>
+                <div class="col-lg-5">
+                    <input type="text" id="primaryEmail" name="primaryEmail" size="50" class="isRequired form-control isEmail"
+                           title="Please enter the primary email id here" placeholder="Please enter the primary email id here"
+						   value="<?php echo $this->ptccProfile['primary_email']; ?>"
+                           onblur="checkDuplicate('ptcc_profile', 'primary_email','primaryEmail','<?php echo "ptcc_profile_id##" . (isset($this->ptccProfile['ptcc_profile_id']) ? $this->ptccProfile['ptcc_profile_id'] : '0'); ?>', 'This Email already exists for another PT Country Coordinator. Please try something else.');checkEmailId();"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-lg-3 control-label">
+                    Password
+                    <?php if (isset($this->ptccProfile['ptcc_profile_id'])) { ?>
+                    <br/>
+                    <small style="font-weight:normal;" class="mandatory">Leave blank to retain old password</small>
+                    <?php } else { ?>
+                    &nbsp;<span class="mandatory">*</span>
+                    <?php } ?>
+                </label>
+                <div class="col-lg-5">
+                    <input type="password" id="password" name="password" size="50" value=""
+                           class="form-control<?php if (!isset($this->ptccProfile['ptcc_profile_id'])) { echo " isRequired"; } ?>"
+                           title="Please enter a password" placeholder="Please enter a password"
+                           onchange="validatePassword(this)"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-lg-3 control-label">
+                    Confirm Password
+                    <?php if (isset($this->ptccProfile['ptcc_profile_id'])) { ?>
+                        <br/>
+                        <small style="font-weight:normal;" class="mandatory">Leave blank to retain old password</small>
+                    <?php } else { ?>
+                        &nbsp;<span class="mandatory">*</span>
+                    <?php } ?>
+                </label>
+                <div class="col-lg-5">
+                    <input type="password" id="confirmPassword" name="password"  size="50" value=""
+                           class="form-control confirmPassword<?php if (!isset($this->ptccProfile['ptcc_profile_id'])) { echo " isRequired"; } ?>"
+                           title="Please repeat the same password" placeholder="Please repeat the same password"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-lg-3 control-label">Cell/Mobile Number <span class="mandatory">*</span></label>
+                <div class="col-lg-5">
+                    <input type="text" id="phone" name="phone" size="50" maxlength="45"
+                           class="isRequired form-control isNumeric checkNum"
+                           title="Please enter mobile/cell number here"
+                           value="<?php echo $this->ptccProfile['phone']; ?>"
+                           placeholder="Please enter mobile/cell number here"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-lg-3 control-label">Secondary Email</label>
+                <div class="col-lg-5">
+        		    <input type="text" id="secondaryEmail" name="secondaryEmail" size="50"
+                           maxlength="45" value="<?php echo $this->ptccProfile['secondary_email']; ?>"
+                           placeholder="Please enter secondary email here"
+                           class="form-control isEmail" onblur="checkEmailId()" />
+        		</div>
+            </div>
+            <div class="form-group">
+                <label class="col-lg-3 control-label">Status <span class="mandatory">*</span></label>
+                <div class="col-lg-5">
+                    <select type="text" id="status" name="status" class="isRequired form-control"
+                            title="Please select user status here">
+                        <option value="">--Select--</option>
+                        <option value="active" <?php echo ($this->ptccProfile['status'] == "active") ? "selected='selected'" : ""; ?>>
+                            Active
+                        </option>
+                        <option value="inactive" <?php echo ($this->ptccProfile['status'] == "inactive") ? "selected='selected'" : ""; ?>>
+                            Inactive
+                        </option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-lg-3 control-label">Countries <span class="mandatory">*</span></label>
+                <div class="col-lg-5">
+                    <select id="countryId" name="countryId[]" multiple="multiple" class="form-control"
+                            title="Please select at least one country">
+                        <?php
+                        foreach($this->ptccProfile['countries'] as $country) { ?>
+                            <option value="<?php echo $country['id']; ?>" selected='selected'><?php echo $country['name']; ?></option>
+                            <?php
+                        }
+                        foreach($this->ptccProfile['other_countries'] as $country) { ?>
+                            <option value="<?php echo $country['id']; ?>"><?php echo $country['name']; ?></option>
+                            <?php
+                        } ?>
+                    </select>
+                </div>
+            </div>
+            <br>
+            <div id="respond" style="margin: 0px auto 0px auto; text-align: center;" align="center">
+                <input name="submitbtn" class="btn btn-primary" type="submit" tabindex="7" value="Update"/>
+                <input class="btn btn-danger" type="button" onclick="window.location.href='/admin/ptcc-profiles';"
+                       tabindex="8" value="Cancel"/>
+            </div>
+        </fieldset>
+    </form>
+</div>
+<script type="text/javascript">
+    var duplicated = false;
+    function checkDuplicate(tableName, fieldName, obj, fnct, msg) {
+    	objValue = document.getElementById(obj).value;
+        $.post("<?php echo $this->url(array('module' => 'default', 'controller' => 'common', 'action' => 'check-duplicate')); ?>",
+            {
+                tableName: tableName,
+                fieldName: fieldName,
+                value: objValue,
+                fnct: fnct,
+                format: "html"
+            },
+            function (data) {
+                if (data > 0) {
+                    alert(msg, "err");
+                    duplicated = true;
+                    $("#"+obj).focus();
+                } else {
+                    duplicated = false;
+                }
+                return duplicated;
+        });
+    }
+
+    function validateNow() {
+	    flag = deforayValidator.init({
+            formId: 'editPtccProfileForm'
+	    });
+	    if (flag && !duplicated) {
+		    $.blockUI();
+		    document.getElementById('editPtccProfileForm').submit();
+	    }
+    }
+    
+    function checkEmailId(){
+        primaryEmail = document.getElementById("primaryEmail").value;
+	    secondaryEmail = document.getElementById("secondaryEmail").value;
+    	if (secondaryEmail!="") {
+	        if (primaryEmail == secondaryEmail) {
+	            alert("Please check your primary email and secondary email");
+	            document.getElementById("secondaryEmail").value = "";
+	            $( "#secondaryEmail" ).focus();
+	            duplicated = true;
+	        } else {
+	            duplicated = false;
+	        }
+    	}
+    }
+</script>

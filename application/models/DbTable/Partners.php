@@ -5,33 +5,35 @@ class Application_Model_DbTable_Partners extends Zend_Db_Table_Abstract
     protected $_name = 'partners';
     protected $_primary = 'partner_id';
 
-    public function addPartnerDetails($params){
+    public function addPartnerDetails($params) {
         $partnerId = 0;
         $authNameSpace = new Zend_Session_Namespace('administrators');
-        if(isset($params['partnerName']) && trim($params['partnerName'])!= ''){
+        if (isset($params['partnerName']) && trim($params['partnerName'])!= '') {
             $data = array(
-                          'partner_name'=>$params['partnerName'],
-                          'link'=>$params['link'],
-                          'added_by' => $authNameSpace->admin_id,
-                          'added_on' => new Zend_Db_Expr('now()'),
-                          'status' => 'active'
-                          );
+                'partner_name'=>$params['partnerName'],
+                'link'=>$params['link'],
+                'added_by' => $authNameSpace->admin_id,
+                'added_on' => new Zend_Db_Expr('now()'),
+                'status' => 'active'
+            );
             $partnerId = $this->insert($data);
-	    if($partnerId >0){
-		$sortOrder = 1;
-		$partnerQuery = $this->getAdapter()->select()->from(array('pt' => $this->_name), array('pt.sort_order'))
-				     ->order("pt.sort_order DESC");
-		$partnerResult = $this->getAdapter()->fetchRow($partnerQuery);
-		if($partnerResult){
-		    $sortOrder = $partnerResult['sort_order']+1;
-		}
-		$this->update(array('sort_order'=>$sortOrder),"partner_id = ".$partnerId);
-	    }
+            if ($partnerId >0) {
+                $sortOrder = 1;
+                $partnerQuery = $this->getAdapter()
+                    ->select()
+                    ->from(array('pt' => $this->_name), array('pt.sort_order'))
+                    ->order("pt.sort_order DESC");
+                $partnerResult = $this->getAdapter()->fetchRow($partnerQuery);
+                if ($partnerResult) {
+                    $sortOrder = $partnerResult['sort_order'] + 1;
+                }
+                $this->update(array('sort_order'=>$sortOrder),"partner_id = ".$partnerId);
+            }
         }
-      return $partnerId;
+        return $partnerId;
     }
     
-    public function fetchAllPartner($parameters){
+    public function fetchAllPartner($parameters) {
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
          * you want to insert a non-database field (for example a counter or static image)
          */
@@ -182,63 +184,71 @@ class Application_Model_DbTable_Partners extends Zend_Db_Table_Abstract
     
     public function updatePartnerDetails($params){
         $partnerId = 0;
-        if(isset($params['partnerId']) && trim($params['partnerId'])!= '') {
+        if (isset($params['partnerId']) && trim($params['partnerId'])!= '') {
             $sortOrderResult = $partnerId = $params['partnerId'];
             $data = array(
-                          'partner_name'=>$params['partnerName'],
-                          'link'=>$params['link'],
-                          'status'=>$params['status']
-                          );
+                'partner_name'=>$params['partnerName'],
+                'link'=>$params['link'],
+                'status'=>$params['status']
+            );
             $this->update($data,"partner_id = ".$partnerId);
-	    if(isset($params['sortOrder']) && trim($params['sortOrder'])!= ''){
-		$partnerOrderQuery = $this->getAdapter()->select()->from(array('pt' => $this->_name), array('pt.partner_id','pt.sort_order'))
-                                              ->order("pt.sort_order ASC");
-	        $partnerOrderResult = $this->getAdapter()->fetchAll($partnerOrderQuery);
-		//Get Min/Max partner order
-		$minMaxOrderQuery = $this->getAdapter()->select()->from(array('pt' => $this->_name), array(new Zend_Db_Expr('min(sort_order) as minSortOrder'),new Zend_Db_Expr('max(sort_order) as maxSortOrder')));
-	        $minMaxOrderResult = $this->getAdapter()->fetchRow($minMaxOrderQuery);
-		if($params['sortOrder'] > $minMaxOrderResult['maxSortOrder']){
-		    $sortOrderResult = -1;
-		}else{
-		    $sql = $this->select()->where("partner_id = ? ",$partnerId);
-	            $sqlResult = $this->fetchRow($sql);
-		    if($params['sortOrder'] == $sqlResult['sort_order']){
-			$sortOrderResult = 1;
-		    }elseif($params['sortOrder'] < $sqlResult['sort_order']){
-			$b = 1;
-			foreach($partnerOrderResult as $ptOrder){
-			   $bSOrder = $b+1;
-			   if($ptOrder['sort_order'] >= $params['sortOrder'] && $ptOrder['sort_order'] <= $sqlResult['sort_order']) {
-				if($ptOrder['partner_id'] == $partnerId){
-				    $sortOrderResult = $this->update(array('sort_order'=>$params['sortOrder']),'partner_id = '.$partnerId);
-				}else{
-				    $sortOrderResult = $this->update(array('sort_order'=>$bSOrder),'partner_id = '.$ptOrder['partner_id']);
-				}
-			    }
-			   $b++;
-			}
-		    }elseif($params['sortOrder'] > $sqlResult['sort_order']){
-			$b = 1;
-			foreach($partnerOrderResult as $ptOrder){
-			   $bSOrder = $b-1;
-			   if($ptOrder['sort_order'] >= $sqlResult['sort_order'] && $ptOrder['sort_order'] <= $params['sortOrder']) {
-				if($ptOrder['partner_id'] == $partnerId){
-				    $sortOrderResult = $this->update(array('sort_order'=>$params['sortOrder']),'partner_id = '.$partnerId);
-				}else{
-				    $sortOrderResult = $this->update(array('sort_order'=>$bSOrder),'partner_id = '.$ptOrder['partner_id']);
-				}
-			    }
-			   $b++;
-			}
-		    }
-		}
-	    }
+	        if (isset($params['sortOrder']) && trim($params['sortOrder'])!= '') {
+		        $partnerOrderQuery = $this->getAdapter()
+                    ->select()
+                    ->from(array('pt' => $this->_name), array('pt.partner_id','pt.sort_order'))
+                    ->order("pt.sort_order ASC");
+	            $partnerOrderResult = $this->getAdapter()->fetchAll($partnerOrderQuery);
+                //Get Min/Max partner order
+                $minMaxOrderQuery = $this->getAdapter()
+                    ->select()
+                    ->from(array('pt' => $this->_name), array(new Zend_Db_Expr('min(sort_order) as minSortOrder'), new Zend_Db_Expr('max(sort_order) as maxSortOrder')));
+                $minMaxOrderResult = $this->getAdapter()->fetchRow($minMaxOrderQuery);
+		        if ($params['sortOrder'] > $minMaxOrderResult['maxSortOrder']) {
+		            $sortOrderResult = -1;
+		        } else {
+		            $sql = $this->select()
+                        ->where("partner_id = ? ",$partnerId);
+                    $sqlResult = $this->fetchRow($sql);
+		            if ($params['sortOrder'] == $sqlResult['sort_order']) {
+			            $sortOrderResult = 1;
+		            } elseif ($params['sortOrder'] < $sqlResult['sort_order']) {
+                        $b = 1;
+                        foreach($partnerOrderResult as $ptOrder){
+                            $bSOrder = $b+1;
+                            if ($ptOrder['sort_order'] >= $params['sortOrder'] && $ptOrder['sort_order'] <= $sqlResult['sort_order']) {
+                                if ($ptOrder['partner_id'] == $partnerId) {
+                                    $sortOrderResult = $this->update(array('sort_order'=>$params['sortOrder']),'partner_id = '.$partnerId);
+                                } else {
+                                    $sortOrderResult = $this->update(array('sort_order'=>$bSOrder),'partner_id = '.$ptOrder['partner_id']);
+                                }
+                            }
+                            $b++;
+                        }
+		            } elseif ($params['sortOrder'] > $sqlResult['sort_order']) {
+                        $b = 1;
+                        foreach ($partnerOrderResult as $ptOrder) {
+                            $bSOrder = $b-1;
+                            if($ptOrder['sort_order'] >= $sqlResult['sort_order'] &&
+                                $ptOrder['sort_order'] <= $params['sortOrder']) {
+                                if ($ptOrder['partner_id'] == $partnerId) {
+                                    $sortOrderResult = $this->update(array('sort_order' => $params['sortOrder']), 'partner_id = '.$partnerId);
+                                } else {
+                                    $sortOrderResult = $this->update(array('sort_order' => $bSOrder), 'partner_id = '.$ptOrder['partner_id']);
+                                }
+                            }
+                            $b++;
+                        }
+		            }
+        		}
+	        }
         }
-      return $partnerId;
+        return $partnerId;
     }
     
-    public function fetchAllActivePartners(){
-        $sql = $this->select()->where("status = ? ","active")->order("sort_order ASC");
-	return $this->fetchAll($sql);
+    public function fetchAllActivePartners() {
+        $sql = $this->select()
+            ->where("status = ? ","active")
+            ->order("sort_order ASC");
+	    return $this->fetchAll($sql);
     }
 }

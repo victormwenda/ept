@@ -1,15 +1,11 @@
 <?php
 
-class Application_Model_DbTable_SystemAdmin extends Zend_Db_Table_Abstract
-{
-
+class Application_Model_DbTable_SystemAdmin extends Zend_Db_Table_Abstract {
     protected $_name = 'system_admin';
     protected $_primary = 'admin_id';
 
-    
     public function getAllAdmin($parameters)
     {
-
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
          * you want to insert a non-database field (for example a counter or static image)
          */
@@ -168,24 +164,23 @@ class Application_Model_DbTable_SystemAdmin extends Zend_Db_Table_Abstract
         return $this->fetchRow($this->select()->where("admin_id = ? ",$adminId));
     }
     
-    public function updateSystemAdmin($params){
-	$authNameSpace = new Zend_Session_Namespace('administrators');
+    public function updateSystemAdmin($params) {
+	    $authNameSpace = new Zend_Session_Namespace('administrators');
         $data = array(
-                      'first_name'=>$params['firstName'],
-                      'last_name'=>$params['lastName'],
-                      'primary_email'=>$params['primaryEmail'],
-                      'secondary_email'=>$params['secondaryEmail'],
-                      'phone'=>$params['phone'],
-                      'status'=>$params['status'],
-		      'updated_by' => $authNameSpace->admin_id,
-                      'updated_on' => new Zend_Db_Expr('now()')
-                      );
+            'first_name'=>$params['firstName'],
+            'last_name'=>$params['lastName'],
+            'primary_email'=>$params['primaryEmail'],
+            'secondary_email'=>$params['secondaryEmail'],
+            'phone'=>$params['phone'],
+            'status'=>$params['status'],
+		    'updated_by' => $authNameSpace->admin_id,
+            'updated_on' => new Zend_Db_Expr('now()')
+        );
         if(isset($params['password']) && $params['password'] !=""){
             $data['password']= $params['password'];
             $data['force_password_reset']= 1;
         }
         return $this->update($data,"admin_id=".$params['adminId']);
     }
-
 }
 

@@ -10,25 +10,25 @@
 			</div>
 		</div>
 		<br/>
-			<select id="participants" name="participants[]" multiple="multiple" >
-				<?php
-				foreach($this->participants as $participant){
-					?>
-					<option value="<?php echo $participant['participant_id']; ?>"><?php echo $participant['first_name'] . " " .$participant['last_name'] ; ?>(<?php echo $participant['unique_identifier']; ?>)</option>
-					<?php
-				}
-				?>
-				<?php
-				foreach($this->enrolled as $participant){
-					?>
-					<option value="<?php echo $participant['participant_id']; ?>" selected='selected'><?php echo $participant['first_name'] . " " .$participant['last_name'] ; ?>(<?php echo $participant['unique_identifier']; ?>)</option>
-					<?php
-				}
-				?>
-			</select>
-			<input type="hidden" name="schemeId" id="schemeId" value="<?php echo $this->scheme;?>" />
-			<br/>
-			<div class="col-md-12 col-xs-12" style="" align="center">
+        <select id="participants" name="participants[]" multiple="multiple" >
+            <?php
+            foreach($this->participants as $participant){
+                ?>
+                <option value="<?php echo $participant['participant_id']; ?>"><?php echo $participant['first_name'] . " " .$participant['last_name'] ; ?>(<?php echo $participant['unique_identifier']; ?>)</option>
+                <?php
+            }
+            ?>
+            <?php
+            foreach($this->enrolled as $participant){
+                ?>
+                <option value="<?php echo $participant['participant_id']; ?>" selected='selected'><?php echo $participant['first_name'] . " " .$participant['last_name'] ; ?>(<?php echo $participant['unique_identifier']; ?>)</option>
+                <?php
+            }
+            ?>
+        </select>
+        <input type="hidden" name="schemeId" id="schemeId" value="<?php echo $this->scheme;?>" />
+        <br/>
+        <div class="col-md-12 col-xs-12" style="" align="center">
 			<input type="submit" class="btn btn-primary" value="Enroll Selected" />
 			<input type="button" onclick="window.location.href='<?php echo $this->url(array('module'=>'admin','controller'=>'enrollments','action'=>'index'),'default',true); ?>'" class="btn btn-danger" value="Cancel" />
 		</div>
