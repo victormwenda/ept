@@ -2330,29 +2330,16 @@ ADD CONSTRAINT `shipment_ibfk_3`
   ON UPDATE NO ACTION;
 
 -- Bryan Richards: 19 Jan 2017
-CREATE TABLE `ptcc_profile` (
-  `ptcc_profile_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `first_name` varchar(255) DEFAULT NULL,
-  `last_name` varchar(255) DEFAULT NULL,
-  `primary_email` varchar(255) DEFAULT NULL,
-  `password` varchar(255) DEFAULT NULL,
-  `secondary_email` varchar(255) DEFAULT NULL,
-  `phone` varchar(255) DEFAULT NULL,
-  `force_password_reset` int(11) DEFAULT NULL,
-  `status` varchar(255) DEFAULT 'inactive',
-  `created_on` datetime DEFAULT NULL,
-  `created_by` varchar(255) DEFAULT NULL,
-  `updated_on` datetime DEFAULT NULL,
-  `updated_by` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`ptcc_profile_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+ALTER TABLE `eanalyze`.`system_admin`
+	ADD COLUMN `is_ptcc_coordinator` INT(1) UNSIGNED NULL DEFAULT NULL AFTER `status`;
 
-CREATE TABLE `ptcc_profile_country_map` (
-  `ptcc_profile_id` int(11) unsigned NOT NULL,
-  `country_id` int(10) unsigned NOT NULL,
-  PRIMARY KEY (`ptcc_profile_id`,`country_id`),
-  KEY `ptcc_profile_id` (`ptcc_profile_id`),
-  KEY `country_id` (`country_id`),
-  CONSTRAINT `ptcc_profile_country_map_ibfk_1` FOREIGN KEY (`ptcc_profile_id`) REFERENCES `ptcc_profile` (`ptcc_profile_id`) ON DELETE CASCADE,
-  CONSTRAINT `ptcc_profile_country_map_ibfk_2` FOREIGN KEY (`country_id`) REFERENCES `countries` (`id`)  ON DELETE CASCADE
+
+CREATE TABLE `ptcc_country_map` (
+	`admin_id` int(11) NOT NULL,
+	`country_id` int(10) unsigned NOT NULL,
+	PRIMARY KEY (`admin_id`,`country_id`),
+	KEY `admin_id` (`admin_id`),
+	KEY `country_id` (`country_id`),
+	CONSTRAINT `ptcc_country_map_ibfk_1` FOREIGN KEY (`admin_id`) REFERENCES `system_admin` (`admin_id`) ON DELETE CASCADE,
+	CONSTRAINT `ptcc_country_map_ibfk_2` FOREIGN KEY (`country_id`) REFERENCES `countries` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;

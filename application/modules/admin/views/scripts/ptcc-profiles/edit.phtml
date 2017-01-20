@@ -3,7 +3,7 @@
         <fieldset>
             <legend>
                 <?php
-                if (isset($this->ptccProfile['ptcc_profile_id'])) {
+                if (isset($this->ptccProfile['admin_id'])) {
                     echo "Update ";
                 } else {
                     echo "Create ";
@@ -19,7 +19,7 @@
                            placeholder="Please enter the first name here"/>
                 </div>
                 <input type="hidden" id="ptccProfileId" name="ptccProfileId" size="50" maxlength="45"
-                       class="form-control" value="<?php if (isset($this->ptccProfile['ptcc_profile_id'])) { echo $this->ptccProfile['ptcc_profile_id']; } ?>"/>
+                       class="form-control" value="<?php if (isset($this->ptccProfile['admin_id'])) { echo $this->ptccProfile['admin_id']; } ?>"/>
             </div>
             <div class="form-group">
                 <label class="col-lg-3 control-label">Last Name <span class="mandatory">*</span></label>
@@ -36,13 +36,13 @@
                     <input type="text" id="primaryEmail" name="primaryEmail" size="50" class="isRequired form-control isEmail"
                            title="Please enter the primary email id here" placeholder="Please enter the primary email id here"
 						   value="<?php echo $this->ptccProfile['primary_email']; ?>"
-                           onblur="checkDuplicate('ptcc_profile', 'primary_email','primaryEmail','<?php echo "ptcc_profile_id##" . (isset($this->ptccProfile['ptcc_profile_id']) ? $this->ptccProfile['ptcc_profile_id'] : '0'); ?>', 'This Email already exists for another PT Country Coordinator. Please try something else.');checkEmailId();"/>
+                           onblur="checkDuplicate('system_admin', 'primary_email','primaryEmail','<?php echo "admin_id##" . (isset($this->ptccProfile['admin_id']) ? $this->ptccProfile['admin_id'] : '0'); ?>', 'This Email already exists for another PT Country Coordinator. Please try something else.');checkEmailId();"/>
                 </div>
             </div>
             <div class="form-group">
                 <label class="col-lg-3 control-label">
                     Password
-                    <?php if (isset($this->ptccProfile['ptcc_profile_id'])) { ?>
+                    <?php if (isset($this->ptccProfile['admin_id'])) { ?>
                     <br/>
                     <small style="font-weight:normal;" class="mandatory">Leave blank to retain old password</small>
                     <?php } else { ?>
@@ -51,7 +51,7 @@
                 </label>
                 <div class="col-lg-5">
                     <input type="password" id="password" name="password" size="50" value=""
-                           class="form-control<?php if (!isset($this->ptccProfile['ptcc_profile_id'])) { echo " isRequired"; } ?>"
+                           class="form-control<?php if (!isset($this->ptccProfile['admin_id'])) { echo " isRequired"; } ?>"
                            title="Please enter a password" placeholder="Please enter a password"
                            onchange="validatePassword(this)"/>
                 </div>
@@ -59,7 +59,7 @@
             <div class="form-group">
                 <label class="col-lg-3 control-label">
                     Confirm Password
-                    <?php if (isset($this->ptccProfile['ptcc_profile_id'])) { ?>
+                    <?php if (isset($this->ptccProfile['admin_id'])) { ?>
                         <br/>
                         <small style="font-weight:normal;" class="mandatory">Leave blank to retain old password</small>
                     <?php } else { ?>
@@ -68,7 +68,7 @@
                 </label>
                 <div class="col-lg-5">
                     <input type="password" id="confirmPassword" name="password"  size="50" value=""
-                           class="form-control confirmPassword<?php if (!isset($this->ptccProfile['ptcc_profile_id'])) { echo " isRequired"; } ?>"
+                           class="form-control confirmPassword<?php if (!isset($this->ptccProfile['admin_id'])) { echo " isRequired"; } ?>"
                            title="Please repeat the same password" placeholder="Please repeat the same password"/>
                 </div>
             </div>

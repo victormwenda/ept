@@ -32,8 +32,8 @@ class Admin_PtccProfilesController extends Zend_Controller_Action {
             $ptccProfileService->savePtccProfile($params);
             $this->_redirect("/admin/ptcc-profiles");
         } elseif ($this->_hasParam('id')) {
-            $ptccProfileId = (int)$this->_getParam('id');
-            $this->view->ptccProfile = $ptccProfileService->getSystemPtccProfileDetails($ptccProfileId);
+            $adminId = (int)$this->_getParam('id');
+            $this->view->ptccProfile = $ptccProfileService->getSystemPtccProfileDetails($adminId);
         } else {
             $this->view->ptccProfile = $ptccProfileService->getSystemPtccProfileDetails();
         }
