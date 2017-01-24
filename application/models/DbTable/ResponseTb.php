@@ -1,7 +1,6 @@
 <?php
 
 class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
-
     protected $_name = 'response_result_tb';
     protected $_primary = array('shipment_map_id', 'sample_id');
 
@@ -72,7 +71,4 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
             }
         }
     }
-
-    
-
 }

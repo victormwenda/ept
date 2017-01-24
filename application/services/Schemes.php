@@ -544,7 +544,6 @@ class Application_Service_Schemes {
     }
 
     public function getShipmentData($sId, $pId) {
-
         $db = new Application_Model_DbTable_Shipments();
         return $db->getShipmentData($sId, $pId);
     }

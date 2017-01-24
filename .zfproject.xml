@@ -219,6 +219,14 @@
               <actionMethod actionName="vlRange"/>
               <actionMethod actionName="recalculateVlRange"/>
             </controllerFile>
+            <controllerFile controllerName="Response">
+              <actionMethod actionName="index"/>
+              <actionMethod actionName="getShipments"/>
+              <actionMethod actionName="shipment"/>
+              <actionMethod actionName="edit"/>
+              <actionMethod actionName="updateShipmentComment"/>
+              <actionMethod actionName="updateShipmentStatus"/>
+            </controllerFile>
             <controllerFile controllerName="ContactUs">
               <actionMethod actionName="index"/>
             </controllerFile>
@@ -359,6 +367,36 @@
               <viewControllerScriptsDirectory forControllerName="Evaluate">
                 <viewScriptFile forActionName="updateShipmentComment"/>
               </viewControllerScriptsDirectory>
+              <viewControllerScriptsDirectory forControllerName="Evaluate">
+                <viewScriptFile forActionName="updateShipmentStatus"/>
+              </viewControllerScriptsDirectory>
+              <viewControllerScriptsDirectory forControllerName="Evaluate">
+                <viewScriptFile forActionName="deleteDtsResponse"/>
+              </viewControllerScriptsDirectory>
+              <viewControllerScriptsDirectory forControllerName="Evaluate">
+                <viewScriptFile forActionName="vlRange"/>
+              </viewControllerScriptsDirectory>
+              <viewControllerScriptsDirectory forControllerName="Evaluate">
+                <viewScriptFile forActionName="recalculateVlRange"/>
+              </viewControllerScriptsDirectory>
+              <viewControllerScriptsDirectory forControllerName="Response">
+                <viewScriptFile forActionName="index"/>
+              </viewControllerScriptsDirectory>
+              <viewControllerScriptsDirectory forControllerName="Response">
+                <viewScriptFile forActionName="getShipments"/>
+              </viewControllerScriptsDirectory>
+              <viewControllerScriptsDirectory forControllerName="Response">
+                <viewScriptFile forActionName="shipment"/>
+              </viewControllerScriptsDirectory>
+              <viewControllerScriptsDirectory forControllerName="Response">
+                <viewScriptFile forActionName="edit"/>
+              </viewControllerScriptsDirectory>
+              <viewControllerScriptsDirectory forControllerName="Response">
+                <viewScriptFile forActionName="updateShipmentComment"/>
+              </viewControllerScriptsDirectory>
+              <viewControllerScriptsDirectory forControllerName="Response">
+                <viewScriptFile forActionName="updateShipmentStatus"/>
+              </viewControllerScriptsDirectory>
               <viewControllerScriptsDirectory forControllerName="ContactUs">
                 <viewScriptFile forActionName="index"/>
               </viewControllerScriptsDirectory>
@@ -425,9 +463,6 @@
               <viewControllerScriptsDirectory forControllerName="Testkit">
                 <viewScriptFile forActionName="getTestkit"/>
               </viewControllerScriptsDirectory>
-              <viewControllerScriptsDirectory forControllerName="Evaluate">
-                <viewScriptFile forActionName="updateShipmentStatus"/>
-              </viewControllerScriptsDirectory>
               <viewControllerScriptsDirectory forControllerName="MailTemplate">
                 <viewScriptFile forActionName="index"/>
               </viewControllerScriptsDirectory>
@@ -449,20 +484,11 @@
               <viewControllerScriptsDirectory forControllerName="Shipment">
                 <viewScriptFile forActionName="enrollShipmentParticipant"/>
               </viewControllerScriptsDirectory>
-              <viewControllerScriptsDirectory forControllerName="Evaluate">
-                <viewScriptFile forActionName="deleteDtsResponse"/>
-              </viewControllerScriptsDirectory>
               <viewControllerScriptsDirectory forControllerName="DtsSettings">
                 <viewScriptFile forActionName="index"/>
               </viewControllerScriptsDirectory>
               <viewControllerScriptsDirectory forControllerName="Shipment">
                 <viewScriptFile forActionName="responseSwitch"/>
-              </viewControllerScriptsDirectory>
-              <viewControllerScriptsDirectory forControllerName="Evaluate">
-                <viewScriptFile forActionName="vlRange"/>
-              </viewControllerScriptsDirectory>
-              <viewControllerScriptsDirectory forControllerName="Evaluate">
-                <viewScriptFile forActionName="recalculateVlRange"/>
               </viewControllerScriptsDirectory>
             </viewScriptsDirectory>
             <viewHelpersDirectory/>

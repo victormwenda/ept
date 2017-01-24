@@ -89,8 +89,7 @@ class Admin_EvaluateController extends Zend_Controller_Action
         }
     }
 
-    public function editAction()
-    {
+    public function editAction() {
         if ($this->getRequest()->isPost()) {
             $params = $this->getRequest()->getPost();
             $evalService = new Application_Service_Evaluation();
@@ -134,8 +133,6 @@ class Admin_EvaluateController extends Zend_Controller_Action
                 $this->_redirect("/admin/evaluate/");
             }
         }
-        
-
     }
 
     public function updateShipmentCommentAction()
@@ -164,7 +161,6 @@ class Admin_EvaluateController extends Zend_Controller_Action
 
     public function deleteDtsResponseAction()
     {
-		
         if($this->_hasParam('mid')){
             if ($this->getRequest()->isPost()) {
                 $mapId = (int)base64_decode($this->_getParam('mid'));

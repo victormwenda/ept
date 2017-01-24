@@ -1,0 +1,86 @@
+<?php
+
+class Admin_ResponseController extends Zend_Controller_Action
+{
+    public function init() {
+        $ajaxContext = $this->_helper->getHelper('AjaxContext');
+        $ajaxContext->addActionContext('index', 'html')
+                    ->addActionContext('get-shipments', 'html')
+                    ->addActionContext('update-shipment-status', 'html')
+                    ->addActionContext('delete-response', 'html')
+                    ->initContext();        
+        $this->_helper->layout()->pageName = 'analyze';
+    }
+
+    public function indexAction() {
+        if ($this->getRequest()->isPost()) {
+            $params = $this->_getAllParams();            
+            $responseService = new Application_Service_Response();
+            $responseService->getAllDistributions($params);
+        }
+		if ($this->_hasParam('scheme') && $this->_hasParam('showcalc')) {
+            $this->view->showcalc = ($this->_getParam('showcalc'));
+            $this->view->scheme = $this->_getParam('scheme');
+		}
+    }
+
+    public function getShipmentsAction() {
+        if ($this->_hasParam('did')) {
+            $id = (int)($this->_getParam('did'));
+            $responseService = new Application_Service_Response();
+            $this->view->shipments = $responseService->getShipments($id);
+        } else {
+            $this->view->shipments = false;
+        }
+    }
+
+    public function shipmentAction() {
+        if ($this->_hasParam('sid')) {
+            $id = (int)base64_decode($this->_getParam('sid'));
+            $responseService = new Application_Service_Response();
+            $shipment = $this->view->shipment = $responseService->getShipmentToEdit($id);
+            $this->view->shipmentsUnderDistro = $responseService->getShipments($shipment[0]['distribution_id']);
+        } else {
+            $this->_redirect("/admin/response/");
+        }
+    }
+
+    public function editAction() {
+        if ($this->getRequest()->isPost()) {
+            $params = $this->getRequest()->getPost();
+            $responseService = new Application_Service_Response();
+            $responseService->updateShipmentResults($params);
+            $shipmentId = base64_encode($params['shipmentId']);
+            $alertMsg = new Zend_Session_Namespace('alertSpace');
+            $alertMsg->message = "Shipment Results updated successfully";
+            if (isset($params['whereToGo']) && $params['whereToGo'] != "") {
+               $this->_redirect($params['whereToGo']); 
+            } else {
+                $this->_redirect("/admin/response/shipment/sid/$shipmentId");
+            }
+        } else {
+            if ($this->_hasParam('sid') && $this->_hasParam('pid')  && $this->_hasParam('scheme')) {
+                $this->view->currentUrl = "/admin/response/edit/sid/".$this->_getParam('sid')."/pid/".$this->_getParam('pid')."/scheme/".$this->_getParam('scheme');
+                $sid = (int)base64_decode($this->_getParam('sid'));
+                $pid = (int)base64_decode($this->_getParam('pid'));
+                $this->view->scheme = $scheme = base64_decode($this->_getParam('scheme'));
+                $schemeService = new Application_Service_Schemes();
+                if ($scheme == 'tb') {
+                    $this->view->assays = $schemeService->getTbAssay();
+                }
+                $responseService = new Application_Service_Response();
+                $this->view->responseData = $responseService->editResponse($sid,$pid,$scheme);
+                $globalConfigDb = new Application_Model_DbTable_GlobalConfig();
+                $this->view->customField1 = $globalConfigDb->getValue('custom_field_1');
+                $this->view->customField2 = $globalConfigDb->getValue('custom_field_2');
+                $this->view->haveCustom = $globalConfigDb->getValue('custom_field_needed');
+                $commonService = new Application_Service_Common();
+                $this->view->modeOfReceipt=$commonService->getAllModeOfReceipt();
+                $this->view->globalQcAccess=$commonService->getConfig('qc_access');
+            } else {
+                $this->_redirect("/admin/response/");
+            }
+        }
+    }
+}
+

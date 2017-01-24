@@ -525,7 +525,6 @@ class Application_Service_Shipments {
                 "shipment_receipt_date" => Pt_Commons_General::dateFormat($params['receiptDate']),
                 "shipment_test_date" => Pt_Commons_General::dateFormat($params['testDate']),
                 "attributes" => $attributes,
-                //"shipment_test_report_date" => new Zend_Db_Expr('now()'),
                 "supervisor_approval" => $params['supervisorApproval'],
                 "participant_supervisor" => $params['participantSupervisor'],
                 "user_comment" => $params['userComments'],
@@ -550,7 +549,7 @@ class Application_Service_Shipments {
                     $data['qc_created_on'] = NULL;
                 }
             }
-            $noOfRowsAffected = $shipmentParticipantDb->updateShipment($data, $params['smid'], $params['hdLastDate']);
+            $shipmentParticipantDb->updateShipment($data, $params['smid'], $params['hdLastDate']);
 
             $tbResponseDb = new Application_Model_DbTable_ResponseTb();
             $tbResponseDb->updateResults($params);
@@ -571,10 +570,6 @@ class Application_Service_Shipments {
 
             $db->commit();
         } catch (Exception $e) {
-            // If any of the queries failed and threw an exception,
-            // we want to roll back the whole transaction, reversing
-            // changes made in the transaction, even those that succeeded.
-            // Thus all changes are committed together, or none are.
             $db->rollBack();
             error_log($e->getMessage());
             error_log($e->getTraceAsString());

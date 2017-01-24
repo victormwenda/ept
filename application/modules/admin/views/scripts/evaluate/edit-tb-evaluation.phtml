@@ -148,10 +148,10 @@ $dtFormat=  $dateFormatHelper->getDateFormat();
                                 </select>
                             </td>
                             <td style="vertical-align: middle;text-align: center;width: 11%;">
-                                <input type="text" id="errorCode<?php echo $counter; ?>" name="errorCode[]" class="form-control input-sm" value="<?php echo $result['res_error_code']; ?>" title="Please enter the Probe D value for <?php echo $result['sample_label']; ?>"  <?php if (!$errorCodeEnabled) { echo "disabled"; } ?> />
+                                <input type="text" id="errorCode<?php echo $counter; ?>" name="errorCode[]" class="form-control input-sm" value="<?php echo $result['res_error_code']; ?>" title="Please enter the Probe D value for <?php echo $result['sample_label']; ?>"  <?php if (!$errorCodeEnabled) { echo "readonly"; } ?> />
                             </td>
                             <td style="vertical-align: middle;text-align:center;width: 13%;">
-                                <select id="rifResistance<?php echo $counter; ?>" name="rifResistance[]" class="isRequired form-control input-sm"  title="Please enter the Rif Resistance for this sample" placeholder="Please enter the Rif Resistance for this sample" <?php if (!$rifResistanceEnabled) { echo "disabled"; } ?> >
+                                <select id="rifResistance<?php echo $counter; ?>" name="rifResistance[]" class="isRequired form-control input-sm"  title="Please enter the Rif Resistance for this sample" placeholder="Please enter the Rif Resistance for this sample" <?php if (!$rifResistanceEnabled) { echo "readonly"; } ?> >
                                     <option value="">-- Select --</option>
                                     <option value="detected" <?php echo ($result['res_rif_resistance'] == 'detected' ? "selected='selected'" : ""); ?>>Detected</option>
                                     <option value="notDetected"  <?php echo ($result['res_rif_resistance'] == 'notDetected' ? "selected='selected'" : ""); ?>>Not Detected</option>
@@ -333,15 +333,15 @@ $dtFormat=  $dateFormatHelper->getDateFormat();
         var errorCodeInput = $("#errorCode" + resultNumber);
         var rifResistanceSelect = $("#rifResistance" + resultNumber);
         if (mtbDetected === "invalid") {
-            errorCodeInput.removeAttr("disabled");
+            errorCodeInput.removeAttr("readonly");
         } else {
-            errorCodeInput.attr("disabled", "");
+            errorCodeInput.attr("readonly", "");
             errorCodeInput.val('')
         }
         if (["high", "medium", "low", "veryLow"].includes(mtbDetected)) {
-            rifResistanceSelect.removeAttr("disabled");
+            rifResistanceSelect.removeAttr("readonly");
         } else {
-            rifResistanceSelect.attr("disabled", "");
+            rifResistanceSelect.attr("readonly", "");
             rifResistanceSelect.val('na')
         }
     }

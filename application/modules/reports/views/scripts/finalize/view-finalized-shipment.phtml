@@ -133,9 +133,9 @@ if (count($this->shipment) > 0) {
                 </tr>
                 <?php
             }
-            $evSession = new Zend_Session_Namespace('evalShipmentList');
-            $evSession->editUrlList = $editList;
-            $evSession->viewUrlList = $viewList;
+            $shipmentListSession = new Zend_Session_Namespace('shipmentList');
+            $shipmentListSession->editUrlList = $editList;
+            $shipmentListSession->viewUrlList = $viewList;
             ?>
 
         </tbody>

@@ -1,6 +1,6 @@
 <?php
-$evSession = new Zend_Session_Namespace('evalShipmentList');
-$urlListArray = $evSession->editUrlList;
+$shipmentListSession = new Zend_Session_Namespace('shipmentList');
+$urlListArray = $shipmentListSession->editUrlList;
 $this->currentUrl;
 $pos = array_search($this->currentUrl,$urlListArray);
 
