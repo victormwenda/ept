@@ -235,20 +235,20 @@ class Application_Service_Response {
                 "updated_on_admin" => new Zend_Db_Expr('now()')
             );
             if (isset($params['responseDate']) && trim($params['responseDate'])!= '') {
-                $data['shipment_test_report_date'] = Pt_Commons_General::dateFormat($params['responseDate']);
+                $mapData['shipment_test_report_date'] = Pt_Commons_General::dateFormat($params['responseDate']);
             } else {
-                $data['shipment_test_report_date'] = new Zend_Db_Expr('now()');
+                $mapData['shipment_test_report_date'] = new Zend_Db_Expr('now()');
             }
             if (isset($authNameSpace->qc_access) && $authNameSpace->qc_access =='yes') {
                 $data['qc_done'] = $params['qcDone'];
                 if (isset($data['qc_done']) && trim($data['qc_done'])=="yes") {
-                    $data['qc_date'] = Pt_Commons_General::dateFormat($params['qcDate']);
-                    $data['qc_done_by'] = trim($params['qcDoneBy']);
-                    $data['qc_created_on'] = new Zend_Db_Expr('now()');
+                    $mapData['qc_date'] = Pt_Commons_General::dateFormat($params['qcDate']);
+                    $mapData['qc_done_by'] = trim($params['qcDoneBy']);
+                    $mapData['qc_created_on'] = new Zend_Db_Expr('now()');
                 } else {
-                    $data['qc_date'] = NULL;
-                    $data['qc_done_by'] = NULL;
-                    $data['qc_created_on'] = NULL;
+                    $mapData['qc_date'] = NULL;
+                    $mapData['qc_done_by'] = NULL;
+                    $mapData['qc_created_on'] = NULL;
                 }
             }
 
@@ -260,7 +260,8 @@ class Application_Service_Response {
                 $mapData['custom_field_2'] = $params['customField2'];
             }
 
-            $db->update('shipment_participant_map', $mapData, "map_id = " . $params['smid']);
+            $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
+            $shipmentParticipantDb->updateShipment($mapData, $params['smid'], $params['hdLastDate']);
 
             $instrumentsDb = new Application_Model_DbTable_Instruments();
             for ($i = 0; $i < $size; $i++) {

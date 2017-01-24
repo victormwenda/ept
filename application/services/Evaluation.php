@@ -3,7 +3,6 @@
 class Application_Service_Evaluation {
 
     public function getAllDistributions($parameters) {
-
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
          * you want to insert a non-database field (for example a counter or static image)
          */
@@ -172,7 +171,7 @@ class Application_Service_Evaluation {
         return $db->fetchAll($sql);
     }
     
-     public function getResponseCount($shipmentId,$distributionId) {
+    public function getResponseCount($shipmentId,$distributionId) {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sql = $db->select()->from(array('s' => 'shipment'),array(''))
                 ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id',array(''))
@@ -840,7 +839,6 @@ class Application_Service_Evaluation {
     }
 
     public function getEvaluateReportsInPdf($shipmentId,$sLimit,$sOffset) {
-        //echo $shipmentId;die;
         $responseResult = "";
         $vlCalculation = "";
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
@@ -1076,8 +1074,7 @@ class Application_Service_Evaluation {
             $db->update('shipment_participant_map', array('report_generated' => 'yes'), "map_id=" . $res['map_id']);
             $db->update('shipment', array('status' => 'evaluated'), "shipment_id=" . $shipmentId);
         }
-        
-		
+
         $result = array('shipment' => $shipmentResult,'dmResult' => $mapRes,'vlGraphResult'=>$vlGraphResult);
 
         return $result;
@@ -1523,8 +1520,7 @@ class Application_Service_Evaluation {
         return $dbAdapter->fetchRow($sQuery);
     }
 	
-	
-	public function evaluateDtsViralLoad($shipmentResult,$shipmentId,$reEvaluate){
+	public function evaluateDtsViralLoad($shipmentResult,$shipmentId,$reEvaluate) {
 		$counter = 0;
 		$maxScore = 0;
 		$scoreHolder = array();
@@ -1690,11 +1686,8 @@ class Application_Service_Evaluation {
 		$db->update('shipment', array('max_score' => $maxScore), "shipment_id = " . $shipmentId);
 		return $shipmentResult;
 	}
-	
-	
-	
-	public function evaluateEid($shipmentResult,$shipmentId){
-		
+
+	public function evaluateEid($shipmentResult,$shipmentId) {
 		$counter = 0;
 		$maxScore = 0;
 		$scoreHolder = array();
@@ -1814,11 +1807,8 @@ class Application_Service_Evaluation {
 			
 			return $shipmentResult;
 	}
-	
-	
-	
-	public function evaluateDtsHivSerology($shipmentResult,$shipmentId){
 
+	public function evaluateDtsHivSerology($shipmentResult,$shipmentId) {
 		$counter = 0;
 		$maxScore = 0;
 		$scoreHolder = array();
@@ -2466,5 +2456,4 @@ class Application_Service_Evaluation {
 		$db->update('shipment', array('max_score' => $maxScore,'average_score' => $averageScore), "shipment_id = " . $shipmentId);
 		return $shipmentResult;
 	}
-
 }

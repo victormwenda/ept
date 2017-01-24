@@ -36,6 +36,7 @@ $reportDate = explode(" ", $this->responseData['shipment']['shipment_test_report
 <input type="hidden" name="smid" id="smid" value="<?php echo $this->responseData['shipment']['map_id']; ?>" />
 <input type="hidden" name="scheme" id="scheme" value="<?php echo $this->scheme; ?>" />
 <input type="hidden" name="whereToGo" id="whereToGo" value="" />
+<input type="hidden" id ="hdLastDate" name="hdLastDate" value="<?php echo $this->responseData['shipment']['lastdate_response'];?>" />
 <?php
 if ($this->scheme == 'tb') {
     include('edit-tb-response.phtml');

@@ -2,27 +2,19 @@
 
 class TbController extends Zend_Controller_Action
 {
-    public function init()
-    {
-        /* Initialize action controller here */
-    }
+    public function init() { }
 
-    public function indexAction()
-    {
-        // action body
-    }
+    public function indexAction() { }
 
     public function responseAction() {
-        
         $schemeService = new Application_Service_Schemes();
         $shipmentService = new Application_Service_Shipments();
         
-    	if($this->getRequest()->isPost())
-    	{
+    	if ($this->getRequest()->isPost()) {
     	    $data = $this->getRequest()->getPost();
             $shipmentService->updateTbResults($data);
             $this->_redirect("/participant/dashboard");
-        }else{
+        } else {
             $sID= $this->getRequest()->getParam('sid');
             $pID= $this->getRequest()->getParam('pid');
             $eID =$this->getRequest()->getParam('eid');
@@ -48,8 +40,7 @@ class TbController extends Zend_Controller_Action
     	}
     }
 
-
-    public function downloadAction(){
+    public function downloadAction() {
         $this->_helper->layout()->disableLayout();
         $sID= $this->getRequest()->getParam('sid');
         $pID= $this->getRequest()->getParam('pid');
@@ -68,7 +59,6 @@ class TbController extends Zend_Controller_Action
         $shipment['attributes'] = json_decode($shipment['attributes'],true);
         $this->view->shipment = $shipment;
     }
-
 }
 
 
