@@ -152,7 +152,7 @@ class Application_Model_DbTable_SystemAdmin extends Zend_Db_Table_Abstract {
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
          * you want to insert a non-database field (for example a counter or static image)
          */
-        $aColumns = array('first_name', 'last_name', 'primary_email', 'phone');
+        $aColumns = array('first_name', 'last_name', 'primary_email', 'phone', 'iso_name');
 
         /* Indexed column (used for fast and accurate table cardinality) */
         $sIndexColumn = $this->_primary;
@@ -228,13 +228,16 @@ class Application_Model_DbTable_SystemAdmin extends Zend_Db_Table_Abstract {
             $sWhere .= " AND is_ptcc_coordinator = 1";
         }
 
-        // TODO: Country filters
-
         /*
          * SQL queries
          * Get data to display
          */
-        $sQuery = $this->getAdapter()->select()->from(array('pp' => $this->_name));
+        $sQuery = $this->getAdapter()->select()
+            ->from(array('pp' => $this->_name))
+            ->joinLeft(array('pcm' => 'ptcc_country_map'), 'pp.admin_id=pcm.admin_id', array())
+            ->joinLeft(array('co' => 'countries'), 'pcm.country_id=co.id',
+                array('iso_name' => 'GROUP_CONCAT(co.iso_name SEPARATOR \',\')'))
+            ->group('pp.admin_id');
 
         if (isset($sWhere) && $sWhere != "") {
             $sQuery = $sQuery->where($sWhere);
@@ -276,6 +279,7 @@ class Application_Model_DbTable_SystemAdmin extends Zend_Db_Table_Abstract {
             $row[] = $aRow['last_name'];
             $row[] = $aRow['primary_email'];
             $row[] = $aRow['phone'];
+            $row[] = $aRow['iso_name'];
             $row[] = '<a href="/admin/ptcc-profiles/edit/id/' . $aRow['admin_id'] . '" class="btn btn-warning btn-xs" style="margin-right: 2px;"><i class="icon-pencil"></i> Edit</a>';
             $output['aaData'][] = $row;
         }
@@ -330,7 +334,7 @@ class Application_Model_DbTable_SystemAdmin extends Zend_Db_Table_Abstract {
         $dbAdapter->beginTransaction();
         $adminId = 0;
         try {
-            if (isset($params['adminId']) && intval($params['adminId']) > 0) {
+            if (isset($params['ptccProfileId']) && intval($params['ptccProfileId']) > 0) {
                 $adminId = $params['ptccProfileId'];
                 $data = array(
                     'first_name' => $params['firstName'],
