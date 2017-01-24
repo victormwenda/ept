@@ -1,9 +1,7 @@
 <?php
 
-class Admin_EvaluateController extends Zend_Controller_Action
-{
-    public function init()
-    {
+class Admin_EvaluateController extends Zend_Controller_Action {
+    public function init() {
         $ajaxContext = $this->_helper->getHelper('AjaxContext');
         $ajaxContext->addActionContext('index', 'html')
                     ->addActionContext('get-shipments', 'html')
@@ -15,36 +13,33 @@ class Admin_EvaluateController extends Zend_Controller_Action
         $this->_helper->layout()->pageName = 'analyze';
     }
 
-    public function indexAction()
-    {
+    public function indexAction() {
         if ($this->getRequest()->isPost()) {
             $params = $this->_getAllParams();            
             $evalService = new Application_Service_Evaluation();
             $evalService->getAllDistributions($params);
         }
-		if($this->_hasParam('scheme') && $this->_hasParam('showcalc')){
+		if ($this->_hasParam('scheme') && $this->_hasParam('showcalc')){
             $this->view->showcalc = ($this->_getParam('showcalc'));
             $this->view->scheme = $this->_getParam('scheme');
 		}
     }
 
-    public function getShipmentsAction()
-    {
-        if($this->_hasParam('did')){            
+    public function getShipmentsAction() {
+        if ($this->_hasParam('did')){
             $id = (int)($this->_getParam('did'));
             $evalService = new Application_Service_Evaluation();
             $this->view->shipments = $evalService->getShipments($id);            
-        }else{
+        } else {
             $this->view->shipments = false;
         }
     }
 
-    public function shipmentAction()
-    {
-        if($this->_hasParam('sid')){
+    public function shipmentAction() {
+        if ($this->_hasParam('sid')) {
             $id = (int)base64_decode($this->_getParam('sid'));
             $reEvaluate = false;
-            if($this->_hasParam('re')){
+            if ($this->_hasParam('re')) {
                 if(base64_decode($this->_getParam('re')) == 'yes'){
                     $reEvaluate = true;
                 }
@@ -52,30 +47,28 @@ class Admin_EvaluateController extends Zend_Controller_Action
             $evalService = new Application_Service_Evaluation();
             $shipment = $this->view->shipment = $evalService->getShipmentToEvaluate($id,$reEvaluate);
             $this->view->shipmentsUnderDistro = $evalService->getShipments($shipment[0]['distribution_id']);
-        }else{
+        } else {
             $this->_redirect("/admin/evaluate/");
         }
     }
 
     public function viewAction() {
-        if($this->_hasParam('sid') && $this->_hasParam('pid')  && $this->_hasParam('scheme') ){
+        if ($this->_hasParam('sid') && $this->_hasParam('pid') && $this->_hasParam('scheme')) {
             $this->view->currentUrl = "/admin/evaluate/view/sid/".$this->_getParam('sid')."/pid/".$this->_getParam('pid')."/scheme/".$this->_getParam('scheme');
             $sid = (int)base64_decode($this->_getParam('sid'));
             $pid = (int)base64_decode($this->_getParam('pid'));
             $this->view->scheme = $scheme = base64_decode($this->_getParam('scheme'));
             $schemeService = new Application_Service_Schemes();
-            if($scheme == 'eid'){
+            if ($scheme == 'eid') {
                 $this->view->extractionAssay = $schemeService->getEidExtractionAssay();
                 $this->view->detectionAssay = $schemeService->getEidDetectionAssay();
 
-            } else if($scheme == 'dts'){
+            } else if($scheme == 'dts') {
                 $this->view->allTestKits = $schemeService->getAllDtsTestKit();
-            }
-            else if($scheme == 'vl'){
+            } else if ($scheme == 'vl') {
                 $this->view->vlRange = $schemeService->getVlRange($sid);
                 $this->view->vlAssay = $schemeService->getVlAssay();
-            }
-            else if($scheme == 'tb'){
+            } else if ($scheme == 'tb') {
                 $this->view->assays = $schemeService->getTbAssay();
             }
             $evalService = new Application_Service_Evaluation();
@@ -84,7 +77,7 @@ class Admin_EvaluateController extends Zend_Controller_Action
             $this->view->customField1 = $globalConfigDb->getValue('custom_field_1');
             $this->view->customField2 = $globalConfigDb->getValue('custom_field_2');
             $this->view->haveCustom = $globalConfigDb->getValue('custom_field_needed');
-        }else{
+        } else {
             $this->_redirect("/admin/evaluate/");
         }
     }
@@ -135,104 +128,95 @@ class Admin_EvaluateController extends Zend_Controller_Action
         }
     }
 
-    public function updateShipmentCommentAction()
-    {
-        if($this->_hasParam('sid')){            
+    public function updateShipmentCommentAction() {
+        if ($this->_hasParam('sid')) {
             $sid = (int)base64_decode($this->_getParam('sid'));
             $comment = $this->_getParam('comment');
             $evalService = new Application_Service_Evaluation();
             $this->view->message = $evalService->updateShipmentComment($sid,$comment);
-        }else{
+        } else {
             $this->view->message = "Unable to update shipment comment. Please try again later.";
         }
     }
 
-    public function updateShipmentStatusAction()
-    {
-        if($this->_hasParam('sid')){            
+    public function updateShipmentStatusAction() {
+        if ($this->_hasParam('sid')) {
             $sid = (int)base64_decode($this->_getParam('sid'));
             $status = $this->_getParam('status');
             $evalService = new Application_Service_Evaluation();
             $this->view->message = $evalService->updateShipmentStatus($sid,$status);
-        }else{
+        } else {
             $this->view->message = "Unable to update shipment status. Please try again later.";
         }
     }
 
-    public function deleteDtsResponseAction()
-    {
-        if($this->_hasParam('mid')){
+    public function deleteDtsResponseAction() {
+        if ($this->_hasParam('mid')) {
             if ($this->getRequest()->isPost()) {
                 $mapId = (int)base64_decode($this->_getParam('mid'));
                 $schemeType = ($this->_getParam('schemeType'));
                 $shipmentService = new Application_Service_Shipments();
-				if($schemeType == 'dts'){
+				if ($schemeType == 'dts') {
 					$this->view->result = $shipmentService->removeDtsResults($mapId);
-				}else if($schemeType == 'eid'){
+				} else if ($schemeType == 'eid') {
 					$this->view->result = $shipmentService->removeDtsEidResults($mapId);
-				} else if($schemeType == 'vl'){
+				} else if ($schemeType == 'vl') {
 					$this->view->result = $shipmentService->removeDtsVlResults($mapId);
-				}else {
+				} else {
 					$this->view->result = "Failed to delete";
 				}
             }
-        }else{
+        } else {
             $this->view->message = "Unable to delete. Please try again later or contact system admin for help";
         }
     }
 
-    public function vlRangeAction()
-    {
-		if($this->_hasParam('manualRange')){
+    public function vlRangeAction() {
+		if ($this->_hasParam('manualRange')) {
 			$params = $this->getRequest()->getPost();
 			$schemeService = new Application_Service_Schemes();
 			$schemeService->updateVlInformation($params);
 			$shipmentId = (int)base64_decode($this->_getParam('sid'));
 			$this->_redirect("/admin/evaluate/index/scheme/vl/showcalc/".base64_encode($shipmentId));
 		}
-		if($this->_hasParam('sid')){
+		if ($this->_hasParam('sid')) {
 			if ($this->getRequest()->isPost()) {
 				$shipmentId = (int)base64_decode($this->_getParam('sid'));
 				$schemeService = new Application_Service_Schemes();
 				$this->view->result = $schemeService->getVlRangeInformation($shipmentId);
 				$this->view->shipmentId = $shipmentId;
 			}
-		}else{
+		} else {
 			$this->view->message = "Unable to fetch Viral Load Range for this Shipment.";
-		}// action body
-		
+		}
     }
 
-    public function recalculateVlRangeAction()
-    {
-        if($this->_hasParam('sid')){
+    public function recalculateVlRangeAction() {
+        if ($this->_hasParam('sid')) {
 			$shipmentId = (int)($this->_getParam('sid'));
 			$schemeService = new Application_Service_Schemes();
 			$this->view->result = $schemeService->setVlRange($shipmentId);
 			$this->_redirect("/admin/evaluate/index/scheme/vl/showcalc/".base64_encode($shipmentId));
-		}else{
+		} else {
 			$this->_redirect("/admin/evaluate/");
 		}
     }
 	
-	public function vlSamplePlotAction(){
+	public function vlSamplePlotAction() {
 		$shipmentId = $this->_getParam('shipment');
 		$sampleId = $this->_getParam('sample');
-		
 		$schemeService = new Application_Service_Schemes();
 		$this->view->vlRange = $schemeService->getVlRange($shipmentId,$sampleId);
 		$this->view->shipmentId = $shipmentId;
 		$this->view->sampleId = $sampleId;
-		
-		
 	}
 	
-	public function addManualLimitsAction(){
+	public function addManualLimitsAction() {
 		$this->_helper->layout()->disableLayout();
-		$this->_helper->layout()->setLayout('modal');
-		$schemeService = new Application_Service_Schemes();
-		if($this->_hasParam('id')){
-			$combineId = base64_decode($this->_getParam('id'));
+        if ($this->_hasParam('id')) {
+            $this->_helper->layout()->setLayout('modal');
+            $schemeService = new Application_Service_Schemes();
+            $combineId = base64_decode($this->_getParam('id'));
 			$expStr=explode("#",$combineId);
 			$shipmentId=(int)$expStr[0];
 			$sampleId=(int)$expStr[1];
@@ -249,6 +233,4 @@ class Admin_EvaluateController extends Zend_Controller_Action
 			$this->view->mHighLimit=round($params['manualHighLimit'],4);
 		}
 	}
-
 }
-

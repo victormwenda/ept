@@ -12,25 +12,17 @@ class Application_Service_Schemes {
     }
 
     public function getAllDtsTestKitList($countryAdapted = false) {
-
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sql = $db->select()->from(array('r_testkitname_dts'), array('TESTKITNAMEID' => 'TESTKITNAME_ID', 'TESTKITNAME' => 'TESTKIT_NAME','testkit_1','testkit_2','testkit_3'))
                         ->where("scheme_type = 'dts'");
-
         if ($countryAdapted) {
             $sql = $sql->where('COUNTRYADAPTED = 1');
         }
-
         $stmt = $db->fetchAll($sql);
-
-//        foreach ($stmt as $kitName) {
-//            $retval[$kitName['TESTKITNAMEID']] = $kitName['TESTKITNAME'];
-//        }
         return $stmt;
     }
     
     public function getRecommededDtsTestkit($testKit = null) {
-
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sql = $db->select()->from(array('dts_recommended_testkits'));
 
@@ -72,15 +64,13 @@ class Application_Service_Schemes {
     }
 
     public function getEidDetectionAssay() {
-    
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $res = $db->fetchAll($db->select()->from('r_eid_detection_assay'));
         $response = array();
         foreach ($res as $row) {
             $response[$row['id']] = $row['name'];
         }
-        return $response;    
-    
+        return $response;
     }
 
     public function getVlAssay() {
@@ -179,7 +169,7 @@ class Application_Service_Schemes {
             ->where('shipment_id = ? ', $shipmentId);
         return $db->fetchAll($sql);
     }
-    
+
     public function getEidReferenceData($shipmentId){
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sql = $db->select()->from(array('reference_result_eid'))

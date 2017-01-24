@@ -26,7 +26,9 @@ if($next < count($urlListArray)){
   </h5>
 <form name="updateResultsForm" id="updateResultsForm" method="post" action="">
 	<input type="hidden" name="shipmentId" id="shipmentId" value="<?php echo $this->evaluateData['shipment']['shipment_id']; ?>" />
-	<input type="hidden" name="participantId" id="participantId" value="<?php echo $this->evaluateData['shipment']['participant_id']; ?>" />
+    <input type="hidden" name="shipmentDate" id="shipmentDate" value="<?php echo $this->dateFormat($this->evaluateData['shipment']["shipment_receipt_date"]); ?>" />
+    <input type="hidden" name="responseDeadlineDate" id="responseDeadlineDate" value="<?php echo $this->dateFormat($this->evaluateData['shipment']["lastdate_response"]); ?>" />
+    <input type="hidden" name="participantId" id="participantId" value="<?php echo $this->evaluateData['shipment']['participant_id']; ?>" />
 	<input type="hidden" name="smid" id="smid" value="<?php echo $this->evaluateData['shipment']['map_id']; ?>" />
 	<input type="hidden" name="scheme" id="scheme" value="<?php echo $this->scheme; ?>" />   
 	<input type="hidden" name="whereToGo" id="whereToGo" value="" />   

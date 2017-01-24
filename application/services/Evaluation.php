@@ -404,12 +404,8 @@ class Application_Service_Evaluation {
     public function editEvaluation($shipmentId, $participantId, $scheme) {
         $participantService = new Application_Service_Participants();
         $schemeService = new Application_Service_Schemes();
-        $shipmentService = new Application_Service_Shipments();
-
-
         $participantData = $participantService->getParticipantDetails($participantId);
         $shipmentData = $schemeService->getShipmentData($shipmentId, $participantId);
-
         $possibleResults = $schemeService->getPossibleResults($scheme);
         $evalComments = $schemeService->getSchemeEvaluationComments($scheme);
         if ($scheme == 'eid') {
@@ -424,8 +420,6 @@ class Application_Service_Evaluation {
         } else if ($scheme == 'tb') {
             $results = $schemeService->getTbSamples($shipmentId, $participantId);
         }
-
-
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sql = $db->select()->from(array('s' => 'shipment'))
                 ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id')
@@ -434,12 +428,9 @@ class Application_Service_Evaluation {
                 ->where("sp.shipment_id = ?", $shipmentId)
                 ->where("substring(sp.evaluation_status,4,1) != '0'")->group('sp.map_id');
         $shipmentOverall = $db->fetchAll($sql);
-
         $noOfParticipants = count($shipmentOverall);
         $numScoredFull = $shipmentOverall[0]['fullscore'];
         $maxScore = $shipmentOverall[0]['max_score'];
-        
-
         $controlRes = array();
         $sampleRes = array();
         if (isset($results) && count($results) > 0) {
@@ -451,10 +442,8 @@ class Application_Service_Evaluation {
                 }
             }
         }
-
-
-
-        return array('participant' => $participantData,
+        return array(
+            'participant' => $participantData,
             'shipment' => $shipmentData,
             'possibleResults' => $possibleResults,
             'totalParticipants' => $noOfParticipants,
@@ -463,7 +452,7 @@ class Application_Service_Evaluation {
             'evalComments' => $evalComments,
             'controlResults' => $controlRes,
             'results' => $sampleRes
-                );
+        );
     }
 
     public function viewEvaluation($shipmentId, $participantId, $scheme) {
@@ -647,7 +636,7 @@ class Application_Service_Evaluation {
 				"participant_supervisor" => $params['participantSupervisor'],
 				"user_comment" => $params['userComments'],
 				"updated_by_admin" => $admin,
-			   "updated_on_admin" => new Zend_Db_Expr('now()')
+			    "updated_on_admin" => new Zend_Db_Expr('now()')
             );
 			
 			if(isset($params['customField1']) && trim($params['customField1']) != ""){
@@ -705,7 +694,7 @@ class Application_Service_Evaluation {
             $attributes = array(
                 "sample_rehydration_date" => Pt_Commons_General::dateFormat($params['sampleRehydrationDate']),
                 "mtb_rif_kit_lot_no" => $params['mtbRifKitLotNo'],
-                "expiry_date" => $params['expiryDate'],
+                "expiry_date" => Pt_Commons_General::dateFormat($params['expiryDate']),
                 "assay" => $params['assay'],
                 "count_tests_conducted_over_month" => $params['countTestsConductedOverMonth'],
                 "count_errors_encountered_over_month" => $params['countErrorsEncounteredOverMonth'],
@@ -732,9 +721,12 @@ class Application_Service_Evaluation {
                 $mapData['custom_field_2'] = $params['customField2'];
             }
 
-            $db->update('shipment_participant_map', $mapData, "map_id = " . $params['smid']);
-
             $instrumentsDb = new Application_Model_DbTable_Instruments();
+            $sampleScores = array();
+            define("PASS_SCORE_VALUE", 20);
+            define("CONCERN_SCORE_VALUE", 10);
+            define("FAIL_SCORE_VALUE", 0);
+            $shipmentScore = 0;
             for ($i = 0; $i < $size; $i++) {
                 $instrumentInstalledOn = Pt_Commons_General::dateFormat($params['instrumentInstalledOn'][$i]);
                 if (!isset($params['instrumentInstalledOn'][$i]) ||
@@ -746,6 +738,18 @@ class Application_Service_Evaluation {
                     $params['instrumentLastCalibratedOn'][$i] == "") {
                     $instrumentLastCalibratedOn = null;
                 }
+                $calculatedScore = $this->calculateTbSampleScore($params['shipmentId'], $params['sampleId'][$i],
+                    $params['mtbDetected'][$i], $params['rifResistance'][$i], $params['probeD'][$i], $params['probeC'][$i],
+                    $params['probeE'][$i], $params['probeB'][$i], $params['spc'][$i], $params['probeA'][$i]);
+                array_push($sampleScores, $calculatedScore);
+                switch ($calculatedScore) {
+                    case "pass":
+                        $shipmentScore += PASS_SCORE_VALUE;
+                        break;
+                    case "concern":
+                        $shipmentScore += CONCERN_SCORE_VALUE;
+                        break;
+                }
                 $db->update('response_result_tb', array(
                     'date_tested' => Pt_Commons_General::dateFormat($params['dateTested'][$i]),
                     'mtb_detected' => $params['mtbDetected'][$i],
@@ -756,6 +760,7 @@ class Application_Service_Evaluation {
                     'probe_b' => $params['probeB'][$i],
                     'spc' => $params['spc'][$i],
                     'probe_a' => $params['probeA'][$i],
+                    'calculated_score' => $calculatedScore,
                     'instrument_serial' => $params['instrumentSerial'][$i],
                     'instrument_installed_on' => $instrumentInstalledOn,
                     'instrument_last_calibrated_on' => $instrumentLastCalibratedOn,
@@ -778,6 +783,18 @@ class Application_Service_Evaluation {
                     $instrumentsDb->upsertInstrument($params['participantId'], $instrumentDetails);
                 }
             }
+
+            $mapData['shipment_score'] = $shipmentScore;
+            $mapData['documentation_score'] = $this->calculateTbDocumentationScore(
+                Pt_Commons_General::dateFormat($params['shipmentDate']),
+                Pt_Commons_General::dateFormat($params['expiryDate']),
+                Pt_Commons_General::dateFormat($params['receiptDate']),
+                Pt_Commons_General::dateFormat($params['sampleRehydrationDate']),
+                Pt_Commons_General::dateFormat($params['testDate']),
+                $params['supervisorApproval'],
+                $params['participantSupervisor'],
+                Pt_Commons_General::dateFormat($params['responseDeadlineDate'));
+            $db->update('shipment_participant_map', $mapData, "map_id = " . $params['smid']);
         }
 
         $params['isFollowUp'] = (isset($params['isFollowUp']) && $params['isFollowUp'] != "" ) ? $params['isFollowUp'] : "no";
@@ -797,6 +814,84 @@ class Application_Service_Evaluation {
 		}
 		
         $db->update('shipment_participant_map', $updateArray, "map_id = " . $params['smid']);
+    }
+
+    private function calculateTbSampleScore(
+        $shipmentId, $sampleId, $mtbDetected, $rifResistance, $probeD, $probeC, $probeE, $probeB, $spc, $probeA) {
+        define("CONCERN_CT_VALUE", 42);
+
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $sql = $db->select()->from(array('reference_result_tb'))
+            ->where('shipment_id = ? ', $shipmentId)
+            ->where('sample_id = ?', $sampleId);
+        $referenceSample = $db->fetchRow($sql);
+        $calculatedScore = "fail";
+        if ($mtbDetected == $referenceSample['mtbDetected'] &&
+            $rifResistance == $referenceSample['rif_resistance']) {
+            $calculatedScore = "pass";
+            $ctValues = array(floatval($probeD), floatval($probeC), floatval($probeE), floatval($probeB), floatval($spc), floatval($probeA));
+            if(max($ctValues) > CONCERN_CT_VALUE) {
+                $calculatedScore = "concern";
+            }
+        }
+        return $calculatedScore;
+    }
+
+    private function calculateTbDocumentationScore($shipmentDate, $expiryDate, $receiptDate, $rehydrationDate, $testDate,
+                                                   $supervisorApproval, $supervisorName, $responseDeadlineDate) {
+        define("REHYDRATION_EXPIRY_HOURS", 48);
+        define("FRIED_SAMPLE_HOURS", 336);
+        define("EXPIRY_FROM_DATE_OF_SHIPMENT_HOURS", 720);
+        define("MAX_DOCUMENTATION_SCORE", 20);
+        define("DEDUCTION_POINTS", 2);
+
+        $documentationScore = MAX_DOCUMENTATION_SCORE;
+        $inferredTestDate = $responseDeadlineDate;
+        if (!isset($testDate) || $testDate == '' || $testDate == '0000-00-00') {
+            $documentationScore -= DEDUCTION_POINTS;
+        } else {
+            $inferredTestDate = $testDate;
+        }
+        if (!isset($expiryDate) || $expiryDate == '' || $expiryDate == '0000-00-00') {
+            $documentationScore -= DEDUCTION_POINTS;
+        } else if ($expiryDate < $inferredTestDate) {
+            // Mark as zero if user tried to run the sample using an expired panel
+            return 0;
+        }
+        if(!isset($receiptDate) || $receiptDate == '' || $receiptDate == '0000-00-00') {
+            $documentationScore -= DEDUCTION_POINTS;
+        }
+        if(!isset($rehydrationDate) || $rehydrationDate == '' || $rehydrationDate == '0000-00-00') {
+            $documentationScore -= DEDUCTION_POINTS;
+        }
+        if(!isset($expiryDate) || $expiryDate == '' || $expiryDate == '0000-00-00') {
+            $documentationScore -= DEDUCTION_POINTS;
+        }
+        if(!isset($supervisorApproval) || $supervisorApproval == '' || $supervisorApproval == 'no') {
+            $documentationScore -= DEDUCTION_POINTS;
+        }
+        if(!isset($supervisorName) || $supervisorName == '') {
+            $documentationScore -= DEDUCTION_POINTS;
+        }
+        $diffBetweenRehydrationAndTest = $inferredTestDate->diff($rehydrationDate);
+        $hoursBetweenRehydrationAndTest = $diffBetweenRehydrationAndTest->h;
+        $hoursBetweenRehydrationAndTest += ($diffBetweenRehydrationAndTest->days * 24);
+        if($hoursBetweenRehydrationAndTest < 0 || $hoursBetweenRehydrationAndTest > REHYDRATION_EXPIRY_HOURS) {
+            $documentationScore -= DEDUCTION_POINTS;
+        }
+        $diffBetweenReceiptAndTest = $inferredTestDate->diff($receiptDate);
+        $hoursBetweenReceiptAndTest = $diffBetweenReceiptAndTest->h;
+        $hoursBetweenReceiptAndTest += ($diffBetweenReceiptAndTest->days * 24);
+        if($hoursBetweenReceiptAndTest < 0 || $hoursBetweenReceiptAndTest > FRIED_SAMPLE_HOURS) {
+            $documentationScore -= DEDUCTION_POINTS;
+        }
+        $diffBetweenShipmentAndTest = $inferredTestDate->diff($shipmentDate);
+        $hoursBetweenShipmentAndTest = $diffBetweenShipmentAndTest->h;
+        $hoursBetweenShipmentAndTest += ($diffBetweenShipmentAndTest->days * 24);
+        if($hoursBetweenShipmentAndTest < 0 || $hoursBetweenShipmentAndTest > EXPIRY_FROM_DATE_OF_SHIPMENT_HOURS) {
+            $documentationScore -= DEDUCTION_POINTS;
+        }
+        return $documentationScore;
     }
 
     public function updateShipmentComment($shipmentId, $comment) {
@@ -1523,24 +1618,18 @@ class Application_Service_Evaluation {
 	public function evaluateDtsViralLoad($shipmentResult,$shipmentId,$reEvaluate) {
 		$counter = 0;
 		$maxScore = 0;
-		$scoreHolder = array();
 		$finalResult = null;
 		$schemeService = new Application_Service_Schemes();
 		$db = Zend_Db_Table_Abstract::getDefaultAdapter();
-
 		$file = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini";
 		$config = new Zend_Config_Ini($file, APPLICATION_ENV);
 		$passPercentage = $config->evaluation->vl->passPercentage;
-	
 		$vlRange = $schemeService->getVlRange($shipmentId);
-		
 		if ($reEvaluate || $vlRange == null || $vlRange == "" || count($vlRange) == 0) {
 			$schemeService->setVlRange($shipmentId);
 			$vlRange = $schemeService->getVlRange($shipmentId);
 		}
-
 		foreach ($shipmentResult as $shipment) {
-			
 			$createdOnUser = explode(" ", $shipment['shipment_test_report_date']);
 			if (trim($createdOnUser[0]) != "" && $createdOnUser[0] != null && trim($createdOnUser[0]) != "0000-00-00") {
 
@@ -1549,21 +1638,13 @@ class Application_Service_Evaluation {
 				$datearray = array('year' => 1970, 'month' => 1, 'day' => 01);
 				$createdOn = new Zend_Date($datearray);
 			}
-
 			$lastDate = new Zend_Date($shipment['lastdate_response'], Zend_Date::ISO_8601);
-			
-			//Zend_Debug::dump($createdOn->isEarlier($lastDate));die;
 			if ($createdOn->compare($lastDate,Zend_date::DATES) <= 0) {
-
 				$results = $schemeService->getVlSamples($shipmentId, $shipment['participant_id']);
 				$totalScore = 0;
 				$maxScore = 0;
 				$mandatoryResult = "";
-				$scoreResult = "";
 				$failureReason = array();
-
-				$attributes = json_decode($shipment['attributes'], true);
-
 				foreach ($results as $result) {
 					if($result['control'] == 1) continue;
 					$calcResult = "";
@@ -1586,99 +1667,59 @@ class Application_Service_Evaluation {
 						$totalScore = "N/A";
 						$calcResult = "excluded";
 					}
-
 					$maxScore += $result['sample_score'];
-					
 					$db->update('response_result_vl', array('calculated_score' => $calcResult), "shipment_map_id = " . $result['map_id'] . " and sample_id = " . $result['sample_id']);
-
-					//// checking if mandatory fields were entered and were entered right
-					//if ($result['mandatory'] == 1) {
-					//	if ((!isset($result['reported_viral_load']) || $result['reported_viral_load'] == "" || $result['reported_viral_load'] == null)) {
-					//		$mandatoryResult = 'Fail';
-					//		$failureReason[]['warning'] = "Mandatory Sample <strong>" . $result['sample_label'] . "</strong> was not reported";
-					//	}
-					//	//else if(($result['reported_viral_load'] != $result['reported_viral_load'])){
-					//	//	$mandatoryResult = 'Fail';
-					//	//	$failureReason[]= "Mandatory Sample <strong>".$result['sample_label']."</strong> was reported wrongly";
-					//	//}
-					//}
 				}
-
-					
-					
-					// if we are excluding this result, then let us not give pass/fail				
-					if ($shipment['is_excluded'] == 'yes') {
-						$finalResult = '';
-						$totalScore = 0;
-						$failureReason = array();
-						$shipmentResult[$counter]['shipment_score'] = $responseScore = 0;
-						$shipmentResult[$counter]['documentation_score'] = 0;
-						$shipmentResult[$counter]['display_result'] = 'Excluded';
-						$shipmentResult[$counter]['is_followup'] = 'yes';
-						$failureReason[] = array('warning' => 'Excluded from Evaluation');
-						$finalResult = 3;
-						$shipmentResult[$counter]['failure_reason'] = $failureReason = json_encode($failureReason);
-					} else {
-						$shipment['is_excluded'] = 'no';
-								
-		
-						// checking if total score and maximum scores are the same
-						if ($totalScore == 'N/A') {
-							$failureReason[]['warning'] = "Could not determine score. Not enough responses found in the chosen VL Assay.";
-							$scoreResult = 'Not Evaluated';
-						} else if ($totalScore != $maxScore) {
-							$scoreResult = 'Fail';
-							if($maxScore != 0){
-								$totalScore = ($totalScore/$maxScore)*100;
-							}
-							$failureReason[]['warning'] = "Participant did not meet the score criteria (Participant Score - <strong>$totalScore</strong> and Required Score - <strong>$passPercentage</strong>)";
-						} else {
-							if($maxScore != 0){
-								$totalScore = ($totalScore/$maxScore)*100;
-							}
-							$scoreResult = 'Pass';
-						}
-		
-		
-						// if $finalResult == 3 , then  excluded
-						
-						if ($scoreResult == 'Not Evaluated') {
-							$finalResult = 4;
-						}
-						else if ($scoreResult == 'Fail' || $mandatoryResult == 'Fail') {
-							$finalResult = 2;
-						} else {
-							$finalResult = 1;
-						}
-						
-						$shipmentResult[$counter]['shipment_score'] = $totalScore;
-						$shipmentResult[$counter]['max_score'] = $passPercentage; //$maxScore;
-						
-						
-		
-						$fRes = $db->fetchCol($db->select()->from('r_results', array('result_name'))->where('result_id = ' . $finalResult));
-		
-						$shipmentResult[$counter]['display_result'] = $fRes[0];
-						$shipmentResult[$counter]['failure_reason'] = $failureReason = json_encode($failureReason);
-						//Zend_Debug::dump($shipmentResult[$counter]);
-						// let us update the total score in DB
-						if ($totalScore == 'N/A') {
-							$totalScore = 0;
-						}
-						
-						
-						
-						
-						
-					}				
-				
-				
-				
-				$nofOfRowsUpdated = $db->update('shipment_participant_map', array('shipment_score' => $totalScore, 'final_result' => $finalResult, 'failure_reason' => $failureReason), "map_id = " . $shipment['map_id']);
-				
+                // if we are excluding this result, then let us not give pass/fail
+                if ($shipment['is_excluded'] == 'yes') {
+                    $totalScore = 0;
+                    $failureReason = array();
+                    $shipmentResult[$counter]['shipment_score'] = $responseScore = 0;
+                    $shipmentResult[$counter]['documentation_score'] = 0;
+                    $shipmentResult[$counter]['display_result'] = 'Excluded';
+                    $shipmentResult[$counter]['is_followup'] = 'yes';
+                    $failureReason[] = array('warning' => 'Excluded from Evaluation');
+                    $finalResult = 3;
+                    $shipmentResult[$counter]['failure_reason'] = $failureReason = json_encode($failureReason);
+                } else {
+                    $shipment['is_excluded'] = 'no';
+                    // checking if total score and maximum scores are the same
+                    if ($totalScore == 'N/A') {
+                        $failureReason[]['warning'] = "Could not determine score. Not enough responses found in the chosen VL Assay.";
+                        $scoreResult = 'Not Evaluated';
+                    } else if ($totalScore != $maxScore) {
+                        $scoreResult = 'Fail';
+                        if($maxScore != 0){
+                            $totalScore = ($totalScore/$maxScore)*100;
+                        }
+                        $failureReason[]['warning'] = "Participant did not meet the score criteria (Participant Score - <strong>$totalScore</strong> and Required Score - <strong>$passPercentage</strong>)";
+                    } else {
+                        if($maxScore != 0) {
+                            $totalScore = ($totalScore/$maxScore)*100;
+                        }
+                        $scoreResult = 'Pass';
+                    }
+                    if ($scoreResult == 'Not Evaluated') {
+                        $finalResult = 4;
+                    }
+                    else if ($scoreResult == 'Fail' || $mandatoryResult == 'Fail') {
+                        $finalResult = 2;
+                    } else {
+                        $finalResult = 1;
+                    }
+                    $shipmentResult[$counter]['shipment_score'] = $totalScore;
+                    $shipmentResult[$counter]['max_score'] = $passPercentage;
+                    $fRes = $db->fetchCol($db->select()->from('r_results', array('result_name'))->where('result_id = ' . $finalResult));
+                    $shipmentResult[$counter]['display_result'] = $fRes[0];
+                    $shipmentResult[$counter]['failure_reason'] = $failureReason = json_encode($failureReason);
+                    // let us update the total score in DB
+                    if ($totalScore == 'N/A') {
+                        $totalScore = 0;
+                    }
+                }
+				$db->update('shipment_participant_map', array('shipment_score' => $totalScore, 'final_result' => $finalResult, 'failure_reason' => $failureReason), "map_id = " . $shipment['map_id']);
 			} else {
 				$failureReason = array('warning' => "Response was submitted after the last response date.");
-
 				$db->update('shipment_participant_map', array('failure_reason' => json_encode($failureReason)), "map_id = " . $shipment['map_id']);
 			}
 			$counter++;
