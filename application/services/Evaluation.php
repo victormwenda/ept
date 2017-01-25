@@ -793,7 +793,7 @@ class Application_Service_Evaluation {
                 Pt_Commons_General::dateFormat($params['testDate']),
                 $params['supervisorApproval'],
                 $params['participantSupervisor'],
-                Pt_Commons_General::dateFormat($params['responseDeadlineDate'));
+                Pt_Commons_General::dateFormat($params['responseDeadlineDate']));
             $db->update('shipment_participant_map', $mapData, "map_id = " . $params['smid']);
         }
 
