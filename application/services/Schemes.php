@@ -255,7 +255,8 @@ class Application_Service_Schemes {
                 'ref_probe_e' => 'ref.probe_e',
                 'ref_probe_b' => 'ref.probe_b',
                 'ref_spc' => 'ref.spc',
-                'ref_probe_a' => 'ref.probe_a'
+                'ref_probe_a' => 'ref.probe_a',
+                'ref_sample_score' => 'ref.sample_score'
             ))
             ->join(array('s' => 'shipment'), 's.shipment_id=ref.shipment_id')
             ->join(array('sp' => 'shipment_participant_map'), 's.shipment_id=sp.shipment_id')

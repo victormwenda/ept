@@ -926,7 +926,7 @@ class Application_Service_Shipments {
                         'probe_a' => $params['probeA'][$i],
                         'control' => 0,
                         'mandatory' => 1,
-                        'sample_score' => (isset($params['score'][$i]) ? $params['score'][$i] : 0)
+                        'sample_score' => 20
                     )
                 );
             }
@@ -1141,7 +1141,7 @@ class Application_Service_Shipments {
                     'probe_a' => $params['probeA'][$i],
                     'control' => 0,
                     'mandatory' => 1,
-                    'sample_score' => (isset($params['score'][$i]) ? $params['score'][$i] : 0)
+                    'sample_score' => 20
                     )
                 );
             }

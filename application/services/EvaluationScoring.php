@@ -1,10 +1,10 @@
 <?php
 
 class Application_Service_EvaluationScoring {
-    const CONCERN_CT_VALUE = 42;
-    const PASS_SCORE_VALUE = 16;
-    const CONCERN_SCORE_VALUE = 8;
-    const FAIL_SCORE_VALUE = 0;
+    const CONCERN_CT_MAX_VALUE = 42.00;
+    const PASS_SCORE_PERCENT = 100.00;
+    const CONCERN_SCORE_PERCENT = 50.00;
+    const FAIL_SCORE_PERCENT = 0.00;
 
     public function calculateTbSamplePassStatus($refMtbDetected, $resMtbDetected, $refRifResistance, $resRifResistance,
                                                 $probeD, $probeC, $probeE, $probeB, $spc, $probeA) {
@@ -20,23 +20,23 @@ class Application_Service_EvaluationScoring {
                 floatval($spc),
                 floatval($probeA)
             );
-            if(max($ctValues) > self::CONCERN_CT_VALUE) {
+            if(max($ctValues) > self::CONCERN_CT_MAX_VALUE) {
                 $calculatedScore = "concern";
             }
         }
         return $calculatedScore;
     }
 
-    public function calculateTbSampleScore($passStatus) {
+    public function calculateTbSampleScore($passStatus, $sampleScore) {
         switch ($passStatus) {
             case "pass":
-                return self::PASS_SCORE_VALUE;
+                return self::PASS_SCORE_PERCENT * ($sampleScore / 100.00);
             case "concern":
-                return self::CONCERN_SCORE_VALUE;
+                return self::CONCERN_SCORE_PERCENT * ($sampleScore / 100.00);
             case "fail":
-                return self::FAIL_SCORE_VALUE;
+                return self::FAIL_SCORE_PERCENT * ($sampleScore / 100.00);
             default:
-                return self::FAIL_SCORE_VALUE;
+                return self::FAIL_SCORE_PERCENT * ($sampleScore / 100.00);
         }
     }
 
@@ -103,8 +103,8 @@ class Application_Service_EvaluationScoring {
 
     const FAIL_IF_POINTS_DEDUCTED = 20;
 
-    public function calculateSubmissionPassStatus($shipmentScore, $documentationScore, $samplePassStatuses) {
-        if ((self::MAX_DOCUMENTATION_SCORE) + (count($samplePassStatuses) * self::PASS_SCORE_VALUE) - $shipmentScore - $documentationScore > self::FAIL_IF_POINTS_DEDUCTED) {
+    public function calculateSubmissionPassStatus($shipmentScore, $documentationScore, $maxShipmentScore, $samplePassStatuses) {
+        if ((self::MAX_DOCUMENTATION_SCORE) + $maxShipmentScore - $shipmentScore - $documentationScore > self::FAIL_IF_POINTS_DEDUCTED) {
             return 'fail';
         }
         if (in_array('fail', $samplePassStatuses)) {

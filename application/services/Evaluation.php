@@ -441,12 +441,14 @@ class Application_Service_Evaluation {
             $submissionShipmentScore = 0;
             $scoringService = new Application_Service_EvaluationScoring();
             $samplePassStatuses = array();
+            $maxShipmentScore = 0;
             for ($i=0; $i < count($sampleRes); $i++) {
                 $sampleRes[$i]['calculated_score'] = $scoringService->calculateTbSamplePassStatus($sampleRes[$i]['ref_mtb_detected'],
                     $sampleRes[$i]['res_mtb_detected'], $sampleRes[$i]['ref_rif_resistance'], $sampleRes[$i]['res_rif_resistance'],
                     $sampleRes[$i]['res_probe_d'], $sampleRes[$i]['res_probe_c'], $sampleRes[$i]['res_probe_e'],
                     $sampleRes[$i]['res_probe_b'], $sampleRes[$i]['res_spc'], $sampleRes[$i]['res_probe_a']);
-                $submissionShipmentScore += $scoringService->calculateTbSampleScore($sampleRes[$i]['calculated_score']);
+                $submissionShipmentScore += $scoringService->calculateTbSampleScore($sampleRes[$i]['calculated_score'], $sampleRes[$i]['ref_sample_score']);
+                $maxShipmentScore += $sampleRes[$i]['ref_sample_score'];
                 array_push($samplePassStatuses, $sampleRes[$i]['calculated_score']);
             }
             $attributes = json_decode($shipmentData['attributes'],true);
@@ -455,10 +457,11 @@ class Application_Service_Evaluation {
                 $attributes['expiry_date'], $shipmentData['shipment_receipt_date'], $attributes['sample_rehydration_date'],
                 $shipmentData['shipment_test_date'], $shipmentData['supervisor_approval'], $shipmentData['participant_supervisor'],
                 $shipmentData['lastdate_response']);
-            $shipmentData['calculated_score'] = $scoringService->calculateSubmissionPassStatus($submissionShipmentScore,
-                $shipmentData['documentation_score'], $samplePassStatuses);
+            $shipmentData['calculated_score'] = $scoringService->calculateSubmissionPassStatus(
+                $submissionShipmentScore, $shipmentData['documentation_score'], $maxShipmentScore,
+                $samplePassStatuses);
             $shipmentData['max_documentation_score'] = Application_Service_EvaluationScoring::MAX_DOCUMENTATION_SCORE;
-            $shipmentData['max_shipment_score'] = Application_Service_EvaluationScoring::PASS_SCORE_VALUE * count($sampleRes);
+            $shipmentData['max_shipment_score'] = $maxShipmentScore;
         }
         return array(
             'participant' => $participantData,
@@ -764,7 +767,7 @@ class Application_Service_Evaluation {
                         $params['mtbDetected'][$i], $referenceSample['rif_resistance'], $params['rifResistance'][$i],
                         $params['probeD'][$i], $params['probeC'][$i], $params['probeE'][$i], $params['probeB'][$i],
                         $params['spc'][$i], $params['probeA'][$i]);
-                $shipmentScore += $scoringService->calculateTbSampleScore($calculatedScorePassStatus);
+                $shipmentScore += $scoringService->calculateTbSampleScore($calculatedScorePassStatus, $referenceSample['sample_score']);
 
                 $db->update('response_result_tb', array(
                     'date_tested' => Pt_Commons_General::dateFormat($params['dateTested'][$i]),
