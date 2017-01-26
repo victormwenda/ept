@@ -1,7 +1,6 @@
 <?php
 
 class Application_Service_Evaluation {
-
     public function getAllDistributions($parameters) {
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
          * you want to insert a non-database field (for example a counter or static image)
@@ -251,10 +250,6 @@ class Application_Service_Evaluation {
                                 $mandatoryResult = 'Fail';
                                 $failureReason[]['warning'] = "Mandatory Sample <strong>" . $result['sample_label'] . "</strong> was not reported";
                             }
-                            //else if(($result['reference_result'] != $result['reported_result'])){
-                            //	$mandatoryResult = 'Fail';
-                            //	$failureReason[]= "Mandatory Sample <strong>".$result['sample_label']."</strong> was reported wrongly";
-                            //}
                         }
                     }
 
@@ -384,7 +379,7 @@ class Application_Service_Evaluation {
                     $shipmentResult[$counter]['failure_reason'] = $failureReason = json_encode($failureReason);
 
                     // let us update the total score in DB
-                    $nofOfRowsUpdated = $db->update('shipment_participant_map', array('shipment_score' => $totalScore, 'final_result' => $finalResult, 'failure_reason' => $failureReason), "map_id = " . $shipment['map_id']);
+                    $db->update('shipment_participant_map', array('shipment_score' => $totalScore, 'final_result' => $finalResult, 'failure_reason' => $failureReason), "map_id = " . $shipment['map_id']);
                     $counter++;
                 } else {
                     $failureReason = array('warning' => "Response was submitted after the last response date.");
@@ -441,6 +436,29 @@ class Application_Service_Evaluation {
                     $sampleRes[] = $res;
                 }
             }
+        }
+        if ($scheme == 'tb') {
+            $submissionShipmentScore = 0;
+            $scoringService = new Application_Service_EvaluationScoring();
+            $samplePassStatuses = array();
+            for ($i=0; $i < count($sampleRes); $i++) {
+                $sampleRes[$i]['calculated_score'] = $scoringService->calculateTbSamplePassStatus($sampleRes[$i]['ref_mtb_detected'],
+                    $sampleRes[$i]['res_mtb_detected'], $sampleRes[$i]['ref_rif_resistance'], $sampleRes[$i]['res_rif_resistance'],
+                    $sampleRes[$i]['res_probe_d'], $sampleRes[$i]['res_probe_c'], $sampleRes[$i]['res_probe_e'],
+                    $sampleRes[$i]['res_probe_b'], $sampleRes[$i]['res_spc'], $sampleRes[$i]['res_probe_a']);
+                $submissionShipmentScore += $scoringService->calculateTbSampleScore($sampleRes[$i]['calculated_score']);
+                array_push($samplePassStatuses, $sampleRes[$i]['calculated_score']);
+            }
+            $attributes = json_decode($shipmentData['attributes'],true);
+            $shipmentData['shipment_score'] = $submissionShipmentScore;
+            $shipmentData['documentation_score'] = $scoringService->calculateTbDocumentationScore($shipmentData['shipment_date'],
+                $attributes['expiry_date'], $shipmentData['shipment_receipt_date'], $attributes['sample_rehydration_date'],
+                $shipmentData['shipment_test_date'], $shipmentData['supervisor_approval'], $shipmentData['participant_supervisor'],
+                $shipmentData['lastdate_response']);
+            $shipmentData['calculated_score'] = $scoringService->calculateSubmissionPassStatus($submissionShipmentScore,
+                $shipmentData['documentation_score'], $samplePassStatuses);
+            $shipmentData['max_documentation_score'] = Application_Service_EvaluationScoring::MAX_DOCUMENTATION_SCORE;
+            $shipmentData['max_shipment_score'] = Application_Service_EvaluationScoring::PASS_SCORE_VALUE * count($sampleRes);
         }
         return array(
             'participant' => $participantData,
@@ -722,10 +740,8 @@ class Application_Service_Evaluation {
             }
 
             $instrumentsDb = new Application_Model_DbTable_Instruments();
-            $sampleScores = array();
-            define("PASS_SCORE_VALUE", 20);
-            define("CONCERN_SCORE_VALUE", 10);
-            define("FAIL_SCORE_VALUE", 0);
+
+            $scoringService = new Application_Service_EvaluationScoring();
             $shipmentScore = 0;
             for ($i = 0; $i < $size; $i++) {
                 $instrumentInstalledOn = Pt_Commons_General::dateFormat($params['instrumentInstalledOn'][$i]);
@@ -738,18 +754,18 @@ class Application_Service_Evaluation {
                     $params['instrumentLastCalibratedOn'][$i] == "") {
                     $instrumentLastCalibratedOn = null;
                 }
-                $calculatedScore = $this->calculateTbSampleScore($params['shipmentId'], $params['sampleId'][$i],
-                    $params['mtbDetected'][$i], $params['rifResistance'][$i], $params['probeD'][$i], $params['probeC'][$i],
-                    $params['probeE'][$i], $params['probeB'][$i], $params['spc'][$i], $params['probeA'][$i]);
-                array_push($sampleScores, $calculatedScore);
-                switch ($calculatedScore) {
-                    case "pass":
-                        $shipmentScore += PASS_SCORE_VALUE;
-                        break;
-                    case "concern":
-                        $shipmentScore += CONCERN_SCORE_VALUE;
-                        break;
-                }
+
+                $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+                $sql = $db->select()->from(array('reference_result_tb'))
+                    ->where('shipment_id = ? ', $params['shipmentId'])
+                    ->where('sample_id = ?', $params['sampleId'][$i]);
+                $referenceSample = $db->fetchRow($sql);
+                $calculatedScorePassStatus = $scoringService->calculateTbSamplePassStatus($referenceSample['mtb_detected'],
+                        $params['mtbDetected'][$i], $referenceSample['rif_resistance'], $params['rifResistance'][$i],
+                        $params['probeD'][$i], $params['probeC'][$i], $params['probeE'][$i], $params['probeB'][$i],
+                        $params['spc'][$i], $params['probeA'][$i]);
+                $shipmentScore += $scoringService->calculateTbSampleScore($calculatedScorePassStatus);
+
                 $db->update('response_result_tb', array(
                     'date_tested' => Pt_Commons_General::dateFormat($params['dateTested'][$i]),
                     'mtb_detected' => $params['mtbDetected'][$i],
@@ -760,7 +776,7 @@ class Application_Service_Evaluation {
                     'probe_b' => $params['probeB'][$i],
                     'spc' => $params['spc'][$i],
                     'probe_a' => $params['probeA'][$i],
-                    'calculated_score' => $calculatedScore,
+                    'calculated_score' => $calculatedScorePassStatus,
                     'instrument_serial' => $params['instrumentSerial'][$i],
                     'instrument_installed_on' => $instrumentInstalledOn,
                     'instrument_last_calibrated_on' => $instrumentLastCalibratedOn,
@@ -785,7 +801,7 @@ class Application_Service_Evaluation {
             }
 
             $mapData['shipment_score'] = $shipmentScore;
-            $mapData['documentation_score'] = $this->calculateTbDocumentationScore(
+            $mapData['documentation_score'] = $scoringService->calculateTbDocumentationScore(
                 Pt_Commons_General::dateFormat($params['shipmentDate']),
                 Pt_Commons_General::dateFormat($params['expiryDate']),
                 Pt_Commons_General::dateFormat($params['receiptDate']),
@@ -814,84 +830,6 @@ class Application_Service_Evaluation {
 		}
 		
         $db->update('shipment_participant_map', $updateArray, "map_id = " . $params['smid']);
-    }
-
-    private function calculateTbSampleScore(
-        $shipmentId, $sampleId, $mtbDetected, $rifResistance, $probeD, $probeC, $probeE, $probeB, $spc, $probeA) {
-        define("CONCERN_CT_VALUE", 42);
-
-        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
-        $sql = $db->select()->from(array('reference_result_tb'))
-            ->where('shipment_id = ? ', $shipmentId)
-            ->where('sample_id = ?', $sampleId);
-        $referenceSample = $db->fetchRow($sql);
-        $calculatedScore = "fail";
-        if ($mtbDetected == $referenceSample['mtbDetected'] &&
-            $rifResistance == $referenceSample['rif_resistance']) {
-            $calculatedScore = "pass";
-            $ctValues = array(floatval($probeD), floatval($probeC), floatval($probeE), floatval($probeB), floatval($spc), floatval($probeA));
-            if(max($ctValues) > CONCERN_CT_VALUE) {
-                $calculatedScore = "concern";
-            }
-        }
-        return $calculatedScore;
-    }
-
-    private function calculateTbDocumentationScore($shipmentDate, $expiryDate, $receiptDate, $rehydrationDate, $testDate,
-                                                   $supervisorApproval, $supervisorName, $responseDeadlineDate) {
-        define("REHYDRATION_EXPIRY_HOURS", 48);
-        define("FRIED_SAMPLE_HOURS", 336);
-        define("EXPIRY_FROM_DATE_OF_SHIPMENT_HOURS", 720);
-        define("MAX_DOCUMENTATION_SCORE", 20);
-        define("DEDUCTION_POINTS", 2);
-
-        $documentationScore = MAX_DOCUMENTATION_SCORE;
-        $inferredTestDate = $responseDeadlineDate;
-        if (!isset($testDate) || $testDate == '' || $testDate == '0000-00-00') {
-            $documentationScore -= DEDUCTION_POINTS;
-        } else {
-            $inferredTestDate = $testDate;
-        }
-        if (!isset($expiryDate) || $expiryDate == '' || $expiryDate == '0000-00-00') {
-            $documentationScore -= DEDUCTION_POINTS;
-        } else if ($expiryDate < $inferredTestDate) {
-            // Mark as zero if user tried to run the sample using an expired panel
-            return 0;
-        }
-        if(!isset($receiptDate) || $receiptDate == '' || $receiptDate == '0000-00-00') {
-            $documentationScore -= DEDUCTION_POINTS;
-        }
-        if(!isset($rehydrationDate) || $rehydrationDate == '' || $rehydrationDate == '0000-00-00') {
-            $documentationScore -= DEDUCTION_POINTS;
-        }
-        if(!isset($expiryDate) || $expiryDate == '' || $expiryDate == '0000-00-00') {
-            $documentationScore -= DEDUCTION_POINTS;
-        }
-        if(!isset($supervisorApproval) || $supervisorApproval == '' || $supervisorApproval == 'no') {
-            $documentationScore -= DEDUCTION_POINTS;
-        }
-        if(!isset($supervisorName) || $supervisorName == '') {
-            $documentationScore -= DEDUCTION_POINTS;
-        }
-        $diffBetweenRehydrationAndTest = $inferredTestDate->diff($rehydrationDate);
-        $hoursBetweenRehydrationAndTest = $diffBetweenRehydrationAndTest->h;
-        $hoursBetweenRehydrationAndTest += ($diffBetweenRehydrationAndTest->days * 24);
-        if($hoursBetweenRehydrationAndTest < 0 || $hoursBetweenRehydrationAndTest > REHYDRATION_EXPIRY_HOURS) {
-            $documentationScore -= DEDUCTION_POINTS;
-        }
-        $diffBetweenReceiptAndTest = $inferredTestDate->diff($receiptDate);
-        $hoursBetweenReceiptAndTest = $diffBetweenReceiptAndTest->h;
-        $hoursBetweenReceiptAndTest += ($diffBetweenReceiptAndTest->days * 24);
-        if($hoursBetweenReceiptAndTest < 0 || $hoursBetweenReceiptAndTest > FRIED_SAMPLE_HOURS) {
-            $documentationScore -= DEDUCTION_POINTS;
-        }
-        $diffBetweenShipmentAndTest = $inferredTestDate->diff($shipmentDate);
-        $hoursBetweenShipmentAndTest = $diffBetweenShipmentAndTest->h;
-        $hoursBetweenShipmentAndTest += ($diffBetweenShipmentAndTest->days * 24);
-        if($hoursBetweenShipmentAndTest < 0 || $hoursBetweenShipmentAndTest > EXPIRY_FROM_DATE_OF_SHIPMENT_HOURS) {
-            $documentationScore -= DEDUCTION_POINTS;
-        }
-        return $documentationScore;
     }
 
     public function updateShipmentComment($shipmentId, $comment) {
@@ -1826,13 +1764,8 @@ class Application_Service_Evaluation {
 						$fRes = $db->fetchCol($db->select()->from('r_results', array('result_name'))->where('result_id = ' . $finalResult));
 	
 						$shipmentResult[$counter]['display_result'] = $fRes[0];
-						$shipmentResult[$counter]['failure_reason'] = $failureReason = json_encode($failureReason);						
-							
-						
-
+						$shipmentResult[$counter]['failure_reason'] = $failureReason = json_encode($failureReason);
 					}
-					
-					
                     // let us update the total score in DB
                     $db->update('shipment_participant_map', array('shipment_score' => $totalScore, 'final_result' => $finalResult, 'failure_reason' => $failureReason), "map_id = " . $shipment['map_id']);
                     //$counter++;
@@ -2441,7 +2374,6 @@ class Application_Service_Evaluation {
 			} else {
 				$scoreResult = 'Pass';
 			}
-
 
 			// if we are excluding this result, then let us not give pass/fail				
 			if ($shipment['is_excluded'] == 'yes') {

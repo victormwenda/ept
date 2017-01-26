@@ -3,12 +3,75 @@ $attributes = json_decode($this->evaluateData['shipment']['attributes'],true);
 $dateFormatHelper = $this->getHelper('DateFormat');
 $dtFormat=  $dateFormatHelper->getDateFormat();
 ?>
-	<table class="table table-bordered table-striped" style="width:100%;margin:0 auto 10px auto;">
+    <table class="table table-bordered table-striped" style="width:100%;margin:0 auto 10px auto;">
+        <tr>
+            <th style="width:20%;"><label>Submission Score</label></th>
+            <td style="width:30%;">
+            <?php
+            if (isset($this->evaluateData['shipment']['calculated_score'])) {
+                $labelType = 'default';
+                switch ($this->evaluateData['shipment']['calculated_score'])
+                {
+                    case 'pass':
+                        $labelType = 'success';
+                        break;
+                    case 'fail':
+                        $labelType = 'danger';
+                        break;
+                    case 'concern':
+                        $labelType = 'warning';
+                        break;
+                }
+                echo '<h4 style="padding: 0; margin: 0;"><span class="label label-'.$labelType.'">'.ucfirst($this->evaluateData['shipment']['calculated_score']).'</span></h4>';
+            } else {
+                echo '<h4 style="padding: 0; margin: 0;"><span class="label label-default">N/A</span></h4>';
+            }
+            ?>
+            </td>
+            <th style="width:20%;"><label>Total Score</th>
+            <td style="width:30%;">
+                <h4 style="padding: 0; margin: 0;">
+                    <sup>
+                        <?php echo ($this->evaluateData['shipment']['documentation_score'] + $this->evaluateData['shipment']['shipment_score']); ?>
+                    </sup>
+                    &frasl;
+                    <sub>
+                        <?php echo ($this->evaluateData['shipment']['max_documentation_score'] + $this->evaluateData['shipment']['max_shipment_score']); ?>
+                    </sub>
+                </h4>
+            </td>
+        </tr>
+        <tr>
+            <th><label>Documentation Score</label></th>
+            <td>
+                <h4 style="padding: 0; margin: 0;">
+                    <sup>
+                        <?php echo $this->evaluateData['shipment']['documentation_score']; ?>
+                    </sup>
+                    &frasl;
+                    <sub>
+                        <?php echo $this->evaluateData['shipment']['max_documentation_score']; ?>
+                    </sub>
+                </h4>
+            </td>
+            <th><label>Shipment Score</th>
+            <td>
+                <h4 style="padding: 0; margin: 0;">
+                    <sup>
+                        <?php echo $this->evaluateData['shipment']['shipment_score']; ?>
+                    </sup>
+                    &frasl;
+                    <sub>
+                        <?php echo $this->evaluateData['shipment']['max_shipment_score']; ?>
+                    </sub>
+                </h4>
+            </td>
+        </tr>
 		<tr>
-			<th style="width:20%;"><label>Shipment Code</label></th>
-			<td style="width:30%;"><?php echo $this->evaluateData['shipment']['shipment_code']; ?></td>
-			<th style="width:20%;"><label>Scheme Type</th>
-			<td style="width:30%;"><?php echo strtoupper($this->evaluateData['shipment']['scheme_type']); ?></td>
+			<th><label>Shipment Code</label></th>
+			<td><?php echo $this->evaluateData['shipment']['shipment_code']; ?></td>
+			<th><label>Scheme Type</th>
+			<td><?php echo strtoupper($this->evaluateData['shipment']['scheme_type']); ?></td>
 		</tr>
 		<tr>
 			<th><label>Shipment Date</label></th>
@@ -129,7 +192,7 @@ $dtFormat=  $dateFormatHelper->getDateFormat();
                             <th style="background-color: transparent;">Probe B</th>
                             <th style="background-color: transparent;">SPC</th>
                             <th style="background-color: transparent;">Probe A</th>
-                            <th style="text-align: center;font-size:17px;">Acceptable?</th>
+                            <th style="text-align: center;font-size:17px;">Score</th>
                         </tr>
                         <tr>
                             <td style="vertical-align: middle;text-align: center;width: 14%;background-color: transparent;">
@@ -176,17 +239,24 @@ $dtFormat=  $dateFormatHelper->getDateFormat();
                             <td style="vertical-align: middle;text-align: center;width: 7%;">
                                 <input type="text" name="probeA[]" class="form-control oneDecimal input-sm numberInput" value="<?php echo $result['res_probe_a']; ?>" title="Please enter the Probe A value for <?php echo $result['sample_label']; ?>" />
                             </td>
-                            <td rowspan="2" style="vertical-align: middle;text-align: center;width: 7%;font-weight: bold;">
+                            <td style="vertical-align: middle;text-align: center;width: 7%;font-weight: bold;">
                                 <?php
-                                if(isset($result['res_mtb_detected']) && isset($result['res_rif_resistance'])){
-                                    if($result['res_mtb_detected'] == $result['ref_mtb_detected'] &&
-                                        $result['res_rif_resistance'] == $result['ref_rif_resistance']){
-                                        echo "Yes";
-                                    }else{
-                                        echo "No";
+                                if (isset($result['calculated_score'])) {
+                                    $labelType = 'default';
+                                    switch ($result['calculated_score'])
+                                    {
+                                        case 'pass':
+                                            $labelType = 'success';
+                                            break;
+                                        case 'fail':
+                                            $labelType = 'danger';
+                                            break;
+                                        case 'concern':
+                                            $labelType = 'warning';
+                                            break;
                                     }
-
-                                }else{
+                                    echo '<span class="label label-'.$labelType.'">'.ucfirst($result['calculated_score']).'</span>';
+                                } else {
                                     echo "N/A";
                                 }
                                 ?>
