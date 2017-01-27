@@ -520,10 +520,9 @@ class Application_Service_Evaluation {
                 ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id')
                 ->where("sp.shipment_id = ?", $shipmentId)
                 ->where("substring(sp.evaluation_status,4,1) != '0'")
-               ->group('sp.map_id');
+                ->group('sp.map_id');
         
         $shipmentOverall = $db->fetchAll($sql);
-   //     Zend_Debug::dump($shipmentOverall);die;
 
         $noOfParticipants = count($shipmentOverall);
         $numScoredFull = 0;
@@ -531,15 +530,43 @@ class Application_Service_Evaluation {
             $numScoredFull += $shipment['fullscore'];
         }
 
-        return array('participant' => $participantData,
+        if ($scheme == 'tb') {
+            $submissionShipmentScore = 0;
+            $scoringService = new Application_Service_EvaluationScoring();
+            $samplePassStatuses = array();
+            $maxShipmentScore = 0;
+            for ($i=0; $i < count($sampleRes); $i++) {
+                $sampleRes[$i]['calculated_score'] = $scoringService->calculateTbSamplePassStatus($sampleRes[$i]['ref_mtb_detected'],
+                    $sampleRes[$i]['res_mtb_detected'], $sampleRes[$i]['ref_rif_resistance'], $sampleRes[$i]['res_rif_resistance'],
+                    $sampleRes[$i]['res_probe_d'], $sampleRes[$i]['res_probe_c'], $sampleRes[$i]['res_probe_e'],
+                    $sampleRes[$i]['res_probe_b'], $sampleRes[$i]['res_spc'], $sampleRes[$i]['res_probe_a']);
+                $submissionShipmentScore += $scoringService->calculateTbSampleScore($sampleRes[$i]['calculated_score'], $sampleRes[$i]['ref_sample_score']);
+                $maxShipmentScore += $sampleRes[$i]['ref_sample_score'];
+                array_push($samplePassStatuses, $sampleRes[$i]['calculated_score']);
+            }
+            $attributes = json_decode($shipmentData['attributes'],true);
+            $shipmentData['shipment_score'] = $submissionShipmentScore;
+            $shipmentData['documentation_score'] = $scoringService->calculateTbDocumentationScore($shipmentData['shipment_date'],
+                $attributes['expiry_date'], $shipmentData['shipment_receipt_date'], $attributes['sample_rehydration_date'],
+                $shipmentData['shipment_test_date'], $shipmentData['supervisor_approval'], $shipmentData['participant_supervisor'],
+                $shipmentData['lastdate_response']);
+            $shipmentData['calculated_score'] = $scoringService->calculateSubmissionPassStatus(
+                $submissionShipmentScore, $shipmentData['documentation_score'], $maxShipmentScore,
+                $samplePassStatuses);
+            $shipmentData['max_documentation_score'] = Application_Service_EvaluationScoring::MAX_DOCUMENTATION_SCORE;
+            $shipmentData['max_shipment_score'] = $maxShipmentScore;
+        }
+
+        return array(
+            'participant' => $participantData,
             'shipment' => $shipmentData,
             'possibleResults' => $possibleResults,
             'totalParticipants' => $noOfParticipants,
             'fullScorers' => $numScoredFull,
             'evalComments' => $evalComments,
             'controlResults' => $controlRes,
-            'results' => $sampleRes                
-                );
+            'results' => $sampleRes
+        );
     }
 
     public function updateShipmentResults($params) {

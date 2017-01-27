@@ -565,10 +565,73 @@ if ($this->scheme == 'eid') {
     $attributes = json_decode($this->evaluateData['shipment']['attributes'], true); ?>
     <table class="table table-bordered table-striped" style="width:100%;margin:0 auto 10px auto;">
         <tr>
-            <th style="width: 30%;">Shipment Code</th>
-            <td style="width: 20%;"><?php echo $this->evaluateData['shipment']['shipment_code']; ?></td>
-            <th style="width: 30%;">Scheme Type</th>
-            <td style="width: 20%;"><?php echo strtoupper($this->evaluateData['shipment']['scheme_type']); ?></td>
+            <th style="width:20%;"><label>Submission Score</label></th>
+            <td style="width:30%;">
+                <?php
+                if (isset($this->evaluateData['shipment']['calculated_score'])) {
+                    $labelType = 'default';
+                    switch ($this->evaluateData['shipment']['calculated_score'])
+                    {
+                        case 'pass':
+                            $labelType = 'success';
+                            break;
+                        case 'fail':
+                            $labelType = 'danger';
+                            break;
+                        case 'concern':
+                            $labelType = 'warning';
+                            break;
+                    }
+                    echo '<h4 style="padding: 0; margin: 0;"><span class="label label-'.$labelType.'">'.ucfirst($this->evaluateData['shipment']['calculated_score']).'</span></h4>';
+                } else {
+                    echo '<h4 style="padding: 0; margin: 0;"><span class="label label-default">N/A</span></h4>';
+                }
+                ?>
+            </td>
+            <th style="width:20%;"><label>Total Score</th>
+            <td style="width:30%;">
+                <h4 style="padding: 0; margin: 0;">
+                    <sup>
+                        <?php echo ($this->evaluateData['shipment']['documentation_score'] + $this->evaluateData['shipment']['shipment_score']); ?>
+                    </sup>
+                    &frasl;
+                    <sub>
+                        <?php echo ($this->evaluateData['shipment']['max_documentation_score'] + $this->evaluateData['shipment']['max_shipment_score']); ?>
+                    </sub>
+                </h4>
+            </td>
+        </tr>
+        <tr>
+            <th><label>Documentation Score</label></th>
+            <td>
+                <h4 style="padding: 0; margin: 0;">
+                    <sup>
+                        <?php echo $this->evaluateData['shipment']['documentation_score']; ?>
+                    </sup>
+                    &frasl;
+                    <sub>
+                        <?php echo $this->evaluateData['shipment']['max_documentation_score']; ?>
+                    </sub>
+                </h4>
+            </td>
+            <th><label>Shipment Score</th>
+            <td>
+                <h4 style="padding: 0; margin: 0;">
+                    <sup>
+                        <?php echo $this->evaluateData['shipment']['shipment_score']; ?>
+                    </sup>
+                    &frasl;
+                    <sub>
+                        <?php echo $this->evaluateData['shipment']['max_shipment_score']; ?>
+                    </sub>
+                </h4>
+            </td>
+        </tr>
+        <tr>
+            <th>Shipment Code</th>
+            <td><?php echo $this->evaluateData['shipment']['shipment_code']; ?></td>
+            <th>Scheme Type</th>
+            <td><?php echo strtoupper($this->evaluateData['shipment']['scheme_type']); ?></td>
         </tr>
         <tr>
             <th>Shipment Date</th>
@@ -686,7 +749,7 @@ if ($this->scheme == 'eid') {
                         <th style="background-color: transparent;">Probe B</th>
                         <th style="background-color: transparent;">SPC</th>
                         <th style="background-color: transparent;">Probe A</th>
-                        <th style="text-align: center;font-size:17px;">Acceptable?</th>
+                        <th style="text-align: center;font-size:17px;">Score</th>
                     </tr>
                     <tr>
                         <td style="vertical-align: middle;text-align: center;width: 14%;background-color: transparent;">
@@ -742,34 +805,41 @@ if ($this->scheme == 'eid') {
                             ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;width: 7%;">
-                            <?php echo $result['res_probe_d']; ?>
+                            <?php echo number_format($result['res_probe_d'], 2); ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;width: 7%;">
-                            <?php echo $result['res_probe_c']; ?>
+                            <?php echo number_format($result['res_probe_c'], 2); ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;width: 7%;">
-                            <?php echo $result['res_probe_e']; ?>
+                            <?php echo number_format($result['res_probe_e'], 2); ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;width: 7%;">
-                            <?php echo $result['res_probe_b']; ?>
+                            <?php echo number_format($result['res_probe_b'], 2); ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;width: 7%;">
-                            <?php echo $result['res_spc']; ?>
+                            <?php echo number_format($result['res_spc'], 2); ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;width: 7%;">
-                            <?php echo $result['res_probe_a']; ?>
+                            <?php echo number_format($result['res_probe_a'], 2); ?>
                         </td>
-                        <td rowspan="2" style="vertical-align: middle;text-align: center;width: 7%;font-weight: bold;">
+                        <td style="vertical-align: middle;text-align: center;width: 7%;font-weight: bold;">
                             <?php
-                            if(isset($result['res_mtb_detected']) && isset($result['res_rif_resistance'])){
-                                if($result['res_mtb_detected'] == $result['ref_mtb_detected'] &&
-                                    $result['res_rif_resistance'] == $result['ref_rif_resistance']){
-                                    echo "Yes";
-                                }else{
-                                    echo "No";
+                            if (isset($result['calculated_score'])) {
+                                $labelType = 'default';
+                                switch ($result['calculated_score'])
+                                {
+                                    case 'pass':
+                                        $labelType = 'success';
+                                        break;
+                                    case 'fail':
+                                        $labelType = 'danger';
+                                        break;
+                                    case 'concern':
+                                        $labelType = 'warning';
+                                        break;
                                 }
-
-                            }else{
+                                echo '<span class="label label-'.$labelType.'">'.ucfirst($result['calculated_score']).'</span>';
+                            } else {
                                 echo "N/A";
                             }
                             ?>
@@ -826,32 +896,32 @@ if ($this->scheme == 'eid') {
                         </td>
                         <td style="vertical-align: middle;text-align: right;">
                             <?php
-                            echo $result['ref_probe_d'];
+                            echo number_format($result['ref_probe_d'], 2);
                             ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;">
                             <?php
-                            echo $result['ref_probe_c'];
+                            echo number_format($result['ref_probe_c'], 2);
                             ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;">
                             <?php
-                            echo $result['ref_probe_e'];
+                            echo number_format($result['ref_probe_e'], 2);
                             ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;">
                             <?php
-                            echo $result['ref_probe_b'];
+                            echo number_format($result['ref_probe_b'], 2);
                             ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;">
                             <?php
-                            echo $result['ref_spc'];
+                            echo number_format($result['ref_spc'], 2);
                             ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;">
                             <?php
-                            echo $result['ref_probe_a'];
+                            echo number_format($result['ref_probe_a'], 2);
                             ?>
                         </td>
                     </tr>
