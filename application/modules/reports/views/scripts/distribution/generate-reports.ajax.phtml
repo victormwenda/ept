@@ -247,7 +247,7 @@ if (sizeof($this->result['shipment'])>0) {
             $pdf->writeHTML($labInfo, true, false, true, false, '');
         }
 
-        if (sizeof($result['responseResult']) > 0) {
+        if (isset($result['responseResult']) && sizeof($result['responseResult']) > 0) {
             if ($schemeType != 'vl' && $schemeType!='eid') {
                 $labRes = '<span style="font-weight: bold;font-size:13px;">Your laboratory test results : <br/></span><table border="1" style="font-size:13px;">';
                 $labRes .='<tr style="background-color:#dbe4ee;"><td></td><td style="text-align:center;font-weight:bold;">Test-1</td><td style="text-align:center;font-weight:bold;">Test-2</td><td style="text-align:center;font-weight:bold;">Test-3</td><td colspan="4" style="border:none;"></td></tr>';
@@ -548,12 +548,12 @@ if (sizeof($this->result['shipment'])>0) {
 
         if (trim($result['shipment_score'])!="") {
             if ($result['shipment_score'] != 0) {
-                $shipmentScore=($result['shipment_score']/$result['shipment_score'])*100;
+                $shipmentScore = ($result['shipment_score']/$result['shipment_score'])*100;
             } else {
                 $result['shipment_score'] = 0;
             }
         }
-        $score=($shipmentScore/count($result['responseResult']))*100;
+        $score = ($shipmentScore / (isset($result['responseResult']) ? count($result['responseResult']) : 1)) * 100;
 
         if(trim($result['shipment_comment'])!="" || trim($result['evaluationComments'])!="" || trim($result['optional_eval_comment'])!=""){
             $comment='<br/><br/><table border="1" style="width:100%;font-size:13px;" cellpadding="3">';

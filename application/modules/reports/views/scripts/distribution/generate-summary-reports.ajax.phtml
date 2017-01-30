@@ -355,7 +355,7 @@ if ($this->result['shipment'] != "") {
     } else {
         $pdf->AddPage('P', 'A4');
         $pdf->SetFont('times', 'B', 12);
-        if (count($this->result['shipment']['referenceResult']) > 0) {
+        if (isset($this->result['shipment']['referenceResult']) && count($this->result['shipment']['referenceResult']) > 0) {
             $referenceRes = '<table style="text-align:center;width:100%" align="left">';
             $referenceRes.='<tr>';
             $referenceRes.='<td style="font-weight:bold;width:20%;">PT Survey</td><td style="font-weight:normal;width:30%;">' . $this->result['shipment']['distribution_code'] . '<br>(' . $this->dateFormat($this->result['shipment']['shipment_date']) . ')</td>';
@@ -365,7 +365,7 @@ if ($this->result['shipment'] != "") {
 
             $pdf->writeHTML($referenceRes, true, false, true, false, '');
         }
-        if (count($this->result['shipment']['summaryResult']) > 0) {
+        if (isset($this->result['shipment']['summaryResult']) && count($this->result['shipment']['summaryResult']) > 0) {
             $labCounter = 1;
             $pass = $config->evaluation->dts->passPercentage;
             $barPoints["0 - 59"] = 0;
