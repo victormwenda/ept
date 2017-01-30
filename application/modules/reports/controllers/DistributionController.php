@@ -2,9 +2,7 @@
 
 class Reports_DistributionController extends Zend_Controller_Action
 {
-
-    public function init()
-    {
+    public function init() {
         $ajaxContext = $this->_helper->getHelper('AjaxContext');
         $ajaxContext->addActionContext('index', 'html')
                     ->addActionContext('get-shipments', 'html')
@@ -14,8 +12,7 @@ class Reports_DistributionController extends Zend_Controller_Action
         $this->_helper->layout()->pageName = 'analyze';
     }
 
-    public function indexAction()
-    {
+    public function indexAction() {
         if ($this->getRequest()->isPost()) {
             $params = $this->_getAllParams();            
             $distributionService = new Application_Service_Distribution();
@@ -23,42 +20,38 @@ class Reports_DistributionController extends Zend_Controller_Action
         }
     }
 
-    public function getShipmentsAction()
-    {
-        if($this->_hasParam('did')){            
+    public function getShipmentsAction() {
+        if ($this->_hasParam('did')) {
             $id = (int)($this->_getParam('did'));
             $shipmentService = new Application_Service_Shipments();
             $this->view->shipments = $shipmentService->getShipmentInReports($id);            
-        }else{
+        } else {
             $this->view->shipments = false;
         }
     }
 
-    public function shipmentAction()
-    {
+    public function shipmentAction() {
         $shipmentService = new Application_Service_Shipments();
-        if($this->_hasParam('sid')){            
+        if ($this->_hasParam('sid')) {
             $id = (int)base64_decode($this->_getParam('sid'));
             $reEvaluate = false;
             $evalService = new Application_Service_Evaluation();
             $shipment = $this->view->shipment = $evalService->getShipmentToEvaluateReports($id,$reEvaluate);
-             $this->view->responseCount = $evalService->getResponseCount($id,$shipment[0]['distribution_id']);
-            //$this->view->shipmentsUnderDistro = $evalService->getShipments($shipment[0]['distribution_id']);
+            $this->view->responseCount = $evalService->getResponseCount($id,$shipment[0]['distribution_id']);
             $this->view->shipmentsUnderDistro = $shipmentService->getShipmentInReports($shipment[0]['distribution_id']);
-        }else{
+        } else {
             $this->_redirect("/reports/distribution/");
         }
     }
 
-    public function generateReportsAction()
-    {
+    public function generateReportsAction() {
         $this->_helper->layout()->disableLayout();
-        if($this->_hasParam('sId')){
+        if ($this->_hasParam('sId')) {
             ini_set('memory_limit', '-1');
             $id = (int)base64_decode($this->_getParam('sId'));
             $sLimit = (int)$this->_getParam('limitVal');
             $sOffset = (int)$this->_getParam('offsetVal');
-             $startValue = (int)$this->_getParam('startVal');
+            $startValue = (int)$this->_getParam('startVal');
             $endValue = (int)$this->_getParam('endVal');
             $this->view->bulkfileNameVal =$startValue.'-'.$endValue;
             $comingFrom = $this->_getParam('comingFrom');
@@ -73,20 +66,16 @@ class Reports_DistributionController extends Zend_Controller_Action
             $this->view->possibleDtsResults = $schemeService->getPossibleResults('dts');
             $this->view->passPercentage = $commonService->getConfig('pass_percentage');
             $this->view->comingFrom=$comingFrom;
-            
-                
             $globalConfigDb = new Application_Model_DbTable_GlobalConfig();
             $this->view->customField1 = $globalConfigDb->getValue('custom_field_1');
             $this->view->customField2 = $globalConfigDb->getValue('custom_field_2');
             $this->view->haveCustom = $globalConfigDb->getValue('custom_field_needed');
-        
         }
     }
 
-    public function generateSummaryReportsAction()
-    {
+    public function generateSummaryReportsAction() {
         $this->_helper->layout()->disableLayout();
-        if($this->_hasParam('sId')){
+        if ($this->_hasParam('sId')) {
             $id = (int)base64_decode($this->_getParam('sId'));
             $comingFrom = $this->_getParam('comingFrom');
             $reportService = new Application_Service_Reports();

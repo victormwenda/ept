@@ -1,14 +1,11 @@
 <?php
-//Zend_Debug::dump($this->result);
-//die;
+
 require_once('tcpdf/tcpdf.php');
-//require_once('libchart/classes/libchart.php');
 $config = new Zend_Config_Ini(APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini", APPLICATION_ENV);
 if ($this->result['shipment'] != "") {
     if ($this->result['shipment']['scheme_type'] != 'eid') {
         require_once('libchart/classes/libchart.php');
         $chart = new VerticalBarChart(700, 400);
-       
     }
     if (!file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports') && !is_dir(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports')) {
         mkdir(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports');
@@ -17,9 +14,7 @@ if ($this->result['shipment'] != "") {
         mkdir(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports' . DIRECTORY_SEPARATOR . $this->result['shipment']['shipment_code']);
     }
 
-// Extend the TCPDF class to create custom Header and Footer
     class MYPDF extends TCPDF {
-
         public function setSchemeName($header, $schemeName, $logo,$logoRight,$comingFrom,$schemeType) {
             $this->scheme_name = $schemeName;
             $this->header = $header;
@@ -31,8 +26,6 @@ if ($this->result['shipment'] != "") {
 
         //Page header
         public function Header() {
-            // Logo
-            //$image_file = K_PATH_IMAGES.'logo_example.jpg';
             if (trim($this->logo) != "") {
                 if (file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'logo' . DIRECTORY_SEPARATOR . $this->logo)) {
                     $image_file = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'logo' . DIRECTORY_SEPARATOR . $this->logo;
@@ -52,19 +45,15 @@ if ($this->result['shipment'] != "") {
             $this->header = str_replace("<div", "<span", trim($this->header));
             $this->header = str_replace("</div>", "</span><br/>", $this->header);
 
-            //error_log($this->header);
-            //$y = $this->getY();
             $html = $this->header;
 
             $this->writeHTMLCell(0, 0, 25, 10, $html, 0, 0, 0, true, 'C', true);
-            //$this->writeHTML($html, true, false, true, true, 'L');
-            
-            if($this->schemeType == 'vl'){
+
+            if ($this->schemeType == 'vl') {
                 $html='<p  style="font-weight: bold;text-align:center;">Proficiency Testing Program for HIV Viral load using Dried Tube Specimen<br><strong>All participants results summary report</strong></p>';
-            }
-            else if($this->schemeType == 'eid'){
+            } else if ($this->schemeType == 'eid') {
                 $html='<h3 style="font-weight: bold;text-align:center;">HIV-1 Proficiency Testing Program for Early Infant Diagnosis using Dried Blood Spot</h3>';
-            }else{
+            } else {
                 $html='<h3 style="font-weight: bold;text-align:center;">Proficiency Testing Program for Anti-HIV Antibodies Diagnostics using '.$this->scheme_name.'</h3>';
             }
             
@@ -76,7 +65,7 @@ if ($this->result['shipment'] != "") {
         // Page footer
         public function Footer() {
             $finalizeReport="";
-            if(trim($this->comingFrom)=="finalize"){
+            if (trim($this->comingFrom)=="finalize") {
                $finalizeReport=' -FINALIZED';
             }
             // Position at 15 mm from bottom
@@ -86,13 +75,12 @@ if ($this->result['shipment'] != "") {
             // Page number
             $this->Cell(0, 10, 'Page ' . $this->getAliasNumPage() . '/' . $this->getAliasNbPages()." - Report generated at :".date("d-M-Y H:i:s").$finalizeReport, 0, false, 'C', 0, '', 0, false, 'T', 'M');
         }
-
     }
 
-// create new PDF document
+    // create new PDF document
     $pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
-// set default header data
+    // set default header data
     $pdf->SetHeaderData(PDF_HEADER_LOGO, PDF_HEADER_LOGO_WIDTH, PDF_HEADER_TITLE, PDF_HEADER_STRING);
 
     // set header and footer fonts
@@ -103,17 +91,14 @@ if ($this->result['shipment'] != "") {
     $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
 
     // set margins
-
     $pdf->SetMargins(PDF_MARGIN_LEFT, 50, PDF_MARGIN_RIGHT);
     $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
     $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
 
     // set auto page breaks
     $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
-
     // set image scale factor
     $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
-
     // set some language-dependent strings (optional)
     if (@file_exists(dirname(__FILE__) . '/lang/eng.php')) {
         require_once(dirname(__FILE__) . '/lang/eng.php');
@@ -122,16 +107,15 @@ if ($this->result['shipment'] != "") {
 
     $pdf->setSchemeName($this->header, $this->result['shipment']['scheme_name'], $this->logo,$this->logoRight,$this->comingFrom,$this->result['shipment']['scheme_type']);
     // add a page
-    //$pdf->AddPage();
-// ---------------------------------------------------------
+
+    // ---------------------------------------------------------
     if ($this->result['shipment']['scheme_type'] == 'eid') {
         $pdf->AddPage('P', 'A4');
         $participantCount='';
-        if(isset($this->result['shipment']['participant_count'])){
+        if (isset($this->result['shipment']['participant_count'])) {
             $participantCount=$this->result['shipment']['participant_count'];
         }
         if (isset($this->result['shipment']['summaryResult']) && sizeof($this->result['shipment']['summaryResult']) > 0) {
-            
             foreach ($this->result['shipment']['summaryResult'] as $result) {
                 $overAllMaxScore = 0;
                 $overAllBelowScore = 0;
@@ -170,17 +154,16 @@ if ($this->result['shipment'] != "") {
             $pdf->writeHTML($overAllSumRes, true, false, true, false, '');
             
             $n=count($this->result['shipment']['correctRes']);
-            if($n>0){
+            if ($n>0) {
                 $overAllCorrectRes = '<h3>Percentage of laboratories reporting correctly*</h3>';
                 $overAllCorrectRes.='<table border="1">';
-                
                 $overAllCorrectRes.='<tr style="background-color:#dbe4ee;">';
                 $overAllCorrectRes.='<td style="text-align:center;font-weight:bold;" colspan="'.($n+2).'">Sample Id</td>';
                 $overAllCorrectRes.='</tr>';
                 
                 $overAllCorrectRes.='<tr style="background-color:#dbe4ee;">';
                 $overAllCorrectRes.='<td></td>';
-                foreach($this->result['shipment']['correctRes'] as $cKey=>$cVal){
+                foreach ($this->result['shipment']['correctRes'] as $cKey=>$cVal) {
                     $overAllCorrectRes.='<td style="text-align:center;">'.$cKey.'</td>';
                 }
                 $overAllCorrectRes.='<td style="text-align:center;">Average</td>';
@@ -189,7 +172,7 @@ if ($this->result['shipment'] != "") {
                 $avg='';
                 $overAllCorrectRes.='<tr>';
                 $overAllCorrectRes.='<td style="text-align:center;">Correctly Reported</td>';
-                foreach($this->result['shipment']['correctRes'] as $cKey=>$cVal){
+                foreach ($this->result['shipment']['correctRes'] as $cKey=>$cVal) {
                     $avg+=round(($cVal/ $partCount) * 100,2);
                     $overAllCorrectRes.='<td style="text-align:center;">'.round(($cVal/ $partCount) * 100,2).'%</td>';
                 }
@@ -202,16 +185,13 @@ if ($this->result['shipment'] != "") {
             }
             
             $k=count($this->result['shipment']['avgAssayResult']);
-            
-            //Zend_Debug::dump($this->result['shipment']['avgAssayResult']);die;
-            
+
             $avgAssay="";
-            if($k>0){
-                foreach($this->result['shipment']['avgAssayResult'] as $assayResult){
+            if ($k>0) {
+                foreach ($this->result['shipment']['avgAssayResult'] as $assayResult) {
                     $avgAssay='';
                     $avgAssay.= '<div style="border: 2px solid #000000;padding:5px;">';
                     $avgAssay.= '<span>Summary of All Laboratories using '.$assayResult['vlAssay'].'</span><br/>';
-                    
                     $avgAssay.='<table border="1">';
                     $avgAssay.='<tr style="background-color:#dbe4ee;">';
                     $avgAssay.='<td style="text-align:center;">Total Number of Laboratories Performing Assay Pair</td>';
@@ -219,7 +199,6 @@ if ($this->result['shipment'] != "") {
                     $avgAssay.='<td style="text-align:center;">Total Number of Laboratories Scoring Below "'.$this->result['shipment']['max_score'].'"</td>';
                     $avgAssay.='<td style="text-align:center;">Percentage of Laboratories Scoring "'.$this->result['shipment']['max_score'].'"</td>';
                     $avgAssay.='</tr>';
-                    
                     $avgAssay.='<tr>';
                     $avgAssay.='<td style="text-align:center;">'.$assayResult['participantCount'].'</td>';
                     $avgAssay.='<td style="text-align:center;">';
@@ -235,8 +214,7 @@ if ($this->result['shipment'] != "") {
                     $avgAssay.='</td>';
                     $avgAssay.='</tr>';
                     $avgAssay.='</table>';
-                    
-                    
+
                     $m=count($assayResult['specimen']);
                     $avgAssay.='<br/><br/><table border="1" style="">';
                     $avgAssay.='<tr style="background-color:#dbe4ee;">';
@@ -245,7 +223,7 @@ if ($this->result['shipment'] != "") {
                     
                     $avgAssay.='<tr style="background-color:#dbe4ee;">';
                     $avgAssay.='<td></td>';
-                    foreach($assayResult['specimen'] as $sKey=>$sample){
+                    foreach ($assayResult['specimen'] as $sKey=>$sample) {
                         $avgAssay.='<td style="text-align:center;">'.$sKey.'</td>';
                     }
                     $avgAssay.='<td style="text-align:center;">Average</td>';
@@ -254,7 +232,7 @@ if ($this->result['shipment'] != "") {
                     $sCount=count($assayResult['specimen']);
                     $avgAssay.='<tr>';
                     $avgAssay.='<td rowspan="2" style="text-align:center;background-color:#dbe4ee;">Correctly Reported</td>';
-                    foreach($assayResult['specimen'] as $sKey=>$sample){
+                    foreach ($assayResult['specimen'] as $sKey=>$sample) {
                         $sampleAvg+=$sample['correctRes'];
                         $avgAssay.='<td style="text-align:center;">'.$sample['correctRes'].'</td>';
                     }
@@ -264,7 +242,7 @@ if ($this->result['shipment'] != "") {
                     
                     $sampleAvgInPer='';
                     $avgAssay.='<tr>';
-                    foreach($assayResult['specimen'] as $sKey=>$sample){
+                    foreach ($assayResult['specimen'] as $sKey=>$sample) {
                         $sampleAvgInPer+=$sample['correctRes'];
                         $avgAssay.='<td style="text-align:center;">'.round(($sample['correctRes']/$assayResult['participantCount'])*100,2).'%</td>';
                     }
@@ -274,17 +252,15 @@ if ($this->result['shipment'] != "") {
                     
                     $avgAssay.= '</div><br/>';
                     $pdf->writeHTML($avgAssay, true, false, true, false, '');
-                    if($pdf->getY()>=250){
+                    if ($pdf->getY()>=250) {
                         $pdf->AddPage();
                     }
                 }
             }
         }
-    }
-    else if ($this->result['shipment']['scheme_type'] == 'vl') {
+    } else if ($this->result['shipment']['scheme_type'] == 'vl') {
         $pdf->AddPage('P', 'A4');
         $pdf->SetFont('times', 'B', 12);
-        
         $referenceRes = '<table style="text-align:center;width:100%" align="left">';
         $referenceRes.='<tr>';
         $referenceRes.='<td style="font-weight:bold;width:20%;">PT Panel</td><td style="font-weight:normal;width:30%;">' . $this->result['shipment']['distribution_code'] . '<br>(' . $this->dateFormat($this->result['shipment']['shipment_date']) . ')</td>';
@@ -292,56 +268,9 @@ if ($this->result['shipment'] != "") {
         $referenceRes.='</tr>';
         $referenceRes.='</table>';
         $pdf->writeHTML($referenceRes, true, false, true, false, '');
-        
-        //if (count($this->result['shipment']['summaryResult']) > 0) {
-        //    
-        //    
-        //    foreach ($this->result['shipment']['summaryResult'] as $result) {
-        //        $acceptableCount = 0;
-        //        $notAcceptableScore = 0;
-        //        $countIsExcluded = 0;
-        //        $partCount = count($result);
-        //        
-        //        for ($i = 0; $i < $partCount; $i++) {
-        //            if($result[$i]['is_excluded']=='yes'){
-        //                $countIsExcluded++;
-        //            }
-        //            
-        //            $score=($result[$i]['shipment_score']/$this->result['shipment']['no_of_samples'])*100;
-        //            
-        //            if($score==100){
-        //                $acceptableCount++;
-        //            }else{
-        //                $notAcceptableScore++;
-        //            }
-        //        }
-        //    }
-        //   
-        //    // set font
-        //    $pdf->SetFont('times', 'B', 12);
-        //    
-        //    $overview= '<table border="1" style="font-size:13px;"><tr>';
-        //    $overview.='<td style="background-color:#dbe4ee;text-align:center;"># Responses </td>';
-        //    $overview.='<td style="background-color:#dbe4ee;text-align:center;"># Acceptable</td>';
-        //    $overview.='<td style="background-color:#dbe4ee;text-align:center;"># Not Acceptable</td>';
-        //    $overview.='<td style="background-color:#dbe4ee;text-align:center;"># Is Excluded</td>';
-        //    $overview.='</tr>';
-        //    
-        //    
-        //    $overview.='<tr>';
-        //    $overview.='<td style="text-align:center;">' . $partCount . '</td>';
-        //    $overview.='<td style="text-align:center;">' . $acceptableCount.'</td>';
-        //    $overview.='<td style="text-align:center;">' . $notAcceptableScore.'</td>';
-        //    $overview.='<td style="text-align:center;">'.$countIsExcluded.'</td>';
-        //    
-        //    $overview.='</tr>';
-        //
-        //    $overview.='</table><br/>';
-        //    $pdf->writeHTML($overview, true, false, true, false, '');     
-        //}
+
         if(count($this->result['vlCalculation'])>0){
-				
-			foreach($this->result['vlCalculation'] as $vlCal){
+			foreach ($this->result['vlCalculation'] as $vlCal) {
 				$calRes='<h5> Summary of '.$vlCal['vlAssay'].' Results | No. of Labs : '.$vlCal['participant-count'][$vlCal[0]['sample_label']].' </h5>';
 				$calRes.='<table border="1" style="text-align:center;font-weight:bold;width:650px;font-size:13px;">
 				<tr>
@@ -355,25 +284,23 @@ if ($this->result['shipment'] != "") {
 				</tr>';
 				
 				$countCal=count($vlCal)-1;
-				for($c=0;$c<$countCal;$c++){
-					if(isset($vlCal[$c]['mean'])){
-					$calRes.='<tr>';
-					if($c==0){
-                        if($vlCal[$c]['vl_assay']==6){
-                        $calRes.='<td style="text-align:center;" rowspan="'.$countCal.'">'.$vlCal['shortName'].'<br/>('.implode(",",$vlCal['otherAssayName']).')</td>';
-                        }else{
-                        $calRes.='<td style="text-align:center;" rowspan="'.$countCal.'">'.$vlCal['shortName'].'</td>';
-                        }
-					}
-					
-					
-					$calRes.='<td>'.$vlCal[$c]['sample_label'].'</td>
-						<td>'.number_format(round($vlCal[$c]['mean'],2),2,'.','').'</td>
-						<td>'.number_format(round($vlCal[$c]['sd'],2),2,'.','').'</td>
-						<td>'.number_format(round($vlCal[$c]['low_limit'],2),2,'.','').'</td>
-						<td>'.number_format(round($vlCal[$c]['high_limit'],2),2,'.','').'</td>
-						<td>'.number_format(round($vlCal[$c]['cv'],2),2,'.','').'</td>
-					  </tr>';
+				for ($c=0;$c<$countCal;$c++) {
+					if (isset($vlCal[$c]['mean'])) {
+					    $calRes.='<tr>';
+					    if  ($c==0) {
+                            if ($vlCal[$c]['vl_assay']==6) {
+                                $calRes.='<td style="text-align:center;" rowspan="'.$countCal.'">'.$vlCal['shortName'].'<br/>('.implode(",",$vlCal['otherAssayName']).')</td>';
+                            } else {
+                                $calRes.='<td style="text-align:center;" rowspan="'.$countCal.'">'.$vlCal['shortName'].'</td>';
+                            }
+					    }
+                        $calRes.='<td>'.$vlCal[$c]['sample_label'].'</td>
+						          <td>'.number_format(round($vlCal[$c]['mean'],2),2,'.','').'</td>
+						          <td>'.number_format(round($vlCal[$c]['sd'],2),2,'.','').'</td>
+						          <td>'.number_format(round($vlCal[$c]['low_limit'],2),2,'.','').'</td>
+						          <td>'.number_format(round($vlCal[$c]['high_limit'],2),2,'.','').'</td>
+						          <td>'.number_format(round($vlCal[$c]['cv'],2),2,'.','').'</td>
+					          </tr>';
 					}
 				}
 				$calRes.='</table>';
@@ -381,66 +308,54 @@ if ($this->result['shipment'] != "") {
 				$pdf->writeHTML($calRes, true, false, true, false, '');
 			}
 		}
-		
-        
+
         $uncalculatedAssayList = null;
         
-		if(count($this->result['pendingAssay'])>0){
-			foreach($this->result['pendingAssay'] as $vlId=>$vlCal){
-                if($pdf->getY()>=250){
+		if (count($this->result['pendingAssay'])>0) {
+			foreach ($this->result['pendingAssay'] as $vlId=>$vlCal) {
+                if ($pdf->getY()>=250) {
                     $pdf->AddPage();
                 }
-                
 				$calRes='<h5> Summary of '.$vlCal['vlAssay'].' Results</h5>';
 				$calRes.='<table border="1" style="text-align:center;font-weight:bold;width:650px;font-size:13px;">
-				<tr>
-					<td style="background-color:#dbe4ee;text-align:center;">Platform </td>
-					<td style="background-color:#dbe4ee;text-align:center;">No. of Labs</td>
-				</tr>';
-				$n=count($vlCal['specimen']);
-				$l=0;
-				foreach($vlCal['specimen'] as $key=>$val){
+                              <tr>
+                                  <td style="background-color:#dbe4ee;text-align:center;">Platform </td>
+                                  <td style="background-color:#dbe4ee;text-align:center;">No. of Labs</td>
+                              </tr>';
+				$n = count($vlCal['specimen']);
+				$l = 0;
+				foreach ($vlCal['specimen'] as $key=>$val) {
 					$calRes.='<tr>';
-					if($l==0){
-                        if($vlId==6){
+					if ($l==0) {
+                        if ($vlId==6) {
                             $calRes.='<td style="text-align:center;">'.implode(",",$vlCal['otherAssayName']).'</td>';
                             $uncalculatedAssayList[] = "Other";
-                        }else{
+                        } else {
                             $calRes.='<td style="text-align:center;">'.$vlCal['shortName'].'</td>';
                             $uncalculatedAssayList[] = $vlCal['vlAssay'];
                         }
-					
 					}
 					$calRes.='<td>'.count($val).'</td>';
 					$calRes.='</tr>';
                     break; // JUST ONE ROW IS ENOUGH
-					//$l++;
 				}
-                
-                
-				
-				$calRes.='</table>';
 
+				$calRes.='</table>';
 				$pdf->writeHTML($calRes, true, false, true, false, '');
-                
-                
 			}
             
             $uncalculatedAssayList = array_unique($uncalculatedAssayList);
             $uncalculatedAssays = implode(", ",$uncalculatedAssayList);
             $unCalRes='<h5>'.$uncalculatedAssays.' Platforms were not analyzed or graded.</h5>';
             
-            $pdf->writeHTML($unCalRes, true, false, true, false, '');            
-            
+            $pdf->writeHTML($unCalRes, true, false, true, false, '');
 		}
         $footerHead='<br/><h5>0.00 = Target Not Detected or less than lower limit of detection</h5>';
         $pdf->writeHTML($footerHead, true, false, true, false, '');
-    }
-    else {
+    } else {
         $pdf->AddPage('P', 'A4');
         $pdf->SetFont('times', 'B', 12);
         if (count($this->result['shipment']['referenceResult']) > 0) {
-
             $referenceRes = '<table style="text-align:center;width:100%" align="left">';
             $referenceRes.='<tr>';
             $referenceRes.='<td style="font-weight:bold;width:20%;">PT Survey</td><td style="font-weight:normal;width:30%;">' . $this->result['shipment']['distribution_code'] . '<br>(' . $this->dateFormat($this->result['shipment']['shipment_date']) . ')</td>';
@@ -449,7 +364,6 @@ if ($this->result['shipment'] != "") {
             $referenceRes.='</table>';
 
             $pdf->writeHTML($referenceRes, true, false, true, false, '');
-            
         }
         if (count($this->result['shipment']['summaryResult']) > 0) {
             $labCounter = 1;
@@ -463,7 +377,6 @@ if ($this->result['shipment'] != "") {
                 $maxScore = 0;
                 $belowScore = 0;
                 $partCount = count($result) - 1;
-                //Zend_Debug::dump($result['correctCount']);
                 for ($i = 0; $i < $partCount; $i++) {
                     if($result[$i]['is_excluded']=='yes'){
                         continue;
@@ -471,15 +384,13 @@ if ($this->result['shipment'] != "") {
                     $totalScore = $result[$i]['shipment_score'] + $result[$i]['documentation_score'];
                     if ($totalScore >0 && $totalScore < 60){
                         $barPoints["0 - 59"]++;
-                    }else if($totalScore > 59 && $totalScore < 70){
+                    } else if($totalScore > 59 && $totalScore < 70) {
                         $barPoints["60 - 69"]++;
-                    }else if($totalScore > 69 && $totalScore <= $pass){
+                    } else if($totalScore > 69 && $totalScore <= $pass) {
                         $barPoints["70 - $pass"]++;
                     }
                     else if ($totalScore > $config->evaluation->dts->passPercentage) {
                         $barPoints[$abovePass]++;
-                    } else {
-                        
                     }
                     if (($totalScore) >= $config->evaluation->dts->passPercentage) {
                         $maxScore++;
@@ -499,7 +410,7 @@ if ($this->result['shipment'] != "") {
                 new Color(255,255,0),
                 new Color(0,128,0)
             ));
-            foreach($barPoints as $key=>$val){
+            foreach ($barPoints as $key=>$val) {
                 $serie = new XYDataSet();
                 $serie->addPoint(new Point("", $val));
                 $dataSet->addSerie($key, $serie);
@@ -507,7 +418,6 @@ if ($this->result['shipment'] != "") {
 
             $chart->setDataSet($dataSet);
 
-            //Bound::setUpperBound(50);
             $chart->getPlot()->setGraphCaptionRatio(0.5);
             $chart->setTitle("Comparison of test performance between participating laboratories");
             $chart->render(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports' . DIRECTORY_SEPARATOR . $this->result['shipment']['shipment_code'] . DIRECTORY_SEPARATOR . "bar_chart.png");
@@ -515,36 +425,27 @@ if ($this->result['shipment'] != "") {
             // set font
             $pdf->SetFont('times', 'B', 12);
 
-            
             $overview= '<table border="1" style="font-size:13px;"><tr>';
             $overview.='<td style="background-color:#dbe4ee;text-align:center;"># of Responses </td>';
             $overview.='<td style="background-color:#dbe4ee;text-align:center;"># of Participants Scoring >= "' . $config->evaluation->dts->passPercentage . '"</td>';
             $overview.='<td style="background-color:#dbe4ee;text-align:center;"># of Participants Scoring < "' . $config->evaluation->dts->passPercentage . '" </td>';
             $overview.='</tr>';
-            
-            
             $overview.='<tr>';
             $overview.='<td style="text-align:center;">' . $partCount . '</td>';
             $overview.='<td style="text-align:center;">' . $maxScore .' ('.round(($maxScore/$partCount)*100,2). '%)</td>';
             $overview.='<td style="text-align:center;">' . $belowScore .' ('.round(($belowScore/$partCount)*100,2). '%)</td>';
-            
             $overview.='</tr>';
-
             $overview.='</table><br/>';
             $pdf->writeHTML($overview, true, false, true, false, '');            
-           
 
             $sampleCount = count($result['correctCount']);
-
             $sampleCode='<table border="1" style="font-size:13px;">';
             $sampleCode.='<tr>';
             $sampleCode.='<td rowspan="2"></td>';
             $sampleCode.='<td colspan="' . $sampleCount . '" style="background-color:#dbe4ee;text-align:center;">Sample ID</td>';
             $sampleCode.='<td></td>';
             $sampleCode.='</tr>';
-
             $sampleCode.='<tr>';
-
             foreach ($result['correctCount'] as $sample) {
                 $sampleCode.='<td style="background-color:#dbe4ee;text-align:center;">' . $sample['sample_label'] . '</td>';
             }
@@ -552,16 +453,12 @@ if ($this->result['shipment'] != "") {
             $sampleCode.='</tr>';
             $sampleCode.='<tr>';
             $sampleCode.='<td style="background-color:#dbe4ee;text-align:center;">Expected Result</td>';
-            
             $nonMandatorySamples = array();
-
             foreach ($this->result['shipment']['referenceResult'] as $refRes) {
-
-                if($refRes['mandatory'] == 0){
+                if ($refRes['mandatory'] == 0) {
                     $nonMandatorySamples[] = $refRes['sample_label']; 
                 }
                 $sampleCode.='<td style="text-align:center;">' . ucfirst(strtolower($refRes['referenceResult'])) . '</td>';
-
             }
             
             $sampleCode.='<td></td>';
@@ -580,19 +477,18 @@ if ($this->result['shipment'] != "") {
             $sampleCode.='<td style="text-align:center;font-weight:normal;">' . round(($sampAvg / $sampleCount), 2).' ('.round(($sampPerAvg / $sampleCount), 2) .'%)</td>';
             $sampleCode.='</tr>';
 
-
             $sampleCode.='</table></br>';
             $pdf->writeHTML($sampleCode, true, false, true, false, '');
             
-             if(count($nonMandatorySamples) > 0){
+            if (count($nonMandatorySamples) > 0) {
                 $nmsTable='<span style="font-size:13px;">';
                 $nmsTable.="The following samples have been excluded from this evaluation : ".implode(", ",$nonMandatorySamples);    
                 $nmsTable.="</span><br/>";
                 $pdf->writeHTML($nmsTable, true, false, true, false, '');
-            }   
+            }
             
             
-//----------------Participant Performance Overview  start----------------
+            //----------------Participant Performance Overview  start----------------
             $ppOverview='<span style="font-size:13px;">Participant Performance Overview</span><br/>';
             $ppOverview.='<table border="1"  style="font-size:13px;"><tr>';
             $ppOverview.='<td style="background-color:#dbe4ee;text-align:center;"># of Participants</td>';
@@ -611,42 +507,35 @@ if ($this->result['shipment'] != "") {
             //----------------Participant Performance Overview  Ends----------------
                     
             $pdf->writeHTML($ppOverview, true, false, true, false, '');
-        
-        if(count($this->correctiveness) > 0){
-            //----------------Participant Corrective Action Overview  start----------------
-            $correctiveActionStuff='<span style="font-size:13px;">Corrective Action Overview </span><br/>
-            <table border="1" style="font-weight:normal;font-size:13px;"><tr style="font-weight:bold;">';
-            $correctiveActionStuff.='<td style="background-color:#dbe4ee;text-align:center;width:75%;">Corrective Action</td>';
-            $correctiveActionStuff.='<td style="background-color:#dbe4ee;text-align:center;width:25%;">Responses having Corrective Action</td>';
-            
-            $correctiveActionStuff.='</tr>';
-            foreach ($this->correctiveness as $correctiveness) {
-                $correctiveActionStuff.='<tr>';
-                $correctiveActionStuff.='<td style="text-align:left;">' . $correctiveness['corrective_action'] . '</td>';
-                $correctiveActionStuff.='<td style="text-align:center;">' . $correctiveness['total_corrective'] . '</td>';
-                
+
+            if (count($this->correctiveness) > 0) {
+                //----------------Participant Corrective Action Overview  start----------------
+                $correctiveActionStuff='<span style="font-size:13px;">Corrective Action Overview </span><br/>
+                <table border="1" style="font-weight:normal;font-size:13px;"><tr style="font-weight:bold;">';
+                $correctiveActionStuff.='<td style="background-color:#dbe4ee;text-align:center;width:75%;">Corrective Action</td>';
+                $correctiveActionStuff.='<td style="background-color:#dbe4ee;text-align:center;width:25%;">Responses having Corrective Action</td>';
+
                 $correctiveActionStuff.='</tr>';
+                foreach ($this->correctiveness as $correctiveness) {
+                    $correctiveActionStuff.='<tr>';
+                    $correctiveActionStuff.='<td style="text-align:left;">' . $correctiveness['corrective_action'] . '</td>';
+                    $correctiveActionStuff.='<td style="text-align:center;">' . $correctiveness['total_corrective'] . '</td>';
+
+                    $correctiveActionStuff.='</tr>';
+                }
+                $correctiveActionStuff.='</table><br/>';
+
+                //----------------Participant Corrective Action Overview  Ends----------------
+                $pdf->writeHTML($correctiveActionStuff, true, false, true, false, '');
             }
-            $correctiveActionStuff.='</table><br/>';
-
-            //----------------Participant Corrective Action Overview  Ends----------------
-
-            $pdf->writeHTML($correctiveActionStuff, true, false, true, false, '');
-        }
                
             $image_file = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports' . DIRECTORY_SEPARATOR . $this->result['shipment']['shipment_code'] . DIRECTORY_SEPARATOR . 'bar_chart.png';
-            //$image_file = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'logo'. DIRECTORY_SEPARATOR.'logo_example.jpg';
-            //$mask = $pdf->Image('images/alpha.png', 50, 140, 100, '', '', '', '', false, 300, '', true);
             $y = $pdf->getY() + 5;
             $pdf->Image($image_file, 5, $pdf->getY(), '', '', '', '', '', false, 300);
             if (file_exists($image_file)) {
                 unlink($image_file);
             }
-
-            //$pdf->Image($image_file, 10, 10, 25, '', 'JPG', '', 'T', false, 300, '', false, false, 0, false, false, false);
         }
-        
-        //$pdf->AddPage();
 
         if ($this->result['shipment']['scheme_type'] == 'dts') {
             if (count($this->result['shipment']['pieChart']) > 0) {
@@ -670,13 +559,10 @@ if ($this->result['shipment'] != "") {
         }
         if ($this->result['shipment']['scheme_type'] == 'dbs') {
             $chart = new PieChart(700, 400);
-
             $dataSet = new XYDataSet();
-
             if (trim($this->result['shipment']['dbsPieChart']['EIA/EIA/EIA/WB']) != "") {
                 $dataSet->addPoint(new Point("EIA/EIA/EIA/WB", $this->result['shipment']['dbsPieChart']['EIA/EIA/EIA/WB']));
             }
-
             if (trim($this->result['shipment']['dbsPieChart']['EIA/EIA/EIA']) != "") {
                 $dataSet->addPoint(new Point("EIA/EIA/EIA", $this->result['shipment']['dbsPieChart']['EIA/EIA/EIA']));
             }
@@ -692,7 +578,6 @@ if ($this->result['shipment'] != "") {
             if (trim($this->result['shipment']['dbsPieChart']['EIA']) != "") {
                 $dataSet->addPoint(new Point("EIA", $this->result['shipment']['dbsPieChart']['EIA']));
             }
-
             $piechart = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports' . DIRECTORY_SEPARATOR . $this->result['shipment']['shipment_code'] . DIRECTORY_SEPARATOR . 'pieChart.png';
             $chart->setDataSet($dataSet);
 
@@ -706,7 +591,7 @@ if ($this->result['shipment'] != "") {
         }
     }
     
-    if($this->result['shipment']['scheme_type'] == 'dts' && isset($this->responseResult) && count($this->responseResult)>0  && $this->responseResult!=''){
+    if ($this->result['shipment']['scheme_type'] == 'dts' && isset($this->responseResult) && count($this->responseResult)>0  && $this->responseResult!='') {
         $y = $pdf->getY() + 5;
         $chart1 = new PieChart(700, 400);
         $dataSet = new XYDataSet();
@@ -732,18 +617,14 @@ if ($this->result['shipment'] != "") {
         if (file_exists($performancePiechart)) {
             unlink($performancePiechart);
         }
-        
     }
-            
-            
-//Close and output PDF document
+    //Close and output PDF document
     $fileName = $this->result['shipment']['shipment_code']."-summary.pdf";
     $filePath = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports' . DIRECTORY_SEPARATOR . $this->result['shipment']['shipment_code'] . DIRECTORY_SEPARATOR . $fileName;
-//$pdf->Output('example_003.pdf', 'I');
     $pdf->Output($filePath, "F");
 
-//============================================================+
-// END OF FILE
-//============================================================+
+    //============================================================+
+    // END OF FILE
+    //============================================================+
     echo "success";
 }
