@@ -94,29 +94,19 @@ $totalPages=count($this->result['shipment']);
 $j=1;
 //$this->result['dmResult'];
 foreach($this->result['shipment'] as $result){
-	
-	//Zend_Debug::dump($result['responseResult'][0]);die;
-	
 	if (!file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports'. DIRECTORY_SEPARATOR.$result['shipment_code']) && !is_dir(UPLOAD_PATH . DIRECTORY_SEPARATOR .'reports'. DIRECTORY_SEPARATOR.$result['shipment_code'])) {
 		mkdir(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports'. DIRECTORY_SEPARATOR.$result['shipment_code']);
     }
-	//error_log($i);
-	// Extend the TCPDF class to create custom Header and Footer
-	
 	
 	// create new PDF document
 	$pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 	
-	$pdf->setSchemeName($this->header,$result['scheme_name'],$this->logo,$this->logoRight,$this->comingFrom,$schemeType);
-	// set document information
-	//$pdf->SetCreator(PDF_CREATOR);
-	//$pdf->SetAuthor('Nicola Asuni');
-	//$pdf->SetTitle('DEPARTMENT OF HEALTH AND HUMAN SERVICES');
-	//$pdf->SetSubject('TCPDF Tutorial');
-	//$pdf->SetKeywords('TCPDF, PDF, example, test, guide');
+	$pdf->setSchemeName($this->header,$result['scheme_name'],
+        $this->logo,$this->logoRight,$this->comingFrom,$schemeType);
 
 	// set default header data
-	$pdf->SetHeaderData(PDF_HEADER_LOGO, PDF_HEADER_LOGO_WIDTH, PDF_HEADER_TITLE, PDF_HEADER_STRING);
+	$pdf->SetHeaderData(PDF_HEADER_LOGO, PDF_HEADER_LOGO_WIDTH, PDF_HEADER_TITLE,
+        PDF_HEADER_STRING);
 	
 	// set header and footer fonts
 	$pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
@@ -150,16 +140,6 @@ foreach($this->result['shipment'] as $result){
 	
 	// add a page
 	$pdf->AddPage();
-	
-	// set some text to print
-	//$txt = <<<EOD
-	//International Laboratory Branch
-	//
-	//Custom page header and footer are defined by extending the TCPDF class and overriding the Header() and Footer() methods.
-	//EOD;
-	//
-	//// print a block of text using Write()
-	//$pdf->Write(0, $txt, '', 0, 'C', true, 0, false, false, 0);
 
 	// ---------------------------------------------------------
 	
@@ -185,8 +165,7 @@ foreach($this->result['shipment'] as $result){
 	if(isset($result['responseResult'][0]['attributes'])){
 		$attributes = json_decode($result['responseResult'][0]['attributes'], true);	
 	}
-	
-	
+
 	$sampleRehydrationDate = "";
 	if(isset($attributes['sample_rehydration_date']) && trim($attributes['sample_rehydration_date'])!=""){
 		$sampleRehydrationDate=$this->dateFormat($attributes['sample_rehydration_date']);
