@@ -5,7 +5,6 @@ class Application_Service_Shipments {
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
            you want to insert a non-database field (for example a counter or static image)
         */
-
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
 
         $aColumns = array("sl.scheme_name", "shipment_code", 'distribution_code', "DATE_FORMAT(distribution_date,'%d-%b-%Y')", 'number_of_samples', 's.status');
@@ -79,8 +78,14 @@ class Application_Service_Shipments {
         $sQuery = $db->select()->from(array('s' => 'shipment'))
             ->join(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id', array('distribution_code', 'distribution_date'))
             ->joinLeft(array('spm' => 'shipment_participant_map'), 's.shipment_id = spm.shipment_id', array('total_participants'=> new Zend_Db_Expr('count(map_id)'),'last_new_shipment_mailed_on','new_shipment_mail_count'))
+            ->joinLeft(array('p' => 'participant'), 'spm.participant_id = p.participant_id', array())
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('SCHEME' => 'sl.scheme_name'))
             ->group('s.shipment_id');
+
+        $authNameSpace = new Zend_Session_Namespace('administrators');
+        if($authNameSpace->is_ptcc_coordinator) {
+            $sQuery = $sQuery->where("p.country IN (".implode(",",$authNameSpace->countries).")");
+        }
 
         if (isset($parameters['scheme']) && $parameters['scheme'] != "") {
             $sQuery = $sQuery->where("s.scheme_type = ?", $parameters['scheme']);
@@ -197,7 +202,6 @@ class Application_Service_Shipments {
     }
 
     public function updateEidResults($params) {
-		//Zend_Debug::dump($params);die;
         if (!$this->isShipmentEditable($params['shipmentId'], $params['participantId'])) {
             return false;
         }
@@ -208,22 +212,22 @@ class Application_Service_Shipments {
         try {
             $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
             $authNameSpace = new Zend_Session_Namespace('datamanagers');
-			if(isset($params['sampleRehydrationDate']) && trim($params['sampleRehydrationDate'])!=""){
+			if (isset($params['sampleRehydrationDate']) && trim($params['sampleRehydrationDate'])!="") {
 				$params['sampleRehydrationDate']=Pt_Commons_General::dateFormat($params['sampleRehydrationDate']);
-			}else{
+			} else {
 				$params['sampleRehydrationDate'] = '';
 			}
-			if(isset($params['extractionAssayExpiryDate']) && trim($params['extractionAssayExpiryDate'])!=""){
+			if (isset($params['extractionAssayExpiryDate']) && trim($params['extractionAssayExpiryDate'])!="") {
 				$params['extractionAssayExpiryDate']=Pt_Commons_General::dateFormat($params['extractionAssayExpiryDate']);
-			}else{
+			} else {
 				$params['extractionAssayExpiryDate'] = '';
 			}
-			if(isset($params['detectionAssayExpiryDate']) && trim($params['detectionAssayExpiryDate'])!=""){
+			if (isset($params['detectionAssayExpiryDate']) && trim($params['detectionAssayExpiryDate'])!="") {
 				$params['detectionAssayExpiryDate']=Pt_Commons_General::dateFormat($params['detectionAssayExpiryDate']);
-			}else{
+			} else {
 				$params['detectionAssayExpiryDate'] = '';
 			}
-			if(!isset($params['modeOfReceipt']) || trim($params['modeOfReceipt'])==""){
+			if (!isset($params['modeOfReceipt']) || trim($params['modeOfReceipt'])=="") {
 				$params['modeOfReceipt']= NULL;
 			}
             $attributes = array("sample_rehydration_date" => $params['sampleRehydrationDate'],
@@ -249,24 +253,24 @@ class Application_Service_Shipments {
                 "updated_on_user" => new Zend_Db_Expr('now()')
             );
             
-	    if(isset($params['testReceiptDate']) && trim($params['testReceiptDate'])!= ''){
-			$data['shipment_test_report_date'] = Pt_Commons_General::dateFormat($params['testReceiptDate']);
-	    }else{
-			$data['shipment_test_report_date'] = new Zend_Db_Expr('now()');
-		}
-	       
-	    if(isset($authNameSpace->qc_access) && $authNameSpace->qc_access =='yes'){
-			$data['qc_done'] = $params['qcDone'];
-			if(isset($data['qc_done']) && trim($data['qc_done'])=="yes"){
-				$data['qc_date'] = Pt_Commons_General::dateFormat($params['qcDate']);
-				$data['qc_done_by'] = trim($params['qcDoneBy']);
-				$data['qc_created_on'] = new Zend_Db_Expr('now()');
-			}else{
-				$data['qc_date']=NULL;
-				$data['qc_done_by'] = NULL;
-				$data['qc_created_on'] = NULL;
-			}
-	    }
+            if (isset($params['testReceiptDate']) && trim($params['testReceiptDate'])!= '') {
+                $data['shipment_test_report_date'] = Pt_Commons_General::dateFormat($params['testReceiptDate']);
+            } else {
+                $data['shipment_test_report_date'] = new Zend_Db_Expr('now()');
+            }
+
+            if (isset($authNameSpace->qc_access) && $authNameSpace->qc_access =='yes') {
+                $data['qc_done'] = $params['qcDone'];
+                if (isset($data['qc_done']) && trim($data['qc_done'])=="yes") {
+                    $data['qc_date'] = Pt_Commons_General::dateFormat($params['qcDate']);
+                    $data['qc_done_by'] = trim($params['qcDoneBy']);
+                    $data['qc_created_on'] = new Zend_Db_Expr('now()');
+                } else {
+                    $data['qc_date']=NULL;
+                    $data['qc_done_by'] = NULL;
+                    $data['qc_created_on'] = NULL;
+                }
+            }
             $noOfRowsAffected = $shipmentParticipantDb->updateShipment($data, $params['smid'], $params['hdLastDate']);
 
             $eidResponseDb = new Application_Model_DbTable_ResponseEid();
@@ -302,7 +306,6 @@ class Application_Service_Shipments {
             $data = array(
                 "shipment_receipt_date" => Pt_Commons_General::dateFormat($params['receiptDate']),
                 "shipment_test_date" => Pt_Commons_General::dateFormat($params['testDate']),
-		//"shipment_test_report_date" => new Zend_Db_Expr('now()'),
                 "attributes" => $attributes,
                 "supervisor_approval" => $params['supervisorApproval'],
                 "participant_supervisor" => $params['participantSupervisor'],
@@ -312,31 +315,31 @@ class Application_Service_Shipments {
                 "updated_on_user" => new Zend_Db_Expr('now()')
             );
 	    
-	    if(isset($params['testReceiptDate']) && trim($params['testReceiptDate'])!= ''){
-			$data['shipment_test_report_date'] = Pt_Commons_General::dateFormat($params['testReceiptDate']);
-	    }else{
-			$data['shipment_test_report_date'] = new Zend_Db_Expr('now()');
-		}
-	    
-	    if(isset($authNameSpace->qc_access) && $authNameSpace->qc_access =='yes'){
-		$data['qc_done'] = $params['qcDone'];
-		if(isset($data['qc_done']) && trim($data['qc_done'])=="yes"){
-			$data['qc_date'] = Pt_Commons_General::dateFormat($params['qcDate']);
-			$data['qc_done_by'] = trim($params['qcDoneBy']);
-			$data['qc_created_on'] = new Zend_Db_Expr('now()');
-		}else{
-			$data['qc_date']=NULL;
-			$data['qc_done_by'] = NULL;
-			$data['qc_created_on'] = NULL;
-		}
-	    }
-	    if(isset($params['customField1']) && trim($params['customField1']) != ""){
-		    $data['custom_field_1'] = $params['customField1'];
-	    }
-	    
-	    if(isset($params['customField2']) && trim($params['customField2']) != ""){
-		    $data['custom_field_2'] = $params['customField2'];
-	    }
+            if (isset($params['testReceiptDate']) && trim($params['testReceiptDate'])!= '') {
+                $data['shipment_test_report_date'] = Pt_Commons_General::dateFormat($params['testReceiptDate']);
+            } else {
+                $data['shipment_test_report_date'] = new Zend_Db_Expr('now()');
+            }
+
+            if (isset($authNameSpace->qc_access) && $authNameSpace->qc_access =='yes') {
+                $data['qc_done'] = $params['qcDone'];
+                if (isset($data['qc_done']) && trim($data['qc_done'])=="yes") {
+                    $data['qc_date'] = Pt_Commons_General::dateFormat($params['qcDate']);
+                    $data['qc_done_by'] = trim($params['qcDoneBy']);
+                    $data['qc_created_on'] = new Zend_Db_Expr('now()');
+                } else {
+                    $data['qc_date']=NULL;
+                    $data['qc_done_by'] = NULL;
+                    $data['qc_created_on'] = NULL;
+                }
+            }
+            if (isset($params['customField1']) && trim($params['customField1']) != "") {
+                $data['custom_field_1'] = $params['customField1'];
+            }
+
+            if (isset($params['customField2']) && trim($params['customField2']) != "") {
+                $data['custom_field_2'] = $params['customField2'];
+            }
 
             $noOfRowsAffected = $shipmentParticipantDb->updateShipment($data, $params['smid'], $params['hdLastDate']);
 
@@ -367,17 +370,17 @@ class Application_Service_Shipments {
                 "participant_supervisor" =>'',
                 "user_comment" => '',
                 "final_result" => '',
-		"updated_on_user" => new Zend_Db_Expr('now()'),
+		        "updated_on_user" => new Zend_Db_Expr('now()'),
                 "updated_by_user" => $authNameSpace->dm_id,
-		"qc_date"=>'',
-		"qc_done_by" => '',
-		"qc_created_on" => '',
-		"mode_id" => ''
+                "qc_date"=>'',
+                "qc_done_by" => '',
+                "qc_created_on" => '',
+                "mode_id" => ''
             );
-             $noOfRowsAffected = $shipmentParticipantDb->removeShipmentMapDetails($data, $mapId);
+            $noOfRowsAffected = $shipmentParticipantDb->removeShipmentMapDetails($data, $mapId);
             
-             $dtsResponseDb = new Application_Model_DbTable_ResponseDts();
-             $dtsResponseDb->removeShipmentResults($mapId);
+            $dtsResponseDb = new Application_Model_DbTable_ResponseDts();
+            $dtsResponseDb->removeShipmentResults($mapId);
         } catch (Exception $e) {
             return($e->getMessage());
             return "Unable to delete. Please try again later or contact system admin for help";
@@ -397,17 +400,17 @@ class Application_Service_Shipments {
                 "participant_supervisor" =>'',
                 "user_comment" => '',
                 "final_result" => '',
-		"updated_on_user" => new Zend_Db_Expr('now()'),
-		"updated_by_user" => $authNameSpace->dm_id,
-		"qc_date"=>'',
-		"qc_done_by" => '',
-		"qc_created_on" => '',
-		"mode_id" => ''
+                "updated_on_user" => new Zend_Db_Expr('now()'),
+                "updated_by_user" => $authNameSpace->dm_id,
+                "qc_date"=>'',
+                "qc_done_by" => '',
+                "qc_created_on" => '',
+                "mode_id" => ''
             );
-             $noOfRowsAffected = $shipmentParticipantDb->removeShipmentMapDetails($data, $mapId);
+            $noOfRowsAffected = $shipmentParticipantDb->removeShipmentMapDetails($data, $mapId);
             
-             $responseDb = new Application_Model_DbTable_ResponseEid();
-             $responseDb->delete("shipment_map_id=$mapId");
+            $responseDb = new Application_Model_DbTable_ResponseEid();
+            $responseDb->delete("shipment_map_id=$mapId");
         } catch (Exception $e) {
             return($e->getMessage());
             return "Unable to delete. Please try again later or contact system admin for help";
@@ -428,16 +431,16 @@ class Application_Service_Shipments {
                 "user_comment" => '',
                 "final_result" => '',
                 "updated_on_user" => new Zend_Db_Expr('now()'),
-		"updated_by_user" => $authNameSpace->dm_id,
-		"qc_date"=>'',
-		"qc_done_by" => '',
-		"qc_created_on" => '',
-		"mode_id" => ''
+                "updated_by_user" => $authNameSpace->dm_id,
+                "qc_date"=>'',
+                "qc_done_by" => '',
+                "qc_created_on" => '',
+                "mode_id" => ''
             );
-             $noOfRowsAffected = $shipmentParticipantDb->removeShipmentMapDetails($data, $mapId);
+            $noOfRowsAffected = $shipmentParticipantDb->removeShipmentMapDetails($data, $mapId);
             
-             $responseDb = new Application_Model_DbTable_ResponseVl();
-             $responseDb->delete("shipment_map_id=$mapId");
+            $responseDb = new Application_Model_DbTable_ResponseVl();
+            $responseDb->delete("shipment_map_id=$mapId");
         } catch (Exception $e) {
             return($e->getMessage());
             return "Unable to delete. Please try again later or contact system admin for help";
@@ -460,32 +463,31 @@ class Application_Service_Shipments {
                 "shipment_receipt_date" => Pt_Commons_General::dateFormat($params['receiptDate']),
                 "shipment_test_date" => Pt_Commons_General::dateFormat($params['testDate']),
                 "attributes" => $attributes,
-                //"shipment_test_report_date" => new Zend_Db_Expr('now()'),
                 "supervisor_approval" => $params['supervisorApproval'],
                 "participant_supervisor" => $params['participantSupervisor'],
                 "user_comment" => $params['userComments'],
-		"mode_id" => $params['modeOfReceipt'],
+		        "mode_id" => $params['modeOfReceipt'],
                 "updated_by_user" => $authNameSpace->dm_id,
                 "updated_on_user" => new Zend_Db_Expr('now()')
             );
-	    if(isset($params['testReceiptDate']) && trim($params['testReceiptDate'])!= ''){
-	       $data['shipment_test_report_date'] = Pt_Commons_General::dateFormat($params['testReceiptDate']);
-	    }else{
-			$data['shipment_test_report_date'] = new Zend_Db_Expr('now()');
-		}
-	    
-	    if(isset($authNameSpace->qc_access) && $authNameSpace->qc_access =='yes'){
-		$data['qc_done'] = $params['qcDone'];
-		 if(isset($data['qc_done']) && trim($data['qc_done'])=="yes"){
-			$data['qc_date'] = Pt_Commons_General::dateFormat($params['qcDate']);
-			$data['qc_done_by'] = trim($params['qcDoneBy']);
-			$data['qc_created_on'] = new Zend_Db_Expr('now()');
-		 }else{
-			$data['qc_date']=NULL;
-			$data['qc_done_by'] = NULL;
-			$data['qc_created_on'] = NULL;
-		 }
-	    }
+            if (isset($params['testReceiptDate']) && trim($params['testReceiptDate'])!= '') {
+               $data['shipment_test_report_date'] = Pt_Commons_General::dateFormat($params['testReceiptDate']);
+            } else {
+                $data['shipment_test_report_date'] = new Zend_Db_Expr('now()');
+            }
+
+            if (isset($authNameSpace->qc_access) && $authNameSpace->qc_access =='yes') {
+                $data['qc_done'] = $params['qcDone'];
+                if (isset($data['qc_done']) && trim($data['qc_done'])=="yes") {
+                    $data['qc_date'] = Pt_Commons_General::dateFormat($params['qcDate']);
+                    $data['qc_done_by'] = trim($params['qcDoneBy']);
+                    $data['qc_created_on'] = new Zend_Db_Expr('now()');
+                 } else {
+                    $data['qc_date']=NULL;
+                    $data['qc_done_by'] = NULL;
+                    $data['qc_created_on'] = NULL;
+                 }
+            }
             $noOfRowsAffected = $shipmentParticipantDb->updateShipment($data, $params['smid'], $params['hdLastDate']);
 
             $dbsResponseDb = new Application_Model_DbTable_ResponseDbs();
@@ -577,7 +579,6 @@ class Application_Service_Shipments {
     }
 
     public function updateVlResults($params) {
-
         if (!$this->isShipmentEditable($params['shipmentId'], $params['participantId'])) {
             return false;
         }
@@ -588,10 +589,10 @@ class Application_Service_Shipments {
         try {
             $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
             $authNameSpace = new Zend_Session_Namespace('datamanagers');
-            if(isset($params['sampleRehydrationDate']) && trim($params['sampleRehydrationDate'])!=""){
+            if (isset($params['sampleRehydrationDate']) && trim($params['sampleRehydrationDate'])!="") {
 				$params['sampleRehydrationDate']=Pt_Commons_General::dateFormat($params['sampleRehydrationDate']);
 			}
-			if(isset($params['assayExpirationDate']) && trim($params['assayExpirationDate'])!=""){
+			if (isset($params['assayExpirationDate']) && trim($params['assayExpirationDate'])!="") {
 				$params['assayExpirationDate']=Pt_Commons_General::dateFormat($params['assayExpirationDate']);
 			}
             $attributes = array("sample_rehydration_date" => $params['sampleRehydrationDate'],
@@ -600,58 +601,57 @@ class Application_Service_Shipments {
                 "assay_expiration_date" => $params['assayExpirationDate'],
                 "specimen_volume" => $params['specimenVolume'],
 				"uploaded_file" => $params['uploadedFilePath']
-				);
+			);
 			
-	    if(isset($params['otherAssay']) && $params['otherAssay'] != ""){
-		    $attributes['other_assay'] = $params['otherAssay'];
-	    }
+            if (isset($params['otherAssay']) && $params['otherAssay'] != "") {
+                $attributes['other_assay'] = $params['otherAssay'];
+            }
 
-	    if(!isset($params['modeOfReceipt'])){
-		$params['modeOfReceipt'] = NULL;
-	    }
+            if (!isset($params['modeOfReceipt'])) {
+                $params['modeOfReceipt'] = NULL;
+            }
             $attributes = json_encode($attributes);
             $data = array(
                 "shipment_receipt_date" => Pt_Commons_General::dateFormat($params['receiptDate']),
                 "shipment_test_date" => Pt_Commons_General::dateFormat($params['testDate']),
                 "attributes" => $attributes,
-		//"shipment_test_report_date" => new Zend_Db_Expr('now()'),
                 "supervisor_approval" => $params['supervisorApproval'],
                 "participant_supervisor" => $params['participantSupervisor'],
                 "user_comment" => $params['userComments'],
                 "updated_by_user" => $authNameSpace->dm_id,
-		"mode_id" => $params['modeOfReceipt'],
+                "mode_id" => $params['modeOfReceipt'],
                 "updated_on_user" => new Zend_Db_Expr('now()')
             );
-	    if(isset($params['testReceiptDate']) && trim($params['testReceiptDate'])!= ''){
-		$data['shipment_test_report_date'] = Pt_Commons_General::dateFormat($params['testReceiptDate']);
-	    }else{
-		$data['shipment_test_report_date'] = new Zend_Db_Expr('now()');
-	    }
-	    
-	    if(isset($params['isPtTestNotPerformed']) && $params['isPtTestNotPerformed']== 'yes'){
-		$data['is_pt_test_not_performed'] = 'yes';
-		$data['vl_not_tested_reason'] = $params['vlNotTestedReason'];
-		$data['pt_test_not_performed_comments'] = $params['ptNotTestedComments'];
-		$data['pt_support_comments'] = $params['ptSupportComments'];
-	    }else{
-		$data['is_pt_test_not_performed'] = NULL;
-		$data['vl_not_tested_reason'] = NULL;
-		$data['pt_test_not_performed_comments'] = NULL;
-		$data['pt_support_comments'] = NULL;
-	    }
+            if (isset($params['testReceiptDate']) && trim($params['testReceiptDate'])!= '') {
+                $data['shipment_test_report_date'] = Pt_Commons_General::dateFormat($params['testReceiptDate']);
+            } else {
+                $data['shipment_test_report_date'] = new Zend_Db_Expr('now()');
+            }
 
-	    if(isset($authNameSpace->qc_access) && $authNameSpace->qc_access =='yes'){
-		$data['qc_done'] = $params['qcDone'];
-		if(isset($data['qc_done']) && trim($data['qc_done']) == "yes"){
-			$data['qc_date'] = Pt_Commons_General::dateFormat($params['qcDate']);
-			$data['qc_done_by'] = trim($params['qcDoneBy']);
-			$data['qc_created_on'] = new Zend_Db_Expr('now()');
-		}else{
-			$data['qc_date']=NULL;
-			$data['qc_done_by'] = NULL;
-			$data['qc_created_on'] = NULL;
-		}
-	    }
+            if (isset($params['isPtTestNotPerformed']) && $params['isPtTestNotPerformed']== 'yes') {
+                $data['is_pt_test_not_performed'] = 'yes';
+                $data['vl_not_tested_reason'] = $params['vlNotTestedReason'];
+                $data['pt_test_not_performed_comments'] = $params['ptNotTestedComments'];
+                $data['pt_support_comments'] = $params['ptSupportComments'];
+            } else {
+                $data['is_pt_test_not_performed'] = NULL;
+                $data['vl_not_tested_reason'] = NULL;
+                $data['pt_test_not_performed_comments'] = NULL;
+                $data['pt_support_comments'] = NULL;
+            }
+
+            if (isset($authNameSpace->qc_access) && $authNameSpace->qc_access =='yes') {
+                $data['qc_done'] = $params['qcDone'];
+                if (isset($data['qc_done']) && trim($data['qc_done']) == "yes") {
+                    $data['qc_date'] = Pt_Commons_General::dateFormat($params['qcDate']);
+                    $data['qc_done_by'] = trim($params['qcDoneBy']);
+                    $data['qc_created_on'] = new Zend_Db_Expr('now()');
+                } else {
+                    $data['qc_date']=NULL;
+                    $data['qc_done_by'] = NULL;
+                    $data['qc_created_on'] = NULL;
+                }
+            }
 
             $noOfRowsAffected = $shipmentParticipantDb->updateShipment($data, $params['smid'], $params['hdLastDate']);
 
@@ -676,8 +676,8 @@ class Application_Service_Shipments {
         $distro = $distroService->getDistribution($params['distribution']);
 		$controlCount = 0;
 		if (isset($params['control'])) {
-            foreach($params['control'] as $control){
-                if($control == 1){
+            foreach ($params['control'] as $control) {
+                if ($control == 1) {
                     $controlCount+=1;
                 }
             }
@@ -729,7 +729,6 @@ class Application_Service_Shipments {
                         'shipment_id' => $lastId,
                         'sample_id' => ($i + 1),
                         'sample_label' => $params['sampleName'][$i],
-                        //'reference_result' => $params['vlResult'][$i],
                         'control' => $params['control'][$i],
                         'mandatory' => $params['mandatory'][$i],
                         'sample_score' => 1
@@ -738,7 +737,7 @@ class Application_Service_Shipments {
                 if (isset($params['vlRef'][$i + 1]['assay'])) {
                     $assaySize = count($params['vlRef'][$i + 1]['assay']);;
                     for ($e = 0; $e < $assaySize; $e++) {
-                        if(trim($params['vlRef'][$i + 1]['assay'][$e]) != "" && trim($params['vlRef'][$i + 1]['value'][$e]) != ""){
+                        if (trim($params['vlRef'][$i + 1]['assay'][$e]) != "" && trim($params['vlRef'][$i + 1]['value'][$e]) != "") {
                             $dbAdapter->insert('reference_vl_methods',
                                 array(
                                     'shipment_id' => $lastId,
@@ -764,7 +763,6 @@ class Application_Service_Shipments {
                     )
                 );
 
-                // <------ Insert reference_dts_eia table
                 if (isset($params['eia'][$i + 1]['eia'])) {
                     $eiaSize = sizeof($params['eia'][$i + 1]['eia']);
                     for ($e = 0; $e < $eiaSize; $e++) {
@@ -786,8 +784,6 @@ class Application_Service_Shipments {
                         }
                     }
                 }
-                //------------->
-                // <------ Insert reference_dts_wb table
                 if (isset($params['wb'][$i + 1]['wb'])) {
                     $wbSize = sizeof($params['wb'][$i + 1]['wb']);
                     for ($e = 0; $e < $wbSize; $e++) {
@@ -815,8 +811,6 @@ class Application_Service_Shipments {
                         }
                     }
                 }
-                // ------------------>
-                // <------ Insert reference_dts_rapid_hiv table
                 if (isset($params['rhiv'][$i + 1]['kit'])) {
                     $eiaSize = sizeof($params['rhiv'][$i + 1]['kit']);
                     for ($e = 0; $e < $eiaSize; $e++) {
@@ -837,14 +831,12 @@ class Application_Service_Shipments {
                         }
                     }
                 }
-
-                // ------------------>
             }
         } else if ($params['schemeId'] == 'dbs') {
             for ($i = 0; $i < $size; $i++) {
-                if(isset($params['score'][$i]) && $params['score'][$i] != null && $params['score'][$i] != ""){
+                if (isset($params['score'][$i]) && $params['score'][$i] != null && $params['score'][$i] != "") {
                     $sampScore = $params['score'][$i];
-                }else{
+                } else {
                     $sampScore = 1;
                 }
                 $dbAdapter->insert('reference_result_dbs', array(
@@ -857,7 +849,6 @@ class Application_Service_Shipments {
                         'sample_score' => $sampScore
                     )
                 );
-                // <------ Insert reference_dbs_eia table
                 if (isset($params['eia'][$i + 1]['eia'])) {
                     $eiaSize = sizeof($params['eia'][$i + 1]['eia']);
                     for ($e = 0; $e < $eiaSize; $e++) {
@@ -879,8 +870,6 @@ class Application_Service_Shipments {
                         }
                     }
                 }
-                //------------->
-                // <------ Insert reference_dbs_wb table
                 if (isset($params['wb'][$i + 1]['wb'])) {
                     $wbSize = sizeof($params['wb'][$i + 1]['wb']);
                     for ($e = 0; $e < $wbSize; $e++) {
@@ -908,7 +897,6 @@ class Application_Service_Shipments {
                         }
                     }
                 }
-                // ------------------>
             }
         } else if ($params['schemeId'] == 'tb') {
             for ($i = 0; $i < $size; $i++) {
@@ -967,11 +955,7 @@ class Application_Service_Shipments {
 
             $shipmentParticipantMap = new Application_Model_DbTable_ShipmentParticipantMap();
             $shipmentParticipantMap->delete('shipment_id=' . $sid);
-
-
-
             $shipmentDb->delete('shipment_id=' . $sid);
-
             return "Shipment deleted.";
         } catch (Exception $e) {
             return($e->getMessage());
@@ -981,7 +965,7 @@ class Application_Service_Shipments {
 
     public function isShipmentEditable($shipmentId=NULL, $participantId=NULL) {
         $authNameSpace = new Zend_Session_Namespace('datamanagers');
-		if($authNameSpace->view_only_access=='yes'){
+		if ($authNameSpace->view_only_access=='yes') {
 			return false;
 		}
 		
@@ -997,9 +981,8 @@ class Application_Service_Shipments {
     public function getShipmentForEdit($sid) {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $shipment = $db->fetchRow($db->select()->from(array('s' => 'shipment'))
-                        ->join(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id', array('distribution_code', 'distribution_date'))
-                        ->where("s.shipment_id = ?", $sid));
-
+            ->join(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id', array('distribution_code', 'distribution_date'))
+            ->where("s.shipment_id = ?", $sid));
 
         $eia = '';
         $wb = '';
@@ -1009,8 +992,8 @@ class Application_Service_Shipments {
 		
         if ($shipment['scheme_type'] == 'dts') {
             $reference = $db->fetchAll($db->select()->from(array('s' => 'shipment'))
-                            ->join(array('ref' => 'reference_result_dts'), 'ref.shipment_id=s.shipment_id')
-                            ->where("s.shipment_id = ?", $sid));
+                ->join(array('ref' => 'reference_result_dts'), 'ref.shipment_id=s.shipment_id')
+                ->where("s.shipment_id = ?", $sid));
             $schemeService = new Application_Service_Schemes();
             $possibleResults = $schemeService->getPossibleResults('dts');
 
@@ -1020,38 +1003,33 @@ class Application_Service_Shipments {
 			$returnArray['eia'] = $eia;
 			$returnArray['wb'] = $wb;
 			$returnArray['rhiv'] = $rhiv;
-			
         } else if ($shipment['scheme_type'] == 'dbs') {
-
             $reference = $db->fetchAll($db->select()->from(array('s' => 'shipment'))
-                            ->join(array('ref' => 'reference_result_dbs'), 'ref.shipment_id=s.shipment_id')
-                            ->where("s.shipment_id = ?", $sid));
+                ->join(array('ref' => 'reference_result_dbs'), 'ref.shipment_id=s.shipment_id')
+                ->where("s.shipment_id = ?", $sid));
             $schemeService = new Application_Service_Schemes();
             $possibleResults = $schemeService->getPossibleResults('dbs');
-
             $eia = $db->fetchAll($db->select()->from('reference_dbs_eia')->where("shipment_id = ?", $sid));
             $wb = $db->fetchAll($db->select()->from('reference_dbs_wb')->where("shipment_id = ?", $sid));
 			$returnArray['eia'] = $eia;
 			$returnArray['wb'] = $wb;
-			
         } else if ($shipment['scheme_type'] == 'eid') {
             $reference = $db->fetchAll($db->select()->from(array('s' => 'shipment'))
-                            ->join(array('ref' => 'reference_result_eid'), 'ref.shipment_id=s.shipment_id')
-                            ->where("s.shipment_id = ?", $sid));
+                ->join(array('ref' => 'reference_result_eid'), 'ref.shipment_id=s.shipment_id')
+                ->where("s.shipment_id = ?", $sid));
             $schemeService = new Application_Service_Schemes();
             $possibleResults = $schemeService->getPossibleResults('eid');
         } else if ($shipment['scheme_type'] == 'vl') {
             $reference = $db->fetchAll($db->select()->from(array('s' => 'shipment'))
-                            ->join(array('ref' => 'reference_result_vl'), 'ref.shipment_id=s.shipment_id')
-                            ->where("s.shipment_id = ?", $sid));
+                ->join(array('ref' => 'reference_result_vl'), 'ref.shipment_id=s.shipment_id')
+                ->where("s.shipment_id = ?", $sid));
             $possibleResults = "";
 			
 			$returnArray['vlReferenceMethods'] = $db->fetchAll($db->select()->from('reference_vl_methods')->where("shipment_id = ?", $sid));
-			
         } else if ($shipment['scheme_type'] == 'tb') {
             $reference = $db->fetchAll($db->select()->from(array('s' => 'shipment'))
-                            ->join(array('ref' => 'reference_result_tb'), 'ref.shipment_id=s.shipment_id')
-                            ->where("s.shipment_id = ?", $sid));
+                ->join(array('ref' => 'reference_result_tb'), 'ref.shipment_id=s.shipment_id')
+                ->where("s.shipment_id = ?", $sid));
             $possibleResults = "";
         } else {
             return false;
@@ -1065,14 +1043,13 @@ class Application_Service_Shipments {
     }
 
     public function updateShipment($params) {
-        //Zend_Debug::dump($params);die;
         $dbAdapter = Zend_Db_Table_Abstract::getDefaultAdapter();
         $shipmentRow = $dbAdapter->fetchRow($dbAdapter->select()->from(array('s' => 'shipment'))->where('shipment_id = ' . $params['shipmentId']));
         $scheme = $shipmentRow['scheme_type'];
         $size = count($params['sampleName']);
 		$controlCount = 0;
-		foreach($params['control'] as $control){
-			if($control == 1){
+		foreach ($params['control'] as $control) {
+			if ($control == 1) {
 				$controlCount+=1;
 			}
 		}
@@ -1089,19 +1066,17 @@ class Application_Service_Shipments {
                     'control' => $params['control'][$i],
                     'mandatory' => $params['mandatory'][$i],
                     'sample_score' => 1
-                        )
+                    )
                 );
             }
         } else if ($scheme == 'vl') {
-			//var_dump($params['vlRef']);die;
-            $dbAdapter->delete('reference_result_vl', 'shipment_id = ' . $params['shipmentId']);
+			$dbAdapter->delete('reference_result_vl', 'shipment_id = ' . $params['shipmentId']);
 			$dbAdapter->delete('reference_vl_methods', 'shipment_id = ' . $params['shipmentId']);
             for ($i = 0; $i < $size; $i++) {
                 $dbAdapter->insert('reference_result_vl', array(
                     'shipment_id' => $params['shipmentId'],
                     'sample_id' => ($i + 1),
                     'sample_label' => $params['sampleName'][$i],
-                    //'reference_result' => $params['vlResult'][$i],
                     'control' => $params['control'][$i],
                     'mandatory' => $params['mandatory'][$i],
                     'sample_score' => 1
@@ -1111,15 +1086,15 @@ class Application_Service_Shipments {
 				if (isset($params['vlRef'][$i + 1]['assay'])) {
 					$assaySize = count($params['vlRef'][$i + 1]['assay']);;
 					for ($e = 0; $e < $assaySize; $e++) {
-						if(trim($params['vlRef'][$i + 1]['assay'][$e]) != "" && trim($params['vlRef'][$i + 1]['value'][$e]) != ""){
+						if (trim($params['vlRef'][$i + 1]['assay'][$e]) != "" && trim($params['vlRef'][$i + 1]['value'][$e]) != "") {
 							$dbAdapter->insert('reference_vl_methods',
-											   array(
-												'shipment_id' => $params['shipmentId'],
-												'sample_id' => ($i + 1),
-												'assay' => $params['vlRef'][$i + 1]['assay'][$e],
-												'value' => $params['vlRef'][$i + 1]['value'][$e]
-												)
-										);
+                                array(
+                                    'shipment_id' => $params['shipmentId'],
+									'sample_id' => ($i + 1),
+									'assay' => $params['vlRef'][$i + 1]['assay'][$e],
+									'value' => $params['vlRef'][$i + 1]['value'][$e]
+                                )
+                            );
 						}
 					}
 				}
@@ -1176,12 +1151,11 @@ class Application_Service_Shipments {
                                 'exp_date' => $expDate,
                                 'od' => $params['eia'][$i + 1]['od'][$e],
                                 'cutoff' => $params['eia'][$i + 1]['cutoff'][$e]
-                                    )
+                                )
                             );
                         }
                     }
                 }
-                // <------ Insert reference_dbs_wb table
                 if (isset($params['wb'][$i + 1]['wb'])) {
                     $wbSize = sizeof($params['wb'][$i + 1]['wb']);
                     for ($e = 0; $e < $wbSize; $e++) {
@@ -1209,8 +1183,6 @@ class Application_Service_Shipments {
                         }
                     }
                 }
-                // ------------------>
-                // <------ Insert reference_dts_rapid_hiv table
                 if (isset($params['rhiv'][$i + 1]['kit'])) {
                     $eiaSize = sizeof($params['rhiv'][$i + 1]['kit']);
                     for ($e = 0; $e < $eiaSize; $e++) {
@@ -1226,12 +1198,11 @@ class Application_Service_Shipments {
                                 'lot_no' => $params['rhiv'][$i + 1]['lot'][$e],
                                 'expiry_date' => $expDate,
                                 'result' => $params['rhiv'][$i + 1]['result'][$e]
-                                    )
+                                )
                             );
                         }
                     }
                 }
-                // ------------------>
             }
         } else if ($scheme == 'dbs') {
             $dbAdapter->delete('reference_result_dbs', 'shipment_id = ' . $params['shipmentId']);
@@ -1246,7 +1217,7 @@ class Application_Service_Shipments {
                     'control' => $params['control'][$i],
                     'mandatory' => $params['mandatory'][$i],
                     'sample_score' => $params['score'][$i]
-                        )
+                    )
                 );
                 if (isset($params['eia'][$i + 1]['eia'])) {
                     $eiaSize = sizeof($params['eia'][$i + 1]['eia']);
@@ -1263,12 +1234,11 @@ class Application_Service_Shipments {
                                 'exp_date' => $expDate,
                                 'od' => $params['eia'][$i + 1]['od'][$e],
                                 'cutoff' => $params['eia'][$i + 1]['cutoff'][$e]
-                                    )
+                                )
                             );
                         }
                     }
                 }
-                // <------ Insert reference_dbs_wb table
                 if (isset($params['wb'][$i + 1]['wb'])) {
                     $wbSize = sizeof($params['wb'][$i + 1]['wb']);
                     for ($e = 0; $e < $wbSize; $e++) {
@@ -1296,15 +1266,14 @@ class Application_Service_Shipments {
                         }
                     }
                 }
-                // ------------------>
             }
         }
 		
         $dbAdapter->update('shipment', array('number_of_samples' => $size - $controlCount,
-											 'number_of_controls' => $controlCount,
-											 'shipment_code' => $params['shipmentCode'],
-											 'lastdate_response' => Pt_Commons_General::dateFormat($params['lastDate'])),
-											 'shipment_id = ' . $params['shipmentId']);
+            'number_of_controls' => $controlCount,
+			'shipment_code' => $params['shipmentCode'],
+			'lastdate_response' => Pt_Commons_General::dateFormat($params['lastDate'])),
+			'shipment_id = ' . $params['shipmentId']);
     }
 
     public function getShipmentOverview($parameters) {
@@ -1340,14 +1309,12 @@ class Application_Service_Shipments {
     public function getShipmentInReports($distributionId) {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sql = $db->select()->from(array('s' => 'shipment',array('shipment_id','shipment_code','status','number_of_samples')))
-                ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id',array('distribution_code','distribution_date'))
-                ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array('report_generated','participant_count' => new Zend_Db_Expr('count("participant_id")'), 'reported_count' => new Zend_Db_Expr("SUM(shipment_test_date <> '0000-00-00')"), 'number_passed' => new Zend_Db_Expr("SUM(final_result = 1)")))
-                ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type',array('scheme_name'))
-                ->joinLeft(array('rr' => 'r_results'), 'sp.final_result=rr.result_id')
-                ->where("s.distribution_id = ?", $distributionId)
-                ->group('s.shipment_id');
-        
-       
+            ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id',array('distribution_code','distribution_date'))
+            ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array('report_generated','participant_count' => new Zend_Db_Expr('count("participant_id")'), 'reported_count' => new Zend_Db_Expr("SUM(shipment_test_date <> '0000-00-00')"), 'number_passed' => new Zend_Db_Expr("SUM(final_result = 1)")))
+            ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type',array('scheme_name'))
+            ->joinLeft(array('rr' => 'r_results'), 'sp.final_result=rr.result_id')
+            ->where("s.distribution_id = ?", $distributionId)
+            ->group('s.shipment_id');
 
         return $db->fetchAll($sql);
     }
@@ -1357,14 +1324,13 @@ class Application_Service_Shipments {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
 
         $sQuery = $db->select()->from(array('s' => 'shipment'), array())
-                ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array('participantCount' => new Zend_Db_Expr("count(sp.participant_id)")))
-                ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('SCHEME' => 'sl.scheme_id'))
-                ->where("s.scheme_type = sl.scheme_id")
-                ->where("s.status!='pending'")
-                ->group('s.scheme_type')
-                ->order("sl.scheme_id");
+            ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array('participantCount' => new Zend_Db_Expr("count(sp.participant_id)")))
+            ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('SCHEME' => 'sl.scheme_id'))
+            ->where("s.scheme_type = sl.scheme_id")
+            ->where("s.status!='pending'")
+            ->group('s.scheme_type')
+            ->order("sl.scheme_id");
         $resultArray = $db->fetchAll($sQuery);
-        //Zend_Debug::dump($resultArray);die;
         return $resultArray;
     }
 
@@ -1388,7 +1354,6 @@ class Application_Service_Shipments {
     }
 
     public function removeShipmentParticipant($mapId) {
-       
         try {
             $db = Zend_Db_Table_Abstract::getDefaultAdapter();
             return  $db->delete('shipment_participant_map', "map_id = " . $mapId);
@@ -1466,73 +1431,70 @@ class Application_Service_Shipments {
         $general = new Pt_Commons_General();
         $newShipmentMailContent = $commonServices->getEmailTemplate('new_shipment');
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
-        $return=0;
+        $return = 0;
         $sQuery = $db->select()->from(array('sp' => 'shipment_participant_map'), array('sp.participant_id','sp.map_id','sp.new_shipment_mail_count'))
-                  ->join(array('s' => 'shipment'), 's.shipment_id=sp.shipment_id', array('s.shipment_code','s.shipment_code'))
-                  ->join(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id', array('distribution_code', 'distribution_date'))
-                  ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array('p.email','participantName' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT p.first_name,\" \",p.last_name ORDER BY p.first_name SEPARATOR ', ')")))
-                  ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('SCHEME' => 'sl.scheme_name'))
-                  ->where("sp.shipment_id = ?", $sid)
-                  ->group("p.participant_id");
+            ->join(array('s' => 'shipment'), 's.shipment_id=sp.shipment_id', array('s.shipment_code','s.shipment_code'))
+            ->join(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id', array('distribution_code', 'distribution_date'))
+            ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array('p.email','participantName' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT p.first_name,\" \",p.last_name ORDER BY p.first_name SEPARATOR ', ')")))
+            ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('SCHEME' => 'sl.scheme_name'))
+            ->where("sp.shipment_id = ?", $sid)
+            ->group("p.participant_id");
         $participantEmails=$db->fetchAll($sQuery);
         foreach($participantEmails as $participantDetails){
-            if($participantDetails['email']!=''){
-            $surveyDate=$general->humanDateFormat($participantDetails['distribution_date']);
-            $search = array('##NAME##','##SHIPCODE##','##SHIPTYPE##','##SURVEYCODE##','##SURVEYDATE##',);
-            $replace = array($participantDetails['participantName'],$participantDetails['shipment_code'],$participantDetails['SCHEME'],$participantDetails['distribution_code'],$surveyDate);
-            $content = $newShipmentMailContent['mail_content'];
-            $message = str_replace($search, $replace, $content);
-            $subject = $newShipmentMailContent['mail_subject'];
-            $message = $message;
-            $fromEmail =$newShipmentMailContent['mail_from'];
-            $fromFullName = $newShipmentMailContent['from_name'];
-            $toEmail =$participantDetails['email'];
-            $cc=$newShipmentMailContent['mail_cc'];
-            $bcc=$newShipmentMailContent['mail_bcc'];
-            $commonServices->insertTempMail($toEmail,$cc,$bcc, $subject, $message, $fromEmail, $fromFullName);
-            $count=$participantDetails['new_shipment_mail_count']+1;
-            $return=$db->update('shipment_participant_map', array('last_new_shipment_mailed_on' => new Zend_Db_Expr('now()'), 'new_shipment_mail_count' => $count), 'map_id = ' . $participantDetails['map_id']);
-           }
+            if ($participantDetails['email']!='') {
+                $surveyDate=$general->humanDateFormat($participantDetails['distribution_date']);
+                $search = array('##NAME##','##SHIPCODE##','##SHIPTYPE##','##SURVEYCODE##','##SURVEYDATE##',);
+                $replace = array($participantDetails['participantName'],$participantDetails['shipment_code'],$participantDetails['SCHEME'],$participantDetails['distribution_code'],$surveyDate);
+                $content = $newShipmentMailContent['mail_content'];
+                $message = str_replace($search, $replace, $content);
+                $subject = $newShipmentMailContent['mail_subject'];
+                $message = $message;
+                $fromEmail =$newShipmentMailContent['mail_from'];
+                $fromFullName = $newShipmentMailContent['from_name'];
+                $toEmail =$participantDetails['email'];
+                $cc=$newShipmentMailContent['mail_cc'];
+                $bcc=$newShipmentMailContent['mail_bcc'];
+                $commonServices->insertTempMail($toEmail,$cc,$bcc, $subject, $message, $fromEmail, $fromFullName);
+                $count=$participantDetails['new_shipment_mail_count']+1;
+                $return=$db->update('shipment_participant_map', array('last_new_shipment_mailed_on' => new Zend_Db_Expr('now()'), 'new_shipment_mail_count' => $count), 'map_id = ' . $participantDetails['map_id']);
+            }
         }
         return $return;
     }
 
     public function getShipmentNotParticipated($sid) {
-       
         $commonServices = new Application_Service_Common();
         $general = new Pt_Commons_General();
         $notParticipatedMailContent = $commonServices->getEmailTemplate('not_participated');
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $return=0;
         $sQuery = $db->select()->from(array('sp' => 'shipment_participant_map'), array('sp.participant_id','sp.map_id','sp.last_not_participated_mail_count','sp.final_result'))
-                  ->joinLeft(array('s' => 'shipment'), 's.shipment_id=sp.shipment_id', array('s.shipment_code','s.shipment_code'))
-                  ->joinLeft(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id', array('distribution_code', 'distribution_date'))
-                  ->joinLeft(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array('p.email','participantName' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT p.first_name,\" \",p.last_name ORDER BY p.first_name SEPARATOR ', ')")))
-                  ->joinLeft(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('SCHEME' => 'sl.scheme_name'))
-                  ->where("(sp.shipment_test_date = '0000-00-00' OR sp.shipment_test_date IS NULL)")
-                  ->where("sp.shipment_id = ?", $sid)
-                  ->group("sp.participant_id");
-      //  echo $sQuery;die;
+            ->joinLeft(array('s' => 'shipment'), 's.shipment_id=sp.shipment_id', array('s.shipment_code','s.shipment_code'))
+            ->joinLeft(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id', array('distribution_code', 'distribution_date'))
+            ->joinLeft(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array('p.email','participantName' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT p.first_name,\" \",p.last_name ORDER BY p.first_name SEPARATOR ', ')")))
+            ->joinLeft(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('SCHEME' => 'sl.scheme_name'))
+            ->where("(sp.shipment_test_date = '0000-00-00' OR sp.shipment_test_date IS NULL)")
+            ->where("sp.shipment_id = ?", $sid)
+            ->group("sp.participant_id");
         $participantEmails=$db->fetchAll($sQuery);
-    //    Zend_Debug::dump($participantEmails);die;
-        foreach($participantEmails as $participantDetails){
-            if($participantDetails['email']!=''){
-            $surveyDate=$general->humanDateFormat($participantDetails['distribution_date']);
-            $search = array('##NAME##','##SHIPCODE##','##SHIPTYPE##','##SURVEYCODE##','##SURVEYDATE##',);
-            $replace = array($participantDetails['participantName'],$participantDetails['shipment_code'],$participantDetails['SCHEME'],$participantDetails['distribution_code'],$surveyDate);
-            $content = $notParticipatedMailContent['mail_content'];
-            $message = str_replace($search, $replace, $content);
-            $subject = $notParticipatedMailContent['mail_subject'];
-            $message = $message;
-            $fromEmail =$notParticipatedMailContent['mail_from'];
-            $fromFullName = $notParticipatedMailContent['from_name'];
-            $toEmail =$participantDetails['email'];
-            $cc=$notParticipatedMailContent['mail_cc'];
-            $bcc=$notParticipatedMailContent['mail_bcc'];
-            $commonServices->insertTempMail($toEmail,$cc,$bcc, $subject, $message, $fromEmail, $fromFullName);
-            $count=$participantDetails['last_not_participated_mail_count']+1;
-            $return=$db->update('shipment_participant_map', array('last_not_participated_mailed_on' => new Zend_Db_Expr('now()'), 'last_not_participated_mail_count' => $count), 'map_id = ' . $participantDetails['map_id']);
-           }
+        foreach ($participantEmails as $participantDetails){
+            if ($participantDetails['email']!='') {
+                $surveyDate=$general->humanDateFormat($participantDetails['distribution_date']);
+                $search = array('##NAME##','##SHIPCODE##','##SHIPTYPE##','##SURVEYCODE##','##SURVEYDATE##',);
+                $replace = array($participantDetails['participantName'],$participantDetails['shipment_code'],$participantDetails['SCHEME'],$participantDetails['distribution_code'],$surveyDate);
+                $content = $notParticipatedMailContent['mail_content'];
+                $message = str_replace($search, $replace, $content);
+                $subject = $notParticipatedMailContent['mail_subject'];
+                $message = $message;
+                $fromEmail =$notParticipatedMailContent['mail_from'];
+                $fromFullName = $notParticipatedMailContent['from_name'];
+                $toEmail =$participantDetails['email'];
+                $cc=$notParticipatedMailContent['mail_cc'];
+                $bcc=$notParticipatedMailContent['mail_bcc'];
+                $commonServices->insertTempMail($toEmail,$cc,$bcc, $subject, $message, $fromEmail, $fromFullName);
+                $count=$participantDetails['last_not_participated_mail_count']+1;
+                $return=$db->update('shipment_participant_map', array('last_not_participated_mailed_on' => new Zend_Db_Expr('now()'), 'last_not_participated_mail_count' => $count), 'map_id = ' . $participantDetails['map_id']);
+            }
         }
         return $return;
     }
@@ -1565,13 +1527,13 @@ class Application_Service_Shipments {
 	public function getFinalizedShipmentInReports($distributionId) {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sql = $db->select()->from(array('s' => 'shipment',array('shipment_id','shipment_code','status','number_of_samples')))
-                ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id',array('distribution_code','distribution_date'))
-                ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array('participant_count' => new Zend_Db_Expr('count("participant_id")'), 'reported_count' => new Zend_Db_Expr("SUM(shipment_test_date <> '0000-00-00')"), 'number_passed' => new Zend_Db_Expr("SUM(final_result = 1)")))
-                ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type',array('scheme_name'))
-                ->joinLeft(array('rr' => 'r_results'), 'sp.final_result=rr.result_id')
-				->where("s.status='finalized'")
-                ->where("s.distribution_id = ?", $distributionId)
-                ->group('s.shipment_id');
+            ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id',array('distribution_code','distribution_date'))
+            ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array('participant_count' => new Zend_Db_Expr('count("participant_id")'), 'reported_count' => new Zend_Db_Expr("SUM(shipment_test_date <> '0000-00-00')"), 'number_passed' => new Zend_Db_Expr("SUM(final_result = 1)")))
+            ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type',array('scheme_name'))
+            ->joinLeft(array('rr' => 'r_results'), 'sp.final_result=rr.result_id')
+			->where("s.status='finalized'")
+            ->where("s.distribution_id = ?", $distributionId)
+            ->group('s.shipment_id');
         
         return $db->fetchAll($sql);
     }

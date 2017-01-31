@@ -89,9 +89,15 @@ class Application_Model_DbTable_Distribution extends Zend_Db_Table_Abstract {
          * Get data to display
          */
         $sQuery = $this->getAdapter()->select()->from(array('d' => $this->_name))
-				     ->joinLeft(array('s'=>'shipment'),'s.distribution_id=d.distribution_id',array('shipments' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT s.shipment_code SEPARATOR ', ')")))
-				     ->group('d.distribution_id');
+			->joinLeft(array('s'=>'shipment'),'s.distribution_id=d.distribution_id',array('shipments' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT s.shipment_code SEPARATOR ', ')")))
+            ->joinLeft(array('spm'=>'shipment_participant_map'),'s.shipment_id=spm.shipment_id',array())
+            ->joinLeft(array('p'=>'participant'),'spm.participant_id=p.participant_id',array())
+            ->group('d.distribution_id');
 
+        $authNameSpace = new Zend_Session_Namespace('administrators');
+        if($authNameSpace->is_ptcc_coordinator) {
+            $sQuery = $sQuery->where("p.country IS NULL OR p.country IN (".implode(",",$authNameSpace->countries).")");
+        }
         if (isset($sWhere) && $sWhere != "") {
             $sQuery = $sQuery->where($sWhere);
         }
@@ -155,11 +161,13 @@ class Application_Model_DbTable_Distribution extends Zend_Db_Table_Abstract {
     
     public function addDistribution($params) {
 	    $authNameSpace = new Zend_Session_Namespace('administrators');
-        $data = array('distribution_code'=>$params['distributionCode'],
-                      'distribution_date'=> Pt_Commons_General::dateFormat($params['distributionDate']),
-                      'status' => 'created',
-		      'created_by' => $authNameSpace->admin_id,
-                      'created_on' => new Zend_Db_Expr('now()'));
+        $data = array(
+            'distribution_code'=>$params['distributionCode'],
+            'distribution_date'=> Pt_Commons_General::dateFormat($params['distributionDate']),
+            'status' => 'created',
+		    'created_by' => $authNameSpace->admin_id,
+            'created_on' => new Zend_Db_Expr('now()')
+        );
         return $this->insert($data);
     }
     
@@ -178,10 +186,12 @@ class Application_Model_DbTable_Distribution extends Zend_Db_Table_Abstract {
     
     public function updateDistribution($params) {
 	    $authNameSpace = new Zend_Session_Namespace('administrators');
-        $data = array('distribution_code'=>$params['distributionCode'],
-                      'distribution_date'=> Pt_Commons_General::dateFormat($params['distributionDate']),
-		      'updated_by' => $authNameSpace->admin_id,
-                      'updated_on' => new Zend_Db_Expr('now()'));
+        $data = array(
+            'distribution_code'=>$params['distributionCode'],
+            'distribution_date'=> Pt_Commons_General::dateFormat($params['distributionDate']),
+		    'updated_by' => $authNameSpace->admin_id,
+            'updated_on' => new Zend_Db_Expr('now()')
+        );
         return $this->update($data,"distribution_id=".base64_decode($params['distributionId']));
     }
 

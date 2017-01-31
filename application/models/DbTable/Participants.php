@@ -1,16 +1,14 @@
 <?php
 
 class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
-
     protected $_name = 'participant';
     protected $_primary = 'participant_id';
 
     public function getParticipantsByUserSystemId($userSystemId) {
         return $this->getAdapter()->fetchAll($this->getAdapter()->select()->from(array('p' => $this->_name))
-                                ->joinLeft(array('pmm' => 'participant_manager_map'), 'pmm.participant_id=p.participant_id', array('data_manager' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT pmm.dm_id SEPARATOR ', ')")))
-                                ->where("pmm.dm_id = ?", $userSystemId)
-                                //->where("p.status = 'active'")
-                                ->group('p.participant_id'));
+            ->joinLeft(array('pmm' => 'participant_manager_map'), 'pmm.participant_id=p.participant_id', array('data_manager' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT pmm.dm_id SEPARATOR ', ')")))
+            ->where("pmm.dm_id = ?", $userSystemId)
+            ->group('p.participant_id'));
     }
 	
 	public function checkParticipantAccess($participantId){
@@ -20,7 +18,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
                                 ->where("pmm.participant_id = ?", $participantId)
                                 ->where("pmm.dm_id = ?", $authNameSpace->dm_id));
 		
-		if($row == false){
+		if ($row == false) {
 			return false;
 		} else {
 			return true;
@@ -487,8 +485,6 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
          * SQL queries
          * Get data to display
          */
-
-
         $sQuery = $this->getAdapter()->select()->from(array('p' => 'participant'))
                 ->join(array('sp' => 'shipment_participant_map'), 'sp.participant_id=p.participant_id', array('sp.map_id', 'sp.created_on_user', 'sp.attributes', 'sp.final_result','sp.shipment_test_date',"RESPONSE" => new Zend_Db_Expr("CASE WHEN (sp.is_excluded ='yes') THEN 'Excluded'  WHEN (sp.shipment_test_date!='' AND sp.shipment_test_date!='0000-00-00' AND sp.shipment_test_date!='NULL') THEN 'Responded' ELSE 'Not Responded' END")))
                 ->join(array('s' => 'shipment'), 'sp.shipment_id=s.shipment_id', array('shipmentStatus' => 's.status'))
@@ -511,8 +507,6 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
             $sQuery = $sQuery->limit($sLimit, $sOffset);
         }
 
-        //error_log($sQuery);
-
         $rResult = $this->getAdapter()->fetchAll($sQuery);
 
         /* Data set length after filtering */
@@ -522,7 +516,6 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
         $iFilteredTotal = count($aResultFilterTotal);
 
         /* Total data set length */
-
         $sQuery = $this->getAdapter()->select()->from(array("p" => $this->_name), new Zend_Db_Expr("COUNT('" . $sIndexColumn . "')"))
                 ->join(array('sp' => 'shipment_participant_map'), 'sp.participant_id=p.participant_id', array('sp.shipment_test_date'))
                 ->join(array('s' => 'shipment'), 'sp.shipment_id=s.shipment_id', array())
@@ -545,7 +538,6 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
             "iTotalDisplayRecords" => $iFilteredTotal,
             "aaData" => array()
         );
-
 
         foreach ($rResult as $aRow) {
             $row = array();
@@ -571,7 +563,6 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
          * you want to insert a non-database field (for example a counter or static image)
          */
-
         $aColumns = array('first_name', 'iso_name', 'mobile', 'email', 'p.status');
 
         /* Indexed column (used for fast and accurate table cardinality) */
@@ -646,8 +637,6 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
          * SQL queries
          * Get data to display
          */
-
-
         $sQuery = $this->getAdapter()->select()->from(array('p' => 'participant'), array('p.participant_id'))
               ->join(array('sp' => 'shipment_participant_map'), 'sp.participant_id=p.participant_id', array())
                 ->join(array('s' => 'shipment'), 'sp.shipment_id=s.shipment_id', array())
@@ -705,7 +694,6 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
             "aaData" => array()
         );
 
-
         foreach ($rResult as $aRow) {
             $row = array();
             $row[] = '<input type="checkbox" class="isRequired" name="participants[]" id="' . $aRow['participant_id'] . '" value="' . base64_encode($aRow['participant_id']) . '" onclick="checkParticipantName(' . $aRow['participant_id'] . ',this)" title="Select atleast one participant">';
@@ -713,30 +701,27 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
             $row[] = ucwords($aRow['iso_name']);
             $row[] = $aRow['mobile'];
             $row[] = $aRow['email'];
-           // $row[] = ucwords($aRow['status']);
             $row[] = 'Unenrolled';
-
             $output['aaData'][] = $row;
         }
 
         echo json_encode($output);
     }
+
     public function addParticipantManager($params){
          $db = Zend_Db_Table_Abstract::getAdapter();
-         if(isset($params['datamanagerId']) && $params['datamanagerId'] != ""){
-                $db->delete('participant_manager_map',"dm_id = " . $params['datamanagerId']);
-
-                foreach($params['participants'] as $participants){
-                        $db->insert('participant_manager_map',array('participant_id'=>$participants,'dm_id'=>$params['datamanagerId']));
-                }
-        }else if(isset($params['participantId']) && $params['participantId'] != ""){
-                $db->delete('participant_manager_map',"participant_id = " . $params['participantId']);
-
-                foreach($params['datamangers'] as $datamangers){
-                        $db->insert('participant_manager_map',array('dm_id'=>$datamangers,'participant_id'=>$params['participantId']));
-                }
-        }
-    }
+         if (isset($params['datamanagerId']) && $params['datamanagerId'] != "") {
+             $db->delete('participant_manager_map',"dm_id = " . $params['datamanagerId']);
+             foreach ($params['participants'] as $participants) {
+                 $db->insert('participant_manager_map',array('participant_id'=>$participants,'dm_id'=>$params['datamanagerId']));
+             }
+         } else if (isset($params['participantId']) && $params['participantId'] != "") {
+             $db->delete('participant_manager_map',"participant_id = " . $params['participantId']);
+             foreach($params['datamangers'] as $datamangers){
+                 $db->insert('participant_manager_map',array('dm_id'=>$datamangers,'participant_id'=>$params['participantId']));
+             }
+         }
+	}
     
     public function getShipmentRespondedParticipants($parameters) {
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
