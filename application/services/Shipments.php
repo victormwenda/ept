@@ -84,7 +84,7 @@ class Application_Service_Shipments {
 
         $authNameSpace = new Zend_Session_Namespace('administrators');
         if($authNameSpace->is_ptcc_coordinator) {
-            $sQuery = $sQuery->where("p.country IN (".implode(",",$authNameSpace->countries).")");
+            $sQuery = $sQuery->where("p.country IS NULL OR p.country IN (".implode(",",$authNameSpace->countries).")");
         }
 
         if (isset($parameters['scheme']) && $parameters['scheme'] != "") {
@@ -191,11 +191,15 @@ class Application_Service_Shipments {
         $sQuery = $db->select()->from(array('s' => 'shipment'))
             ->join(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id', array('distribution_code', 'distribution_date'))
             ->joinLeft(array('spm' => 'shipment_participant_map'), 's.shipment_id = spm.shipment_id', array('total_participants'=> new Zend_Db_Expr('count(map_id)'),'last_new_shipment_mailed_on','new_shipment_mail_count'))
+            ->joinLeft(array('p' => 'participant'), 'spm.participant_id = p.participant_id', array())
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('SCHEME' => 'sl.scheme_name'))
             ->where('s.scheme_type = ?', $scheme)
             ->group('s.shipment_id')
             ->order('distribution_date desc');
-
+        $authNameSpace = new Zend_Session_Namespace('administrators');
+        if($authNameSpace->is_ptcc_coordinator) {
+            $sQuery = $sQuery->where("p.country IS NULL OR p.country IN (".implode(",",$authNameSpace->countries).")");
+        }
         $rResult = $db->fetchAll($sQuery);
 
         return $rResult;

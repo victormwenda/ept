@@ -67,13 +67,23 @@ class Application_Service_Participants {
 		$db = Zend_Db_Table_Abstract::getDefaultAdapter();
 		$subSql = $db->select()->from(array('e'=>'enrollments'), 'participant_id')->where("scheme_id = ?", $scheme);
 		$sql = $db->select()->from(array('p'=>'participant'))->where("participant_id NOT IN ?", $subSql)->where("p.status='active'")->order('first_name');
+        $authNameSpace = new Zend_Session_Namespace('administrators');
+        if($authNameSpace->is_ptcc_coordinator) {
+            $sql = $sql->where("p.country IS NULL OR p.country IN (".implode(",",$authNameSpace->countries).")");
+        }
 		return $db->fetchAll($sql);
 	}
 
 	public function getEnrolledBySchemeCode($scheme){
 		$db = Zend_Db_Table_Abstract::getDefaultAdapter();
 		$sql = $db->select()->from(array('e'=>'enrollments'), array())
-				->join(array('p'=>'participant'),"p.participant_id=e.participant_id")->where("scheme_id = ?", $scheme)->where("p.status='active'")->order('first_name');
+			->join(array('p'=>'participant'),"p.participant_id=e.participant_id")
+            ->where("scheme_id = ?", $scheme)->where("p.status='active'")
+            ->order('first_name');
+        $authNameSpace = new Zend_Session_Namespace('administrators');
+        if($authNameSpace->is_ptcc_coordinator) {
+            $sql = $sql->where("p.country IS NULL OR p.country IN (".implode(",",$authNameSpace->countries).")");
+        }
 		return $db->fetchAll($sql);
 	}
 	
@@ -85,7 +95,10 @@ class Application_Service_Participants {
 				->where("s.shipment_id = ?", $shipmentId)
 				->where("p.status='active'")
 				->order('p.first_name');
-
+        $authNameSpace = new Zend_Session_Namespace('administrators');
+        if($authNameSpace->is_ptcc_coordinator) {
+            $sql = $sql->where("p.country IS NULL OR p.country IN (".implode(",",$authNameSpace->countries).")");
+        }
 		return $db->fetchAll($sql);
 	}
 
@@ -109,6 +122,10 @@ class Application_Service_Participants {
 				       ->where("p.status='active'");
 		$sql = $db->select()->from(array('p'=>'participant'))->where("participant_id NOT IN ?", $subSql)
 				       ->order('p.first_name');
+        $authNameSpace = new Zend_Session_Namespace('administrators');
+        if($authNameSpace->is_ptcc_coordinator) {
+            $sql = $sql->where("p.country IS NULL OR p.country IN (".implode(",",$authNameSpace->countries).")");
+        }
 		return $db->fetchAll($sql);
 	}
 
@@ -145,8 +162,15 @@ class Application_Service_Participants {
 	public function getAllParticipantRegion() {
 		$db = Zend_Db_Table_Abstract::getDefaultAdapter();
 		$sql = $db->select()->from(array('p'=>'participant'),array('p.region'))
-		                  ->group('p.region')->where("p.region IS NOT NULL")->where("p.region != ''")->order("p.region");
-	    return $db->fetchAll($sql);
+            ->group('p.region')
+            ->where("p.region IS NOT NULL")
+            ->where("p.region != ''")
+            ->order("p.region");
+        $authNameSpace = new Zend_Session_Namespace('administrators');
+        if($authNameSpace->is_ptcc_coordinator) {
+            $sql = $sql->where("p.country IS NULL OR p.country IN (".implode(",",$authNameSpace->countries).")");
+        }
+		return $db->fetchAll($sql);
 	}
 
 	public function getAllParticipantDetails($dmId) {

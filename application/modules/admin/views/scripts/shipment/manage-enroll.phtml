@@ -20,7 +20,6 @@
         <td><?php echo $this->dateFormat($this->shipment['shipment']['lastdate_response']); ?></td>
     </tr>
 </table>
-
 <section class="content">
     <div class="row">
         <div class="col-xs-12">
@@ -39,7 +38,6 @@
                                         <div style="padding-top:10px;float:right;margin-bottom:10px;">
                                             <button class="btn btn-info btn-xs" type="button" onclick="exportRespondedShipment();" >Export to excel</button>
                                         </div>
-
                                         <table  cellpadding="0" cellspacing="0" border="0" class="table table-striped table-bordered table-hover" id="respondedTable">
                                             <thead>
                                                 <tr>
@@ -143,7 +141,6 @@
     });
 
     function drawTableResponded() {
-
         oTableResponded = $('#respondedTable').dataTable({
             "oLanguage": {
                 "sLengthMenu": "_MENU_ records per page"
