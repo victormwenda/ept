@@ -6,8 +6,8 @@ class Application_Model_DbTable_DataManagers extends Zend_Db_Table_Abstract {
     protected $_primary = array('dm_id');
 
     public function addUser($params) {
-	$authNameSpace = new Zend_Session_Namespace('administrators');
-	$data = array(
+        $authNameSpace = new Zend_Session_Namespace('administrators');
+        $data = array(
             'first_name' => $params['fname'],
             'last_name' => $params['lname'],
             'institute' => $params['institute'],
@@ -20,9 +20,9 @@ class Application_Model_DbTable_DataManagers extends Zend_Db_Table_Abstract {
             'qc_access' => $params['qcAccess'],
             'enable_adding_test_response_date' => $params['receiptDateOption'],
             'enable_choosing_mode_of_receipt' => $params['modeOfReceiptOption'],
-			'view_only_access' => $params['viewOnlyAccess'],
+            'view_only_access' => $params['viewOnlyAccess'],
             'status' => $params['status'],
-			'created_by' => $authNameSpace->admin_id,
+            'created_by' => $authNameSpace->admin_id,
             'created_on' => new Zend_Db_Expr('now()')
         );
         return $this->insert($data);
@@ -177,65 +177,73 @@ class Application_Model_DbTable_DataManagers extends Zend_Db_Table_Abstract {
     }
 
     public function updateUser($params) {
-	$authNameSpace = new Zend_Session_Namespace('administrators');
+	    $authNameSpace = new Zend_Session_Namespace('administrators');
         $data = array(
             'first_name' => $params['fname'],
             'last_name' => $params['lname'],
             'phone' => $params['phone2'],
             'mobile' => $params['phone1'],
             'secondary_email' => $params['semail'],
-	    'updated_by' => $authNameSpace->admin_id,
+	        'updated_by' => $authNameSpace->admin_id,
             'updated_on' => new Zend_Db_Expr('now()')
         );
-        
-	if(isset($params['institute']) && $params['institute'] != ""){
+	    if (isset($params['institute']) && $params['institute'] != "") {
             $data['institute'] = $params['institute'];
         }
-	if(isset($params['qcAccess']) && $params['qcAccess'] != ""){
+	    if (isset($params['qcAccess']) && $params['qcAccess'] != "") {
             $data['qc_access'] = $params['qcAccess'];
         }
-	if(isset($params['receiptDateOption']) && $params['receiptDateOption'] != ""){
+	    if (isset($params['receiptDateOption']) && $params['receiptDateOption'] != "") {
             $data['enable_adding_test_response_date'] = $params['receiptDateOption'];
         }
-	if(isset($params['modeOfReceiptOption']) && $params['modeOfReceiptOption'] != ""){
+	    if (isset($params['modeOfReceiptOption']) && $params['modeOfReceiptOption'] != "") {
             $data['enable_choosing_mode_of_receipt'] = $params['modeOfReceiptOption'];
         }
-	if(isset($params['viewOnlyAccess']) && $params['viewOnlyAccess'] != ""){
+	    if (isset($params['viewOnlyAccess']) && $params['viewOnlyAccess'] != "") {
             $data['view_only_access'] = $params['viewOnlyAccess'];
         }
-        if(isset($params['userId']) && $params['userId'] != ""){
+        if (isset($params['userId']) && $params['userId'] != "") {
             $data['primary_email'] = $params['userId'];
         }
-        if(isset($params['password']) && $params['password'] != ""){
+        if (isset($params['password']) && $params['password'] != "") {
             $data['password'] = $params['password'];
             $data['force_password_reset'] = 1;
         }
-        if(isset($params['status']) && $params['status'] != ""){
+        if (isset($params['status']) && $params['status'] != "") {
             $data['status'] = $params['status'];
         }
-
         return $this->update($data, "dm_id = " . $params['userSystemId']);
     }
     
     public function resetpasswordForEmail($email){
         $row = $this->fetchRow("primary_email = '".$email."'");
-        if($row != null && count($row) ==1){
+        if  ($row != null && count($row) ==1){
             $randompassword = Application_Service_Common::getRandomString(15);
             $row->password = $randompassword;
             $row->force_password_reset = 1;
             $row->save();
             return $randompassword;
-        }else{
+        } else {
             return false;
         }
     }
 	
     public function getAllDataManagers($active=true){
-	$sql = $this->select()->order("first_name");
-	if($active){
-	    $sql = $sql->where("status='active'");
-	}
-	return $this->fetchAll($sql);
+	    $db = $this->getAdapter();
+        $sql = $db->select()
+            ->from(array('u' => $this->_name))
+            ->joinLeft(array('pmm'=>'participant_manager_map'),'pmm.dm_id=u.dm_id',array())
+            ->joinLeft(array('p'=>'participant'),'p.participant_id = pmm.participant_id',array())
+            ->group('u.dm_id');
+	    $authNameSpace = new Zend_Session_Namespace('administrators');
+        if($authNameSpace->is_ptcc_coordinator) {
+            $sql = $sql->where("p.country IN (".implode(",",$authNameSpace->countries).") OR u.created_by = ".$authNameSpace->admin_id);
+        }
+        if($active){
+            $sql = $sql->where("u.status='active'");
+        }
+        $sql = $sql->order("u.first_name");
+        return $db->fetchAll($sql);
     }
 	
     public function updatePassword($oldpassword,$newpassword){
@@ -250,16 +258,13 @@ class Application_Model_DbTable_DataManagers extends Zend_Db_Table_Abstract {
         }
     }
 	
-    public function updateLastLogin($dmId){
-        
+    public function updateLastLogin($dmId) {
         $noOfRows = $this->update(array('last_login' => new Zend_Db_Expr('now()')),"dm_id = ".$dmId);
-        if($noOfRows != null && count($noOfRows) ==1){
+        if ($noOfRows != null && count($noOfRows) ==1) {
             return true;
-        }else{
+        } else {
             return false;
         }
     }
-    
-    
 }
 

@@ -164,7 +164,6 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
             "aaData" => array()
         );
 
-
         foreach ($rResult as $aRow) {
             $row = array();
             $row[] = $aRow['unique_identifier'];
@@ -176,7 +175,6 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
             $row[] = $aRow['email'];
             $row[] = ucwords($aRow['status']);
             $row[] = '<a href="/admin/participants/edit/id/' . $aRow['participant_id'] . '" class="btn btn-warning btn-xs" style="margin-right: 2px;"><i class="icon-pencil"></i> Edit</a>';
-
             $output['aaData'][] = $row;
         }
 
@@ -203,7 +201,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
             'mobile' => $params['pphone2'],
             'phone' => $params['pphone1'],
             'email' => $params['pemail'],
-	    'contact_name' => $params['contactname'],
+	        'contact_name' => $params['contactname'],
             'affiliation' => $params['partAff'],
             'network_tier' => $params['network'],
             'testing_volume' => $params['testingVolume'],
@@ -213,13 +211,11 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
             'updated_on' => new Zend_Db_Expr('now()')
         );
 		
-		if(isset($params['individualParticipant']) && $params['individualParticipant']=='on'){
+		if (isset($params['individualParticipant']) && $params['individualParticipant']=='on') {
 		   $data['individual']='yes';
-		}else{
+		} else {
 			$data['individual']='no';
 		}
-	
-	
 
         if (isset($params['status']) && $params['status'] != "" && $params['status'] != null) {
             $data['status'] = $params['status'];
@@ -234,16 +230,14 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
             }
         }
 
-
         $noOfRows = $this->update($data, "participant_id = " . $params['participantId']);
 		$db = Zend_Db_Table_Abstract::getAdapter();
 		
 		if (isset($params['enrolledProgram']) && $params['enrolledProgram'] != "") {
-				$db->delete('participant_enrolled_programs_map', "participant_id = " . $params['participantId']);
-				//var_dump($params['enrolledProgram']);die;
-				foreach ($params['enrolledProgram'] as $epId) {
-					$db->insert('participant_enrolled_programs_map', array('ep_id' => $epId, 'participant_id' => $params['participantId']));
-				}
+            $db->delete('participant_enrolled_programs_map', "participant_id = " . $params['participantId']);
+            foreach ($params['enrolledProgram'] as $epId) {
+                $db->insert('participant_enrolled_programs_map', array('ep_id' => $epId, 'participant_id' => $params['participantId']));
+            }
 		}
 		
         if (isset($params['dataManager']) && $params['dataManager'] != "") {
@@ -262,7 +256,6 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
     }
 
     public function addParticipant($params) {
-	
         $authNameSpace = new Zend_Session_Namespace('administrators');
 
         $data = array(
@@ -282,7 +275,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
             'mobile' => $params['pphone2'],
             'phone' => $params['pphone1'],
             'email' => $params['pemail'],
-	    'contact_name' => $params['contactname'],
+	        'contact_name' => $params['contactname'],
             'affiliation' => $params['partAff'],
             'network_tier' => $params['network'],
             'testing_volume' => $params['testingVolume'],
@@ -293,12 +286,11 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
             'created_by' => $authNameSpace->primary_email,
             'status' => $params['status']
         );
-		if(isset($params['individualParticipant']) && $params['individualParticipant']=='on'){
+		if (isset($params['individualParticipant']) && $params['individualParticipant']=='on') {
 		   $data['individual']='yes';
-		}else{
+		} else {
 			$data['individual']='no';
 		}
-
 
         $participantId = $this->insert($data);
 
@@ -308,16 +300,15 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
             $db->insert('participant_manager_map', array('dm_id' => $dataManager, 'participant_id' => $participantId));
         }
 		if (isset($params['enrolledProgram']) && $params['enrolledProgram'] != "") {
-				foreach ($params['enrolledProgram'] as $epId) {
-					$db->insert('participant_enrolled_programs_map', array('ep_id' => $epId, 'participant_id' => $participantId));
-				}
+            foreach ($params['enrolledProgram'] as $epId) {
+                $db->insert('participant_enrolled_programs_map', array('ep_id' => $epId, 'participant_id' => $participantId));
+            }
 		}
 
         return $participantId;
     }
 
     public function addParticipantForDataManager($params) {
-        //Zend_Debug::dump($params);die;
         $authNameSpace = new Zend_Session_Namespace('datamanagers');
 
         $data = array(
@@ -349,24 +340,20 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
             'created_by' => $authNameSpace->UserID,
         );
 		
-		if(isset($params['individualParticipant']) && $params['individualParticipant']=='on'){
+		if (isset($params['individualParticipant']) && $params['individualParticipant']=='on') {
 		   $data['individual']='yes';
-		}else{
+		} else {
 			$data['individual']='no';
 		}
-		
-		
-        //Zend_Debug::dump($data);die;
-        //Zend_Debug::dump($data);die;
-         $participantId = $this->insert($data);
 
+        $participantId = $this->insert($data);
 
 		if (isset($params['enrolledProgram']) && $params['enrolledProgram'] != "") {
-				$db = Zend_Db_Table_Abstract::getAdapter();
-				$db->delete('participant_enrolled_programs_map', "participant_id = " . $participantId);			
-				foreach ($params['enrolledProgram'] as $epId) {
-					$db->insert('participant_enrolled_programs_map', array('ep_id' => $epId, 'participant_id' => $participantId));
-				}
+		    $db = Zend_Db_Table_Abstract::getAdapter();
+			$db->delete('participant_enrolled_programs_map', "participant_id = " . $participantId);
+			foreach ($params['enrolledProgram'] as $epId) {
+			    $db->insert('participant_enrolled_programs_map', array('ep_id' => $epId, 'participant_id' => $participantId));
+			}
 		}
 		
         if (isset($params['scheme']) && $params['scheme'] != "") {
@@ -389,7 +376,13 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
     }
 
     public function fetchAllActiveParticipants() {
-        return $this->fetchAll($this->select()->where("status='active'")->order("first_name"));
+	    $sQuery = $this->select()->where("status='active'");
+        $authNameSpace = new Zend_Session_Namespace('administrators');
+        if($authNameSpace->is_ptcc_coordinator) {
+            $sQuery = $sQuery->where("country IN (".implode(",",$authNameSpace->countries).")");
+        }
+        $sQuery = $sQuery->order("first_name");
+        return $this->fetchAll($sQuery);
     }
 
     public function getSchemeWiseParticipants($schemeType) {
