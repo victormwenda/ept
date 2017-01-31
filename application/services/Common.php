@@ -99,9 +99,9 @@ class Application_Service_Common {
 		$to = Application_Service_Common::getConfig('admin_email');
 		
 		$mailSent = $this->sendMail($to,null,null,"New contact message from the ePT program",$message,$fromEmail,$fromName);
-		if($mailSent){
+		if ($mailSent) {
 			return 1;
-		}else{
+		} else {
 			return 0;
 		}		
     }
@@ -145,58 +145,55 @@ class Application_Service_Common {
         $url = preg_replace('/[\-]{2,}/', '', $url);
         
         return strtolower($url);
-	
     }
     
-    public function getCountriesList(){
-	$countriesDb = new Application_Model_DbTable_Countries();
-	return $countriesDb->getAllCountries();
+    public function getCountriesList()  {
+        $countriesDb = new Application_Model_DbTable_Countries();
+        return $countriesDb->getAllCountries();
     }
 
-    public function getAllnetwork(){
-	$networkDb = new Application_Model_DbTable_NetworkTires();
-	return $networkDb->getAllnetwork();
+    public function getAllnetwork() {
+        $networkDb = new Application_Model_DbTable_NetworkTires();
+        return $networkDb->getAllnetwork();
     }
 
     public function getAllParticipantAffiliates(){
-	$participantAffiliateDb = new Application_Model_DbTable_ParticipantAffiliates();
-	return $participantAffiliateDb->getAllParticipantAffiliates();
+        $participantAffiliateDb = new Application_Model_DbTable_ParticipantAffiliates();
+        return $participantAffiliateDb->getAllParticipantAffiliates();
     }
 
     public function getGlobalConfigDetails() {
-	$db = new Application_Model_DbTable_GlobalConfig();
-	return $db->getGlobalConfig();
+        $db = new Application_Model_DbTable_GlobalConfig();
+        return $db->getGlobalConfig();
     }
 
     public function getFullSchemesDetails() {
-	$db = new Application_Model_DbTable_SchemeList();
-	return $db->getFullSchemeList();
+        $db = new Application_Model_DbTable_SchemeList();
+        return $db->getFullSchemeList();
     }
     
     public function updateConfig($params) {	
-	$db = new Application_Model_DbTable_GlobalConfig();
-	$db->updateConfigDetails($params);
+        $db = new Application_Model_DbTable_GlobalConfig();
+        $db->updateConfigDetails($params);
     }
 
-    public function getEmailTemplate($purpose){
+    public function getEmailTemplate($purpose) {
         $db = new Application_Model_DbTable_MailTemplate();
         return $db->getEmailTemplateDetails($purpose);
     }
 
-    public function updateTemplate($params){
+    public function updateTemplate($params) {
         $filterRules = array(
-                    '*' => 'StripTags',
-                    '*' => 'StringTrim'
-                );
+            '*' => 'StripTags',
+            '*' => 'StringTrim'
+        );
 
         $filter = new Zend_Filter_Input($filterRules, null, $params);
 
         if ($filter->isValid()) {
-
             $params = $filter->getEscaped();
             $db= new Application_Model_DbTable_MailTemplate();
             $db->getAdapter()->beginTransaction();
-
             try {
                 $result=$db->updateMailTemplateDetails($params);
                 $db->getAdapter()->commit();
@@ -213,25 +210,23 @@ class Application_Service_Common {
         return $db->insertTempMailDetails($to, $cc,$bcc, $subject, $message, $fromMail, $fromName);
     }
 	
-    public function getAllModeOfReceipt(){
-	$db = new Application_Model_DbTable_ModeOfReceipt();
-	return $db->fetchAllModeOfReceipt();
+    public function getAllModeOfReceipt() {
+        $db = new Application_Model_DbTable_ModeOfReceipt();
+        return $db->fetchAllModeOfReceipt();
     }
     
-    public function updateHomeBanner($params){
-	$filterRules = array(
-                    '*' => 'StripTags',
-                    '*' => 'StringTrim'
-                );
+    public function updateHomeBanner($params) {
+	    $filterRules = array(
+	        '*' => 'StripTags',
+            '*' => 'StringTrim'
+        );
 
         $filter = new Zend_Filter_Input($filterRules, null, $params);
 
         if ($filter->isValid()) {
-
             $params = $filter->getEscaped();
             $db= new Application_Model_DbTable_HomeBanner();
             $db->getAdapter()->beginTransaction();
-
             try {
                 $result=$db->updateHomeBannerDetails($params);
                 $db->getAdapter()->commit();
@@ -243,14 +238,14 @@ class Application_Service_Common {
         }
     }
     
-    public function getHomeBannerDetails(){
-	$db= new Application_Model_DbTable_HomeBanner();
-	return $db->fetchHomeBannerDetails();
+    public function getHomeBannerDetails() {
+        $db= new Application_Model_DbTable_HomeBanner();
+        return $db->fetchHomeBannerDetails();
     }
     
-    public function getHomeBanner(){
-	$db= new Application_Model_DbTable_HomeBanner();
-	return $db->fetchHomeBanner();
+    public function getHomeBanner() {
+        $db= new Application_Model_DbTable_HomeBanner();
+        return $db->fetchHomeBanner();
     }
 }
 

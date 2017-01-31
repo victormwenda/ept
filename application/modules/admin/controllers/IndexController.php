@@ -2,16 +2,13 @@
 
 class Admin_IndexController extends Zend_Controller_Action
 {
-    public function init()
-    {
+    public function init() {
         $this->_helper->layout()->pageName = 'dashboard';
         $ajaxContext = $this->_helper->getHelper('AjaxContext');
-        $ajaxContext->addActionContext('get-scheme-participants', 'html')
-                    ->initContext();
+        $ajaxContext->addActionContext('get-scheme-participants', 'html')->initContext();
     }
 
-    public function indexAction()
-    {
+    public function indexAction() {
         $distributionService = new Application_Service_Distribution();
         $shipmentService = new Application_Service_Shipments();
         $scheme = new Application_Service_Schemes();
@@ -23,16 +20,13 @@ class Admin_IndexController extends Zend_Controller_Action
         $this->view->schemes = $scheme->getAllSchemes();
     }
 
-    public function getSchemeParticipantsAction()
-    {
+    public function getSchemeParticipantsAction() {
         if($this->_hasParam('schemeType')){
             $schemeType=$this->_getParam('schemeType');
             $participantService = new Application_Service_Participants();
-            $this->view->participants=$participantService->getSchemeWiseParticipants($schemeType);
+            $this->view->participants = $participantService->getSchemeWiseParticipants($schemeType);
         }
     }
-
-
 }
 
 

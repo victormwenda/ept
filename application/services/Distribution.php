@@ -63,6 +63,7 @@ class Application_Service_Distribution {
 		$disrtibutionDb = new Application_Model_DbTable_Distribution();
 		return $disrtibutionDb->getAllDistributionReports($parameters);
 	}
+
 	public function getAllDistributionStatus(){
 		$disrtibutionDb = new Application_Model_DbTable_Distribution();
 		return $disrtibutionDb->getAllDistributionStatusDetails();		

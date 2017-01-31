@@ -1373,14 +1373,17 @@ class Application_Service_Shipments {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
 
         $sQuery = $db->select()->from(array('s' => 'shipment'), array('s.shipment_code', 's.scheme_type', 's.lastdate_response'))
-                ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array('participantCount' => new Zend_Db_Expr("count(sp.participant_id)"), 'receivedCount' => new Zend_Db_Expr("SUM(sp.shipment_test_date <> '0000-00-00')")))
-                ->where("s.status='shipped'")
-                //->where("YEAR(s.shipment_date) = YEAR(CURDATE())")
-                ->where("s.shipment_date > DATE_SUB(now(), INTERVAL 24 MONTH)")
-                ->group('s.shipment_id')
-                ->order("s.shipment_id");
+            ->join(array('spm' => 'shipment_participant_map'), 'spm.shipment_id=s.shipment_id', array('participantCount' => new Zend_Db_Expr("count(spm.participant_id)"), 'receivedCount' => new Zend_Db_Expr("SUM(spm.shipment_test_date <> '0000-00-00')")))
+            ->join(array('p' => 'participant'), 'spm.participant_id=p.participant_id', array())
+            ->where("s.status='shipped'")
+            ->where("s.shipment_date > DATE_SUB(now(), INTERVAL 24 MONTH)");
+        $authNameSpace = new Zend_Session_Namespace('administrators');
+        if ($authNameSpace->is_ptcc_coordinator) {
+            $sQuery = $sQuery->where("p.country IN (".implode(",", $authNameSpace->countries).")");
+        }
+        $sQuery = $sQuery->group('s.shipment_id')
+            ->order("s.shipment_id");
         $resultArray = $db->fetchAll($sQuery);
-        //Zend_Debug::dump($resultArray);die;
         return $resultArray;
     }
 

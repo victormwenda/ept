@@ -386,16 +386,25 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
     }
 
     public function getSchemeWiseParticipants($schemeType) {
+        $authNameSpace = new Zend_Session_Namespace('administrators');
         if ($schemeType != "all") {
-            $result = $this->getAdapter()->fetchAll($this->getAdapter()->select()->from(array('p' => $this->_name), array('p.address', 'p.long', 'p.lat', 'p.first_name', 'p.last_name'))
-                            ->join(array('e' => 'enrollments'), 'e.participant_id=p.participant_id')
-                            ->where("e.scheme_id = ?", $schemeType)
-                            ->where("p.status='active'")
-                            ->group('p.participant_id'));
+            $sql = $this->getAdapter()->select()
+                ->from(array('p' => $this->_name), array('p.address', 'p.long', 'p.lat', 'p.first_name', 'p.last_name'))
+                ->join(array('e' => 'enrollments'), 'e.participant_id=p.participant_id')
+                ->where("e.scheme_id = ?", $schemeType)
+                ->where("p.status='active'");
+            if($authNameSpace->is_ptcc_coordinator) {
+                $sql = $sql->where("p.country IN (".implode(",",$authNameSpace->countries).")");
+            }
+            $sql = $sql->group('p.participant_id');
+            $result = $this->getAdapter()->fetchAll($sql);
         } else {
-            $result = $this->fetchAll($this->select()->where("status='active'"));
+            $sql = $this->select()->where("status='active'");
+            if($authNameSpace->is_ptcc_coordinator) {
+                $sql = $sql->where("country IN (".implode(",",$authNameSpace->countries).")");
+            }
+            $result = $this->fetchAll($sql);
         }
-
         return $result;
     }
 
