@@ -114,11 +114,14 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
          * SQL queries
          * Get data to display
          */
-
         $sQuery = $this->getAdapter()->select()->from(array('p' => $this->_name), array('p.participant_id', 'p.unique_identifier', 'p.country', 'p.mobile', 'p.phone', 'p.affiliation', 'p.email', 'p.status', 'participantName' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT p.first_name,\" \",p.last_name ORDER BY p.first_name SEPARATOR ', ')")))
                 ->join(array('c' => 'countries'), 'c.id=p.country')
                 ->group("p.participant_id");
 
+        $authNameSpace = new Zend_Session_Namespace('administrators');
+        if($authNameSpace->is_ptcc_coordinator) {
+            $sQuery = $sQuery->where("p.country IN (".implode(",",$authNameSpace->countries).")");
+        }
         if (isset($parameters['withStatus']) && $parameters['withStatus'] != "") {
             $sQuery = $sQuery->where("p.status = ? ", $parameters['withStatus']);
         }
@@ -133,8 +136,6 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
         if (isset($sLimit) && isset($sOffset)) {
             $sQuery = $sQuery->limit($sLimit, $sOffset);
         }
-
-        //error_log($sQuery);
 
         $rResult = $this->getAdapter()->fetchAll($sQuery);
 

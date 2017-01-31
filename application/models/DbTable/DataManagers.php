@@ -33,12 +33,10 @@ class Application_Model_DbTable_DataManagers extends Zend_Db_Table_Abstract {
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
          * you want to insert a non-database field (for example a counter or static image)
          */
-
         $aColumns = array('u.institute','u.first_name','u.last_name', 'u.mobile', 'u.primary_email', 'u.secondary_email','p.first_name', 'u.status');
 
         /* Indexed column (used for fast and accurate table cardinality) */
         $sIndexColumn = "dm_id";
-
 
         /*
          * Paging
@@ -106,16 +104,19 @@ class Application_Model_DbTable_DataManagers extends Zend_Db_Table_Abstract {
             }
         }
 
-
         /*
          * SQL queries
          * Get data to display
          */
-
         $sQuery = $this->getAdapter()->select()->from(array('u' => $this->_name))
 				    ->joinLeft(array('pmm'=>'participant_manager_map'),'pmm.dm_id=u.dm_id',array())
 				    ->joinLeft(array('p'=>'participant'),'p.participant_id = pmm.participant_id',array('participantCount' => new Zend_Db_Expr("SUM(IF(p.participant_id!='',1,0))"),'p.participant_id'))
 				    ->group('u.dm_id');
+
+        $authNameSpace = new Zend_Session_Namespace('administrators');
+        if($authNameSpace->is_ptcc_coordinator) {
+            $sQuery = $sQuery->where("p.country IN (".implode(",",$authNameSpace->countries).") OR u.created_by = ".$authNameSpace->admin_id);
+        }
 
         if (isset($sWhere) && $sWhere != "") {
             $sQuery = $sQuery->where($sWhere);
@@ -129,10 +130,7 @@ class Application_Model_DbTable_DataManagers extends Zend_Db_Table_Abstract {
             $sQuery = $sQuery->limit($sLimit, $sOffset);
         }
 
-        //die($sQuery);
-
         $rResult = $this->getAdapter()->fetchAll($sQuery);
-
 
         /* Data set length after filtering */
         $sQuery = $sQuery->reset(Zend_Db_Select::LIMIT_COUNT);
@@ -157,13 +155,7 @@ class Application_Model_DbTable_DataManagers extends Zend_Db_Table_Abstract {
         
         foreach ($rResult as $aRow) {
             $row = array();
-	    //if(isset($aRow['participant_id'])&& $aRow['participant_id']!=''){
-	    //$participantDetails='<a href="javascript:void(0);" onclick="layoutModal(\'/admin/participants/view-participants/id/'.$aRow['participant_id'].'\',\'980\',\'500\');" class="btn btn-primary btn-xs"><i class="icon-search"></i></a>';
-	    //}else{
-	    //$participantDetails='';
-	    //}
             $row[] = $aRow['institute'];
-	   // $row[] = $participantDetails.' '.$aRow['institute'];
             $row[] = $aRow['first_name']; 
             $row[] = $aRow['last_name']; 
             $row[] = $aRow['mobile'];
@@ -171,10 +163,8 @@ class Application_Model_DbTable_DataManagers extends Zend_Db_Table_Abstract {
             $row[] = '<a href="javascript:void(0);" onclick="layoutModal(\'/admin/participants/view-participants/id/'.$aRow['dm_id'].'\',\'980\',\'500\');" >'.$aRow['participantCount'].'</a>';
             $row[] = $aRow['status'];
             $row[] = '<a href="/admin/data-managers/edit/id/' . $aRow['dm_id'] . '" class="btn btn-warning btn-xs" style="margin-right: 2px;"><i class="icon-pencil"></i> Edit</a>';
-
             $output['aaData'][] = $row;
         }
-
         echo json_encode($output);
     }    
     
