@@ -1,16 +1,27 @@
 <?php
 
-class Api_LoginController extends Zend_Controller_Action {
+class Api_AuthController extends Zend_Controller_Action {
     public function init() {
         $this->_helper->layout()->setLayout('api');
     }
 
     public function indexAction() {
+        $authNameSpace = new Zend_Session_Namespace('datamanagers');
+        if (isset($authNameSpace->dm_id) && intval($authNameSpace->dm_id) > 0) {
+            $this->getResponse()->setBody('Signed In As ' . $authNameSpace->first_name . ' ' . $authNameSpace->last_name);
+            $this->getResponse()->setHttpResponseCode(200);
+        } else {
+            $this->getResponse()->setBody('Not Signed In');
+            $this->getResponse()->setHttpResponseCode(200);
+        }
+    }
+
+    public function signInAction() {
         if ($this->getRequest()->isPost()) {
             $params = Zend_Json::decode($this->getRequest()->getRawBody());
-            error_log(serialize($params), 0);
             $params['username'] = trim($params['username']);
             $params['password'] = trim($params['password']);
+            $rememberMe = isset($params['rememberMe']) ? boolval(trim($params['rememberMe'])) : false;
             $db = Zend_Db_Table_Abstract::getDefaultAdapter();
             $adapter = new Zend_Auth_Adapter_DbTable($db, "data_manager", "primary_email", "password");
             $adapter->setIdentity($params['username']);
@@ -23,7 +34,7 @@ class Api_LoginController extends Zend_Controller_Action {
             $res = $auth->authenticate($adapter); // -- METHOD 2 to authenticate , seems to work fine for me
 
             if ($res->isValid()){
-                Zend_Session::rememberMe(60 * 60 * 5); // asking the session to be active for 5 hours
+                Zend_Session::rememberMe($rememberMe ? (60 * 60) : (60 * 60 * 24 * 30)); // asking the session to be active for 1 hour or 30 days
                 $rs = $adapter->getResultRowObject();
                 $authNameSpace = new Zend_Session_Namespace('datamanagers');
                 $authNameSpace->UserID = $params['username'];
@@ -40,15 +51,22 @@ class Api_LoginController extends Zend_Controller_Action {
                 $userService = new Application_Service_DataManagers();
                 $userService->updateLastLogin($rs->dm_id);
 
-                $this->getResponse()->setBody('Signed in as '.$authNameSpace->first_name.' '.$authNameSpace->last_name);
+                $this->getResponse()->setBody('Signed In As '.$authNameSpace->first_name.' '.$authNameSpace->last_name);
                 $this->getResponse()->setHttpResponseCode(200);
             } else {
                 Zend_Auth::getInstance()->clearIdentity();
-                $this->getResponse()->setBody('Sorry. Unable to sign you in. Please check your credentials');
+                $this->getResponse()->setBody('Sorry. Unable To Sign You In. Please Check Your Credentials');
                 $this->getResponse()->setHttpResponseCode(401);
                 Zend_Session::namespaceUnset('datamanagers');
             }
         }
+    }
+
+    public function signOutAction() {
+        Zend_Auth::getInstance()->clearIdentity();
+        $this->getResponse()->setBody('Signed Out');
+        $this->getResponse()->setHttpResponseCode(200);
+        Zend_Session::namespaceUnset('datamanagers');
     }
 }
 

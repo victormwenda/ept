@@ -14,11 +14,12 @@ class Api_ShipmentsController extends Zend_Controller_Action {
             $this->getResponse()->setHttpResponseCode(401);
             Zend_Session::namespaceUnset('datamanagers');
         } else {
-            $params = array(
-                "sEcho" => "1"
-            );
+            $this->getResponse()->setHeader("Content-Type", "application/json");
             $shipmentService = new Application_Service_Shipments();
-            $shipmentService->getAllShipmentForm($params);
+            $shipmentService->getShipmentCurrent(array(
+                "currentType" => "active",
+                "forMobileApp" => true
+            ));
         }
     }
 }

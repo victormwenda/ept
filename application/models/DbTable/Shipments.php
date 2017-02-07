@@ -221,7 +221,6 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
          * you want to insert a non-database field (for example a counter or static image)
          */
-
         $aColumns = array('DATE_FORMAT(shipment_date,"%d-%b-%Y")', 'scheme_name', 'shipment_code','unique_identifier', 'first_name', 'DATE_FORMAT(lastdate_response,"%d-%b-%Y")', 'DATE_FORMAT(spm.shipment_test_report_date,"%d-%b-%Y")');
         $orderColumns = array('shipment_date','scheme_name','shipment_code','unique_identifier', 'first_name', 'lastdate_response', 'spm.shipment_test_report_date');
 
@@ -241,7 +240,6 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
         /*
          * Ordering
          */
-
 		$sOrder = "";
         if (isset($parameters['iSortCol_0'])) {
             for ($i = 0; $i < intval($parameters['iSortingCols']); $i++) {
@@ -304,17 +302,12 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
                 ->join(array('p' => 'participant'), 'p.participant_id=spm.participant_id', array('p.unique_identifier','p.first_name', 'p.last_name'))
                 ->join(array('pmm' => 'participant_manager_map'), 'pmm.participant_id=p.participant_id')
                 ->where("pmm.dm_id=?", $this->_session->dm_id)
-                ->where("s.status='shipped' OR s.status='evaluated'")
-                //->where("year(s.shipment_date)  + 5 > year(CURDATE())")
-                //->where("s.lastdate_response >=  CURDATE()")
-        //->order('s.shipment_date')
-        //->order('spm.participant_id')
-        ;
-		
-		if(isset($parameters['currentType'])){
-			if($parameters['currentType'] == 'active'){
+                ->where("s.status='shipped' OR s.status='evaluated'");
+
+		if (isset($parameters['currentType'])) {
+			if ($parameters['currentType'] == 'active') {
 				$sQuery = $sQuery->where("s.response_switch = 'on'");
-			}else if ($parameters['currentType'] == 'inactive'){
+			} else if ($parameters['currentType'] == 'inactive') {
 				$sQuery = $sQuery->where("s.response_switch = 'off'");
 			}
 		}
@@ -330,7 +323,6 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
         if (isset($sLimit) && isset($sOffset)) {
             $sQuery = $sQuery->limit($sLimit, $sOffset);
         }
-        //echo($sQuery);die;
         $rResult = $this->getAdapter()->fetchAll($sQuery);
 
         /* Data set length after filtering */
@@ -346,14 +338,12 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
                 ->join(array('pmm' => 'participant_manager_map'), 'pmm.participant_id=p.participant_id', array(''))
                 ->where("pmm.dm_id=?", $this->_session->dm_id)
                 ->where("s.status='shipped' OR s.status='evaluated'")
-                ->where("year(s.shipment_date)  + 5 > year(CURDATE())")
-                //->where("s.lastdate_response >=  CURDATE()")
-				;
+                ->where("year(s.shipment_date)  + 5 > year(CURDATE())");
 
-		if(isset($parameters['currentType'])){
-			if($parameters['currentType'] == 'active'){
+		if (isset($parameters['currentType'])) {
+			if ($parameters['currentType'] == 'active') {
 				$sQuery = $sQuery->where("s.response_switch = 'on'");
-			}else if ($parameters['currentType'] == 'inactive'){
+			} else if ($parameters['currentType'] == 'inactive'){
 				$sQuery = $sQuery->where("s.response_switch = 'off'");
 			}
 		}
@@ -364,45 +354,60 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
          * Output
          */
         $output = array(
-            "sEcho" => intval($parameters['sEcho']),
             "iTotalRecords" => $iTotal,
             "iTotalDisplayRecords" => $iFilteredTotal,
             "aaData" => array()
         );
+        if (isset($parameters["sEcho"])) {
+            $output["sEcho"] = intval($parameters['sEcho']);
+        }
 
         $general = new Pt_Commons_General();
         $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
         foreach ($rResult as $aRow) {
-            $delete='';
-            $download='';
-            $isEditable=$shipmentParticipantDb->isShipmentEditable($aRow['shipment_id'],$aRow['participant_id']);
-            $row = array();
-            $row[] = $general->humanDateFormat($aRow['shipment_date']);
-            $row[] = ($aRow['scheme_name']);
-            $row[] = $aRow['shipment_code'];
-            $row[] = $aRow['unique_identifier'];
-            $row[] = $aRow['first_name'] . " " . $aRow['last_name'];
-            $row[] = $general->humanDateFormat($aRow['lastdate_response']);
-            $row[] = $general->humanDateFormat($aRow['RESPONSEDATE']);
-			
-			$buttonText = "View/Edit";
-			$download='';
-			$delete='';
-			if($isEditable){
-				if($aRow['RESPONSEDATE']!='' && $aRow['RESPONSEDATE']!='0000-00-00'){
-					if($this->_session->view_only_access=='no'){
-					$delete='<br/><a href="javascript:void(0);" onclick="removeSchemes(\'' . $aRow['scheme_type']. '\',\'' . base64_encode($aRow['map_id']) . '\')" class="btn btn-danger" style="margin:3px 0;"> <i class="icon icon-remove-sign"></i> Delete Response</a>';
-					}
-				}else{
-					$buttonText = "Enter Response";
-					$download='<br/><a href="/' . $aRow['scheme_type'] . '/download/sid/' . $aRow['shipment_id'] . '/pid/' . $aRow['participant_id'] . '/eid/' . $aRow['evaluation_status'] . '" class="btn btn-default"  style="margin:3px 0;" target="_BLANK" download > <i class="icon icon-download"></i> Download Form</a>';
-				}
-			}
-            
-			$row[] = '<a href="/' . $aRow['scheme_type'] . '/response/sid/' . $aRow['shipment_id'] . '/pid/' . $aRow['participant_id'] . '/eid/' . $aRow['evaluation_status'] . '" class="btn btn-success" style="margin:3px 0;"> <i class="icon icon-edit"></i>  '.$buttonText.' </a>'
-					.$delete
-					.$download;
-            
+            if (isset($parameters["forMobileApp"]) && $parameters["forMobileApp"]) {
+                $row = array(
+                    "shipmentDate" => $aRow['shipment_date'],
+                    "schemeType" => $aRow['scheme_type'],
+                    "schemeName" => $aRow['scheme_name'],
+                    "shipmentId" => base64_encode($aRow['shipment_id']),
+                    "shipmentCode" => $aRow['shipment_code'],
+                    "participantId" => base64_encode($aRow['participant_id']),
+                    "participantCode" => $aRow["unique_identifier"],
+                    "fullName" => $aRow['first_name'] . " " . $aRow['last_name'],
+                    "deadlineDate" => $aRow['lastdate_response'],
+                    "responseDate" => $aRow['RESPONSEDATE'],
+                    "evaluationStatus" => $aRow['evaluation_status']
+                );
+            } else {
+                $isEditable=$shipmentParticipantDb->isShipmentEditable($aRow['shipment_id'],$aRow['participant_id']);
+                $row = array();
+                $row[] = $general->humanDateFormat($aRow['shipment_date']);
+                $row[] = ($aRow['scheme_name']);
+                $row[] = $aRow['shipment_code'];
+                $row[] = $aRow['unique_identifier'];
+                $row[] = $aRow['first_name'] . " " . $aRow['last_name'];
+                $row[] = $general->humanDateFormat($aRow['lastdate_response']);
+                $row[] = $general->humanDateFormat($aRow['RESPONSEDATE']);
+
+                $buttonText = "View/Edit";
+                $download = '';
+                $delete = '';
+                if ($isEditable) {
+                    if ($aRow['RESPONSEDATE'] != '' && $aRow['RESPONSEDATE'] != '0000-00-00') {
+                        if ($this->_session->view_only_access == 'no') {
+                            $delete = '<br/><a href="javascript:void(0);" onclick="removeSchemes(\'' . $aRow['scheme_type'] . '\',\'' . base64_encode($aRow['map_id']) . '\')" class="btn btn-danger" style="margin:3px 0;"> <i class="icon icon-remove-sign"></i> Delete Response</a>';
+                        }
+                    } else {
+                        $buttonText = "Enter Response";
+                        $download = '<br/><a href="/' . $aRow['scheme_type'] . '/download/sid/' . $aRow['shipment_id'] . '/pid/' . $aRow['participant_id'] . '/eid/' . $aRow['evaluation_status'] . '" class="btn btn-default"  style="margin:3px 0;" target="_BLANK" download > <i class="icon icon-download"></i> Download Form</a>';
+                    }
+                }
+
+                $row[] = '<a href="/' . $aRow['scheme_type'] . '/response/sid/' . $aRow['shipment_id'] . '/pid/' . $aRow['participant_id'] . '/eid/' . $aRow['evaluation_status'] . '" class="btn btn-success" style="margin:3px 0;"> <i class="icon icon-edit"></i>  ' . $buttonText . ' </a>'
+                    . $delete
+                    . $download;
+            }
 
             $output['aaData'][] = $row;
         }
@@ -1695,10 +1700,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
 			->join(array('pmm' => 'participant_manager_map'), 'pmm.participant_id=p.participant_id')
 			->where("pmm.dm_id=?", $this->_session->dm_id)
 			->where("s.scheme_type=?", $parameters['scheme']);
-        //->order('s.shipment_date')
-        //->order('spm.participant_id')
-       // error_log($this->_session->dm_id);
-        //echo $sQuery;die;
+
         if (isset($sWhere) && $sWhere != "") {
             $sQuery = $sQuery->where($sWhere);
         }

@@ -499,8 +499,10 @@
           <apisDirectory enabled="false"/>
           <configsDirectory enabled="false"/>
           <controllersDirectory>
-            <controllerFile controllerName="Login">
+            <controllerFile controllerName="Auth">
               <actionMethod actionName="index"/>
+              <actionMethod actionName="signIn"/>
+              <actionMethod actionName="signOut"/>
             </controllerFile>
             <controllerFile controllerName="Shipments">
               <actionMethod actionName="index"/>
@@ -516,6 +518,8 @@
           <viewsDirectory>
             <viewScriptsDirectory>
               <viewControllerScriptsDirectory forControllerName="Login">
+                <viewScriptFile forActionName="index"/>
+                <viewScriptFile forActionName="index"/>
                 <viewScriptFile forActionName="index"/>
               </viewControllerScriptsDirectory>
               <viewControllerScriptsDirectory forControllerName="Shipments">
