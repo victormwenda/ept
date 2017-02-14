@@ -16,10 +16,11 @@ class Api_ShipmentsController extends Zend_Controller_Action {
         } else {
             $this->getResponse()->setHeader("Content-Type", "application/json");
             $shipmentService = new Application_Service_Shipments();
-            $shipmentService->getShipmentCurrent(array(
-                "currentType" => "active",
-                "forMobileApp" => true
-            ));
+            $shipmentService->getShipmentCurrent(array_merge(
+                array(
+                    "currentType" => "active",
+                    "forMobileApp" => true
+                ), $this->getRequest()->getParams()));
         }
     }
 }

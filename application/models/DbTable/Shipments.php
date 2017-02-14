@@ -311,6 +311,16 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
 				$sQuery = $sQuery->where("s.response_switch = 'off'");
 			}
 		}
+        if (isset($parameters['received'])) {
+            if ($parameters['received'] == 'yes') {
+                $sQuery = $sQuery->where("spm.shipment_receipt_date IS NOT NULL");
+            } else {
+                $sQuery = $sQuery->where("spm.shipment_receipt_date IS NULL");
+            }
+        }
+        if (isset($parameters["forMobileApp"]) && $parameters["forMobileApp"]) {
+            $sQuery = $sQuery->where("s.scheme_type = 'tb'");
+        }
 
         if (isset($sWhere) && $sWhere != "") {
             $sQuery = $sQuery->where($sWhere);
@@ -323,6 +333,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
         if (isset($sLimit) && isset($sOffset)) {
             $sQuery = $sQuery->limit($sLimit, $sOffset);
         }
+
         $rResult = $this->getAdapter()->fetchAll($sQuery);
 
         /* Data set length after filtering */
@@ -338,7 +349,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
                 ->join(array('pmm' => 'participant_manager_map'), 'pmm.participant_id=p.participant_id', array(''))
                 ->where("pmm.dm_id=?", $this->_session->dm_id)
                 ->where("s.status='shipped' OR s.status='evaluated'")
-                ->where("year(s.shipment_date)  + 5 > year(CURDATE())");
+                ->where("year(s.shipment_date) + 5 > year(CURDATE())");
 
 		if (isset($parameters['currentType'])) {
 			if ($parameters['currentType'] == 'active') {
@@ -347,6 +358,16 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
 				$sQuery = $sQuery->where("s.response_switch = 'off'");
 			}
 		}
+        if (isset($parameters['received'])) {
+            if ($parameters['received'] == 'yes') {
+                $sQuery = $sQuery->where("spm.shipment_receipt_date IS NOT NULL");
+            } else {
+                $sQuery = $sQuery->where("spm.shipment_receipt_date IS NULL");
+            }
+        }
+        if (isset($parameters["forMobileApp"]) && $parameters["forMobileApp"]) {
+            $sQuery = $sQuery->where("s.scheme_type = 'tb'");
+        }
         $aResultTotal = $this->getAdapter()->fetchAll($sQuery);
         $iTotal = count($aResultTotal);
 
