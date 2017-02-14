@@ -1280,6 +1280,14 @@ class Application_Service_Shipments {
 			'shipment_id = ' . $params['shipmentId']);
     }
 
+    public function receiveShipment($params) {
+        $dbAdapter = Zend_Db_Table_Abstract::getDefaultAdapter();
+
+        $dbAdapter->update('shipment_participant_map',
+            array('shipment_receipt_date' => $params['shipment_receipt_date']),
+            'shipment_id = ' . $params['shipment_id'] . ' AND participant_id = '. $params['participant_id']);
+    }
+
     public function getShipmentOverview($parameters) {
         $shipmentDb = new Application_Model_DbTable_Shipments();
         return $shipmentDb->getShipmentOverviewDetails($parameters);

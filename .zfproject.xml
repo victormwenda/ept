@@ -506,6 +506,7 @@
             </controllerFile>
             <controllerFile controllerName="Shipments">
               <actionMethod actionName="index"/>
+              <actionMethod actionName="receive"/>
             </controllerFile>
           </controllersDirectory>
           <formsDirectory enabled="false"/>
@@ -519,11 +520,10 @@
             <viewScriptsDirectory>
               <viewControllerScriptsDirectory forControllerName="Login">
                 <viewScriptFile forActionName="index"/>
-                <viewScriptFile forActionName="index"/>
-                <viewScriptFile forActionName="index"/>
               </viewControllerScriptsDirectory>
               <viewControllerScriptsDirectory forControllerName="Shipments">
                 <viewScriptFile forActionName="index"/>
+                <viewScriptFile forActionName="receive"/>
               </viewControllerScriptsDirectory>
             </viewScriptsDirectory>
             <viewHelpersDirectory/>

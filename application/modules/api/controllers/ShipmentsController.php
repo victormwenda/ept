@@ -23,6 +23,25 @@ class Api_ShipmentsController extends Zend_Controller_Action {
                 ), $this->getRequest()->getParams()));
         }
     }
+
+    public function receiveAction() {
+        $authNameSpace = new Zend_Session_Namespace('datamanagers');
+        if (!isset($authNameSpace->dm_id)) {
+            $this->getResponse()->setHttpResponseCode(401);
+            Zend_Session::namespaceUnset('datamanagers');
+        } else {
+            if ($this->getRequest()->isPut()) {
+                $params = Zend_Json::decode($this->getRequest()->getRawBody());
+                $params['shipment_id'] = intval(base64_decode(trim($params['shipmentId'])));
+                $params['participant_id'] = intval(base64_decode(trim($params['participantId'])));
+                $params['shipment_receipt_date'] = Pt_Commons_General::dateFormat($params['dateReceived']);
+                $shipmentService = new Application_Service_Shipments();
+                $shipmentService->receiveShipment($params);
+                $this->getResponse()->setBody('OK');
+                $this->getResponse()->setHttpResponseCode(200);
+            }
+        }
+    }
 }
 
 
