@@ -955,6 +955,8 @@ class Application_Service_Shipments {
                 $db->delete("reference_result_vl", 'shipment_id=' . $sid);
             } else if ($row['scheme_type'] == 'eid') {
                 $db->delete("reference_result_eid", 'shipment_id=' . $sid);
+            } else if ($row['scheme_type'] == 'tb') {
+                $db->delete("reference_result_tb", 'shipment_id=' . $sid);
             }
 
             $shipmentParticipantMap = new Application_Model_DbTable_ShipmentParticipantMap();
