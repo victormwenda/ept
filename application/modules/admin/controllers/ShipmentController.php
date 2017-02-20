@@ -36,9 +36,24 @@ class Admin_ShipmentController extends Zend_Controller_Action {
         } else {
             $this->view->selectedDistribution = "";
         }
-        $this->view->tbShipments = $shipmentService->getShipmentsForScheme('tb');
         $distro = new Application_Service_Distribution();
-        $this->view->unshippedDistro = $distro->getUnshippedDistributions();
+        $unshippedDistributions = $distro->getUnshippedDistributions();
+        $tbShipments = $shipmentService->getShipmentsForScheme('tb');
+        $unshippedDistributionsArray = array();
+        foreach ($unshippedDistributions as $dist) {
+            array_push($unshippedDistributionsArray, iterator_to_array($dist));
+        }
+        for ($i = 0; $i < count($unshippedDistributionsArray); $i++) {
+            $distributionShipmentCodes = array();
+            foreach ($tbShipments as $tbShipment) {
+                if ($tbShipment['distribution_id'] == $unshippedDistributionsArray[$i]['distribution_id']) {
+                    array_push($distributionShipmentCodes, $tbShipment['shipment_code']);
+                }
+            }
+            $unshippedDistributionsArray[$i]['shipment_codes'] = $distributionShipmentCodes;
+        }
+        $this->view->tbShipments = $tbShipments;
+        $this->view->unshippedDistro = $unshippedDistributionsArray;
     }
 
     public function addAction() {
