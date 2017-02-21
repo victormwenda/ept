@@ -525,7 +525,7 @@ class Application_Service_Shipments {
         );
         $attributes = json_encode($attributes);
         $data = array(
-            "shipment_receipt_date" => Pt_Commons_General::dateFormat($params['receiptDate']),
+            "shipment_receipt_date" => Pt_Commons_General::dateFormat($params['dateReceived']),
             "shipment_test_date" => Pt_Commons_General::dateFormat($params['testDate']),
             "attributes" => $attributes,
             "mode_id" => $params['modeOfReceipt'],
