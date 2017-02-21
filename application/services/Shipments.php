@@ -515,7 +515,7 @@ class Application_Service_Shipments {
         $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
         $authNameSpace = new Zend_Session_Namespace('datamanagers');
         $attributes = array(
-            "sample_rehydration_date" => Pt_Commons_General::dateFormat($params['sampleRehydrationDate']),
+            "sample_rehydration_date" => $this->formatDate($params['sampleRehydrationDate']),
             "mtb_rif_kit_lot_no" => $params['mtbRifKitLotNo'],
             "expiry_date" => $params['expiryDate'],
             "assay" => $params['assay'],
@@ -525,22 +525,22 @@ class Application_Service_Shipments {
         );
         $attributes = json_encode($attributes);
         $data = array(
-            "shipment_receipt_date" => Pt_Commons_General::dateFormat($params['dateReceived']),
-            "shipment_test_date" => Pt_Commons_General::dateFormat($params['testDate']),
+            "shipment_receipt_date" => $this->formatDate($params['dateReceived']),
+            "shipment_test_date" => $this->formatDate($params['testDate']),
             "attributes" => $attributes,
             "mode_id" => $params['modeOfReceipt'],
             "updated_by_user" => $authNameSpace->dm_id,
             "updated_on_user" => new Zend_Db_Expr('now()')
         );
         if (isset($params['testReceiptDate']) && trim($params['testReceiptDate'])!= '') {
-            $data['shipment_test_report_date'] = Pt_Commons_General::dateFormat($params['testReceiptDate']);
+            $data['shipment_test_report_date'] = $this->formatDate($params['testReceiptDate']);
         } else {
             $data['shipment_test_report_date'] = new Zend_Db_Expr('now()');
         }
         if (isset($authNameSpace->qc_access) && $authNameSpace->qc_access =='yes') {
             $data['qc_done'] = $params['qcDone'];
             if (isset($data['qc_done']) && trim($data['qc_done'])=="yes") {
-                $data['qc_date'] = Pt_Commons_General::dateFormat($params['qcDate']);
+                $data['qc_date'] = $this->formatDate($params['qcDate']);
                 $data['qc_done_by'] = trim($params['qcDoneBy']);
                 $data['qc_created_on'] = new Zend_Db_Expr('now()');
             } else {
@@ -568,8 +568,8 @@ class Application_Service_Shipments {
                 $params['instrumentSerial'] != "") {
                 $instrumentDetails = array(
                     'instrument_serial' => $params['instrumentSerial'],
-                    'instrument_installed_on' => $params['instrumentInstalledOn'],
-                    'instrument_last_calibrated_on' => $params['instrumentLastCalibratedOn']
+                    'instrument_installed_on' => $this->formatDate($params['instrumentInstalledOn']),
+                    'instrument_last_calibrated_on' => $this->formatDate($params['instrumentLastCalibratedOn'])
                 );
                 $instrumentsDb->upsertInstrument($params['participantId'], $instrumentDetails);
             }
@@ -596,11 +596,18 @@ class Application_Service_Shipments {
             "updated_on_user" => new Zend_Db_Expr('now()')
         );
         if (isset($params['testReceiptDate']) && trim($params['testReceiptDate'])!= '') {
-            $data['shipment_test_report_date'] = Pt_Commons_General::dateFormat($params['testReceiptDate']);
+            $data['shipment_test_report_date'] = $this->formatDate($params['testReceiptDate']);
         } else {
             $data['shipment_test_report_date'] = new Zend_Db_Expr('now()');
         }
         $shipmentParticipantDb->updateShipmentValues($data, $params['smid']);
+    }
+
+    private function formatDate($dateVal) {
+        if (isset($dateVal) && $dateVal != "") {
+            return Pt_Commons_General::dateFormat($dateVal);
+        }
+        return null;
     }
 
     public function updateTbResults($params) {

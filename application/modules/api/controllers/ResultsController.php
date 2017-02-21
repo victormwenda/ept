@@ -134,6 +134,7 @@ class Api_ResultsController extends Zend_Controller_Action {
                     'supervisorApproval' => $shipment['supervisor_approval'],
                     'participantSupervisor' => $shipment['participant_supervisor'],
                     'userComments' => $shipment['user_comment'],
+                    'testReceiptDate' => $this->formatDate($shipment['shipment_test_report_date']),
                     'dateReceived' => $this->formatDate($shipment['shipment_receipt_date']),
                     'smid' => $shipment['map_id']
                 );
