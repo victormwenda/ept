@@ -83,7 +83,7 @@ class Application_Service_Schemes {
         return $response;
     }
 
-    public function getTbAssay() {
+    public function getTbAssayReferenceMap() {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $res = $db->fetchAll($db->select()->from('r_tb_assay'));
         $response = array();
@@ -243,6 +243,20 @@ class Application_Service_Schemes {
         return $db->fetchAll($sql);
     }
 
+    public function getTbSampleIds($sId, $pId) {
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $sql = $db->select()->from(array('ref' => 'reference_result_tb'), array('sample_id'))
+            ->join(array('sp' => 'shipment_participant_map'), 'ref.shipment_id=sp.shipment_id')
+            ->where('sp.shipment_id = ? ', $sId)
+            ->where('sp.participant_id = ? ', $pId);
+        $res = $db->fetchAll($sql);
+        $response = array();
+        foreach ($res as $row) {
+            array_push($response, $row['sample_id']);
+        }
+        return $response;
+    }
+
     public function getTbSamples($sId, $pId) {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sql = $db->select()->from(array('ref' => 'reference_result_tb'),
@@ -285,6 +299,51 @@ class Application_Service_Schemes {
             ->where('sp.shipment_id = ? ', $sId)
             ->where('sp.participant_id = ? ', $pId);
         return $db->fetchAll($sql);
+    }
+
+    public function getTbSample($shipmentId, $participantId, $sampleId) {
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $sql = $db->select()->from(array('ref' => 'reference_result_tb'),
+            array(
+                'sample_label', 'mandatory', 'sample_id', 'control',
+                'ref_mtb_detected' => 'ref.mtb_detected',
+                'ref_rif_resistance' => 'ref.rif_resistance',
+                'ref_probe_d' => 'ref.probe_d',
+                'ref_probe_c' => 'ref.probe_c',
+                'ref_probe_e' => 'ref.probe_e',
+                'ref_probe_b' => 'ref.probe_b',
+                'ref_spc' => 'ref.spc',
+                'ref_probe_a' => 'ref.probe_a',
+                'ref_sample_score' => 'ref.sample_score'
+            ))
+            ->join(array('s' => 'shipment'), 's.shipment_id=ref.shipment_id')
+            ->join(array('sp' => 'shipment_participant_map'), 's.shipment_id=sp.shipment_id')
+            ->joinLeft(array('res' => 'response_result_tb'),
+                'res.shipment_map_id = sp.map_id and res.sample_id = ref.sample_id',
+                array(
+                    'res_date_tested' => 'res.date_tested',
+                    'res_mtb_detected' => 'res.mtb_detected',
+                    'res_rif_resistance' => 'res.rif_resistance',
+                    'res_error_code' => 'res.error_code',
+                    'res_instrument_serial' => 'res.instrument_serial',
+                    'res_instrument_installed_on' => 'res.instrument_installed_on',
+                    'res_instrument_last_calibrated_on' => 'res.instrument_last_calibrated_on',
+                    'res_module_name' => 'res.module_name',
+                    'res_instrument_user' => 'res.instrument_user',
+                    'res_cartridge_expiration_date' => 'res.cartridge_expiration_date',
+                    'res_reagent_lot_id' => 'res.reagent_lot_id',
+                    'res_probe_d' => 'res.probe_d',
+                    'res_probe_c' => 'res.probe_c',
+                    'res_probe_e' => 'res.probe_e',
+                    'res_probe_b' => 'res.probe_b',
+                    'res_spc' => 'res.spc',
+                    'res_probe_a' => 'res.probe_a',
+                    'responseDate' => 'res.created_on'
+                ))
+            ->where('sp.shipment_id = ? ', $shipmentId)
+            ->where('sp.participant_id = ? ', $participantId)
+            ->where('ref.sample_id = ? ', $sampleId);
+        return $db->fetchRow($sql);
     }
 
     public function getVlRange($sId,$sampleId = null) {

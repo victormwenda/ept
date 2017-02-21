@@ -71,6 +71,10 @@ class Application_Model_DbTable_ShipmentParticipantMap extends Zend_Db_Table_Abs
         return $this->update($params, "map_id = " . $shipmentMapId);
     }
 
+    public function updateShipmentValues($params, $shipmentMapId) {
+        return $this->update($params, "map_id = " . $shipmentMapId);
+    }
+
     public function removeShipmentMapDetails($params, $mapId) {
         $row = $this->fetchRow("map_id = " . $mapId);
         if ($row != "") {

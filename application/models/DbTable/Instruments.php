@@ -30,6 +30,20 @@ class Application_Model_DbTable_Instruments extends Zend_Db_Table_Abstract {
         return $response;
     }
 
+    public function getInstrumentsReferenceMap($pid = null) {
+        $instruments = $this->getInstruments($pid);
+        $response = array();
+        foreach ($instruments as $instrumentId => $instrumentDetails) {
+            $response[$instrumentId] = array(
+                'participantId' => $instrumentDetails['participant_id'],
+                'instrumentSerial' => $instrumentDetails['instrument_serial'],
+                'instrumentInstalledOn' => $instrumentDetails['instrument_installed_on'],
+                'instrumentLastCalibratedOn' => $instrumentDetails['instrument_last_calibrated_on']
+            );
+        }
+        return $response;
+    }
+
     public function upsertInstrument($pid, $params) {
         $authNameSpace = new Zend_Session_Namespace('datamanagers');
         $dataManagerId = $authNameSpace->dm_id;

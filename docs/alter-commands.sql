@@ -2343,3 +2343,18 @@ CREATE TABLE `ptcc_country_map` (
 	CONSTRAINT `ptcc_country_map_ibfk_1` FOREIGN KEY (`admin_id`) REFERENCES `system_admin` (`admin_id`) ON DELETE CASCADE,
 	CONSTRAINT `ptcc_country_map_ibfk_2` FOREIGN KEY (`country_id`) REFERENCES `countries` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- Bryan Richards: 20 Feb 2017
+CREATE TABLE `push_notification_token` (
+	`push_notification_token_id` int(11) NOT NULL AUTO_INCREMENT,
+	`dm_id` int(11) NOT NULL,
+	`platform` varchar(20) NOT NULL,
+	`push_notification_token` varchar(255) NOT NULL,
+	`last_seen` datetime DEFAULT NULL,
+	`updated_on` datetime DEFAULT NULL,
+	`created_on` datetime DEFAULT NULL,
+	PRIMARY KEY (`push_notification_token_id`),
+	KEY `dm_id` (`dm_id`),
+	KEY `push_notification_token` (`push_notification_token`),
+	CONSTRAINT `dm_id` FOREIGN KEY (`dm_id`) REFERENCES `data_manager` (`dm_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;

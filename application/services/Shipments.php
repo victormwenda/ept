@@ -508,6 +508,101 @@ class Application_Service_Shipments {
         }
     }
 
+    public function updateTbResultHeader($params) {
+        if (!$this->isShipmentEditable($params['shipmentId'], $params['participantId'])) {
+            return false;
+        }
+        $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
+        $authNameSpace = new Zend_Session_Namespace('datamanagers');
+        $attributes = array(
+            "sample_rehydration_date" => Pt_Commons_General::dateFormat($params['sampleRehydrationDate']),
+            "mtb_rif_kit_lot_no" => $params['mtbRifKitLotNo'],
+            "expiry_date" => $params['expiryDate'],
+            "assay" => $params['assay'],
+            "count_tests_conducted_over_month" => $params['countTestsConductedOverMonth'],
+            "count_errors_encountered_over_month" => $params['countErrorsEncounteredOverMonth'],
+            "error_codes_encountered_over_month" => $params['errorCodesEncounteredOverMonth']
+        );
+        $attributes = json_encode($attributes);
+        $data = array(
+            "shipment_receipt_date" => Pt_Commons_General::dateFormat($params['receiptDate']),
+            "shipment_test_date" => Pt_Commons_General::dateFormat($params['testDate']),
+            "attributes" => $attributes,
+            "mode_id" => $params['modeOfReceipt'],
+            "updated_by_user" => $authNameSpace->dm_id,
+            "updated_on_user" => new Zend_Db_Expr('now()')
+        );
+        if (isset($params['testReceiptDate']) && trim($params['testReceiptDate'])!= '') {
+            $data['shipment_test_report_date'] = Pt_Commons_General::dateFormat($params['testReceiptDate']);
+        } else {
+            $data['shipment_test_report_date'] = new Zend_Db_Expr('now()');
+        }
+        if (isset($authNameSpace->qc_access) && $authNameSpace->qc_access =='yes') {
+            $data['qc_done'] = $params['qcDone'];
+            if (isset($data['qc_done']) && trim($data['qc_done'])=="yes") {
+                $data['qc_date'] = Pt_Commons_General::dateFormat($params['qcDate']);
+                $data['qc_done_by'] = trim($params['qcDoneBy']);
+                $data['qc_created_on'] = new Zend_Db_Expr('now()');
+            } else {
+                $data['qc_date']=NULL;
+                $data['qc_done_by'] = NULL;
+                $data['qc_created_on'] = NULL;
+            }
+        }
+
+        $shipmentParticipantDb->updateShipmentValues($data, $params['smid']);
+    }
+
+    public function updateTbResult($params) {
+        if (!$this->isShipmentEditable($params['shipmentId'], $params['participantId'])) {
+            return false;
+        }
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $db->beginTransaction();
+        try {
+            $tbResponseDb = new Application_Model_DbTable_ResponseTb();
+            $tbResponseDb->updateResult($params);
+
+            $instrumentsDb = new Application_Model_DbTable_Instruments();
+            if (isset($params['instrumentSerial']) &&
+                $params['instrumentSerial'] != "") {
+                $instrumentDetails = array(
+                    'instrument_serial' => $params['instrumentSerial'],
+                    'instrument_installed_on' => $params['instrumentInstalledOn'],
+                    'instrument_last_calibrated_on' => $params['instrumentLastCalibratedOn']
+                );
+                $instrumentsDb->upsertInstrument($params['participantId'], $instrumentDetails);
+            }
+
+            $db->commit();
+        } catch (Exception $e) {
+            $db->rollBack();
+            error_log($e->getMessage());
+            error_log($e->getTraceAsString());
+        }
+    }
+
+    public function updateTbResultFooter($params) {
+        if (!$this->isShipmentEditable($params['shipmentId'], $params['participantId'])) {
+            return false;
+        }
+        $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
+        $authNameSpace = new Zend_Session_Namespace('datamanagers');
+        $data = array(
+            "supervisor_approval" => $params['supervisorApproval'],
+            "participant_supervisor" => $params['participantSupervisor'],
+            "user_comment" => $params['userComments'],
+            "updated_by_user" => $authNameSpace->dm_id,
+            "updated_on_user" => new Zend_Db_Expr('now()')
+        );
+        if (isset($params['testReceiptDate']) && trim($params['testReceiptDate'])!= '') {
+            $data['shipment_test_report_date'] = Pt_Commons_General::dateFormat($params['testReceiptDate']);
+        } else {
+            $data['shipment_test_report_date'] = new Zend_Db_Expr('now()');
+        }
+        $shipmentParticipantDb->updateShipmentValues($data, $params['smid']);
+    }
+
     public function updateTbResults($params) {
         if (!$this->isShipmentEditable($params['shipmentId'], $params['participantId'])) {
             return false;
@@ -535,6 +630,80 @@ class Application_Service_Shipments {
                 "participant_supervisor" => $params['participantSupervisor'],
                 "user_comment" => $params['userComments'],
 		        "mode_id" => $params['modeOfReceipt'],
+                "updated_by_user" => $authNameSpace->dm_id,
+                "updated_on_user" => new Zend_Db_Expr('now()')
+            );
+            if (isset($params['testReceiptDate']) && trim($params['testReceiptDate'])!= '') {
+                $data['shipment_test_report_date'] = Pt_Commons_General::dateFormat($params['testReceiptDate']);
+            } else {
+                $data['shipment_test_report_date'] = new Zend_Db_Expr('now()');
+            }
+            if (isset($authNameSpace->qc_access) && $authNameSpace->qc_access =='yes') {
+                $data['qc_done'] = $params['qcDone'];
+                if (isset($data['qc_done']) && trim($data['qc_done'])=="yes") {
+                    $data['qc_date'] = Pt_Commons_General::dateFormat($params['qcDate']);
+                    $data['qc_done_by'] = trim($params['qcDoneBy']);
+                    $data['qc_created_on'] = new Zend_Db_Expr('now()');
+                } else {
+                    $data['qc_date']=NULL;
+                    $data['qc_done_by'] = NULL;
+                    $data['qc_created_on'] = NULL;
+                }
+            }
+            $shipmentParticipantDb->updateShipment($data, $params['smid'], $params['hdLastDate']);
+
+            $tbResponseDb = new Application_Model_DbTable_ResponseTb();
+            $tbResponseDb->updateResults($params);
+
+            $sampleIds = $params['sampleId'];
+            $instrumentsDb = new Application_Model_DbTable_Instruments();
+            foreach ($sampleIds as $key => $sampleId) {
+                if (isset($params['instrumentSerial'][$key]) &&
+                    $params['instrumentSerial'][$key] != "") {
+                    $instrumentDetails = array(
+                        'instrument_serial' => $params['instrumentSerial'][$key],
+                        'instrument_installed_on' => $params['instrumentInstalledOn'][$key],
+                        'instrument_last_calibrated_on' => $params['instrumentLastCalibratedOn'][$key]
+                    );
+                    $instrumentsDb->upsertInstrument($params['participantId'], $instrumentDetails);
+                }
+            }
+
+            $db->commit();
+        } catch (Exception $e) {
+            $db->rollBack();
+            error_log($e->getMessage());
+            error_log($e->getTraceAsString());
+        }
+    }
+
+    public function updateTbResultsHeader($params) {
+        if (!$this->isShipmentEditable($params['shipmentId'], $params['participantId'])) {
+            return false;
+        }
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $db->beginTransaction();
+        try {
+            $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
+            $authNameSpace = new Zend_Session_Namespace('datamanagers');
+            $attributes = array(
+                "sample_rehydration_date" => Pt_Commons_General::dateFormat($params['sampleRehydrationDate']),
+                "mtb_rif_kit_lot_no" => $params['mtbRifKitLotNo'],
+                "expiry_date" => $params['expiryDate'],
+                "assay" => $params['assay'],
+                "count_tests_conducted_over_month" => $params['countTestsConductedOverMonth'],
+                "count_errors_encountered_over_month" => $params['countErrorsEncounteredOverMonth'],
+                "error_codes_encountered_over_month" => $params['errorCodesEncounteredOverMonth']
+            );
+            $attributes = json_encode($attributes);
+            $data = array(
+                "shipment_receipt_date" => Pt_Commons_General::dateFormat($params['receiptDate']),
+                "shipment_test_date" => Pt_Commons_General::dateFormat($params['testDate']),
+                "attributes" => $attributes,
+                "supervisor_approval" => $params['supervisorApproval'],
+                "participant_supervisor" => $params['participantSupervisor'],
+                "user_comment" => $params['userComments'],
+                "mode_id" => $params['modeOfReceipt'],
                 "updated_by_user" => $authNameSpace->dm_id,
                 "updated_on_user" => new Zend_Db_Expr('now()')
             );

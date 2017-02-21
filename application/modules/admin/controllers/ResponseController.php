@@ -66,7 +66,7 @@ class Admin_ResponseController extends Zend_Controller_Action
                 $this->view->scheme = $scheme = base64_decode($this->_getParam('scheme'));
                 $schemeService = new Application_Service_Schemes();
                 if ($scheme == 'tb') {
-                    $this->view->assays = $schemeService->getTbAssay();
+                    $this->view->assays = $schemeService->getTbAssayReferenceMap();
                 }
                 $responseService = new Application_Service_Response();
                 $this->view->responseData = $responseService->editResponse($sid,$pid,$scheme);

@@ -69,7 +69,7 @@ class Admin_EvaluateController extends Zend_Controller_Action {
                 $this->view->vlRange = $schemeService->getVlRange($sid);
                 $this->view->vlAssay = $schemeService->getVlAssay();
             } else if ($scheme == 'tb') {
-                $this->view->assays = $schemeService->getTbAssay();
+                $this->view->assays = $schemeService->getTbAssayReferenceMap();
             }
             $evalService = new Application_Service_Evaluation();
             $this->view->evaluateData = $evalService->viewEvaluation($sid,$pid,$scheme);
@@ -114,7 +114,7 @@ class Admin_EvaluateController extends Zend_Controller_Action {
                     $this->view->vlRange = $schemeService->getVlRange($sid);
                     $this->view->vlAssay = $schemeService->getVlAssay();
                 } else if ($scheme == 'tb') {
-                    $this->view->assays = $schemeService->getTbAssay();
+                    $this->view->assays = $schemeService->getTbAssayReferenceMap();
                 }
                 $evalService = new Application_Service_Evaluation();
                 $this->view->evaluateData = $evalService->editEvaluation($sid,$pid,$scheme);

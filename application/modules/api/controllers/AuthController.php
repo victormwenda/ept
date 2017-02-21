@@ -22,6 +22,8 @@ class Api_AuthController extends Zend_Controller_Action {
             $params['username'] = trim($params['username']);
             $params['password'] = trim($params['password']);
             $rememberMe = isset($params['rememberMe']) ? boolval(trim($params['rememberMe'])) : false;
+            $platform = $params['platform'];
+            $pushNotificationToken = $params['pushNotificationToken'];
             $db = Zend_Db_Table_Abstract::getDefaultAdapter();
             $adapter = new Zend_Auth_Adapter_DbTable($db, "data_manager", "primary_email", "password");
             $adapter->setIdentity($params['username']);
@@ -51,6 +53,11 @@ class Api_AuthController extends Zend_Controller_Action {
                 $userService = new Application_Service_DataManagers();
                 $userService->updateLastLogin($rs->dm_id);
 
+                if(isset($pushNotificationToken)) {
+                    $pushNotificationService = new Application_Service_PushNotifications();
+                    $pushNotificationService->registerToken($rs->dm_id, $platform, $pushNotificationToken);
+                }
+                
                 $this->getResponse()->setBody('Signed In As '.$authNameSpace->first_name.' '.$authNameSpace->last_name);
                 $this->getResponse()->setHttpResponseCode(200);
             } else {

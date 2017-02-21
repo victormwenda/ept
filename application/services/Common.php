@@ -214,7 +214,16 @@ class Application_Service_Common {
         $db = new Application_Model_DbTable_ModeOfReceipt();
         return $db->fetchAllModeOfReceipt();
     }
-    
+
+    public function getAllModeOfReceiptReferenceMap() {
+        $modesOfReceipt = $this->getAllModeOfReceipt();
+        $response = array();
+        foreach ($modesOfReceipt as $row) {
+            $response[$row['mode_id']] = $row['mode_name'];
+        }
+        return $response;
+    }
+
     public function updateHomeBanner($params) {
 	    $filterRules = array(
 	        '*' => 'StripTags',
