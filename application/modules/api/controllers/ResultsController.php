@@ -34,20 +34,20 @@ class Api_ResultsController extends Zend_Controller_Action {
                 $modesOfReceipt = $commonService->getAllModeOfReceiptReferenceMap();
 
                 $response = array(
-                    'sampleRehydrationDate' => Pt_Commons_General::dateFormat($shipment['attributes']['sample_rehydration_date']),
-	                'testDate' => Pt_Commons_General::dateFormat($shipment['shipment_test_date']),
+                    'sampleRehydrationDate' => $this->formatDate($shipment['attributes']['sample_rehydration_date']),
+	                'testDate' => $this->formatDate($shipment['shipment_test_date']),
                     'mtbRifKitLotNo' => $shipment['attributes']['mtb_rif_kit_lot_no'],
-	                'expiryDate' => Pt_Commons_General::dateFormat($shipment['attributes']['expiry_date']),
-	                'testReceiptDate' => Pt_Commons_General::dateFormat($shipment['shipment_test_report_date']),
+	                'expiryDate' => $this->formatDate($shipment['attributes']['expiry_date']),
+	                'testReceiptDate' => $this->formatDate($shipment['shipment_test_report_date']),
 	                'modeOfReceipt' => $shipment['mode_id'],
 	                'assay' => $shipment['attributes']['assay'],
 	                'countTestsConductedOverMonth' => $shipment['attributes']['count_tests_conducted_over_month'],
 	                'countErrorsEncounteredOverMonth' => $shipment['attributes']['count_errors_encountered_over_month'],
 	                'errorCodesEncounteredOverMonth' => $shipment['attributes']['error_codes_encountered_over_month'],
 	                'qcDone' => $shipment['qc_done'],
-	                'qcDate' => Pt_Commons_General::dateFormat($shipment['qc_date']),
+	                'qcDate' => $this->formatDate($shipment['qc_date']),
 	                'qcDoneBy' => $shipment['qc_done_by'],
-                    'dateReceived' => Pt_Commons_General::dateFormat($shipment['shipment_receipt_date']),
+                    'dateReceived' => $this->formatDate($shipment['shipment_receipt_date']),
 	                'smid' => $shipment['map_id'],
                     'assays' => $assays,
                     'modesOfReceipt' => $modesOfReceipt,
@@ -86,9 +86,9 @@ class Api_ResultsController extends Zend_Controller_Action {
                     'sampleId' => $sample['sample_id'],
                     'sampleLabel' => $sample['sample_label'],
                     'instrumentSerial' => $sample['res_instrument_serial'],
-                    'instrumentInstalledOn' => Pt_Commons_General::dateFormat($sample['res_instrument_installed_on']),
-                    'instrumentLastCalibratedOn' => Pt_Commons_General::dateFormat($sample['res_instrument_last_calibrated_on']),
-                    'dateTested' => Pt_Commons_General::dateFormat($sample['res_date_tested']),
+                    'instrumentInstalledOn' => $this->formatDate($sample['res_instrument_installed_on']),
+                    'instrumentLastCalibratedOn' => $this->formatDate($sample['res_instrument_last_calibrated_on']),
+                    'dateTested' => $this->formatDate($sample['res_date_tested']),
                     'mtbDetected' => $sample['res_mtb_detected'],
                     'rifResistance' => $sample['res_rif_resistance'],
                     'probeD' => $sample['res_probe_d'],
@@ -99,7 +99,7 @@ class Api_ResultsController extends Zend_Controller_Action {
                     'probeA' => $sample['res_probe_a'],
                     'moduleName' => $sample['res_reagent_lot_id'],
                     'instrumentUser' => $sample['res_instrument_user'],
-                    'cartridgeExpirationDate' => Pt_Commons_General::dateFormat($sample['res_cartridge_expiration_date']),
+                    'cartridgeExpirationDate' => $this->formatDate($sample['res_cartridge_expiration_date']),
                     'reagentLotId' => $sample['res_reagent_lot_id'],
                     'errorCode' => $sample['res_error_code'],
                     'smid' => $sample['map_id'],
@@ -134,13 +134,20 @@ class Api_ResultsController extends Zend_Controller_Action {
                     'supervisorApproval' => $shipment['supervisor_approval'],
                     'participantSupervisor' => $shipment['participant_supervisor'],
                     'userComments' => $shipment['user_comment'],
-                    'dateReceived' => Pt_Commons_General::dateFormat($shipment['shipment_receipt_date']),
+                    'dateReceived' => $this->formatDate($shipment['shipment_receipt_date']),
                     'smid' => $shipment['map_id']
                 );
 
                 echo json_encode($response);
             }
         }
+    }
+
+    private function formatDate($dateVal) {
+        if (isset($dateVal) && $dateVal != "") {
+            return Pt_Commons_General::dateFormat($dateVal);
+        }
+        return null;
     }
 }
 
