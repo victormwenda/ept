@@ -10,7 +10,7 @@ class Application_Model_DbTable_PushNotificationTokens extends Zend_Db_Table_Abs
         $sql = $db->select()
             ->from(array('pnt' => $this->_name))
             ->where('dm_id = '.$dataManagerId)
-            ->where('push_notification_token = '.$pushNotificationToken);
+            ->where('push_notification_token = \''.$pushNotificationToken.'\'');
         $tokens = $db->fetchAll($sql);
         if (count($tokens) > 0) {
             $this->update(array(
@@ -41,7 +41,7 @@ class Application_Model_DbTable_PushNotificationTokens extends Zend_Db_Table_Abs
         $db = $this->getAdapter();
         $sql = $db->select()
             ->from(array('pnt' => $this->_name))
-            ->where('push_notification_token = '.$pushNotificationToken);
+            ->where('push_notification_token = \''.$pushNotificationToken.'\'');
         return $db->fetchAll($sql);
     }
 }
