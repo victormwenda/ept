@@ -32,11 +32,21 @@ class Pt_Commons_General {
         }
     }
 
-    public static function dateFormatOrNull($date) {
+    public static function dbDateToString($date) {
         if (!isset($date) || $date == null || $date == "" || $date == "0000-00-00") {
             return null;
         }
-        return Pt_Commons_General::dateFormat($date);
+        $returnVal = date("d-M-Y", strtotime($date));
+        error_log($returnVal, 0);
+        error_log(Pt_Commons_General::stringToDbDate($returnVal), 0);
+        return $returnVal;
+    }
+
+    public static function stringToDbDate($date) {
+        if (!isset($date) || $date == null || $date == "" || $date == "0000-00-00") {
+            return null;
+        }
+        return date("Y-m-d", strtotime($date));
     }
 
     public static function humanDateFormat($date) {
@@ -54,13 +64,6 @@ class Pt_Commons_General {
         }
     }
 
-    public static function humanDateFormatOrNull($date) {
-        if ($date == null || $date == "" || $date == "0000-00-00") {
-            return null;
-        }
-        return Pt_Commons_General::humanDateFormat($date);
-    }
-
     public function getZendDateFormat($date) {
 
         if ($date == null || $date == "" || $date == "0000-00-00") {
@@ -72,13 +75,6 @@ class Pt_Commons_General {
 
             return $newDate;
         }
-    }
-
-    public function getZendDateFormatOrNull($date) {
-        if ($date == null || $date == "" || $date == "0000-00-00") {
-            return null;
-        }
-        return Pt_Commons_General::getZendDateFormat($date);
     }
 
     public static function file_download($file, $name, $mime_type) {
