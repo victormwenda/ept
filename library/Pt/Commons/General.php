@@ -32,6 +32,13 @@ class Pt_Commons_General {
         }
     }
 
+    public static function dateFormatOrNull($date) {
+        if (!isset($date) || $date == null || $date == "" || $date == "0000-00-00") {
+            return null;
+        }
+        return Pt_Commons_General::dateFormat($date);
+    }
+
     public static function humanDateFormat($date) {
 
         if ($date == null || $date == "" || $date == "0000-00-00") {
@@ -47,6 +54,13 @@ class Pt_Commons_General {
         }
     }
 
+    public static function humanDateFormatOrNull($date) {
+        if ($date == null || $date == "" || $date == "0000-00-00") {
+            return null;
+        }
+        return Pt_Commons_General::humanDateFormat($date);
+    }
+
     public function getZendDateFormat($date) {
 
         if ($date == null || $date == "" || $date == "0000-00-00") {
@@ -58,6 +72,13 @@ class Pt_Commons_General {
 
             return $newDate;
         }
+    }
+
+    public function getZendDateFormatOrNull($date) {
+        if ($date == null || $date == "" || $date == "0000-00-00") {
+            return null;
+        }
+        return Pt_Commons_General::getZendDateFormat($date);
     }
 
     public static function file_download($file, $name, $mime_type) {
