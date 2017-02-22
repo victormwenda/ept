@@ -36,10 +36,7 @@ class Pt_Commons_General {
         if (!isset($date) || $date == null || $date == "" || $date == "0000-00-00") {
             return null;
         }
-        $returnVal = date("d-M-Y", strtotime($date));
-        error_log($returnVal, 0);
-        error_log(Pt_Commons_General::stringToDbDate($returnVal), 0);
-        return $returnVal;
+        return date("d-M-Y", strtotime($date));
     }
 
     public static function stringToDbDate($date) {
