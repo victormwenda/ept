@@ -37,8 +37,8 @@ class Application_Model_DbTable_Instruments extends Zend_Db_Table_Abstract {
             $response[$instrumentId] = array(
                 'participantId' => $instrumentDetails['participant_id'],
                 'instrumentSerial' => $instrumentDetails['instrument_serial'],
-                'instrumentInstalledOn' => $instrumentDetails['instrument_installed_on'],
-                'instrumentLastCalibratedOn' => $instrumentDetails['instrument_last_calibrated_on']
+                'instrumentInstalledOn' => Pt_Commons_General::dbDateToString($instrumentDetails['instrument_installed_on']),
+                'instrumentLastCalibratedOn' => Pt_Commons_General::dbDateToString($instrumentDetails['instrument_last_calibrated_on'])
             );
         }
         return $response;
@@ -69,11 +69,11 @@ class Application_Model_DbTable_Instruments extends Zend_Db_Table_Abstract {
                 );
                 if (isset($params['instrument_installed_on']) &&
                     $params['instrument_installed_on'] != "") {
-                    $data['instrument_installed_on'] = Pt_Commons_General::dateFormat($params['instrument_installed_on']);
+                    $data['instrument_installed_on'] = Pt_Commons_General::stringToDbDate($params['instrument_installed_on']);
                 }
                 if (isset($params['instrument_last_calibrated_on']) &&
                     $params['instrument_last_calibrated_on'] != "") {
-                    $data['instrument_last_calibrated_on'] = Pt_Commons_General::dateFormat($params['instrument_last_calibrated_on']);
+                    $data['instrument_last_calibrated_on'] = Pt_Commons_General::stringToDbDate($params['instrument_last_calibrated_on']);
                 }
                 $db->insert('instrument', $data);
                 $noOfRows = 1;
@@ -85,11 +85,11 @@ class Application_Model_DbTable_Instruments extends Zend_Db_Table_Abstract {
             );
             if (isset($params['instrument_installed_on']) &&
                 $params['instrument_installed_on'] != $instruments[0]['instrument_installed_on']) {
-                $data['instrument_installed_on'] = Pt_Commons_General::dateFormat($params['instrument_installed_on']);
+                $data['instrument_installed_on'] = Pt_Commons_General::stringToDbDate($params['instrument_installed_on']);
             }
             if (isset($params['instrument_last_calibrated_on']) &&
                 $params['instrument_last_calibrated_on'] != $instruments[0]['instrument_last_calibrated_on']) {
-                $data['instrument_last_calibrated_on'] = Pt_Commons_General::dateFormat($params['instrument_last_calibrated_on']);
+                $data['instrument_last_calibrated_on'] = Pt_Commons_General::stringToDbDate($params['instrument_last_calibrated_on']);
             }
             if (isset($data['instrument_installed_on']) ||
                 isset($data['instrument_last_calibrated_on'])) {
