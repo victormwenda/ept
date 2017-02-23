@@ -332,6 +332,12 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
                 $sQuery = $sQuery->where("spm.shipment_receipt_date IS NULL");
             }
         }
+        if (isset($parameters['sid'])) {
+            $sQuery = $sQuery->where("spm.shipment_id = ".$parameters['sid']);
+        }
+        if (isset($parameters['pid'])) {
+            $sQuery = $sQuery->where("spm.participant_id = ".$parameters['pid']);
+        }
         if (isset($parameters["forMobileApp"]) && $parameters["forMobileApp"]) {
             $sQuery = $sQuery->where("s.scheme_type = 'tb'");
         }
@@ -378,6 +384,12 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
             } else {
                 $sQuery = $sQuery->where("spm.shipment_receipt_date IS NULL");
             }
+        }
+        if (isset($parameters['sid'])) {
+            $sQuery = $sQuery->where("spm.shipment_id = ".$parameters['sid']);
+        }
+        if (isset($parameters['pid'])) {
+            $sQuery = $sQuery->where("spm.participant_id = ".$parameters['pid']);
         }
         if (isset($parameters["forMobileApp"]) && $parameters["forMobileApp"]) {
             $sQuery = $sQuery->where("s.scheme_type = 'tb'");
