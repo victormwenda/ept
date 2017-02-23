@@ -31,9 +31,11 @@ class Api_ShipmentsController extends Zend_Controller_Action {
             Zend_Session::namespaceUnset('datamanagers');
         } else {
             if ($this->getRequest()->isPut()) {
+                $sID = intval($this->getRequest()->getParam('sid'));
+                $pID = intval($this->getRequest()->getParam('pid'));
                 $params = Zend_Json::decode($this->getRequest()->getRawBody());
-                $params['shipment_id'] = intval(base64_decode(trim($params['shipmentId'])));
-                $params['participant_id'] = intval(base64_decode(trim($params['participantId'])));
+                $params['shipment_id'] = $sID;
+                $params['participant_id'] = $pID;
                 $params['shipment_receipt_date'] = Pt_Commons_General::dateFormat($params['dateReceived']);
                 $shipmentService = new Application_Service_Shipments();
                 $shipmentService->receiveShipment($params);
