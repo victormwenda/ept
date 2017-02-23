@@ -296,13 +296,27 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
          * SQL queries
          * Get data to display
          */
-        $sQuery = $this->getAdapter()->select()->from(array('s' => 'shipment'), array('s.scheme_type', 's.shipment_date', 's.shipment_code', 's.lastdate_response', 's.shipment_id','s.status','s.response_switch'))
-				->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('scheme_name'))
-                ->join(array('spm' => 'shipment_participant_map'), 'spm.shipment_id=s.shipment_id', array("spm.map_id","spm.evaluation_status", "spm.participant_id", "RESPONSEDATE" => "DATE_FORMAT(spm.shipment_test_report_date,'%Y-%m-%d')"))
-                ->join(array('p' => 'participant'), 'p.participant_id=spm.participant_id', array('p.unique_identifier','p.first_name', 'p.last_name'))
-                ->join(array('pmm' => 'participant_manager_map'), 'pmm.participant_id=p.participant_id')
-                ->where("pmm.dm_id=?", $this->_session->dm_id)
-                ->where("s.status='shipped' OR s.status='evaluated'");
+        $sQuery = $this->getAdapter()->select()->from(array('s' => 'shipment'), array(
+            's.scheme_type',
+            's.shipment_date',
+            's.shipment_code',
+            's.lastdate_response',
+            's.shipment_id',
+            's.status',
+            's.response_switch'))
+            ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('scheme_name'))
+            ->join(array('spm' => 'shipment_participant_map'), 'spm.shipment_id=s.shipment_id', array(
+                "spm.map_id",
+                "spm.evaluation_status",
+                "spm.participant_id",
+                "RESPONSEDATE" => "DATE_FORMAT(spm.shipment_test_report_date,'%Y-%m-%d')",
+                "spm.shipment_receipt_date"
+            ))
+            ->join(array('p' => 'participant'), 'p.participant_id=spm.participant_id', array(
+                'p.unique_identifier','p.first_name', 'p.last_name'))
+            ->join(array('pmm' => 'participant_manager_map'), 'pmm.participant_id=p.participant_id')
+            ->where("pmm.dm_id=?", $this->_session->dm_id)
+            ->where("s.status='shipped' OR s.status='evaluated'");
 
 		if (isset($parameters['currentType'])) {
 			if ($parameters['currentType'] == 'active') {
@@ -388,7 +402,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
         foreach ($rResult as $aRow) {
             if (isset($parameters["forMobileApp"]) && $parameters["forMobileApp"]) {
                 $row = array(
-                    "shipmentDate" => $aRow['shipment_date'],
+                    "shipmentDate" => Pt_Commons_General::dbDateToString($aRow['shipment_date']),
                     "schemeType" => $aRow['scheme_type'],
                     "schemeName" => $aRow['scheme_name'],
                     "shipmentId" => base64_encode($aRow['shipment_id']),
@@ -396,8 +410,9 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
                     "participantId" => base64_encode($aRow['participant_id']),
                     "participantCode" => $aRow["unique_identifier"],
                     "fullName" => $aRow['first_name'] . " " . $aRow['last_name'],
-                    "deadlineDate" => $aRow['lastdate_response'],
-                    "responseDate" => $aRow['RESPONSEDATE'],
+                    "deadlineDate" => Pt_Commons_General::dbDateToString($aRow['lastdate_response']),
+                    "responseDate" => Pt_Commons_General::dbDateToString($aRow['RESPONSEDATE']),
+                    "dateReceived" => Pt_Commons_General::dbDateToString($aRow['shipment_receipt_date']),
                     "evaluationStatus" => $aRow['evaluation_status']
                 );
             } else {
