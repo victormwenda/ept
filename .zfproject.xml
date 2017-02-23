@@ -507,6 +507,7 @@
             <controllerFile controllerName="Shipments">
               <actionMethod actionName="index"/>
               <actionMethod actionName="receive"/>
+              <actionMethod actionName="shipment"/>
             </controllerFile>
             <controllerFile controllerName="Results">
               <actionMethod actionName="resultHeader"/>
@@ -529,6 +530,7 @@
               <viewControllerScriptsDirectory forControllerName="Shipments">
                 <viewScriptFile forActionName="index"/>
                 <viewScriptFile forActionName="receive"/>
+                <viewScriptFile forActionName="shipment"/>
               </viewControllerScriptsDirectory>
               <viewControllerScriptsDirectory forControllerName="Results">
                 <viewScriptFile forActionName="resultHeader"/>
