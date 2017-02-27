@@ -27,34 +27,39 @@ class Api_ResultsController extends Zend_Controller_Action {
                 $this->getResponse()->setHttpResponseCode(200);
             } else {
                 $shipment = $schemeService->getShipmentData($sID, $pID);
-                $shipment['attributes'] = json_decode($shipment['attributes'],true);
-                $assays = $schemeService->getTbAssayReferenceMap();
-                $sampleIds = $schemeService->getTbSampleIds($sID, $pID);
-                $commonService = new Application_Service_Common();
-                $modesOfReceipt = $commonService->getAllModeOfReceiptReferenceMap();
+                if (!$shipment) {
+                    $this->getResponse()->setBody('NOT FOUND');
+                    $this->getResponse()->setHttpResponseCode(404);
+                } else {
+                    $shipment['attributes'] = json_decode($shipment['attributes'],true);
+                    $assays = $schemeService->getTbAssayReferenceMap();
+                    $sampleIds = $schemeService->getTbSampleIds($sID, $pID);
+                    $commonService = new Application_Service_Common();
+                    $modesOfReceipt = $commonService->getAllModeOfReceiptReferenceMap();
 
-                $response = array(
-                    'sampleRehydrationDate' => Pt_Commons_General::dbDateToString($shipment['attributes']['sample_rehydration_date']),
-	                'testDate' => Pt_Commons_General::dbDateToString($shipment['shipment_test_date']),
-                    'mtbRifKitLotNo' => $shipment['attributes']['mtb_rif_kit_lot_no'],
-	                'expiryDate' => Pt_Commons_General::dbDateToString($shipment['attributes']['expiry_date']),
-	                'testReceiptDate' => Pt_Commons_General::dbDateToString($shipment['shipment_test_report_date']),
-	                'modeOfReceipt' => $shipment['mode_id'],
-	                'assay' => $shipment['attributes']['assay'],
-	                'countTestsConductedOverMonth' => $shipment['attributes']['count_tests_conducted_over_month'],
-	                'countErrorsEncounteredOverMonth' => $shipment['attributes']['count_errors_encountered_over_month'],
-	                'errorCodesEncounteredOverMonth' => $shipment['attributes']['error_codes_encountered_over_month'],
-	                'qcDone' => $shipment['qc_done'],
-	                'qcDate' => Pt_Commons_General::dbDateToString($shipment['qc_date']),
-	                'qcDoneBy' => $shipment['qc_done_by'],
-                    'dateReceived' => Pt_Commons_General::dbDateToString($shipment['shipment_receipt_date']),
-	                'smid' => $shipment['map_id'],
-                    'assays' => $assays,
-                    'modesOfReceipt' => $modesOfReceipt,
-                    'sampleIds' => $sampleIds
-                );
+                    $response = array(
+                        'sampleRehydrationDate' => Pt_Commons_General::dbDateToString($shipment['attributes']['sample_rehydration_date']),
+                        'testDate' => Pt_Commons_General::dbDateToString($shipment['shipment_test_date']),
+                        'mtbRifKitLotNo' => $shipment['attributes']['mtb_rif_kit_lot_no'],
+                        'expiryDate' => Pt_Commons_General::dbDateToString($shipment['attributes']['expiry_date']),
+                        'testReceiptDate' => Pt_Commons_General::dbDateToString($shipment['shipment_test_report_date']),
+                        'modeOfReceipt' => $shipment['mode_id'],
+                        'assay' => $shipment['attributes']['assay'],
+                        'countTestsConductedOverMonth' => $shipment['attributes']['count_tests_conducted_over_month'],
+                        'countErrorsEncounteredOverMonth' => $shipment['attributes']['count_errors_encountered_over_month'],
+                        'errorCodesEncounteredOverMonth' => $shipment['attributes']['error_codes_encountered_over_month'],
+                        'qcDone' => $shipment['qc_done'],
+                        'qcDate' => Pt_Commons_General::dbDateToString($shipment['qc_date']),
+                        'qcDoneBy' => $shipment['qc_done_by'],
+                        'dateReceived' => Pt_Commons_General::dbDateToString($shipment['shipment_receipt_date']),
+                        'smid' => $shipment['map_id'],
+                        'assays' => $assays,
+                        'modesOfReceipt' => $modesOfReceipt,
+                        'sampleIds' => $sampleIds
+                    );
 
-                echo json_encode($response);
+                    echo json_encode($response);
+                }
             }
         }
     }
