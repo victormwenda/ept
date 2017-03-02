@@ -57,7 +57,7 @@ class Api_ResultsController extends Zend_Controller_Action {
                         'modesOfReceipt' => $modesOfReceipt,
                         'sampleIds' => $sampleIds
                     );
-
+                    $this->getResponse()->setHeader("Content-Type", "application/json");
                     echo json_encode($response);
                 }
             }
@@ -110,7 +110,7 @@ class Api_ResultsController extends Zend_Controller_Action {
                     'smid' => $sample['map_id'],
                     'instruments' => $instruments
                 );
-
+                $this->getResponse()->setHeader("Content-Type", "application/json");
                 echo json_encode($response);
             }
         }
@@ -143,7 +143,7 @@ class Api_ResultsController extends Zend_Controller_Action {
                     'dateReceived' => Pt_Commons_General::dbDateToString($shipment['shipment_receipt_date']),
                     'smid' => $shipment['map_id']
                 );
-
+                $this->getResponse()->setHeader("Content-Type", "application/json");
                 echo json_encode($response);
             }
         }
