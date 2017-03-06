@@ -194,7 +194,7 @@ $count++;  ?>
 $count =0;
 foreach($this->allSamples as $sample){
     $count++;
-    $errorCodeEnabled = $sample['res_mtb_detected'] == "invalid";
+    $errorCodeEnabled = $sample['res_mtb_detected'] == "error";
     $rifResistanceEnabled = in_array($sample['res_mtb_detected'], array("high", "medium", "low", "veryLow"));
 ?>
 	<tr>
@@ -233,6 +233,7 @@ foreach($this->allSamples as $sample){
                             <option value="notDetected" <?php echo ($sample['res_mtb_detected'] == 'notDetected' ? "selected='selected'" : ""); ?>>Not Detected</option>
                             <option value="noResult" <?php echo ($sample['res_mtb_detected'] == 'noResult' ? "selected='selected'" : ""); ?>>No Result</option>
                             <option value="invalid" <?php echo ($sample['res_mtb_detected'] == 'invalid' ? "selected='selected'" : ""); ?>>Invalid</option>
+                            <option value="error" <?php echo ($sample['res_mtb_detected'] == 'error' ? "selected='selected'" : ""); ?>>Error</option>
                         </select>
                     </td>
                     <td style="background-color: transparent;">
@@ -513,7 +514,7 @@ $dtFormat=  $genderHelper->getDateFormat();
 	    var mtbDetected = $("#mtbDetected" + resultNumber).val();
 	    var errorCodeInput = $("#errorCode" + resultNumber);
         var rifResistanceSelect = $("#rifResistance" + resultNumber);
-	    if (mtbDetected === "invalid") {
+	    if (mtbDetected === "error") {
             errorCodeInput.removeAttr("readonly");
         } else {
             errorCodeInput.attr("readonly", "");
