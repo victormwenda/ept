@@ -8,11 +8,22 @@ class Api_AuthController extends Zend_Controller_Action {
     public function indexAction() {
         $authNameSpace = new Zend_Session_Namespace('datamanagers');
         if (isset($authNameSpace->dm_id) && intval($authNameSpace->dm_id) > 0) {
-            $this->getResponse()->setBody('Signed In As ' . $authNameSpace->first_name . ' ' . $authNameSpace->last_name);
+            $this->getResponse()->setHeader("Content-Type", "application/json");
             $this->getResponse()->setHttpResponseCode(200);
+            echo json_encode(array(
+                'id' => $authNameSpace->dm_id,
+                'username' => $authNameSpace->UserID,
+                'firstName' => $authNameSpace->first_name,
+                'lastName' => $authNameSpace->last_name,
+                'qcAccess' => $authNameSpace->qc_access,
+                'message' => 'Signed In As ' . $authNameSpace->first_name . ' ' . $authNameSpace->last_name
+            ));
         } else {
-            $this->getResponse()->setBody('Not Signed In');
+            $this->getResponse()->setHeader("Content-Type", "application/json");
             $this->getResponse()->setHttpResponseCode(200);
+            echo json_encode(array(
+                'message' => 'Not Signed In'
+            ));
         }
     }
 
@@ -57,13 +68,24 @@ class Api_AuthController extends Zend_Controller_Action {
                     $pushNotificationService = new Application_Service_PushNotifications();
                     $pushNotificationService->registerToken($rs->dm_id, $platform, $pushNotificationToken);
                 }
-                
-                $this->getResponse()->setBody('Signed In As '.$authNameSpace->first_name.' '.$authNameSpace->last_name);
+
+                $this->getResponse()->setHeader("Content-Type", "application/json");
                 $this->getResponse()->setHttpResponseCode(200);
+                echo json_encode(array(
+                    'id' => $authNameSpace->dm_id,
+                    'username' => $authNameSpace->UserID,
+                    'firstName' => $authNameSpace->first_name,
+                    'lastName' => $authNameSpace->last_name,
+                    'qcAccess' => $authNameSpace->qc_access,
+                    'message' => 'Signed In As ' . $authNameSpace->first_name . ' ' . $authNameSpace->last_name
+                ));
             } else {
                 Zend_Auth::getInstance()->clearIdentity();
-                $this->getResponse()->setBody('Sorry. Unable To Sign You In. Please Check Your Credentials');
+                $this->getResponse()->setHeader("Content-Type", "application/json");
                 $this->getResponse()->setHttpResponseCode(401);
+                echo json_encode(array(
+                    'message' => 'Not Signed In'
+                ));
                 Zend_Session::namespaceUnset('datamanagers');
             }
         }
@@ -71,8 +93,11 @@ class Api_AuthController extends Zend_Controller_Action {
 
     public function signOutAction() {
         Zend_Auth::getInstance()->clearIdentity();
-        $this->getResponse()->setBody('Signed Out');
+        $this->getResponse()->setHeader("Content-Type", "application/json");
         $this->getResponse()->setHttpResponseCode(200);
+        echo json_encode(array(
+            'message' => 'Signed Out'
+        ));
         Zend_Session::namespaceUnset('datamanagers');
     }
 }
