@@ -129,6 +129,12 @@ class Api_ResultsController extends Zend_Controller_Action {
                 $params = Zend_Json::decode($this->getRequest()->getRawBody());
                 $params['shipmentId'] = $sID;
                 $params['participantId'] = $pID;
+                $submitResponse = $this->getRequest()->getParam('submitResponse');
+                if(isset($submitResponse)) {
+                    $params['submitResponse'] = $submitResponse;
+                } else {
+                    $params['submitResponse'] = 'no';
+                }
                 $shipmentService = new Application_Service_Shipments();
                 $shipmentService->updateTbResultFooter($params);
                 $this->getResponse()->setBody('OK');
@@ -141,6 +147,7 @@ class Api_ResultsController extends Zend_Controller_Action {
                     'userComments' => $shipment['user_comment'],
                     'testReceiptDate' => Pt_Commons_General::dbDateToString($shipment['shipment_test_report_date']),
                     'dateReceived' => Pt_Commons_General::dbDateToString($shipment['shipment_receipt_date']),
+                    'deadlineDate' => Pt_Commons_General::dbDateToString($shipment['lastdate_response']),
                     'smid' => $shipment['map_id']
                 );
                 $this->getResponse()->setHeader("Content-Type", "application/json");

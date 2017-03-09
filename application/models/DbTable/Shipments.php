@@ -327,9 +327,11 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
 		}
         if (isset($parameters['received'])) {
             if ($parameters['received'] == 'yes') {
-                $sQuery = $sQuery->where("spm.shipment_receipt_date IS NOT NULL");
+                //evaluation_status[1] = 1 (Received) AND evaluation_status[2] = 9 (Not Responded)
+                $sQuery = $sQuery->where("(spm.shipment_receipt_date IS NOT NULL OR substr(spm.evaluation_status, 2, 1) = '1') AND substr(spm.evaluation_status, 3, 1) = '9'");
             } else {
-                $sQuery = $sQuery->where("spm.shipment_receipt_date IS NULL");
+                //evaluation_status[1] = 1 (Not Received) AND evaluation_status[2] = 9 (Not Responded)
+                $sQuery = $sQuery->where("spm.shipment_receipt_date IS NULL AND substr(spm.evaluation_status, 2, 1) = '9' AND substr(spm.evaluation_status, 3, 1) = '9'");
             }
         }
         if (isset($parameters['sid'])) {
@@ -380,9 +382,11 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
 		}
         if (isset($parameters['received'])) {
             if ($parameters['received'] == 'yes') {
-                $sQuery = $sQuery->where("spm.shipment_receipt_date IS NOT NULL");
+                //evaluation_status[1] = 1 (Received) AND evaluation_status[2] = 9 (Not Responded)
+                $sQuery = $sQuery->where("(spm.shipment_receipt_date IS NOT NULL OR substr(spm.evaluation_status, 2, 1) = '1') AND substr(spm.evaluation_status, 3, 1) = '9'");
             } else {
-                $sQuery = $sQuery->where("spm.shipment_receipt_date IS NULL");
+                //evaluation_status[1] = 1 (Not Received) AND evaluation_status[2] = 9 (Not Responded)
+                $sQuery = $sQuery->where("spm.shipment_receipt_date IS NULL AND substr(spm.evaluation_status, 2, 1) = '9' AND substr(spm.evaluation_status, 3, 1) = '9'");
             }
         }
         if (isset($parameters['sid'])) {

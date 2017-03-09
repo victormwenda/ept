@@ -58,7 +58,6 @@ class Application_Model_DbTable_ShipmentParticipantMap extends Zend_Db_Table_Abs
         $params['evaluation_status'][4] = 1;
 
         // changing evaluation status 4th character to 1 = timely response or 2 = delayed response
-
         $date = new Zend_Date();
         $lastDate = new Zend_Date($lastDate, Zend_Date::ISO_8601);
         // only if current date is LATER than last date we make status = 2
@@ -72,6 +71,12 @@ class Application_Model_DbTable_ShipmentParticipantMap extends Zend_Db_Table_Abs
     }
 
     public function updateShipmentValues($params, $shipmentMapId) {
+        $row = $this->fetchRow("map_id = " . $shipmentMapId);
+        if ($row != "") {
+            if (trim($row['created_on_user']) == "" || $row['created_on_user'] == NULL) {
+                $this->update(array('created_on_user' => new Zend_Db_Expr('now()')), "map_id = " . $shipmentMapId);
+            }
+        }
         return $this->update($params, "map_id = " . $shipmentMapId);
     }
 
