@@ -1,0 +1,53 @@
+<html>
+<body>
+<?php
+if (isset($this->url)) { ?>
+<canvas id="report-canvas"></canvas>
+<script src="<?php echo $this->baseUrl('assets/plugins/jQuery/jQuery-2.1.4.min.js'); ?>"></script>
+<script src="http://mozilla.github.io/pdf.js/build/pdf.js"></script>
+<script type="text/javascript">
+  $(document).ready(function () {
+    <?php
+    if(isset($this->result['last_name']) && trim($this->result['last_name'])!=""){
+      $this->result['last_name']="_".$this->result['last_name'];
+    }
+    $fileName=$this->result['first_name'].$this->result['last_name']."-".$this->result['map_id'].".pdf";
+
+    $fileName = preg_replace('/[^A-Za-z0-9.]/', '-', $fileName);
+    $fileName = str_replace(" ", "-", $fileName);
+    ?>
+    var url = '<?php echo $this->url ?>';
+    var loadingTask = PDFJS.getDocument(url);
+    loadingTask.promise.then(function(pdf) {
+      var pageNumber = 1;
+      pdf.getPage(pageNumber).then(function(page) {
+        var scale = 2;
+        var viewport = page.getViewport(scale);
+        // Prepare canvas using PDF page dimensions
+        var canvas = document.getElementById('report-canvas');
+        var context = canvas.getContext('2d');
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        // Render PDF page into canvas context
+        var renderContext = {
+          canvasContext: context,
+          viewport: viewport
+        };
+        var renderTask = page.render(renderContext);
+        renderTask.then(function () {
+          console.log('Page rendered');
+        });
+      });
+    }, function (reason) {
+      // PDF loading error
+      console.error(reason);
+    });
+  });
+</script>
+<?php
+} else { ?>
+<h1>Unauthorised</h1>
+<?php
+} ?>
+</body>
+</html>

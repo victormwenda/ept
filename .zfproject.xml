@@ -509,6 +509,7 @@
             </controllerFile>
             <controllerFile controllerName="Report">
               <actionMethod actionName="index"/>
+              <actionMethod actionName="view"/>
             </controllerFile>
             <controllerFile controllerName="Results">
               <actionMethod actionName="resultHeader"/>
@@ -538,6 +539,7 @@
               </viewControllerScriptsDirectory>
               <viewControllerScriptsDirectory forControllerName="Report">
                 <viewScriptFile forActionName="index"/>
+                <viewScriptFile forActionName="view"/>
               </viewControllerScriptsDirectory>
               <viewControllerScriptsDirectory forControllerName="Results">
                 <viewScriptFile forActionName="resultHeader"/>
