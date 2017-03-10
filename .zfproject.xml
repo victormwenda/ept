@@ -507,15 +507,18 @@
             <controllerFile controllerName="Ping">
               <actionMethod actionName="index"/>
             </controllerFile>
-            <controllerFile controllerName="Shipments">
+            <controllerFile controllerName="Report">
               <actionMethod actionName="index"/>
-              <actionMethod actionName="receive"/>
-              <actionMethod actionName="shipment"/>
             </controllerFile>
             <controllerFile controllerName="Results">
               <actionMethod actionName="resultHeader"/>
               <actionMethod actionName="resultItem"/>
               <actionMethod actionName="resultFooter"/>
+            </controllerFile>
+            <controllerFile controllerName="Shipments">
+              <actionMethod actionName="index"/>
+              <actionMethod actionName="receive"/>
+              <actionMethod actionName="shipment"/>
             </controllerFile>
           </controllersDirectory>
           <formsDirectory enabled="false"/>
@@ -527,18 +530,24 @@
           </modelsDirectory>
           <viewsDirectory>
             <viewScriptsDirectory>
-              <viewControllerScriptsDirectory forControllerName="Login">
+              <viewControllerScriptsDirectory forControllerName="Auth">
                 <viewScriptFile forActionName="index"/>
               </viewControllerScriptsDirectory>
-              <viewControllerScriptsDirectory forControllerName="Shipments">
+              <viewControllerScriptsDirectory forControllerName="Ping">
                 <viewScriptFile forActionName="index"/>
-                <viewScriptFile forActionName="receive"/>
-                <viewScriptFile forActionName="shipment"/>
+              </viewControllerScriptsDirectory>
+              <viewControllerScriptsDirectory forControllerName="Report">
+                <viewScriptFile forActionName="index"/>
               </viewControllerScriptsDirectory>
               <viewControllerScriptsDirectory forControllerName="Results">
                 <viewScriptFile forActionName="resultHeader"/>
                 <viewScriptFile forActionName="resultItem"/>
                 <viewScriptFile forActionName="resultFooter"/>
+              </viewControllerScriptsDirectory>
+              <viewControllerScriptsDirectory forControllerName="Shipments">
+                <viewScriptFile forActionName="index"/>
+                <viewScriptFile forActionName="receive"/>
+                <viewScriptFile forActionName="shipment"/>
               </viewControllerScriptsDirectory>
             </viewScriptsDirectory>
             <viewHelpersDirectory/>
