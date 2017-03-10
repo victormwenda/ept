@@ -1,46 +1,39 @@
+<!DOCTYPE html>
 <html>
+<head>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<meta charset="UTF-8">
+<?php
+if (isset($this->url)) { ?>
+<link href="<?php echo $this->baseUrl('assets/plugins/jQuery/jquery.touchPDF.css'); ?>" rel="stylesheet" media="screen" />
+<?php
+} ?>
+<style>
+body, html{
+  background-color: #404040;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+}
+</style>
+</head>
 <body>
 <?php
 if (isset($this->url)) { ?>
-<canvas id="report-canvas"></canvas>
-<script src="<?php echo $this->baseUrl('assets/plugins/jQuery/jQuery-2.1.4.min.js'); ?>"></script>
-<script src="http://mozilla.github.io/pdf.js/build/pdf.js"></script>
-<script type="text/javascript">
-  $(document).ready(function () {
-    <?php
-    if(isset($this->result['last_name']) && trim($this->result['last_name'])!=""){
-      $this->result['last_name']="_".$this->result['last_name'];
-    }
-    $fileName=$this->result['first_name'].$this->result['last_name']."-".$this->result['map_id'].".pdf";
+<div id="report-canvas" style="height: 95%; width: 95%; margin: auto;"></div>
 
-    $fileName = preg_replace('/[^A-Za-z0-9.]/', '-', $fileName);
-    $fileName = str_replace(" ", "-", $fileName);
-    ?>
-    var url = '<?php echo $this->url ?>';
-    var loadingTask = PDFJS.getDocument(url);
-    loadingTask.promise.then(function(pdf) {
-      var pageNumber = 1;
-      pdf.getPage(pageNumber).then(function(page) {
-        var scale = 2;
-        var viewport = page.getViewport(scale);
-        // Prepare canvas using PDF page dimensions
-        var canvas = document.getElementById('report-canvas');
-        var context = canvas.getContext('2d');
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-        // Render PDF page into canvas context
-        var renderContext = {
-          canvasContext: context,
-          viewport: viewport
-        };
-        var renderTask = page.render(renderContext);
-        renderTask.then(function () {
-          console.log('Page rendered');
-        });
-      });
-    }, function (reason) {
-      // PDF loading error
-      console.error(reason);
+<script type="text/javascript" src="<?php echo $this->baseUrl('assets/plugins/jQuery/pdf.compatibility.js'); ?>"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl('assets/plugins/jQuery/pdf.js'); ?>"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl('assets/plugins/jQuery/jQuery-2.1.4.min.js'); ?>"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl('assets/plugins/jQuery/jquery.touchSwipe.js'); ?>"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl('assets/plugins/jQuery/jquery.touchPDF.js'); ?>"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl('assets/plugins/jQuery/jquery.panzoom.js'); ?>"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl('assets/plugins/jQuery/jquery.mousewheel.js'); ?>"></script>
+<script type="text/javascript">
+  $(function() {
+    $("#report-canvas").pdf({
+      source: '<?php echo $this->url ?>',
+      showToolbar: false
     });
   });
 </script>
