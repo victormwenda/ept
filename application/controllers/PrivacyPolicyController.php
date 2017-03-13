@@ -10,7 +10,9 @@ class PrivacyPolicyController extends Zend_Controller_Action
 
     public function indexAction()
     {
-        // action body
+        $this->_helper->layout()->activeMenu = 'home';
+        $commonServices = new Application_Service_Common();
+        $this->view->banner = $commonServices->getHomeBanner();
     }
 
 
