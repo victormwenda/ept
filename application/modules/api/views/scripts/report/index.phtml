@@ -14,7 +14,7 @@ if($this->result!=""){
         echo "<h2 align='center' style='margin-top:100px;font-family:arial;'>Requested image will be downloaded shortly, After downloaded please close the window </h2>";
         header('Content-Description: Report Download');
         header('Content-Type: application/pdf');
-        header('Content-Disposition: attachment; filename='.basename($file));
+        header('Content-Disposition: inline');
         header('Content-Transfer-Encoding: binary');
         header('Expires: 0');
         header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
