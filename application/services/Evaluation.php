@@ -161,25 +161,35 @@ class Application_Service_Evaluation {
     public function getShipments($distributionId) {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sql = $db->select()->from(array('s' => 'shipment'))
-                ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id')
-                ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array('map_id', 'responseDate' => 'shipment_test_report_date', 'participant_count' => new Zend_Db_Expr('count("participant_id")'), 'reported_count' => new Zend_Db_Expr("SUM(shipment_test_date <> '0000-00-00')"), 'number_passed' => new Zend_Db_Expr("SUM(final_result = 1)"), 'last_not_participated_mailed_on', 'last_not_participated_mail_count','shipment_status'=>'s.status'))
-                ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type')
-                ->joinLeft(array('rr' => 'r_results'), 'sp.final_result=rr.result_id')
-                ->where("s.distribution_id = ?", $distributionId)
-                ->group('s.shipment_id');
+            ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id')
+            ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array(
+                'map_id',
+                'responseDate' => 'shipment_test_report_date',
+                'participant_count' => new Zend_Db_Expr('count("participant_id")'),
+                'reported_count' => new Zend_Db_Expr("COUNT(CASE substr(sp.evaluation_status,4,1) WHEN '1' THEN 1 WHEN '2' THEN 1 END)"),
+                'number_passed' => new Zend_Db_Expr("SUM(final_result = 1)"),
+                'last_not_participated_mailed_on',
+                'last_not_participated_mail_count',
+                'shipment_status' => 's.status'))
+            ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type')
+            ->joinLeft(array('rr' => 'r_results'), 'sp.final_result=rr.result_id')
+            ->where("s.distribution_id = ?", $distributionId)
+            ->group('s.shipment_id');
         return $db->fetchAll($sql);
     }
     
     public function getResponseCount($shipmentId,$distributionId) {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sql = $db->select()->from(array('s' => 'shipment'),array(''))
-                ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id',array(''))
-                ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array('reported_count' => new Zend_Db_Expr("SUM(shipment_test_date <> '0000-00-00')")))
-                ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type',array(''))
-                ->joinLeft(array('rr' => 'r_results'), 'sp.final_result=rr.result_id',array(''))
-		->where("s.shipment_id = ?", $shipmentId)
-                ->where("s.distribution_id = ?", $distributionId)
-                ->group('s.shipment_id');
+            ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id',array(''))
+            ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array(
+                'reported_count' => new Zend_Db_Expr("COUNT(CASE substr(sp.evaluation_status,4,1) WHEN '1' THEN 1 WHEN '2' THEN 1 END)")
+            ))
+            ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type',array(''))
+            ->joinLeft(array('rr' => 'r_results'), 'sp.final_result=rr.result_id',array(''))
+            ->where("s.shipment_id = ?", $shipmentId)
+            ->where("s.distribution_id = ?", $distributionId)
+            ->group('s.shipment_id');
         return $db->fetchRow($sql);
     }
 
@@ -1297,7 +1307,13 @@ class Application_Service_Evaluation {
                 $schemeService = new Application_Service_Schemes();
                 $extractionAssay = $schemeService->getEidExtractionAssay();
                 $detectionAssay = $schemeService->getEidDetectionAssay();
-				$pQuery = $db->select()->from(array('spm' => 'shipment_participant_map'), array('spm.map_id', 'spm.shipment_id','spm.documentation_score','participant_count' => new Zend_Db_Expr('count("participant_id")'),'reported_count' => new Zend_Db_Expr("SUM(shipment_test_date <> '0000-00-00')")))
+				$pQuery = $db->select()
+                    ->from(array('spm' => 'shipment_participant_map'), array(
+                        'spm.map_id',
+                        'spm.shipment_id',
+                        'spm.documentation_score',
+                        'participant_count' => new Zend_Db_Expr('count("participant_id")'),
+                        'reported_count' => new Zend_Db_Expr("COUNT(CASE substr(spm.evaluation_status,4,1) WHEN '1' THEN 1 WHEN '2' THEN 1 END)")))
                     ->joinLeft(array('res' => 'r_results'), 'res.result_id=spm.final_result', array('result_name'))
                     ->where("spm.shipment_id = ?", $shipmentId)
                     ->group('spm.shipment_id');
@@ -1306,7 +1322,8 @@ class Application_Service_Evaluation {
 					$shipmentResult['participant_count']=$totParticipantsRes['participant_count'];
 				}
 
-				$sQuery = $db->select()->from(array('spm' => 'shipment_participant_map'), array('spm.map_id', 'spm.shipment_id', 'spm.shipment_score', 'spm.documentation_score', 'spm.attributes'))
+				$sQuery = $db->select()->from(array('spm' => 'shipment_participant_map'), array(
+				    'spm.map_id', 'spm.shipment_id', 'spm.shipment_score', 'spm.documentation_score', 'spm.attributes'))
                     ->joinLeft(array('res' => 'r_results'), 'res.result_id=spm.final_result', array('result_name'))
                     ->where("spm.shipment_id = ?", $shipmentId)
                     ->where("spm.shipment_test_report_date IS NOT NULL")

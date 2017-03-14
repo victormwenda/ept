@@ -93,15 +93,18 @@ class Application_Service_Reports {
 
         $dbAdapter = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sQuery = $dbAdapter->select()->from(array('s' => 'shipment'))
-                ->join(array('sl' => 'scheme_list'), 's.scheme_type=sl.scheme_id')
-                ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id')
-                ->joinLeft(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array('report_generated', 'participant_count' => new Zend_Db_Expr('count("participant_id")'), 'reported_count' => new Zend_Db_Expr("SUM(shipment_test_date <> '0000-00-00')"), 'reported_percentage' => new Zend_Db_Expr("ROUND((SUM(shipment_test_date <> '0000-00-00')/count('participant_id'))*100,2)"), 'number_passed' => new Zend_Db_Expr("SUM(final_result = 1)")))
-                ->joinLeft(array('p' => 'participant'), 'p.participant_id=sp.participant_id')
-                //->joinLeft(array('pmm'=>'participant_manager_map'),'pmm.participant_id=p.participant_id')
-                ->joinLeft(array('rr' => 'r_results'), 'sp.final_result=rr.result_id')
-                ->group(array('s.shipment_id'));
-
-
+            ->join(array('sl' => 'scheme_list'), 's.scheme_type=sl.scheme_id')
+            ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id')
+            ->joinLeft(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array(
+                'report_generated',
+                'participant_count' => new Zend_Db_Expr('count("participant_id")'),
+                'reported_count' => new Zend_Db_Expr("COUNT(CASE substr(sp.evaluation_status,4,1) WHEN '1' THEN 1 WHEN '2' THEN 1 END)"),
+                'reported_percentage' => new Zend_Db_Expr("ROUND((COUNT(CASE substr(sp.evaluation_status,4,1) WHEN '1' THEN 1 WHEN '2' THEN 1 END)/count('participant_id'))*100,2)"),
+                'number_passed' => new Zend_Db_Expr("SUM(final_result = 1)")))
+            ->joinLeft(array('p' => 'participant'), 'p.participant_id=sp.participant_id')
+            //->joinLeft(array('pmm'=>'participant_manager_map'),'pmm.participant_id=p.participant_id')
+            ->joinLeft(array('rr' => 'r_results'), 'sp.final_result=rr.result_id')
+            ->group(array('s.shipment_id'));
 
         if (isset($parameters['scheme']) && $parameters['scheme'] != "") {
             $sQuery = $sQuery->where("s.scheme_type = ?", $parameters['scheme']);
@@ -1271,9 +1274,10 @@ class Application_Service_Reports {
         for ($i = $step; $i <= $maxDays; $i+=$step) {
 
             $sQuery = $dbAdapter->select()->from(array('s' => 'shipment'), array(''))
-                    ->joinLeft(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array('reported_count' => new Zend_Db_Expr("SUM(shipment_test_date <> '0000-00-00')")))
-                    ->where("s.shipment_id = ?", $shipmentId)
-                    ->group('s.shipment_id');
+                ->joinLeft(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array(
+                    'reported_count' => new Zend_Db_Expr("COUNT(CASE substr(sp.evaluation_status,4,1) WHEN '1' THEN 1 WHEN '2' THEN 1 END)"))))
+                ->where("s.shipment_id = ?", $shipmentId)
+                ->group('s.shipment_id');
             $endDate = strftime("%Y-%m-%d", strtotime("$date + $i day"));
 
             if (isset($date) && $date != "" && $endDate != '' && $i < $maxDays) {
