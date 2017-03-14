@@ -1275,7 +1275,7 @@ class Application_Service_Reports {
 
             $sQuery = $dbAdapter->select()->from(array('s' => 'shipment'), array(''))
                 ->joinLeft(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array(
-                    'reported_count' => new Zend_Db_Expr("COUNT(CASE substr(sp.evaluation_status,4,1) WHEN '1' THEN 1 WHEN '2' THEN 1 END)"))))
+                    'reported_count' => new Zend_Db_Expr("COUNT(CASE substr(sp.evaluation_status,4,1) WHEN '1' THEN 1 WHEN '2' THEN 1 END)")))
                 ->where("s.shipment_id = ?", $shipmentId)
                 ->group('s.shipment_id');
             $endDate = strftime("%Y-%m-%d", strtotime("$date + $i day"));

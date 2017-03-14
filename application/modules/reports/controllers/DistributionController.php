@@ -5,10 +5,10 @@ class Reports_DistributionController extends Zend_Controller_Action
     public function init() {
         $ajaxContext = $this->_helper->getHelper('AjaxContext');
         $ajaxContext->addActionContext('index', 'html')
-                    ->addActionContext('get-shipments', 'html')
-                    ->addActionContext('generate-reports', 'html')
-                    ->addActionContext('generate-summary-reports', 'html')
-                    ->initContext();        
+            ->addActionContext('get-shipments', 'html')
+            ->addActionContext('generate-reports', 'html')
+            ->addActionContext('generate-summary-reports', 'html')
+            ->initContext();
         $this->_helper->layout()->pageName = 'analyze';
     }
 

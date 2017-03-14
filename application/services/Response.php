@@ -169,7 +169,7 @@ class Application_Service_Response {
         $sql = $db->select()->from(array('s' => 'shipment'),array(''))
                 ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id',array(''))
                 ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array(
-                    'reported_count' => new Zend_Db_Expr("COUNT(CASE substr(sp.evaluation_status,4,1) WHEN '1' THEN 1 WHEN '2' THEN 1 END)"))))
+                    'reported_count' => new Zend_Db_Expr("COUNT(CASE substr(sp.evaluation_status,4,1) WHEN '1' THEN 1 WHEN '2' THEN 1 END)")))
                 ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type',array(''))
                 ->joinLeft(array('rr' => 'r_results'), 'sp.final_result=rr.result_id',array(''))
 		        ->where("s.shipment_id = ?", $shipmentId)

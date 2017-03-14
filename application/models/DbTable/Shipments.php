@@ -63,7 +63,10 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
 
     public function updateShipmentStatusByDistribution($distributionId, $status) {
         if (isset($status) && $status != null && $status != "") {
-            return $this->update(array('response_switch' =>'on','status' => $status), "distribution_id = $distributionId");
+            return $this->update(array(
+                'response_switch' => 'on',
+                'status' => $status),
+                "distribution_id = $distributionId");
         } else {
             return 0;
         }
@@ -778,17 +781,16 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
         if (isset($sWhere) && $sWhere != "") {
             $sQuery = $sQuery->where($sWhere);
         }
-		if(isset($parameters['qualityChecked']) && trim($parameters['qualityChecked'])!=""){
-			if($parameters['qualityChecked']=='yes'){
-				$sQuery = $sQuery->where("spm.qc_date IS NOT NULL");
-			}else{
+		if(isset($parameters['qualityChecked']) && trim($parameters['qualityChecked'])!="") {
+            if ($parameters['qualityChecked']=='yes') {
+                $sQuery = $sQuery->where("spm.qc_date IS NOT NULL");
+			} else {
 				$sQuery = $sQuery->where("spm.qc_date IS NULL");
 			}
 		}
         if (isset($sOrder) && $sOrder != "") {
             $sQuery = $sQuery->order($sOrder);
         }
-
         if (isset($sLimit) && isset($sOffset)) {
             $sQuery = $sQuery->limit($sLimit, $sOffset);
         }
@@ -804,12 +806,12 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
         /* Total data set length */
         //$sQuery = $this->getAdapter()->select()->from('building_type', new Zend_Db_Expr("COUNT('building_id')"));
         $sQuery = $this->getAdapter()->select()->from(array('s' => 'shipment'), array('s.shipment_id'))
-                ->join(array('spm' => 'shipment_participant_map'), 'spm.shipment_id=s.shipment_id', array(''))
-                ->join(array('p' => 'participant'), 'p.participant_id=spm.participant_id', array('p.unique_identifier','p.first_name', 'p.last_name','p.participant_id'))
-                ->join(array('pmm' => 'participant_manager_map'), 'pmm.participant_id=p.participant_id', array(''))
-                ->where("pmm.dm_id=?", $this->_session->dm_id)
-                ->where("s.status='shipped' OR s.status='evaluated'OR s.status='finalized'")
-                ->where("year(s.shipment_date)  + 5 > year(CURDATE())");
+            ->join(array('spm' => 'shipment_participant_map'), 'spm.shipment_id=s.shipment_id', array(''))
+            ->join(array('p' => 'participant'), 'p.participant_id=spm.participant_id', array('p.unique_identifier','p.first_name', 'p.last_name','p.participant_id'))
+            ->join(array('pmm' => 'participant_manager_map'), 'pmm.participant_id=p.participant_id', array(''))
+            ->where("pmm.dm_id=?", $this->_session->dm_id)
+            ->where("s.status='shipped' OR s.status='evaluated'OR s.status='finalized'")
+            ->where("year(s.shipment_date)  + 5 > year(CURDATE())");
 
         $aResultTotal = $this->getAdapter()->fetchAll($sQuery);
         $iTotal = count($aResultTotal);
@@ -844,19 +846,19 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
             //$aRow['lastdate_response'];
 			
 			$qcBtnText = " Quality Check";
-			if($aRow['RESPONSEDATE']!='' && $aRow['RESPONSEDATE']!='0000-00-00'){
-				if($aRow['qc_date']!=""){
+			if ($aRow['RESPONSEDATE']!='' && $aRow['RESPONSEDATE']!='0000-00-00') {
+				if ($aRow['qc_date']!="") {
 					$qcBtnText = " Edit Quality Check";
 					$aRow['qc_date']=$general->humanDateFormat($aRow['qc_date']);
 				}
-				if($globalQcAccess=='yes'){
-					if($this->_session->qc_access=='yes'){
-						$qcChkbox='<input type="checkbox" class="checkTablePending" name="subchk[]" id="'. $aRow['map_id'].'"  value="' . $aRow['map_id'] . '" onclick="addQc(\''.$aRow['map_id'].'\',this);"  />';
+				if ($globalQcAccess=='yes') {
+					if ($this->_session->qc_access=='yes') {
+					    $qcChkbox='<input type="checkbox" class="checkTablePending" name="subchk[]" id="'. $aRow['map_id'].'"  value="' . $aRow['map_id'] . '" onclick="addQc(\''.$aRow['map_id'].'\',this);"  />';
 						$qcResponse='<br/><a href="javascript:void(0);" onclick="addSingleQc(\''.$aRow['map_id'].'\',\''.$aRow['qc_date'].'\')" class="btn btn-primary"  style="margin:3px 0;"> <i class="icon icon-edit"></i>'. $qcBtnText.'</a>';	
 					}
 				}
 			}
-			$row[]=$qcChkbox;
+			$row[] = $qcChkbox;
             $row[] = $aRow['SHIP_YEAR'];
             $row[] = $general->humanDateFormat($aRow['shipment_date']);
             $row[] = ($aRow['scheme_name']);
@@ -870,21 +872,21 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
 			$delete='';
 			
 			
-			if($isEditable){
-				if($aRow['RESPONSEDATE']!='' && $aRow['RESPONSEDATE']!='0000-00-00'){
-					if($this->_session->view_only_access=='no'){
+			if ($isEditable) {
+				if ($aRow['RESPONSEDATE']!='' && $aRow['RESPONSEDATE']!='0000-00-00') {
+					if ($this->_session->view_only_access=='no') {
 						$delete='<br/><a href="javascript:void(0);" onclick="removeSchemes(\'' . $aRow['scheme_type']. '\',\'' . base64_encode($aRow['map_id']) . '\')" class="btn btn-danger"  style="margin:3px 0;"> <i class="icon icon-remove-sign"></i> Delete Response</a>';
 					}
-				}else{
+				} else {
 					$buttonText = "Enter Response";
 					$download='<br/><a href="/' . $aRow['scheme_type'] . '/download/sid/' . $aRow['shipment_id'] . '/pid/' . $aRow['participant_id'] . '/eid/' . $aRow['evaluation_status'] . '" class="btn btn-default"  style="margin:3px 0;" target="_BLANK"> <i class="icon icon-download"></i> Download Form</a>';
 				}
 			}
             
 			$row[] = '<a href="/' . $aRow['scheme_type'] . '/response/sid/' . $aRow['shipment_id'] . '/pid/' . $aRow['participant_id'] . '/eid/' . $aRow['evaluation_status'].'/comingFrom/all-schemes' . '" class="btn btn-success"  style="margin:3px 0;"> <i class="icon icon-edit"></i>  '.$buttonText.' </a>'
-					.$delete
-					.$download
-					.$qcResponse;
+                .$delete
+				.$download
+				.$qcResponse;
 					
 			$downloadReports= " N.A. ";		
             if ($aRow['status']=='finalized') {
@@ -1761,10 +1763,27 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
          * Get data to display
          */
 
-         $sQuery = $this->getAdapter()->select()->from(array('s' => 'shipment'), array('s.scheme_type', 's.shipment_date', 's.shipment_code', 's.lastdate_response', 's.shipment_id','s.status','s.response_switch'))
-			->join(array('spm' => 'shipment_participant_map'), 'spm.shipment_id=s.shipment_id', array('spm.report_generated','spm.map_id', "spm.evaluation_status","qc_date", "spm.participant_id", "RESPONSEDATE" => "DATE_FORMAT(spm.shipment_test_report_date,'%Y-%m-%d')",'spm.shipment_score'))
+         $sQuery = $this->getAdapter()->select()
+             ->from(array('s' => 'shipment'), array(
+                 's.scheme_type',
+                 's.shipment_date',
+                 's.shipment_code',
+                 's.lastdate_response',
+                 's.shipment_id',
+                 's.status', 's.response_switch'))
+			->join(array('spm' => 'shipment_participant_map'), 'spm.shipment_id=s.shipment_id', array(
+			    'spm.report_generated',
+                'spm.map_id',
+                "spm.evaluation_status",
+                "qc_date",
+                "spm.participant_id",
+                "RESPONSEDATE" => "DATE_FORMAT(spm.shipment_test_report_date,'%Y-%m-%d')",'spm.shipment_score'))
 			->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('scheme_name'))
-			->join(array('p' => 'participant'), 'p.participant_id=spm.participant_id', array('p.unique_identifier','p.first_name', 'p.last_name','p.participant_id'))
+			->join(array('p' => 'participant'), 'p.participant_id=spm.participant_id', array(
+			    'p.unique_identifier',
+                'p.first_name',
+                'p.last_name',
+                'p.participant_id'))
 			->join(array('pmm' => 'participant_manager_map'), 'pmm.participant_id=p.participant_id')
 			->where("pmm.dm_id=?", $this->_session->dm_id)
 			->where("s.scheme_type=?", $parameters['scheme']);
@@ -1790,43 +1809,59 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
         $iFilteredTotal = count($aResultFilterTotal);
 
         /* Total data set length */
-         $tQuery = $this->getAdapter()->select()->from(array('s' => 'shipment'), array('s.scheme_type', 's.shipment_date', 's.shipment_code', 's.lastdate_response', 's.shipment_id','s.status','s.response_switch'))
-			->join(array('spm' => 'shipment_participant_map'), 'spm.shipment_id=s.shipment_id', array('spm.report_generated','spm.map_id', "spm.evaluation_status","qc_date", "spm.participant_id", "RESPONSEDATE" => "DATE_FORMAT(spm.shipment_test_report_date,'%Y-%m-%d')",'spm.shipment_score'))
-			->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('scheme_name'))
-			->join(array('p' => 'participant'), 'p.participant_id=spm.participant_id', array('p.unique_identifier','p.first_name', 'p.last_name','p.participant_id'))
-			->join(array('pmm' => 'participant_manager_map'), 'pmm.participant_id=p.participant_id')
+         $tQuery = $this->getAdapter()->select()->from(array('s' => 'shipment'), array(
+             's.scheme_type',
+             's.shipment_date',
+             's.shipment_code',
+             's.lastdate_response',
+             's.shipment_id',
+             's.status',
+             's.response_switch'))
+             ->join(array('spm' => 'shipment_participant_map'), 'spm.shipment_id=s.shipment_id', array(
+                 'spm.report_generated',
+                 'spm.map_id',
+                 "spm.evaluation_status",
+                 "qc_date",
+                 "spm.participant_id",
+                 "RESPONSEDATE" => "DATE_FORMAT(spm.shipment_test_report_date,'%Y-%m-%d')",
+                 'spm.shipment_score'))
+             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('scheme_name'))
+             ->join(array('p' => 'participant'), 'p.participant_id=spm.participant_id', array(
+                 'p.unique_identifier',
+                 'p.first_name',
+                 'p.last_name','p.participant_id'))
+             ->join(array('pmm' => 'participant_manager_map'), 'pmm.participant_id=p.participant_id')
 			->where("pmm.dm_id=?", $this->_session->dm_id)
 			->where("s.scheme_type=?", $parameters['scheme']);
-        $aResultTotal = $this->getAdapter()->fetchAll($tQuery);
-	$shipmentArray = array();
-	foreach($aResultTotal as $total){
-	    if(!in_array($total['shipment_code'],$shipmentArray)){
-		$shipmentArray[] = $total['shipment_code'];
-	    }
-	}
-        $iTotal = count($aResultTotal);
-
-        /*
-         * Output
+         $aResultTotal = $this->getAdapter()->fetchAll($tQuery);
+         $shipmentArray = array();
+         foreach ($aResultTotal as $total) {
+             if (!in_array($total['shipment_code'],$shipmentArray)) {
+                 $shipmentArray[] = $total['shipment_code'];
+             }
+         }
+         $iTotal = count($aResultTotal);
+         /*
+          * Output
          */
-        $output = array(
-            "sEcho" => intval($parameters['sEcho']),
-            "iTotalRecords" => $iTotal,
-            "iTotalDisplayRecords" => $iFilteredTotal,
-            "aaData" => array()
-        );
-        $general = new Pt_Commons_General();
-        foreach ($rResult as $aRow) {
-	    $row = array();
-            $row[] = $general->humanDateFormat($aRow['shipment_date']);
-            $row[] = $aRow['shipment_code'];
-            $row[] = $aRow['unique_identifier'];
-            $row[] = $aRow['first_name'] . " " . $aRow['last_name'];
-            $row[] = $general->humanDateFormat($aRow['RESPONSEDATE']);
-            $row[] = $aRow['shipment_score'];
-            $output['aaData'][] = $row;
-        }
-        $output['shipmentArray'] = $shipmentArray;
-        echo json_encode($output);
+         $output = array(
+             "sEcho" => intval($parameters['sEcho']),
+             "iTotalRecords" => $iTotal,
+             "iTotalDisplayRecords" => $iFilteredTotal,
+             "aaData" => array()
+         );
+         $general = new Pt_Commons_General();
+         foreach ($rResult as $aRow) {
+             $row = array();
+             $row[] = $general->humanDateFormat($aRow['shipment_date']);
+             $row[] = $aRow['shipment_code'];
+             $row[] = $aRow['unique_identifier'];
+             $row[] = $aRow['first_name'] . " " . $aRow['last_name'];
+             $row[] = $general->humanDateFormat($aRow['RESPONSEDATE']);
+             $row[] = $aRow['shipment_score'];
+             $output['aaData'][] = $row;
+         }
+         $output['shipmentArray'] = $shipmentArray;
+         echo json_encode($output);
     }
 }

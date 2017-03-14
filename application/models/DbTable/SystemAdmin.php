@@ -287,8 +287,8 @@ class Application_Model_DbTable_SystemAdmin extends Zend_Db_Table_Abstract {
         echo json_encode($output);
     }
 
-    public function addSystemAdmin($params){
-	$authNameSpace = new Zend_Session_Namespace('administrators');
+    public function addSystemAdmin ($params) {
+        $authNameSpace = new Zend_Session_Namespace('administrators');
         $data = array(
             'first_name'=>$params['firstName'],
             'last_name'=>$params['lastName'],
@@ -305,11 +305,11 @@ class Application_Model_DbTable_SystemAdmin extends Zend_Db_Table_Abstract {
         return $this->insert($data);
     }
     
-    public function getSystemAdminDetails($adminId){
+    public function getSystemAdminDetails ($adminId) {
         return $this->fetchRow($this->select()->where("admin_id = ? ",$adminId));
     }
     
-    public function updateSystemAdmin($params) {
+    public function updateSystemAdmin ($params) {
 	    $authNameSpace = new Zend_Session_Namespace('administrators');
         $data = array(
             'first_name'=>$params['firstName'],
@@ -321,14 +321,14 @@ class Application_Model_DbTable_SystemAdmin extends Zend_Db_Table_Abstract {
 		    'updated_by' => $authNameSpace->admin_id,
             'updated_on' => new Zend_Db_Expr('now()')
         );
-        if(isset($params['password']) && $params['password'] !=""){
+        if (isset($params['password']) && $params['password'] !="") {
             $data['password']= $params['password'];
             $data['force_password_reset']= 1;
         }
         return $this->update($data,"admin_id=".$params['adminId']);
     }
 
-    public function upsertPtccProfile($params){
+    public function upsertPtccProfile($params) {
         $authNameSpace = new Zend_Session_Namespace('administrators');
         $dbAdapter = $this->getAdapter();
         $dbAdapter->beginTransaction();

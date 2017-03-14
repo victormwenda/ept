@@ -890,7 +890,11 @@ class Application_Service_Evaluation {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $authNameSpace = new Zend_Session_Namespace('administrators');
         $admin = $authNameSpace->primary_email;
-        $noOfRows = $db->update('shipment', array('status' => $status, 'updated_by_admin' => $admin, 'updated_on_admin' => new Zend_Db_Expr('now()')), "shipment_id = " . $shipmentId);
+        $noOfRows = $db->update('shipment', array(
+            'status' => $status,
+            'updated_by_admin' => $admin,
+            'updated_on_admin' => new Zend_Db_Expr('now()')),
+            "shipment_id = " . $shipmentId);
         if ($noOfRows > 0) {
             return "Status updated";
         } else {
