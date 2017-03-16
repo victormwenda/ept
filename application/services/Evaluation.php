@@ -949,6 +949,7 @@ class Application_Service_Evaluation {
                 'sp.optional_eval_comment',
                 'sp.evaluation_comment',
                 'sp.documentation_score',
+                'sp.supervisor_approval',
                 'sp.participant_supervisor'))
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('sl.scheme_id', 'sl.scheme_name'))
             ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array(
@@ -1314,6 +1315,7 @@ class Application_Service_Evaluation {
                 }
                 $shipmentResult[$i]['responseResult'] = $toReturn;
             } else if ($res['scheme_type'] == 'tb') {
+                $attributes = json_decode($res['attributes'], true);
                 $sql = $db->select()->from(array('ref' => 'reference_result_tb'),
                     array('sample_id', 'sample_label', 'sample_score'))
                     ->join(array('spm' => 'shipment_participant_map'),
@@ -1371,8 +1373,12 @@ class Application_Service_Evaluation {
                 }
                 $shipmentResult[$i]['shipment_score'] = $shipmentScore;
                 $shipmentResult[$i]['max_shipment_score'] = $maxShipmentScore;
+                $shipmentResult[$i]['documentation_score'] = $scoringService->calculateTbDocumentationScore(
+                    $res['shipment_date'], $attributes['expiry_date'], $res['shipment_receipt_date'],
+                    $attributes['sample_rehydration_date'], $res['shipment_test_date'], $res['supervisor_approval'],
+                    $res['participant_supervisor'], $res['lastdate_response']);
                 $shipmentResult[$i]['submission_score_status'] = $scoringService->calculateSubmissionPassStatus(
-                    $shipmentScore, Application_Service_EvaluationScoring::MAX_DOCUMENTATION_SCORE, $maxShipmentScore,
+                    $shipmentScore, $shipmentResult[$i]['documentation_score'], $maxShipmentScore,
                     $sampleStatuses);
                 $shipmentResult[$i]['eval_comment'] = $res['evaluationComments'];
                 $shipmentResult[$i]['optional_eval_comment'] = $res['optional_eval_comment'];

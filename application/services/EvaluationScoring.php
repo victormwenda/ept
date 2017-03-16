@@ -48,41 +48,7 @@ class Application_Service_EvaluationScoring {
 
     public function calculateTbDocumentationScore($shipmentDate, $expiryDate, $receiptDate, $rehydrationDate, $testDate,
                                                   $supervisorApproval, $supervisorName, $responseDeadlineDate) {
-        $documentationScore = self::MAX_DOCUMENTATION_SCORE;
-        $inferredTestDate = $responseDeadlineDate;
-        if ($this->isBlankDate($testDate)) {
-            $documentationScore -= self::DEDUCTION_POINTS;
-        } else {
-            $inferredTestDate = $testDate;
-        }
-        if ($this->isBlankDate($expiryDate)) {
-            $documentationScore -= self::DEDUCTION_POINTS;
-        } else if (new DateTime($expiryDate) < new DateTime($inferredTestDate)) {
-            // Mark as zero if user tried to run the sample using an expired panel
-            return 0;
-        }
-        if ($this->isBlankDate($receiptDate)) {
-            $documentationScore -= self::DEDUCTION_POINTS;
-        }
-        if ($this->isBlankDate($rehydrationDate)) {
-            $documentationScore -= self::DEDUCTION_POINTS;
-        }
-        if ($this->isNullOrEmpty($supervisorApproval) || $supervisorApproval == 'no') {
-            $documentationScore -= self::DEDUCTION_POINTS;
-        }
-        if ($this->isNullOrEmpty($supervisorName)) {
-            $documentationScore -= self::DEDUCTION_POINTS;
-        }
-        if ($this->dateDiffInHours($inferredTestDate, $rehydrationDate) > self::REHYDRATION_EXPIRY_HOURS) {
-            $documentationScore -= DEDUCTION_POINTS;
-        }
-        if ($this->dateDiffInHours($inferredTestDate, $receiptDate) > self::FRIED_SAMPLE_HOURS) {
-            $documentationScore -= DEDUCTION_POINTS;
-        }
-        if ($this->dateDiffInHours($inferredTestDate, $shipmentDate) > self::EXPIRY_FROM_DATE_OF_SHIPMENT_HOURS) {
-            $documentationScore -= DEDUCTION_POINTS;
-        }
-        return $documentationScore;
+        return self::MAX_DOCUMENTATION_SCORE;
     }
 
     private function isBlankDate ($dateValue) {
