@@ -1985,7 +1985,9 @@ class Application_Service_Evaluation {
                     ->joinLeft(array('ec' => 'r_evaluation_comments'), 'ec.comment_id=sp.evaluation_comment', array(
                         'evaluationComments' => 'comment'))
                     ->where("s.shipment_id = ?", $shipmentId)
-                    ->where("substring(sp.evaluation_status,4,1) != '0'");
+                    ->where("substring(sp.evaluation_status,4,1) != '0'")
+                    ->order('country_name ASC')
+                    ->order("first_name ASC");
 
                 $tbReportParticipants = $db->fetchAll($participantsSql);
             }
