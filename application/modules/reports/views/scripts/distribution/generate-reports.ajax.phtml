@@ -256,7 +256,7 @@ if (sizeof($this->result['shipment']) > 0) {
         }  else if ($schemeType == 'tb') {
             $labInfo = '<h3 style="width:100%;text-align:center;">'.$result['shipment_code'].'</h3>';
             $labInfo .= '<p style="font-size:10pt;width:100%;text-align:center;">International Laboratory Branch, Division of Global HIV and TB, Centers for Disease Control and Prevention</p>';
-            $labInfo .= '<table cellpadding="3" style="width:100%;font-size:8pt;">';
+            $labInfo .= '<table cellpadding="2" style="width:100%;font-size:8pt;">';
             $labInfo .= '    <tr>';
             $labInfo .= '	     <td style="width:10%;"></td>';
             $labInfo .= '	     <td style="border-top:solid 10px #000000;border-bottom:solid 10px #000000;background-color:#777777;color:#ffffff;text-align:center;width:20%;"><strong>Country</strong></td>';
@@ -593,7 +593,7 @@ if (sizeof($this->result['shipment']) > 0) {
                 $pdf->SetLeftMargin(15);
                 $pdf->writeHTML($labRes, true, false, true, false, '');
             } else if ($schemeType == 'tb') {
-                $labRes = '<table cellpadding="3" style="width:100%;font-size:8pt;">';
+                $labRes = '<table cellpadding="1" style="width:100%;font-size:8pt;">';
                 $labRes .= '    <tr style="background-color:#777777;color:#ffffff;">';
                 $labRes .= '	     <td style="text-align:center;border-top:solid 10px #000000;border-bottom:solid 10px #000000;" colspan="4"><strong>Site Results</strong></td>';
                 $labRes .= '    </tr>';
@@ -642,9 +642,10 @@ if (sizeof($this->result['shipment']) > 0) {
                 $labRes .= '    </tr>';
                 $labRes .= '</table>';
                 if ((isset($result['eval_comment']) && $result['eval_comment'] !== '') ||
-                    (isset($result['optional_eval_comment']) && $result['optional_eval_comment'] !== '')) {
+                    (isset($result['optional_eval_comment']) && $result['optional_eval_comment'] !== '') ||
+                    (isset($result['shipment_comment']) && $result['shipment_comment'] !== '')) {
                     $labRes .= '<br /><br />';
-                    $labRes .= '<table cellpadding="3" style="width:100%;font-size:8pt;">';
+                    $labRes .= '<table cellpadding="2" style="width:100%;font-size:8pt;">';
                     $labRes .= '    <tr style="background-color:#777777;color:#ffffff;">';
                     $labRes .= '	     <td style="text-align:center;border-top:solid 10px #000000;border-bottom:solid 10px #000000;"><strong>Comments</strong></td>';
                     $labRes .= '    </tr>';
@@ -656,6 +657,11 @@ if (sizeof($this->result['shipment']) > 0) {
                     if (isset($result['optional_eval_comment']) && $result['optional_eval_comment'] !== '') {
                         $labRes .= '    <tr>';
                         $labRes .= '	     <td>'.$result['optional_eval_comment'].'</td>';
+                        $labRes .= '    </tr>';
+                    }
+                    if (isset($result['shipment_comment']) && $result['shipment_comment'] !== '') {
+                        $labRes .= '    <tr>';
+                        $labRes .= '	     <td>'.$result['shipment_comment'].'</td>';
                         $labRes .= '    </tr>';
                     }
                     $labRes .= '</table>';
