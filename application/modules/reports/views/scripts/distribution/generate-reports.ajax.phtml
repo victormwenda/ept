@@ -153,10 +153,10 @@ if (sizeof($this->result['shipment']) > 0) {
 
         // ---------------------------------------------------------
 
-        if(trim($result['shipment_date'])!=""){
+        if (trim($result['shipment_date']) != "") {
             $result['shipment_date'] = $this->dateFormat($result['shipment_date']);
         }
-        if(trim($result['lastdate_response'])!=""){
+        if (trim($result['lastdate_response']) != "") {
             $result['lastdate_response'] = $this->dateFormat($result['lastdate_response']);
         }
 
