@@ -1407,6 +1407,7 @@ class Application_Service_Evaluation {
                     $sampleStatuses);
                 $shipmentResult[$i]['eval_comment'] = $res['evaluationComments'];
                 $shipmentResult[$i]['optional_eval_comment'] = $res['optional_eval_comment'];
+                $shipmentResult[$i]['corrective_actions'] = $attributes['corrective_actions'];
                 $shipmentResult[$i]['responseResult'] = $toReturn;
             }
             $i++;
