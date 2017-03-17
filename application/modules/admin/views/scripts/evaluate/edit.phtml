@@ -13,9 +13,9 @@ if ($next < count($urlListArray)) {
 	$nextLink = $urlListArray[$next];
 }
 $reportDate = explode(" ", $this->evaluateData['shipment']['shipment_test_report_date']);
-$attributes = json_decode($this->evaluateData['shipment']['attributes'],true);
+$attributes = json_decode($this->evaluateData['shipment']['attributes'], true);
 $correctiveActions = array();
-if ($this->scheme == 'tb' && isset($attributes['correctiveActions'])) {
+if ($this->scheme == 'tb' && isset($attributes['corrective_actions'])) {
     $correctiveActions = $attributes['corrective_actions'];
 } ?>
 <br/>
