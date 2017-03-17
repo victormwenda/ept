@@ -102,6 +102,8 @@ class Admin_EvaluateController extends Zend_Controller_Action {
                 $pid = (int)base64_decode($this->_getParam('pid'));
                 $this->view->scheme = $scheme = base64_decode($this->_getParam('scheme'));
                 $schemeService = new Application_Service_Schemes();
+                $evalService = new Application_Service_Evaluation();
+                $this->view->evaluateData = $evalService->editEvaluation($sid,$pid,$scheme);
                 if ($scheme == 'eid') {
                     $this->view->extractionAssay = $schemeService->getEidExtractionAssay();
                     $this->view->detectionAssay = $schemeService->getEidDetectionAssay();
@@ -115,9 +117,28 @@ class Admin_EvaluateController extends Zend_Controller_Action {
                     $this->view->vlAssay = $schemeService->getVlAssay();
                 } else if ($scheme == 'tb') {
                     $this->view->assays = $schemeService->getTbAssayReferenceMap();
+                    if (isset($this->view->evaluateData['shipment']['follows_up_from']) &&
+                        $this->view->evaluateData['shipment']['follows_up_from'] > 0) {
+                        $attributes = json_decode($this->view->evaluateData['shipment']['attributes'], true);
+                        $correctiveActionsFromPreviousRound = array();
+                        if(isset($attributes['corrective_actions_from_previous_round'])) {
+                            $correctiveActionsFromPreviousRound = $attributes['corrective_actions_from_previous_round'];
+                        } else {
+                            $previousShipmentData = $schemeService->getShipmentData($this->view->evaluateData['shipment']['follows_up_from'], $pid);
+                            $previousShipmentAttributes = json_decode($previousShipmentData['attributes'], true);
+                            if (isset($previousShipmentAttributes['corrective_actions'])) {
+                                foreach ($previousShipmentAttributes['corrective_actions'] as $correctiveActionFromPreviousRound) {
+                                    array_push($correctiveActionsFromPreviousRound, array(
+                                        'checked_off' => false,
+                                        'corrective_action' => $correctiveActionFromPreviousRound
+                                    ));
+                                }
+                            }
+                        }
+                        $this->view->followsUpFrom = $previousShipmentData['shipment_code'];
+                        $this->view->correctiveActionsFromPreviousRound = $correctiveActionsFromPreviousRound;
+                    }
                 }
-                $evalService = new Application_Service_Evaluation();
-                $this->view->evaluateData = $evalService->editEvaluation($sid,$pid,$scheme);
                 $globalConfigDb = new Application_Model_DbTable_GlobalConfig();
                 $this->view->customField1 = $globalConfigDb->getValue('custom_field_1');
                 $this->view->customField2 = $globalConfigDb->getValue('custom_field_2');

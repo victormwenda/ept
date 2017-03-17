@@ -79,7 +79,27 @@ if (isset($this->evaluateData['evalComments'])) {
 		</td>		
 	</tr>
     <?php
-    if ($this->scheme == 'tb') { ?>
+    if ($this->scheme == 'tb') {
+        if (isset($this->followsUpFrom) &&
+            count($this->correctiveActionsFromPreviousRound) > 0) { ?>
+    <tr>
+        <td style="width:25%;vertical-align: middle">Corrective Actions
+            from <?php echo $this->followsUpFrom ?></td>
+        <td>
+            <ul id="followUpCorrectiveActionsList" class="list-unstyled">
+                <?php
+                for ($i = 0; $i < count($this->correctiveActionsFromPreviousRound); $i++) { ?>
+                    <li id="followUpCorrectiveActionItem<?php echo $i ?>" class="input-group">
+                        <input type="checkbox" id="correctiveActionFromPreviousRound<?php echo $i ?>" name="correctiveActionFromPreviousRound[]" <?php echo $this->correctiveActionsFromPreviousRound[$i]['checked_off'] ? ' checked' : '' ?> />
+                        <label for="correctiveActionFromPreviousRound<?php echo $i ?>"><?php echo $this->correctiveActionsFromPreviousRound[$i]['corrective_action'] ?></label>
+                    </li>
+                    <?php
+                } ?>
+            </ul>
+        </td>
+    </tr>
+            <?php
+        }?>
     <tr>
         <td style="width:25%;vertical-align: middle">Corrective Actions</td>
         <td>
