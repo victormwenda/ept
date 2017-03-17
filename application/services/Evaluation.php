@@ -672,7 +672,7 @@ class Application_Service_Evaluation {
                     'updated_on' => new Zend_Db_Expr('now()')), "shipment_map_id = " . $params['smid'] . " AND sample_id = " . $params['sampleId'][$i]);
             }
         } else if ($params['scheme'] == 'vl') {
-			$attributes = array(
+            $attributes = array(
 				"sample_rehydration_date" => Pt_Commons_General::dateFormat($params['sampleRehydrationDate']),
                 "vl_assay" => $params['vlAssay'],
                 "assay_lot_number" => $params['assayLotNumber'],
@@ -751,15 +751,30 @@ class Application_Service_Evaluation {
                     'updated_on' => new Zend_Db_Expr('now()')), "shipment_map_id = " . $params['smid'] . " AND sample_id = " . $params['sampleId'][$i]);
             }
         } else if ($params['scheme'] == 'tb') {
-            $attributes = array(
+            $correctiveActions = array();
+            if (isset($params['correctiveActions']) && $params['correctiveActions'] != "") {
+                if (is_array($params['correctiveActions'])) {
+                    foreach ($params['correctiveActions'] as $correctiveAction) {
+                        if($correctiveAction != null && trim($correctiveAction) != "") {
+                            array_push($correctiveActions, $correctiveAction);
+                        }
+                    }
+                } else {
+                    array_push($correctiveActions, $params['correctiveActions']);
+                }
+            }
+
+            $schemeService = new Application_Service_Schemes();
+            $shipmentData = $schemeService->getShipmentData($params['shipmentId'], $params['participantId']);
+            $attributes = array_merge(json_decode($shipmentData['attributes'], true), array(
                 "sample_rehydration_date" => Pt_Commons_General::dateFormat($params['sampleRehydrationDate']),
                 "mtb_rif_kit_lot_no" => $params['mtbRifKitLotNo'],
                 "expiry_date" => Pt_Commons_General::dateFormat($params['expiryDate']),
                 "assay" => $params['assay'],
                 "count_tests_conducted_over_month" => $params['countTestsConductedOverMonth'],
                 "count_errors_encountered_over_month" => $params['countErrorsEncounteredOverMonth'],
-                "error_codes_encountered_over_month" => $params['errorCodesEncounteredOverMonth']
-            );
+                "error_codes_encountered_over_month" => $params['errorCodesEncounteredOverMonth'],
+                "corrective_actions" => $correctiveActions));
 
             $attributes = json_encode($attributes);
             $mapData = array(
@@ -786,6 +801,11 @@ class Application_Service_Evaluation {
             $scoringService = new Application_Service_EvaluationScoring();
             $shipmentScore = 0;
             for ($i = 0; $i < $size; $i++) {
+                $dateTested = Pt_Commons_General::dateFormat($params['dateTested'][$i]);
+                if (!isset($params['dateTested'][$i]) ||
+                    $params['dateTested'][$i] == "") {
+                    $dateTested = null;
+                }
                 $instrumentInstalledOn = Pt_Commons_General::dateFormat($params['instrumentInstalledOn'][$i]);
                 if (!isset($params['instrumentInstalledOn'][$i]) ||
                     $params['instrumentInstalledOn'][$i] == "") {
@@ -795,6 +815,11 @@ class Application_Service_Evaluation {
                 if (!isset($params['instrumentLastCalibratedOn'][$i]) ||
                     $params['instrumentLastCalibratedOn'][$i] == "") {
                     $instrumentLastCalibratedOn = null;
+                }
+                $cartridgeExpirationDate = Pt_Commons_General::dateFormat($params['cartridgeExpirationDate'][$i]);
+                if (!isset($params['cartridgeExpirationDate'][$i]) ||
+                    $params['cartridgeExpirationDate'][$i] == "") {
+                    $cartridgeExpirationDate = null;
                 }
 
                 $db = Zend_Db_Table_Abstract::getDefaultAdapter();
@@ -809,7 +834,7 @@ class Application_Service_Evaluation {
                 $shipmentScore += $scoringService->calculateTbSampleScore($calculatedScorePassStatus, $referenceSample['sample_score']);
 
                 $db->update('response_result_tb', array(
-                    'date_tested' => Pt_Commons_General::dateFormat($params['dateTested'][$i]),
+                    'date_tested' => $dateTested,
                     'mtb_detected' => $params['mtbDetected'][$i],
                     'rif_resistance' => $params['rifResistance'][$i],
                     'probe_d' => $params['probeD'][$i],
@@ -824,7 +849,7 @@ class Application_Service_Evaluation {
                     'instrument_last_calibrated_on' => $instrumentLastCalibratedOn,
                     'module_name' => $params['moduleName'][$i],
                     'instrument_user' => $params['instrumentUser'][$i],
-                    'cartridge_expiration_date' => Pt_Commons_General::dateFormat($params['cartridgeExpirationDate'][$i]),
+                    'cartridge_expiration_date' => $cartridgeExpirationDate,
                     'reagent_lot_id' => $params['reagentLotId'][$i],
                     'error_code' => $params['errorCode'][$i],
                     'updated_by' => $admin,

@@ -12,7 +12,12 @@ if ($prev >= 0) {
 if ($next < count($urlListArray)) {
 	$nextLink = $urlListArray[$next];
 }
-$reportDate = explode(" ", $this->evaluateData['shipment']['shipment_test_report_date']); ?>
+$reportDate = explode(" ", $this->evaluateData['shipment']['shipment_test_report_date']);
+$attributes = json_decode($this->evaluateData['shipment']['attributes'],true);
+$correctiveActions = array();
+if ($this->scheme == 'tb' && isset($attributes['correctiveActions'])) {
+    $correctiveActions = $attributes['corrective_actions'];
+} ?>
 <br/>
 <legend>Participant Result Summary</legend>
 <h5 style="border-bottom:1px solid #999;padding-bottom:10px;">
@@ -26,7 +31,7 @@ $reportDate = explode(" ", $this->evaluateData['shipment']['shipment_test_report
     <input type="hidden" name="participantId" id="participantId" value="<?php echo $this->evaluateData['shipment']['participant_id']; ?>" />
 	<input type="hidden" name="smid" id="smid" value="<?php echo $this->evaluateData['shipment']['map_id']; ?>" />
 	<input type="hidden" name="scheme" id="scheme" value="<?php echo $this->scheme; ?>" />   
-	<input type="hidden" name="whereToGo" id="whereToGo" value="" />   
+	<input type="hidden" name="whereToGo" id="whereToGo" value="" />
 <?php
 if ($this->scheme == 'eid') {
 	include('edit-eid-evaluation.phtml');
@@ -73,6 +78,30 @@ if (isset($this->evaluateData['evalComments'])) {
         } ?>
 		</td>		
 	</tr>
+    <?php
+    if ($this->scheme == 'tb') { ?>
+    <tr>
+        <td style="width:25%;vertical-align: middle">Corrective Actions</td>
+        <td>
+            <ul id="correctiveActionsList" class="list-unstyled">
+            <?php
+            for ($i = 0; $i < count($correctiveActions); $i++) { ?>
+            <li id="correctiveActionItem<?php echo $i ?>" class="input-group">
+                <input type="text" id="correctiveActions<?php echo $i ?>" name="correctiveActions[]" class="form-control" value="<?php echo $correctiveActions[$i] ?>" />
+                <span class="input-group-btn">
+                    <button id="removeCorrectiveAction<?php echo $i ?>" class="btn btn-danger" type="button" onclick="removeCorrectiveAction(<?php echo $i ?>)"><i class="icon-remove"></i></button>
+                </span>
+            </li>
+            <?php
+            } ?>
+                <li id="correctiveActionItemX">
+                    <input type="text" id="correctiveActionsX" name="correctiveActions[]" class="form-control" onkeydown="correctiveActionReturnPressed(event)" />
+                </li>
+            </ul>
+        </td>
+    </tr>
+        <?php
+    } ?>
 	<tr>
 		<td style="width:25%;vertical-align: middle">Evaluation Comment</td>
 		<td>
@@ -89,14 +118,21 @@ if (isset($this->evaluateData['evalComments'])) {
             <textarea class="form-control" name="optionalComments" id="optionalComments"><?php echo $this->evaluateData['shipment']['optional_eval_comment']; ?></textarea>
         </td>
 	</tr>
-	<tr>
-		<td style="vertical-align: middle;" colspan="2">
-			<label>Is the above a follow up comment for corrective action ? </label>
-			<input type="radio" name="isFollowUp" id="followUpYes" <?php echo ((isset($this->evaluateData['shipment']['is_followup']) && $this->evaluateData['shipment']['is_followup'] =="yes") || (isset($this->evaluateData['shipment']['failure_reason']) && $this->evaluateData['shipment']['failure_reason'] != "[]")) ? " checked='checked' " : ""; ?> value="yes" title="Please choose whether this is a follow up comment or not"/> Yes
-			<input type="radio" name="isFollowUp" id="followUpNo" <?php echo (isset($this->evaluateData['shipment']['is_followup']) && $this->evaluateData['shipment']['is_followup'] =="no") ? " checked='checked' " : ""; ?> value="no"/> No			
-		</td>
-	</tr>
-	
+    <?php
+    if ($this->scheme != 'tb') { ?>
+        <tr>
+            <td style="vertical-align: middle;" colspan="2">
+                <label>Is the above a follow up comment for corrective action ? </label>
+                <input type="radio" name="isFollowUp"
+                       id="followUpYes" <?php echo ((isset($this->evaluateData['shipment']['is_followup']) && $this->evaluateData['shipment']['is_followup'] == "yes") || (isset($this->evaluateData['shipment']['failure_reason']) && $this->evaluateData['shipment']['failure_reason'] != "[]")) ? " checked='checked' " : ""; ?>
+                       value="yes" title="Please choose whether this is a follow up comment or not"/> Yes
+                <input type="radio" name="isFollowUp"
+                       id="followUpNo" <?php echo (isset($this->evaluateData['shipment']['is_followup']) && $this->evaluateData['shipment']['is_followup'] == "no") ? " checked='checked' " : ""; ?>
+                       value="no"/> No
+            </td>
+        </tr>
+        <?php
+    } ?>
 </table>
 <table class="table table-bordered table-striped table-hover" style="width:<?php if($this->scheme == 'tb') { echo "100%"; } else { echo "70%"; } ?>;margin:30px auto 0 auto;">
 	<tr>
@@ -180,4 +216,26 @@ $dtFormat=  $vHelper->getDateFormat();
             $('#participantSupervisor').hide();
         }
     });
+
+    <?php
+    if ($this->scheme == 'tb') { ?>
+    function removeCorrectiveAction(index) {
+      $('#correctiveActionItem' + index).remove();
+    }
+
+    var correctiveCationCount = <?php echo count($correctiveActions) ?>;
+    function correctiveActionReturnPressed(e) {
+      if (e.keyCode === 13 && $('#correctiveActionsX').val()) {
+        $('#correctiveActionItemX').before('<li id="correctiveActionItem' + correctiveCationCount +
+          '" class="input-group"><input type="text" id="correctiveActions' + correctiveCationCount +
+          '" name="correctiveActions[]" class="form-control" value="' + $('#correctiveActionsX').val() +
+          '" /><span class="input-group-btn"><button id="removeCorrectiveAction' + correctiveCationCount +
+          '" class="btn btn-danger" type="button" onclick="removeCorrectiveAction(' + correctiveCationCount +
+          ')"><i class="icon-remove"></i></button></span></li>');
+        $('#correctiveActionsX').val('');
+        correctiveCationCount++;
+      }
+    }
+        <?php
+    } ?>
 </script>
