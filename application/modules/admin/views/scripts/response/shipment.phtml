@@ -105,8 +105,12 @@ if (count($this->shipment) > 0) { ?>
         <tr>
             <th style="width:40px;"></th>
             <th>Participant/Tester</th>
+            <?php if($this->shipment[0]['scheme_type'] != 'tb') { ?>
             <th>Response Score</th>
             <th>Documentation Score</th>
+            <?php } else { ?>
+            <th>Score</th>
+            <?php } ?>
             <th>Result</th>
             <th>Comments (if any)</th>
             <th>Action</th>
@@ -145,9 +149,13 @@ if (count($this->shipment) > 0) { ?>
                     </a>
                 </td>
 				<td style="vertical-align:middle;"><?php echo $shipment['first_name'] . " " .$shipment['last_name']. "(".$shipment['unique_identifier'].")" ?></td>
-				<td style="text-align:center;vertical-align:middle;"><?php echo $shipment['shipment_score'] ?></td>
-				<td style="text-align:center;vertical-align:middle;"><?php echo $shipment['documentation_score'] ?></td>
-				<td style="text-align:center;vertical-align:middle;"><?php echo (isset($shipment['display_result']) && $shipment['display_result'] != "") ? $shipment['display_result'] : 'Not Evaluated'; ?></td>
+                <?php if($shipment['scheme_type'] != 'tb') { ?>
+                <td style="text-align:center;vertical-align:middle;"><?php echo $shipment['shipment_score'] ?></td>
+                <td style="text-align:center;vertical-align:middle;"><?php echo $shipment['documentation_score'] ?></td>
+                <?php } else { ?>
+                <td style="text-align:center;vertical-align:middle;"><?php echo ($shipment['shipment_score'] + $shipment['documentation_score']) ?></td>
+                <?php } ?>
+                <td style="text-align:center;vertical-align:middle;"><?php echo (isset($shipment['display_result']) && $shipment['display_result'] != "") ? $shipment['display_result'] : 'Not Evaluated'; ?></td>
 				<td style="text-align:left;vertical-align:middle;"><?php echo $shipment['failure_reason'] ?></td>
 				<td style="text-align:center;vertical-align:middle;white-space: nowrap">
 				    <a class="btn btn-primary btn-xs" href="/admin/response/edit/sid/<?php echo base64_encode($shipment['shipment_id']) ?>/pid/<?php echo base64_encode($shipment['participant_id']) ?>/scheme/<?php echo base64_encode($shipment['scheme_type']) ?>">
@@ -218,13 +226,15 @@ if (count($this->shipment) > 0) { ?>
 		    "bRetrieve": true,
 		    "bdestroy": false,
 		    "aoColumns": [
-			{"bSortable": false, "aTargets": [ 0 ] },
-			{"sClass":""},
-			{"sClass":"center"},
-			{"sClass":"center"},
-			{"sClass":"center"},
-			{"bSearchable": false, "bVisible": false},
-			{"sClass":"center","bSortable":false}
+                {"bSortable": false, "aTargets": [ 0 ] },
+                {"sClass":""},
+                <?php if($this->shipment[0]['scheme_type'] != 'tb') { ?>
+                {"sClass":"center"},
+                <?php } ?>
+                {"sClass":"center"},
+                {"sClass":"center"},
+                {"bSearchable": false, "bVisible": false},
+                {"sClass":"center","bSortable":false}
 		    ],
 		    "aaSorting": [[ 1, "asc" ]],
 		    "bProcessing": true,

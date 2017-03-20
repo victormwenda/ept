@@ -6,9 +6,11 @@
 <?php
 if (count($this->shipment) > 0) { ?>
 <div class="well" style="clear: both;">
-<a href="javascript:void(0);" onclick="$('#allShipmentList').fadeToggle()" class="btn btn-warning btn-xs pull-right" style="margin-top:-10px;">Show/Hide Shipment List</a>
-<div id="allShipmentList">
-    <legend><h4>All Shipments Under PT Survey <?php echo $this->shipment[0]['distribution_code']; ?> (<?php echo $this->dateFormat($this->shipment[0]['distribution_date']); ?>)</h4></legend>
+    <a href="javascript:void(0);" onclick="$('#allShipmentList').fadeToggle()" class="btn btn-warning btn-xs pull-right" style="margin-top:-10px;">Show/Hide Shipment List</a>
+    <div id="allShipmentList">
+        <legend>
+            <h4>All Shipments Under PT Survey <?php echo $this->shipment[0]['distribution_code']; ?> (<?php echo $this->dateFormat($this->shipment[0]['distribution_date']); ?>)</h4>
+        </legend>
         <table class="table table-bordered table-striped table-hover">
 			<tr>
 				<th style="text-align: center;">Shipment Code</th>
@@ -117,8 +119,12 @@ if (count($this->shipment) > 0) { ?>
         <tr>
             <th style="width:40px;"></th>
             <th>Participant/Tester</th>
+            <?php if($this->shipment[0]['scheme_type'] != 'tb') { ?>
             <th>Response Score</th>
             <th>Documentation Score</th>
+            <?php } else { ?>
+            <th>Score</th>
+            <?php } ?>
             <th>Result</th>
             <th>Comments (if any)</th>
             <th>Action</th>
@@ -140,7 +146,7 @@ if (count($this->shipment) > 0) { ?>
 				foreach ($warnings as $warning) {
 				    $shipment['failure_reason'] .= 	"<tr><td>".(isset($warning['warning']) ? $warning['warning'] : "")."</td><td>".(isset($warning['correctiveAction']) ? $warning['correctiveAction'] : "")."</td></tr>";
 				}
-				$shipment['failure_reason'] .=  "</table>";;
+				$shipment['failure_reason'] .=  "</table>";
             } else {
 				$shipment['failure_reason'] = "  No Warnings or Corrective Actions  ";
 			}
@@ -158,8 +164,12 @@ if (count($this->shipment) > 0) { ?>
                 </a>
             </td>
 			<td style="vertical-align:middle;"><?php echo $shipment['first_name'] . " " .$shipment['last_name']. "(".$shipment['unique_identifier'].")" ?></td>
-			<td style="text-align:center;vertical-align:middle;"><?php echo $shipment['shipment_score'] ?></td>
-			<td style="text-align:center;vertical-align:middle;"><?php echo $shipment['documentation_score'] ?></td>
+            <?php if($shipment['scheme_type'] != 'tb') { ?>
+            <td style="text-align:center;vertical-align:middle;"><?php echo $shipment['shipment_score'] ?></td>
+            <td style="text-align:center;vertical-align:middle;"><?php echo $shipment['documentation_score'] ?></td>
+            <?php } else { ?>
+            <td style="text-align:center;vertical-align:middle;"><?php echo ($shipment['shipment_score'] + $shipment['documentation_score']) ?></td>
+            <?php } ?>
 			<td style="text-align:center;vertical-align:middle;">
                 <?php echo (isset($shipment['display_result']) && $shipment['display_result'] != "") ? $shipment['display_result'] : 'Not Evaluated'; ?>
             </td>
@@ -222,7 +232,9 @@ if (count($this->shipment) > 0) { ?>
 		    "aoColumns": [
                 {"bSortable": false, "aTargets": [ 0 ] },
                 {"sClass":""},
+                <?php if($this->shipment[0]['scheme_type'] != 'tb') { ?>
                 {"sClass":"center"},
+                <?php } ?>
                 {"sClass":"center"},
                 {"sClass":"center"},
                 {"bSearchable": false, "bVisible": false},
