@@ -680,10 +680,10 @@ class Application_Service_Evaluation {
                 "specimen_volume" => $params['specimenVolume']
 			);
 			
-			if(isset($params['otherAssay']) && $params['otherAssay'] != ""){
+			if (isset($params['otherAssay']) && $params['otherAssay'] != "") {
 				$attributes['other_assay'] = $params['otherAssay'];
 			}
-			if(isset($params['uploadedFilePath']) && $params['uploadedFilePath'] != ""){
+			if (isset($params['uploadedFilePath']) && $params['uploadedFilePath'] != "") {
 				$attributes['uploadedFilePath'] = $params['uploadedFilePath'];
 			}
 			
@@ -699,11 +699,11 @@ class Application_Service_Evaluation {
 			    "updated_on_admin" => new Zend_Db_Expr('now()')
             );
 			
-			if(isset($params['customField1']) && trim($params['customField1']) != ""){
+			if (isset($params['customField1']) && trim($params['customField1']) != "") {
 				$mapData['custom_field_1'] = $params['customField1'];
 			}
 			
-			if(isset($params['customField2']) && trim($params['customField2']) != ""){
+			if (isset($params['customField2']) && trim($params['customField2']) != "") {
 				$mapData['custom_field_2'] = $params['customField2'];
 			}				
 
@@ -766,7 +766,35 @@ class Application_Service_Evaluation {
 
             $schemeService = new Application_Service_Schemes();
             $shipmentData = $schemeService->getShipmentData($params['shipmentId'], $params['participantId']);
-            $attributes = array_merge(json_decode($shipmentData['attributes'], true), array(
+            $attributes = json_decode($shipmentData['attributes'], true);
+
+            if (isset($shipmentData['follows_up_from']) && $shipmentData['follows_up_from'] > 0) {
+                $previousShipmentData = $schemeService->getShipmentData($shipmentData['follows_up_from'], $params['participantId']);
+                $previousShipmentAttributes = json_decode($previousShipmentData['attributes'], true);
+
+                $correctiveActionsFromPreviousRound = array();
+                $correctiveActionsCheckedOff = array();
+                if (isset($params['correctiveActionsFromPreviousRound'])) {
+                    if ($params['correctiveActionsFromPreviousRound'] == "") {
+                        array_push($correctiveActionsCheckedOff, $params['correctiveActionsFromPreviousRound']);
+                    } else {
+                        $correctiveActionsCheckedOff = $params['correctiveActionsFromPreviousRound'];
+                    }
+                }
+
+                if (isset($previousShipmentAttributes['corrective_actions'])) {
+                    foreach ($previousShipmentAttributes['corrective_actions'] as $correctiveActionFromPreviousRound) {
+                        array_push($correctiveActionsFromPreviousRound, array(
+                            'checked_off' => in_array($correctiveActionFromPreviousRound,
+                                $correctiveActionsCheckedOff),
+                            'corrective_action' => $correctiveActionFromPreviousRound
+                        ));
+                    }
+                }
+                $attributes['corrective_actions_from_previous_round'] = $correctiveActionsFromPreviousRound;
+            }
+
+            $attributes = array_merge($attributes, array(
                 "sample_rehydration_date" => Pt_Commons_General::dateFormat($params['sampleRehydrationDate']),
                 "mtb_rif_kit_lot_no" => $params['mtbRifKitLotNo'],
                 "expiry_date" => Pt_Commons_General::dateFormat($params['expiryDate']),

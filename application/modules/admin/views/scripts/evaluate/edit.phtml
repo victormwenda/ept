@@ -90,8 +90,12 @@ if (isset($this->evaluateData['evalComments'])) {
                 <?php
                 for ($i = 0; $i < count($this->correctiveActionsFromPreviousRound); $i++) { ?>
                     <li id="followUpCorrectiveActionItem<?php echo $i ?>" class="input-group">
-                        <input type="checkbox" id="correctiveActionFromPreviousRound<?php echo $i ?>" name="correctiveActionFromPreviousRound[]" <?php echo $this->correctiveActionsFromPreviousRound[$i]['checked_off'] ? ' checked' : '' ?> />
-                        <label for="correctiveActionFromPreviousRound<?php echo $i ?>"><?php echo $this->correctiveActionsFromPreviousRound[$i]['corrective_action'] ?></label>
+                        <input type="checkbox" id="correctiveActionsFromPreviousRound<?php echo $i ?>"
+                               name="correctiveActionsFromPreviousRound[]"
+                               <?php echo $this->correctiveActionsFromPreviousRound[$i]['checked_off'] ? ' checked' : '' ?>
+                               value="<?php echo $this->correctiveActionsFromPreviousRound[$i]['corrective_action'] ?>"
+                        />
+                        <label for="correctiveActionsFromPreviousRound<?php echo $i ?>"><?php echo $this->correctiveActionsFromPreviousRound[$i]['corrective_action'] ?></label>
                     </li>
                     <?php
                 } ?>

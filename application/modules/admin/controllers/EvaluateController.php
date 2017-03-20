@@ -121,10 +121,10 @@ class Admin_EvaluateController extends Zend_Controller_Action {
                         $this->view->evaluateData['shipment']['follows_up_from'] > 0) {
                         $attributes = json_decode($this->view->evaluateData['shipment']['attributes'], true);
                         $correctiveActionsFromPreviousRound = array();
-                        if(isset($attributes['corrective_actions_from_previous_round'])) {
+                        $previousShipmentData = $schemeService->getShipmentData($this->view->evaluateData['shipment']['follows_up_from'], $pid);
+                        if (isset($attributes['corrective_actions_from_previous_round'])) {
                             $correctiveActionsFromPreviousRound = $attributes['corrective_actions_from_previous_round'];
                         } else {
-                            $previousShipmentData = $schemeService->getShipmentData($this->view->evaluateData['shipment']['follows_up_from'], $pid);
                             $previousShipmentAttributes = json_decode($previousShipmentData['attributes'], true);
                             if (isset($previousShipmentAttributes['corrective_actions'])) {
                                 foreach ($previousShipmentAttributes['corrective_actions'] as $correctiveActionFromPreviousRound) {
