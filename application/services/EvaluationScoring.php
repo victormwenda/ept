@@ -3,7 +3,7 @@
 class Application_Service_EvaluationScoring {
     const CONCERN_CT_MAX_VALUE = 42.00;
     const PASS_SCORE_PERCENT = 100.00;
-    const CONCERN_SCORE_PERCENT = 50.00;
+    const CONCERN_SCORE_PERCENT = 100.00;
     const FAIL_SCORE_PERCENT = 0.00;
 
     public function calculateTbSamplePassStatus($refMtbDetected, $resMtbDetected, $refRifResistance, $resRifResistance,
@@ -43,7 +43,7 @@ class Application_Service_EvaluationScoring {
     const REHYDRATION_EXPIRY_HOURS = 48; // 2 days
     const FRIED_SAMPLE_HOURS = 336; // 14 Days
     const EXPIRY_FROM_DATE_OF_SHIPMENT_HOURS = 720; // 30 Days
-    const MAX_DOCUMENTATION_SCORE = 20;
+    const MAX_DOCUMENTATION_SCORE = 0;
     const DEDUCTION_POINTS = 2;
 
     public function calculateTbDocumentationScore($shipmentDate, $expiryDate, $receiptDate, $rehydrationDate, $testDate,
@@ -67,17 +67,11 @@ class Application_Service_EvaluationScoring {
         return $hoursBetweenDates + ($dateDiff->days * 24);
     }
 
-    const FAIL_IF_POINTS_DEDUCTED = 20;
+    const FAIL_IF_POINTS_DEDUCTED = 21;
 
     public function calculateSubmissionPassStatus($shipmentScore, $documentationScore, $maxShipmentScore, $samplePassStatuses) {
         if ((self::MAX_DOCUMENTATION_SCORE) + $maxShipmentScore - $shipmentScore - $documentationScore > self::FAIL_IF_POINTS_DEDUCTED) {
             return 'fail';
-        }
-        if (in_array('fail', $samplePassStatuses)) {
-            return 'fail';
-        }
-        if (in_array('concern', $samplePassStatuses)) {
-            return 'concern';
         }
         return 'pass';
     }
