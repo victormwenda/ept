@@ -674,7 +674,6 @@ class Application_Service_Shipments {
                     $instrumentsDb->upsertInstrument($params['participantId'], $instrumentDetails);
                 }
             }
-
             $db->commit();
         } catch (Exception $e) {
             $db->rollBack();

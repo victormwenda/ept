@@ -10,21 +10,28 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
         $dataManagerId = $authNameSpace->dm_id;
         foreach ($sampleIds as $key => $sampleId) {
             $res = $this->fetchRow("shipment_map_id = " . $params['smid'] . " and sample_id = " . $sampleId);
+
+            $dateTested = Pt_Commons_General::dateFormat($params['dateTested'][$key]);
+            if ($dateTested == "" || $dateTested == "0000-00-00") {
+                $dateTested = null;
+            }
             $instrumentInstalledOn = Pt_Commons_General::dateFormat($params['instrumentInstalledOn'][$key]);
-            if (!isset($params['instrumentInstalledOn'][$key]) ||
-                $params['instrumentInstalledOn'][$key] == "") {
+            if ($instrumentInstalledOn == "" || $instrumentInstalledOn == "0000-00-00") {
                 $instrumentInstalledOn = null;
             }
             $instrumentLastCalibratedOn = Pt_Commons_General::dateFormat($params['instrumentLastCalibratedOn'][$key]);
-            if (!isset($params['instrumentLastCalibratedOn'][$key]) ||
-                $params['instrumentLastCalibratedOn'][$key] == "") {
+            if ($instrumentLastCalibratedOn == "" || $instrumentLastCalibratedOn == "0000-00-00") {
                 $instrumentLastCalibratedOn = null;
+            }
+            $cartridgeExpirationDate = Pt_Commons_General::dateFormat($params['cartridgeExpirationDate'][$key]);
+            if ($cartridgeExpirationDate == "" || $cartridgeExpirationDate == "0000-00-00") {
+                $cartridgeExpirationDate = null;
             }
             if ($res == null || count($res) == 0) {
                 $this->insert(array(
                     'shipment_map_id' => $params['smid'],
                     'sample_id' => $sampleId,
-                    'date_tested' => Pt_Commons_General::dateFormat($params['dateTested'][$key]),
+                    'date_tested' => $dateTested,
                     'mtb_detected' => $params['mtbDetected'][$key],
                     'rif_resistance' => $params['rifResistance'][$key],
                     'probe_d' => $params['probeD'][$key],
@@ -38,7 +45,7 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
                     'instrument_last_calibrated_on' => $instrumentLastCalibratedOn,
                     'module_name' => $params['moduleName'][$key],
                     'instrument_user' => $params['instrumentUser'][$key],
-                    'cartridge_expiration_date' => Pt_Commons_General::dateFormat($params['cartridgeExpirationDate'][$key]),
+                    'cartridge_expiration_date' => $cartridgeExpirationDate,
                     'reagent_lot_id' => $params['reagentLotId'][$key],
                     'error_code' => $params['errorCode'][$key],
                     'created_by' => $dataManagerId,
@@ -48,7 +55,7 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
                 $this->update(array(
                     'shipment_map_id' => $params['smid'],
                     'sample_id' => $sampleId,
-                    'date_tested' => Pt_Commons_General::dateFormat($params['dateTested'][$key]),
+                    'date_tested' => $dateTested,
                     'mtb_detected' => $params['mtbDetected'][$key],
                     'rif_resistance' => $params['rifResistance'][$key],
                     'probe_d' => $params['probeD'][$key],
@@ -62,7 +69,7 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
                     'instrument_last_calibrated_on' => $instrumentLastCalibratedOn,
                     'module_name' => $params['moduleName'][$key],
                     'instrument_user' => $params['instrumentUser'][$key],
-                    'cartridge_expiration_date' => Pt_Commons_General::dateFormat($params['cartridgeExpirationDate'][$key]),
+                    'cartridge_expiration_date' => $cartridgeExpirationDate,
                     'reagent_lot_id' => $params['reagentLotId'][$key],
                     'error_code' => $params['errorCode'][$key],
                     'updated_by' => $dataManagerId,
@@ -77,21 +84,28 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
         $authNameSpace = new Zend_Session_Namespace('datamanagers');
         $dataManagerId = $authNameSpace->dm_id;
         $res = $this->fetchRow("shipment_map_id = " . $params['smid'] . " and sample_id = " . $sampleId);
+
+        $dateTested = Pt_Commons_General::dateFormat($params['dateTested']);
+        if ($dateTested == "" || $dateTested == "0000-00-00") {
+            $dateTested = null;
+        }
         $instrumentInstalledOn = Pt_Commons_General::stringToDbDate($params['instrumentInstalledOn']);
-        if (!isset($params['instrumentInstalledOn']) ||
-            $params['instrumentInstalledOn'] == "") {
+        if ($instrumentInstalledOn == "" || $instrumentInstalledOn == "0000-00-00") {
             $instrumentInstalledOn = null;
         }
         $instrumentLastCalibratedOn = Pt_Commons_General::stringToDbDate($params['instrumentLastCalibratedOn']);
-        if (!isset($params['instrumentLastCalibratedOn']) ||
-            $params['instrumentLastCalibratedOn'] == "") {
+        if ($instrumentLastCalibratedOn == "" || $instrumentLastCalibratedOn == "0000-00-00") {
             $instrumentLastCalibratedOn = null;
+        }
+        $cartridgeExpirationDate = Pt_Commons_General::stringToDbDate($params['cartridgeExpirationDate']);
+        if ($cartridgeExpirationDate == "" || $cartridgeExpirationDate == "0000-00-00") {
+            $cartridgeExpirationDate = null;
         }
         if ($res == null || count($res) == 0) {
             $this->insert(array(
                 'shipment_map_id' => $params['smid'],
                 'sample_id' => $sampleId,
-                'date_tested' => Pt_Commons_General::stringToDbDate($params['dateTested']),
+                'date_tested' => $dateTested,
                 'mtb_detected' => $params['mtbDetected'],
                 'rif_resistance' => $params['rifResistance'],
                 'probe_d' => $params['probeD'],
@@ -105,7 +119,7 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
                 'instrument_last_calibrated_on' => $instrumentLastCalibratedOn,
                 'module_name' => $params['moduleName'],
                 'instrument_user' => $params['instrumentUser'],
-                'cartridge_expiration_date' => Pt_Commons_General::stringToDbDate($params['cartridgeExpirationDate']),
+                'cartridge_expiration_date' => $cartridgeExpirationDate,
                 'reagent_lot_id' => $params['reagentLotId'],
                 'error_code' => $params['errorCode'],
                 'created_by' => $dataManagerId,
@@ -115,7 +129,7 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
             $this->update(array(
                 'shipment_map_id' => $params['smid'],
                 'sample_id' => $sampleId,
-                'date_tested' => Pt_Commons_General::stringToDbDate($params['dateTested']),
+                'date_tested' => $dateTested,
                 'mtb_detected' => $params['mtbDetected'],
                 'rif_resistance' => $params['rifResistance'],
                 'probe_d' => $params['probeD'],
@@ -129,7 +143,7 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
                 'instrument_last_calibrated_on' => $instrumentLastCalibratedOn,
                 'module_name' => $params['moduleName'],
                 'instrument_user' => $params['instrumentUser'],
-                'cartridge_expiration_date' => Pt_Commons_General::stringToDbDate($params['cartridgeExpirationDate']),
+                'cartridge_expiration_date' => $cartridgeExpirationDate,
                 'reagent_lot_id' => $params['reagentLotId'],
                 'error_code' => $params['errorCode'],
                 'updated_by' => $dataManagerId,

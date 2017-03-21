@@ -59,6 +59,15 @@ class Application_Model_DbTable_Instruments extends Zend_Db_Table_Abstract {
         }
         $instruments = $db->fetchAll($sql);
         $noOfRows = 0;
+        $instrumentInstalledOn = Pt_Commons_General::dateFormat($params['instrument_installed_on']);
+        if ($instrumentInstalledOn == "" || $instrumentInstalledOn == "0000-00-00") {
+            $instrumentInstalledOn = null;
+        }
+        $instrumentLastCalibratedOn = Pt_Commons_General::dateFormat($params['instrument_last_calibrated_on']);
+        if ($instrumentLastCalibratedOn == "" || $instrumentLastCalibratedOn == "0000-00-00") {
+            $instrumentLastCalibratedOn = null;
+        }
+
         if (count($instruments) == 0) {
             if (isset($params['instrument_serial']) && $params['instrument_serial'] != "") {
                 $data = array(
@@ -67,13 +76,11 @@ class Application_Model_DbTable_Instruments extends Zend_Db_Table_Abstract {
                     'created_by' => $dataManagerId,
                     'created_on' => new Zend_Db_Expr('now()')
                 );
-                if (isset($params['instrument_installed_on']) &&
-                    $params['instrument_installed_on'] != "") {
-                    $data['instrument_installed_on'] = Pt_Commons_General::stringToDbDate($params['instrument_installed_on']);
+                if (isset($instrumentInstalledOn)) {
+                    $data['instrument_installed_on'] = Pt_Commons_General::stringToDbDate($instrumentInstalledOn);
                 }
-                if (isset($params['instrument_last_calibrated_on']) &&
-                    $params['instrument_last_calibrated_on'] != "") {
-                    $data['instrument_last_calibrated_on'] = Pt_Commons_General::stringToDbDate($params['instrument_last_calibrated_on']);
+                if (isset($instrumentLastCalibratedOn)) {
+                    $data['instrument_last_calibrated_on'] = Pt_Commons_General::stringToDbDate($instrumentLastCalibratedOn);
                 }
                 $db->insert('instrument', $data);
                 $noOfRows = 1;
@@ -83,13 +90,13 @@ class Application_Model_DbTable_Instruments extends Zend_Db_Table_Abstract {
                 'instrument_serial' => $params['instrument_serial'],
                 'participant_id' => $pid
             );
-            if (isset($params['instrument_installed_on']) &&
-                $params['instrument_installed_on'] != $instruments[0]['instrument_installed_on']) {
-                $data['instrument_installed_on'] = Pt_Commons_General::stringToDbDate($params['instrument_installed_on']);
+            if (isset($instrumentInstalledOn) &&
+                $instrumentInstalledOn != $instruments[0]['instrument_installed_on']) {
+                $data['instrument_installed_on'] = Pt_Commons_General::stringToDbDate($instrumentInstalledOn);
             }
-            if (isset($params['instrument_last_calibrated_on']) &&
-                $params['instrument_last_calibrated_on'] != $instruments[0]['instrument_last_calibrated_on']) {
-                $data['instrument_last_calibrated_on'] = Pt_Commons_General::stringToDbDate($params['instrument_last_calibrated_on']);
+            if (isset($instrumentLastCalibratedOn) &&
+                $instrumentLastCalibratedOn != $instruments[0]['instrument_last_calibrated_on']) {
+                $data['instrument_last_calibrated_on'] = Pt_Commons_General::stringToDbDate($instrumentLastCalibratedOn);
             }
             if (isset($data['instrument_installed_on']) ||
                 isset($data['instrument_last_calibrated_on'])) {
