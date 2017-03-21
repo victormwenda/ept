@@ -81,8 +81,9 @@ foreach ($this->allSamples as $sample) {
         </td>
 	</tr>
 	<tr class ="light">
-		<td style="width:20%;">
+		<td style="width:20%; white-space: nowrap;">
             <label>Shipment Receipt Date</label>
+            <span class='mandatory'>*</span>
         </td>
 		<td style="width:30%;">
 			<input type="text" id="receiptDate" name="receiptDate" size="11" maxlength="11" style="width:180px;float:left;"
@@ -91,8 +92,9 @@ foreach ($this->allSamples as $sample) {
 			<i class="icon-remove-sign" style="cursor:pointer;margin-top:10px;margin-left:10px;float:left;" alt="Clear Date" title="Clear Date"
                onclick="clearDate('receiptDate')"> Clear</i>
 		</td>
-		<td style="width:20%;">
+		<td style="width:20%; white-space: nowrap;">
             <label>Sample Rehydration Date</label>
+            <span class='mandatory'>*</span>
         </td>
 		<td style="width:30%;">
 			<input type="text" name="sampleRehydrationDate" id="sampleRehydrationDate" size="11" maxlength="11"
@@ -103,8 +105,9 @@ foreach ($this->allSamples as $sample) {
 		</td>
 	</tr>
 	<tr>
-		<td style="width:20%;">
+		<td style="width:20%; white-space: nowrap;">
             <label>Testing Date</label>
+            <span class='mandatory'>*</span>
         </td>
 		<td style="width:30%;">
 			<input type="text" id="testDate" name="testDate" size="11" maxlength="11" style="width:180px;float:left;"
@@ -117,15 +120,17 @@ foreach ($this->allSamples as $sample) {
 		<td></td>
 	</tr>
     <tr class ="dark">
-		<td>
+		<td style="white-space: nowrap;">
             <label>MTB/RIF Kit Lot No</label>
+            <span class='mandatory'>*</span>
         </td>
 		<td>
 		    <input type="text" name="mtbRifKitLotNo" id="mtbRifKitLotNo" class="form-control isRequired"
                    value="<?php echo $this->shipment['attributes']['mtb_rif_kit_lot_no'];?>"/>
 		</td>
-		<td style="width:20%;">
+		<td style="width:20%; white-space: nowrap;">
             <label>Expiry Date</label>
+            <span class='mandatory'>*</span>
         </td>
 		<td style="width:30%;">
 			<input type="text" name="expiryDate" id="expiryDate" class="form-control isRequired datepicker"
@@ -146,8 +151,9 @@ foreach ($this->allSamples as $sample) {
             $authNameSpace->enable_adding_test_response_date!= null &&
             $authNameSpace->enable_adding_test_response_date!= '' &&
             $authNameSpace->enable_adding_test_response_date=='yes') { ?>
-        <td>
+        <td style="white-space: nowrap;">
             <label>Response Date</label>
+            <span class='mandatory'>*</span>
         </td>
         <td>
             <input type="text" id="testReceiptDate" name="testReceiptDate" size="11" maxlength="11"
@@ -162,8 +168,9 @@ foreach ($this->allSamples as $sample) {
             $authNameSpace->enable_choosing_mode_of_receipt!= null &&
             $authNameSpace->enable_choosing_mode_of_receipt!= '' &&
             $authNameSpace->enable_choosing_mode_of_receipt=='yes') { ?>
-        <td>
+        <td style="white-space: nowrap;">
             <label>Mode of Receipt</label>
+            <span class='mandatory'>*</span>
         </td>
         <td>
             <select class="form-control" name="modeOfReceipt" id="modeOfReceipt" class="form-control"
@@ -197,8 +204,9 @@ foreach ($this->allSamples as $sample) {
     <?php
 	} ?>
     <tr class="dark">
-        <td>
+        <td style="white-space: nowrap;">
             <label>Assay</label>
+            <span class='mandatory'>*</span>
         </td>
         <td>
             <select class="form-control" name="assay" id="assay" class="form-control"
@@ -263,8 +271,9 @@ foreach ($this->allSamples as $sample) {
             $isRequired = "required";
         } ?>
     <tr id="qcSection" class="light" style="<?php echo $display; ?>">
-        <td>
+        <td style="white-space: nowrap;">
             <label>QC Date</label>
+            <span class='mandatory'>*</span>
         </td>
         <td>
             <input type="text" id="qcDate" name="qcDate" size="11" maxlength="11" style="width:180px;float:left;"
@@ -273,12 +282,14 @@ foreach ($this->allSamples as $sample) {
                    title="Please enter QC Date" />&nbsp;
             <i class="icon-remove-sign" style="cursor:pointer;margin-top:10px;margin-left:10px;float:left;" alt="Clear Date" title="Clear Date"  onclick="clearDate('qcDate')"> Clear</i>
         </td>
-        <td>
+        <td style="white-space: nowrap;">
             <label>QC Done By</label>
+            <span class='mandatory'>*</span>
         </td>
         <td>
-            <input type="text" id="qcDoneBy" name="qcDoneBy" class="form-control<?php echo $isRequired ? ' isRequired' : ''; ?>"
-                   title="Please enter QC done by name"  value="<?php echo $this->shipment["qc_done_by"]; ?>" />
+            <input type="text" id="qcDoneBy" name="qcDoneBy" title="Please enter QC done by name"
+                   class="form-control<?php echo $isRequired ? ' isRequired' : ''; ?>"
+                   value="<?php echo $this->shipment["qc_done_by"]; ?>" />
         </td>
     </tr>
     <?php
@@ -508,8 +519,10 @@ foreach ($this->allSamples as $sample) {
             </select>
         </td>
         <th>
-            <label id ="labSupervisor" <?php echo(isset($this->shipment['supervisor_approval']) && $this->shipment['supervisor_approval'] == 'yes') ? "" : "style='display:none;'" ?> >
+            <label <?php echo(isset($this->shipment['supervisor_approval']) && $this->shipment['supervisor_approval'] == 'yes') ? "" : "style='display:none;'" ?>
+                   id ="labSupervisor" style="white-space: nowrap;">
                 Supervisor Name
+                <span class='mandatory'>*</span>
             </label>
         </th>
         <td>
@@ -612,100 +625,127 @@ $dtFormat = $genderHelper->getDateFormat();
   });
 
   function validateNow() {
+    var validationMessage = '';
     if (!$("#receiptDate").val()) {
-      alert('Please ensure Shipment Receipt Date has been entered');
-      return false;
+      validationMessage += '\n- Please ensure Shipment Receipt Date has been entered';
     }
 
     if (!$("#sampleRehydrationDate").val()) {
-      alert('Please ensure Sample Rehydration Date has been entered');
-      return false;
+      validationMessage += '\n- Please ensure Sample Rehydration Date has been entered';
+    } else if ($("#receiptDate").val() &&
+      moment($("#sampleRehydrationDate").val()).diff(moment($("#receiptDate").val())) < 0) {
+      validationMessage += '\n- Sample Rehydration Date has to come after the Shipment Receipt Date';
     }
 
     if (!$("#testDate").val()) {
-      alert('Please ensure Testing Date has been entered');
-      return false;
+      validationMessage += '\n- Please ensure Testing Date has been entered';
+    } else if ($("#sampleRehydrationDate").val() &&
+      moment($("#testDate").val()).diff(moment($("#sampleRehydrationDate").val())) < 0) {
+      validationMessage += '\n- Testing Date has to come after the Sample Rehydration Date';
     }
 
     if (!$("#expiryDate").val()) {
-      alert('Please ensure Expiry Date has been entered');
-      return false;
+      validationMessage += '\n- Please ensure Expiry Date has been entered';
     }
 
     if (!$("#testReceiptDate").val()) {
-      alert('Please ensure Response Date has been entered');
-      return false;
+      validationMessage += '\n- Please ensure Response Date has been entered';
+    } else if ($("#testDate").val() &&
+      moment($("#testReceiptDate").val()).diff(moment($("#testDate").val())) < 0) {
+      validationMessage += '\n- Response Date has to come after the Testing Date';
     }
 
     if (!$("#mtbRifKitLotNo").val()) {
-      alert('Please ensure MTB/RIF Kit Lot No has been entered');
-      return false;
+      validationMessage += '\n- Please ensure MTB/RIF Kit Lot No has been entered';
     }
 
     if (!$("#modeOfReceipt").val()) {
-      alert('Please ensure Mode of Receipt has been specified');
-      return false;
+      validationMessage += '\n- Please ensure Mode of Receipt has been specified';
     }
 
     if (!$("#assay").val()) {
-      alert('Please ensure Assay has been specified');
-      return false;
+      validationMessage += '\n- Please ensure Assay has been specified';
     }
 
     if ($('#qcDoneYes').is(':checked')) {
       if (!$("#qcDate").val()) {
-        alert('Please ensure QC Date has been entered');
-        return false;
+        validationMessage += '\n- Please ensure QC Date has been entered';
+      } else if ($("#testDate").val() &&
+        moment($("#testReceiptDate").val()).diff(moment($("#testDate").val())) < 0) {
+        validationMessage += '\n- QC Date has to come after the Testing Date';
       }
 
       if (!$("#qcDoneBy").val()) {
-        alert('Please ensure QC Done By has been entered');
-        return false;
+        validationMessage += '\n- Please ensure QC Done By has been entered';
       }
     }
 
-    if($('#supervisorApproval').val() === 'yes') {
-      if (!$("#participantSupervisor").val()) {
-        alert('Please ensure Supervisor Name has been entered');
-        return false;
-      }
+    if($('#supervisorApproval').val() === 'yes' && !$("#participantSupervisor").val()) {
+      validationMessage += '\n- Please ensure Supervisor Name has been entered';
     }
 
-    if (!moment($("#sampleRehydrationDate").val()).isAfter(new Date($("#receiptDate").val()))) {
-      alert('Sample Rehydration Date has to come after the Shipment Receipt Date');
-      return false;
-    }
-
-    if (!moment($("#testDate").val()).isAfter(new Date($("#sampleRehydrationDate").val()))) {
-      alert('Testing Date has to come after the Sample Rehydration Date');
-      return false;
-    }
-
-    if (!moment($("#testReceiptDate").val()).isAfter(new Date($("#testDate").val()))) {
-      alert('Response Date has to come after the Testing Date');
-      return false;
-    }
-
+    var dateTestedValidationCaught = false;
     $('[name="dateTested[]"]').each(function() {
-      if (!$.isNumeric($(this).val())) {
-        alert('Please ensure Date Tested has been specified for each sample');
-        return false;
+      if (!dateTestedValidationCaught) {
+        if (!$(this).val()) {
+          validationMessage += '\n- Please ensure Date Tested has been specified for each sample';
+          dateTestedValidationCaught = true;
+        } else if ($("#sampleRehydrationDate").val() &&
+          moment($("#testDate").val()).diff(new Date($("#sampleRehydrationDate").val())) < 0) {
+          validationMessage += '\n- Testing Date for each sample has to come after the Sample Rehydration Date';
+          dateTestedValidationCaught = true;
+        }
       }
     });
 
+    var mtbDetectedValidationCaught = false;
+    var mtbDetectedIndex = 0;
+    var rifResistanceValidationCaught = false;
+    var errorCodeValidationCaught = false;
     $('[name="mtbDetected[]"]').each(function() {
-      if (!$.isNumeric($(this).val())) {
-        alert('Please ensure MTB Detected has been specified for each sample');
-        return false;
+      if (!mtbDetectedValidationCaught) {
+        if (!$(this).val()) {
+          validationMessage += '\n- Please ensure MTB Detected has been specified for each sample';
+          mtbDetectedValidationCaught = true;
+        }
+      }
+      if (!rifResistanceValidationCaught) {
+        if (['high', 'medium', 'low', 'veryLow'].includes($(this).val()) &&
+          !['detected', 'notDetected'].includes($('[name="rifResistance[]"]').eq(mtbDetectedIndex).val())) {
+          validationMessage += '\n- If MTB was detected in a sample, please specify whether Rif Resistance was detected';
+          rifResistanceValidationCaught = true;
+        } else if (!['high', 'medium', 'low', 'veryLow', 'error'].includes($(this).val()) &&
+          $('[name="rifResistance[]"]').eq(mtbDetectedIndex).val() !== 'na') {
+          validationMessage += '\n- If there was no result or an invalid result for a sample, Rif Resistance should be N/A';
+          rifResistanceValidationCaught = true;
+        }
+      }
+      if (!errorCodeValidationCaught && $(this).val() === 'error' &&
+        !$('[name="errorCode[]"]').eq(mtbDetectedIndex).val()) {
+        validationMessage += '\n- If the result was an error, please specify what the error code was';
+        errorCodeValidationCaught = true;
+      }
+      mtbDetectedIndex++;
+    });
+
+    var probeValueValidationCaught = false;
+    $('[name="probeD[]"],[name="probeC[]"],[name="probeE[]"],[name="probeB[]"],[name="spc[]"],[name="probeA[]"]')
+      .each(function() {
+      if (!probeValueValidationCaught) {
+        if (!$(this).val()) {
+          validationMessage += '\n- Please ensure all SPC and Probe values have been specified for each sample';
+          probeValueValidationCaught = true;
+        } else if (!$.isNumeric($(this).val())) {
+          validationMessage += '\n- Please ensure all SPC and Probe values are valid numbers';
+          probeValueValidationCaught = true;
+        }
       }
     });
 
-    $(".oneDecimal").each(function() {
-      if (!$.isNumeric($(this).val())) {
-        alert('Please ensure all SPC and Probe values are valid numbers');
-        return false;
-      }
-    });
+    if (validationMessage) {
+      alert('Validation Check' + validationMessage);
+      return false;
+    }
 
     return deforayValidator.init({
       formId: 'tbResponseForm'

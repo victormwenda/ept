@@ -17,76 +17,123 @@ $reportDate = explode(" ", $this->responseData['shipment']['shipment_test_report
 <legend>Participant Result Summary</legend>
 <table class="table table-bordered table-striped" style="width:100%;margin:10px auto;padding-bottom:10px;">
     <tr>
-        <td style="width:25%;"><h4 class="text-info">Participant Name</h4> <?php echo ( $this->responseData['participant']['first_name'] . ' ' . $this->responseData['participant']['last_name'] );?></td>
-        <td style="width:25%;"><h4 class="text-info">Participant Code</h4> <?php echo $this->responseData['participant']['unique_identifier'] ?></td>
-        <td style="width:25%;"><h4 class="text-info">Affiliation</h4> <?php echo ( $this->responseData['participant']['affiliation'] );?> </td>
-        <td style="width:25%;"><h4 class="text-info">Phone No</h4> <?php  echo ( $this->responseData['participant']['mobile']  . '<br/>' .   $this->responseData['participant']['phone'] ); ?></td>
+        <td style="width:25%;">
+            <h4 class="text-info">Participant Name</h4>&nbsp;
+            <?php echo ($this->responseData['participant']['first_name'].' '.$this->responseData['participant']['last_name']);?>
+        </td>
+        <td style="width:25%;">
+            <h4 class="text-info">Participant Code</h4>&nbsp;
+            <?php echo $this->responseData['participant']['unique_identifier'] ?>
+        </td>
+        <td style="width:25%;">
+            <h4 class="text-info">Affiliation</h4>&nbsp;
+            <?php echo ($this->responseData['participant']['affiliation']);?>
+        </td>
+        <td style="width:25%;">
+            <h4 class="text-info">Phone No</h4>&nbsp;
+            <?php  echo ($this->responseData['participant']['mobile'].'<br/>'.$this->responseData['participant']['phone']); ?>
+        </td>
     </tr>
     <tr>
-        <td><h4 class="text-info">Shipment Code</h4> <?php echo $this->responseData['shipment']['shipment_code'];?></td>
-        <td><h4 class="text-info">Scheme Type</h4> <?php echo strtoupper($this->responseData['shipment']['scheme_type']); ?></td>
-        <td><h4 class="text-info">Shipment Date</h4> <?php echo $this->dateFormat($this->responseData['shipment']['shipment_date']);?> </td>
-        <td><h4 class="text-info">Result Due Date</h4> <?php echo $this->dateFormat($this->responseData['shipment']['lastdate_response']); ?></td>
+        <td>
+            <h4 class="text-info">Shipment Code</h4>&nbsp;
+            <?php echo $this->responseData['shipment']['shipment_code'];?>
+        </td>
+        <td>
+            <h4 class="text-info">Scheme Type</h4>&nbsp;
+            <?php echo strtoupper($this->responseData['shipment']['scheme_type']); ?>
+        </td>
+        <td>
+            <h4 class="text-info">Shipment Date</h4>&nbsp;
+            <?php echo $this->dateFormat($this->responseData['shipment']['shipment_date']); ?>
+        </td>
+        <td>
+            <h4 class="text-info">Result Due Date</h4>&nbsp;
+            <?php echo $this->dateFormat($this->responseData['shipment']['lastdate_response']); ?>
+        </td>
     </tr>
 </table>
 <hr>
-<form name="updateResultsForm" id="updateResultsForm" method="post" action="" onsubmit="return validateNow();return false;">
-<input type="hidden" name="shipmentId" id="shipmentId" value="<?php echo $this->responseData['shipment']['shipment_id']; ?>" />
-<input type="hidden" name="participantId" id="participantId" value="<?php echo $this->responseData['shipment']['participant_id']; ?>" />
+<form name="updateResultsForm" id="updateResultsForm" method="post" action=""
+      onsubmit="return validateNow();return false;">
+<input type="hidden" name="shipmentId" id="shipmentId"
+       value="<?php echo $this->responseData['shipment']['shipment_id']; ?>" />
+<input type="hidden" name="participantId" id="participantId"
+       value="<?php echo $this->responseData['shipment']['participant_id']; ?>" />
 <input type="hidden" name="smid" id="smid" value="<?php echo $this->responseData['shipment']['map_id']; ?>" />
 <input type="hidden" name="scheme" id="scheme" value="<?php echo $this->scheme; ?>" />
 <input type="hidden" name="whereToGo" id="whereToGo" value="" />
-<input type="hidden" id ="hdLastDate" name="hdLastDate" value="<?php echo $this->responseData['shipment']['lastdate_response'];?>" />
+<input type="hidden" id="hdLastDate" name="hdLastDate"
+       value="<?php echo $this->responseData['shipment']['lastdate_response'];?>" />
 <?php
 if ($this->scheme == 'tb') {
     include('edit-tb-response.phtml');
 } else {
-	echo "<br/><br/><br/><h4 style='text-align:center;'>Administrator Responses for this scheme (" . $this->scheme . ") is not yet implemented</h4><br/><br/><br/>";
-}
-?>
+    ?>
+    <br />
+    <br />
+    <br />
+    <h4 style='text-align:center;'>
+        Administrator Responses for this scheme (<?php echo $this->scheme ?>) is not yet implemented
+    </h4>
+    <br />
+    <br />
+    <br />
+<?php
+} ?>
 <table class="table table-bordered table-striped" style="width:100%;margin:10px auto;">
     <tr>
         <th style="width:20%;">Supervisor Review</th>
         <td style="width:20%;">
             <select name="supervisorApproval" id="supervisorApproval" class="form-control isRequired">
                 <option value="">--Select--</option>
-                <option value="yes" <?php if($this->responseData['shipment']['supervisor_approval'] == 'yes') echo " selected "; ?>>Yes</option>
-                <option value="no" <?php if($this->responseData['shipment']['supervisor_approval'] == 'no') echo " selected "; ?>>No</option>
+                <option value="yes" <?php if($this->responseData['shipment']['supervisor_approval'] == 'yes') echo " selected "; ?>>
+                    Yes
+                </option>
+                <option value="no" <?php if($this->responseData['shipment']['supervisor_approval'] == 'no') echo " selected "; ?>>
+                    No
+                </option>
             </select>
         </td>
         <th>
-            <label id ="labSupervisor" <?php echo(isset($this->shipment['supervisor_approval']) && $this->responseData['shipment']['supervisor_approval'] == 'yes') ? "" : "style='display:none;'" ?> >
+            <label id ="labSupervisor" <?php echo(isset($this->shipment['supervisor_approval']) && $this->responseData['shipment']['supervisor_approval'] == 'yes') ? "" : "style='display:none;'" ?>>
                 Supervisor Name
             </label>
         </th>
         <td>
-            <input name="participantSupervisor" id="participantSupervisor" <?php echo(isset($this->responseData['shipment']['supervisor_approval']) && $this->responseData['shipment']['supervisor_approval'] == 'yes') ? "" : "style='display:none;'" ?> type="text" class="form-control" value="<?php echo $this->responseData['shipment']['participant_supervisor']; ?>"/>
+            <input name="participantSupervisor" id="participantSupervisor" <?php echo(isset($this->responseData['shipment']['supervisor_approval']) && $this->responseData['shipment']['supervisor_approval'] == 'yes') ? "" : "style='display:none;'" ?>
+                   type="text" class="form-control"
+                   value="<?php echo $this->responseData['shipment']['participant_supervisor']; ?>"/>
         </td>
     </tr>
     <tr>
         <th>Comments </th>
         <td colspan="3">
-            <textarea name="userComments" id="userComments" class="form-control" size="120" maxlength="40"><?php echo $this->responseData['shipment']['user_comment'] ; ?></textarea>
+            <textarea name="userComments" id="userComments" class="form-control" size="120" maxlength="40">
+                <?php echo $this->responseData['shipment']['user_comment']; ?>
+            </textarea>
         </td>
     </tr>
 </table>
 <?php
-if(isset($this->haveCustom) && $this->haveCustom == 'yes') { ?>
+if (isset($this->haveCustom) && $this->haveCustom == 'yes') { ?>
 <fieldset>
 	<legend>Custom Fields</legend>
     <table>
         <tr>
-            <th style="width:250px;padding:5px;"><?php echo $this->customField1; ?> </th>
+            <th style="width:250px;padding:5px;"><?php echo $this->customField1; ?></th>
             <td style="padding:5px;">
-                <input name="customField1" id="customField1" type="text" size="80" maxlength="40" value="<?php echo  $this->responseData['shipment']['custom_field_1']; ?>"/>
+                <input name="customField1" id="customField1" type="text" size="80" maxlength="40"
+                       value="<?php echo  $this->responseData['shipment']['custom_field_1']; ?>" />
             </td>
         </tr>
         <?php
         if (isset($this->customField2) && $this->customField2 != "") { ?>
         <tr>
-            <th style="width:250px;padding:5px;"><?php echo $this->customField2; ?> </th>
+            <th style="width:250px;padding:5px;"><?php echo $this->customField2; ?></th>
             <td style="padding:5px;">
-                <input name="customField2" id="customField2" type="text" value="<?php echo  $this->responseData['shipment']['custom_field_2']; ?>"/>
+                <input name="customField2" id="customField2" type="text"
+                       value="<?php echo  $this->responseData['shipment']['custom_field_2']; ?>"/>
             </td>
         </tr>
         <?php
@@ -95,94 +142,99 @@ if(isset($this->haveCustom) && $this->haveCustom == 'yes') { ?>
 </fieldset>
 <?php
 } ?>
-<br/>
+<br />
 <div id="respond" style="margin: 10px auto 10px auto; text-align: center;" align="center">
-	<h5>Currently editing result <?php echo $pos+1 . " of ".count($urlListArray); ?> </h5>
+	<h5>Currently editing result <?php echo $pos+1 . " of ".count($urlListArray); ?></h5>
 	<?php
 	if (isset($previousLink) && $previousLink != "") { ?>
-	<button class="btn btn-primary" type="button" onclick="$('#whereToGo').val('<?php echo $previousLink; ?>');$('#updateResultsForm').submit();return false;">
+	<button class="btn btn-primary" type="button"
+            onclick="$('#whereToGo').val('<?php echo $previousLink; ?>');$('#updateResultsForm').submit();return false;">
         <span><i class="icon-chevron-left"></i> Update and Previous</span>
     </button>
 	<?php
 	} ?>
-	<button class="btn btn-primary" type="button" onclick="$('#whereToGo').val('');$('#updateResultsForm').submit();return false;">
+	<button class="btn btn-primary" type="button"
+            onclick="$('#whereToGo').val('');$('#updateResultsForm').submit();return false;">
         <span>Update</span>
     </button>
 	<?php
 	if (isset($nextLink) && $nextLink != "") { ?>
-    <button class="btn btn-primary" type="button" onclick="$('#whereToGo').val('<?php echo $nextLink; ?>');$('#updateResultsForm').submit();return false;">
+    <button class="btn btn-primary" type="button"
+            onclick="$('#whereToGo').val('<?php echo $nextLink; ?>');$('#updateResultsForm').submit();return false;">
         <span>Update and Next <i class="icon-chevron-right"></i></span>
     </button>
     <?php
 	} ?>
-	<input class="btn btn-danger" type="button" onclick="document.location='/admin/response/shipment/sid/<?php echo base64_encode($this->responseData['shipment']['shipment_id']); ?>'" tabindex="8" value="Back to Listing "/>
+	<input class="btn btn-danger" type="button"
+           onclick="document.location='/admin/response/shipment/sid/<?php echo base64_encode($this->responseData['shipment']['shipment_id']); ?>'"
+           tabindex="8" value="Back to Listing "/>
 </div>
 </form>
 <?php
 $vHelper = $this->getHelper('DateFormat');
-$dtFormat=  $vHelper->getDateFormat();
+$dtFormat =  $vHelper->getDateFormat();
 ?>
 <script type="text/javascript">
-	$(document).ready(function() {
-	    $(".datepicker" ).datepicker({dateFormat: '<?php echo $dtFormat;?>'});
-        $('.oneDecimal, .zeroDecimal').keypress(function () {
-            var $this = $(this);
-            $this.val($this.val().replace(/[^\d.]/g, ''));
-        });
-	});
-
-	var lastValue;
-	$("#isExcluded").on("click", function(e) {
-	    lastValue = $(this).val();
-	}).bind("change", function(e) {
-	    var changeConfirmation = confirm("Are you sure you want to change this ?");
-	    if (!changeConfirmation) {
-            $(this).val(lastValue);
-	    }
-	});
-
-	$('#supervisorApproval').change(function () {
-        if ($('#supervisorApproval').val() == 'yes') {
-            $('#labSupervisor').show();
-            $('#participantSupervisor').val('');
-            $('#participantSupervisor').show();
-        } else {
-            $('#labSupervisor').hide();
-            $('#participantSupervisor').val('');
-            $('#participantSupervisor').hide();
-        }
+  $(document).ready(function() {
+    $(".datepicker" ).datepicker({dateFormat: '<?php echo $dtFormat;?>'});
+    $('.oneDecimal, .zeroDecimal').keypress(function () {
+      var $this = $(this);
+      $this.val($this.val().replace(/[^\d.]/g, ''));
     });
+  });
 
-    function validateNow(){
-        $.blockUI();
-        var dates=[];
-        $(".sampleTestDate").each(function() {
-            if ($(this).val()) {
-                dates.push(new Date($(this).val()));
-            }
-        });
-        if (dates.length > 0) {
-            var maxDate = new Date(Math.max.apply(null, dates));
-            $("#testDate").val(moment(maxDate).format('DD-MMM-YYYY'));
-        }
-        if (moment($("#receipt_date").val()).isAfter($("#test_date").val())) {
-            alert('Testing Date has to come after the Shipment Receipt Date');
-            $.unblockUI();
-            return false;
-        }
-        $(".oneDecimal").each(function() {
-            if (!$.isNumeric($(this).val())) {
-                alert('Please ensure all SPC and Probe values are valid numbers');
-                $.unblockUI();
-                return false;
-            }
-        });
-        var flag = deforayValidator.init({
-            formId: 'updateResultsForm'
-        });
-        if(!flag) {
-            $.unblockUI();
-        }
-        return flag;
+  var lastValue;
+  $("#isExcluded").on("click", function(e) {
+    lastValue = $(this).val();
+  }).bind("change", function(e) {
+    var changeConfirmation = confirm("Are you sure you want to change this ?");
+    if (!changeConfirmation) {
+      $(this).val(lastValue);
     }
+  });
+
+  $('#supervisorApproval').change(function () {
+    if ($('#supervisorApproval').val() == 'yes') {
+      $('#labSupervisor').show();
+      $('#participantSupervisor').val('');
+      $('#participantSupervisor').show();
+    } else {
+      $('#labSupervisor').hide();
+      $('#participantSupervisor').val('');
+      $('#participantSupervisor').hide();
+    }
+  });
+
+  function validateNow(){
+    $.blockUI();
+    var dates=[];
+    $(".sampleTestDate").each(function() {
+      if ($(this).val()) {
+        dates.push(new Date($(this).val()));
+      }
+    });
+    if (dates.length > 0) {
+      var maxDate = new Date(Math.max.apply(null, dates));
+      $("#testDate").val(moment(maxDate).format('DD-MMM-YYYY'));
+    }
+    if (moment($("#receipt_date").val()).isAfter($("#test_date").val())) {
+      alert('Testing Date has to come after the Shipment Receipt Date');
+      $.unblockUI();
+      return false;
+    }
+    $(".oneDecimal").each(function() {
+      if (!$.isNumeric($(this).val())) {
+        alert('Please ensure all SPC and Probe values are valid numbers');
+        $.unblockUI();
+        return false;
+      }
+    });
+    var flag = deforayValidator.init({
+      formId: 'updateResultsForm'
+    });
+    if(!flag) {
+      $.unblockUI();
+    }
+    return flag;
+  }
 </script>
