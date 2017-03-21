@@ -808,6 +808,8 @@ class Application_Service_Evaluation {
             $mapData = array(
                 "shipment_receipt_date" => Pt_Commons_General::dateFormat($params['receiptDate']),
                 "shipment_test_date" => Pt_Commons_General::dateFormat($params['testDate']),
+                "shipment_test_report_date" => Pt_Commons_General::dateFormat($params['testReceiptDate']),
+                "mode_id" => $params['modeOfReceipt'],
                 "attributes" => $attributes,
                 "supervisor_approval" => $params['supervisorApproval'],
                 "participant_supervisor" => $params['participantSupervisor'],
@@ -815,7 +817,18 @@ class Application_Service_Evaluation {
                 "updated_by_admin" => $admin,
                 "updated_on_admin" => new Zend_Db_Expr('now()')
             );
-
+            if (isset($authNameSpace->qc_access) && $authNameSpace->qc_access =='yes') {
+                $mapData['qc_done'] = $params['qcDone'];
+                if (isset($mapData['qc_done']) && trim($mapData['qc_done']) == "yes") {
+                    $mapData['qc_date'] = Pt_Commons_General::dateFormat($params['qcDate']);
+                    $mapData['qc_done_by'] = trim($params['qcDoneBy']);
+                    $mapData['qc_created_on'] = new Zend_Db_Expr('now()');
+                } else {
+                    $mapData['qc_date'] = null;
+                    $mapData['qc_done_by'] = null;
+                    $mapData['qc_created_on'] = null;
+                }
+            }
             if(isset($params['customField1']) && trim($params['customField1']) != ""){
                 $mapData['custom_field_1'] = $params['customField1'];
             }

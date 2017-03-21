@@ -75,8 +75,8 @@ class Admin_ResponseController extends Zend_Controller_Action
                 $this->view->customField2 = $globalConfigDb->getValue('custom_field_2');
                 $this->view->haveCustom = $globalConfigDb->getValue('custom_field_needed');
                 $commonService = new Application_Service_Common();
-                $this->view->modeOfReceipt=$commonService->getAllModeOfReceipt();
-                $this->view->globalQcAccess=$commonService->getConfig('qc_access');
+                $this->view->modeOfReceipt = $commonService->getAllModeOfReceipt();
+                $this->view->globalQcAccess = $commonService->getConfig('qc_access');
             } else {
                 $this->_redirect("/admin/response/");
             }

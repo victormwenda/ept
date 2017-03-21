@@ -55,7 +55,7 @@ class Application_Service_Distribution {
 			$disrtibutionDb->updateDistributionStatus($distributionId,"shipped");
 			$db->commit();
 			return "PT Event shipped!";
-		} catch(Exception $e) {
+		} catch (Exception $e) {
 			$db->rollBack();
 			error_log($e->getMessage());
 			error_log($e->getTraceAsString());

@@ -5,13 +5,16 @@ $dtFormat = $dateFormatHelper->getDateFormat();
 $testReceiptDate = date('d-M-Y');
 if (isset($this->shipment["shipment_test_report_date"]) &&
     trim($this->shipment["shipment_test_report_date"]) != "") {
-    $expTestReceiptDate=explode(" ", $this->responseData['shipment']["shipment_test_report_date"]);
-    $testReceiptDate=$this->dateFormat($expTestReceiptDate[0]);
+    $expTestReceiptDate = explode(" ", $this->responseData['shipment']["shipment_test_report_date"]);
+    $testReceiptDate = $this->dateFormat($expTestReceiptDate[0]);
 } ?>
 <table class="table table-bordered table-striped" style="width:100%;margin:0 auto 10px auto;">
     <tr>
         <th style="width: 20%;">
-            <label>Shipment Received on</label>
+            <label>
+                Shipment Received on
+                <span class='mandatory'>*</span>
+            </label>
         </th>
         <td style="width: 30%;">
             <input type="text" id="receiptDate" name="receiptDate" size="11" maxlength="11" style="width:180px;float:left;"
@@ -21,7 +24,10 @@ if (isset($this->shipment["shipment_test_report_date"]) &&
                onclick="clearDate('receiptDate')"> Clear</i>
         </td>
         <td style="width: 20%;">
-            <label>Sample Rehydration Date <span class="mandatory">*</span></label>
+            <label>
+                Sample Rehydration Date
+                <span class="mandatory">*</span>
+            </label>
         </td>
         <td style="width: 30%;">
             <input type="text" name="sampleRehydrationDate" id="sampleRehydrationDate" style="width:180px;float:left;"
@@ -33,11 +39,14 @@ if (isset($this->shipment["shipment_test_report_date"]) &&
     </tr>
     <tr>
         <th>
-            <label>Samples Tested on <span class="mandatory">*</span></label>
+            <label>
+                Samples Tested on
+                <span class="mandatory">*</span>
+            </label>
         </th>
         <td>
             <input type="text" id="testDate" name="testDate" style="width:180px;float:left;" maxlength="11"
-                   value="<?php  echo  $this->dateFormat($this->responseData['shipment']["shipment_test_date"]); ?>"
+                   value="<?php echo $this->dateFormat($this->responseData['shipment']["shipment_test_date"]); ?>"
                    class="isRequired datepicker form-control" readonly="readonly" />
             <i class="icon-remove-sign" style="cursor:pointer;margin-top:10px;margin-left:10px;float:left;" alt="Clear Date" title="Clear Date"
                onclick="clearDate('testDate')"> Clear</i>
@@ -47,14 +56,20 @@ if (isset($this->shipment["shipment_test_report_date"]) &&
     </tr>
     <tr>
         <th>
-            <label>MTB/RIF Kit Lot No</label>
+            <label>
+                MTB/RIF Kit Lot No
+                <span class='mandatory'>*</span>
+            </label>
         </th>
         <td>
             <input type="text" name="mtbRifKitLotNo" id="mtbRifKitLotNo" class="form-control isRequired"
                    value="<?php echo $attributes['mtb_rif_kit_lot_no'];?>" />
         </td>
         <td>
-            <label>Expiry Date:</label>
+            <label>
+                Expiry Date
+                <span class='mandatory'>*</span>
+            </label>
         </td>
         <td>
             <input type="text" name="expiryDate" id="expiryDate" style="width:180px;float:left;" maxlength="11"
@@ -66,18 +81,23 @@ if (isset($this->shipment["shipment_test_report_date"]) &&
     </tr>
     <tr>
         <th>
-            <label>Response Date</label>
-
+            <label>
+                Response Date
+                <span class='mandatory'>*</span>
+            </label>
         </th>
         <td>
-            <input type="text" id="responseDate" name="responseDate" style="width:180px;float:left;" maxlength="11"
+            <input type="text" id="testReceiptDate" name="testReceiptDate" style="width:180px;float:left;" maxlength="11"
                    value="<?php echo $testReceiptDate; ?>" class="isRequired datepicker form-control"
                    readonly="readonly" />
             <i class="icon-remove-sign" style="cursor:pointer;margin-top:10px;margin-left:10px;float:left;" alt="Clear Date" title="Clear Date"
-               onclick="clearDate('responseDate')"> Clear</i>
+               onclick="clearDate('testReceiptDate')"> Clear</i>
         </td>
         <td>
-            <label>Mode of Receipt:</label>
+            <label>
+                Mode of Receipt
+                <span class='mandatory'>*</span>
+            </label>
         </td>
         <td>
             <select class="form-control" name="modeOfReceipt" id="modeOfReceipt" class="form-control"
@@ -92,7 +112,10 @@ if (isset($this->shipment["shipment_test_report_date"]) &&
     </tr>
     <tr>
         <td>
-            <label>Assay</label>
+            <label>
+                Assay
+                <span class='mandatory'>*</span>
+            </label>
         </td>
         <td>
             <select class="form-control" name="assay" id="assay" class="form-control"
@@ -130,16 +153,18 @@ if (isset($this->shipment["shipment_test_report_date"]) &&
         </td>
     </tr>
     <?php
-    if ($this->globalQcAccess=='yes') { ?>
+    if ($this->globalQcAccess == 'yes') { ?>
     <tr>
         <td>
             <label>QC Done</label>
         </td>
         <td>
-            <input type="radio" id="qcDoneYes" name="qcDone" value="yes" <?php echo ($this->responseData['shipment']['qc_done'] == "yes") ? " checked='checked' " : ""; ?>
+            <input type="radio" id="qcDoneYes" name="qcDone" value="yes"
+                   title="Please select QC done status" <?php echo ($this->responseData['shipment']['qc_done'] == "yes") ? " checked='checked' " : ""; ?>
                    onclick="checkQcStatus();" />
             <strong>Yes</strong>&nbsp;&nbsp;
-            <input type="radio" id="qcDoneNo" name="qcDone" value="no" title="Please select QC done status" <?php echo ($this->responseData['shipment']['qc_done'] == null || $this->responseData['shipment']['qc_done'] == "" || $this->responseData['shipment']['qc_done'] == "no") ? " checked='checked' " : ""; ?>
+            <input type="radio" id="qcDoneNo" name="qcDone" value="no"
+                   title="Please select QC done status" <?php echo ($this->responseData['shipment']['qc_done'] == null || $this->responseData['shipment']['qc_done'] == "" || $this->responseData['shipment']['qc_done'] == "no") ? " checked='checked' " : ""; ?>
                    onclick="checkQcStatus();" />
             <strong>No</strong>
         </td>
@@ -155,7 +180,10 @@ if (isset($this->shipment["shipment_test_report_date"]) &&
         } ?>
     <tr id="qcSection" class="light" style="<?php echo $display; ?>">
         <td>
-            <label>QC Date</label>
+            <label>
+                QC Date
+                <span class='mandatory'>*</span>
+            </label>
         </td>
         <td>
             <input type="text" id="qcDate" name="qcDate" size="11" maxlength="11" style="width:180px;float:left;"
@@ -166,7 +194,10 @@ if (isset($this->shipment["shipment_test_report_date"]) &&
                onclick="clearDate('qcDate')"> Clear</i>
         </td>
         <td>
-            <label>QC Done By</label>
+            <label>
+                QC Done By
+                <span class='mandatory'>*</span>
+            </label>
         </td>
         <td>
             <input type="text" id="qcDoneBy" name="qcDoneBy" class="form-control <?php echo $isRequired; ?>"
@@ -196,6 +227,7 @@ foreach ($this->responseData['results'] as $result) {
                 <tr>
                     <th colspan="11" style="white-space: nowrap;background-color: transparent;">
                         <?php echo $result['sample_label']; ?>
+                        <span class='mandatory'>*</span>
                         <input type="hidden" id ="sample<?php echo $counter; ?>" name="sampleId[]"
                                value="<?php echo $result['sample_id'];?>" />
                     </th>

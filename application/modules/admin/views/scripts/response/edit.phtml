@@ -83,7 +83,10 @@ if ($this->scheme == 'tb') {
 } ?>
 <table class="table table-bordered table-striped" style="width:100%;margin:10px auto;">
     <tr>
-        <th style="width:20%;">Supervisor Review</th>
+        <th style="width:20%;">
+            Supervisor Review
+            <span class='mandatory'>*</span>
+        </th>
         <td style="width:20%;">
             <select name="supervisorApproval" id="supervisorApproval" class="form-control isRequired">
                 <option value="">--Select--</option>
@@ -96,8 +99,9 @@ if ($this->scheme == 'tb') {
             </select>
         </td>
         <th>
-            <label id ="labSupervisor" <?php echo(isset($this->shipment['supervisor_approval']) && $this->responseData['shipment']['supervisor_approval'] == 'yes') ? "" : "style='display:none;'" ?>>
+            <label id="labSupervisor" <?php echo(isset($this->shipment['supervisor_approval']) && $this->responseData['shipment']['supervisor_approval'] == 'yes') ? "" : "style='display:none;'" ?>>
                 Supervisor Name
+                <span class='mandatory'>*</span>
             </label>
         </th>
         <td>
@@ -207,6 +211,133 @@ $dtFormat =  $vHelper->getDateFormat();
 
   function validateNow(){
     $.blockUI();
+
+    <?php
+    if ($this->scheme == 'tb') { ?>
+    var validationMessage = '';
+    if (!$("#receiptDate").val()) {
+      validationMessage += '\n- Please ensure Shipment Receipt Date has been entered';
+    }
+
+    if (!$("#sampleRehydrationDate").val()) {
+      validationMessage += '\n- Please ensure Sample Rehydration Date has been entered';
+    } else if ($("#receiptDate").val() &&
+      moment($("#sampleRehydrationDate").val()).diff(moment($("#receiptDate").val())) < 0) {
+      validationMessage += '\n- Sample Rehydration Date has to come after the Shipment Receipt Date';
+    }
+
+    if (!$("#testDate").val()) {
+      validationMessage += '\n- Please ensure Testing Date has been entered';
+    } else if ($("#sampleRehydrationDate").val() &&
+      moment($("#testDate").val()).diff(moment($("#sampleRehydrationDate").val())) < 0) {
+      validationMessage += '\n- Testing Date has to come after the Sample Rehydration Date';
+    }
+
+    if (!$("#expiryDate").val()) {
+      validationMessage += '\n- Please ensure Expiry Date has been entered';
+    }
+
+    if (!$("#testReceiptDate").val()) {
+      validationMessage += '\n- Please ensure Response Date has been entered';
+    } else if ($("#testDate").val() &&
+      moment($("#testReceiptDate").val()).diff(moment($("#testDate").val())) < 0) {
+      validationMessage += '\n- Response Date has to come after the Testing Date';
+    }
+
+    if (!$("#mtbRifKitLotNo").val()) {
+      validationMessage += '\n- Please ensure MTB/RIF Kit Lot No has been entered';
+    }
+
+    if (!$("#modeOfReceipt").val()) {
+      validationMessage += '\n- Please ensure Mode of Receipt has been specified';
+    }
+
+    if (!$("#assay").val()) {
+      validationMessage += '\n- Please ensure Assay has been specified';
+    }
+
+    if ($('#qcDoneYes').is(':checked')) {
+      if (!$("#qcDate").val()) {
+        validationMessage += '\n- Please ensure QC Date has been entered';
+      } else if ($("#testDate").val() &&
+        moment($("#qcDate").val()).diff(moment($("#testDate").val())) < 0) {
+        validationMessage += '\n- QC Date has to come after the Testing Date';
+      }
+
+      if (!$("#qcDoneBy").val()) {
+        validationMessage += '\n- Please ensure QC Done By has been entered';
+      }
+    }
+
+    if($('#supervisorApproval').val() === 'yes' && !$("#participantSupervisor").val()) {
+      validationMessage += '\n- Please ensure Supervisor Name has been entered';
+    }
+
+    var dateTestedValidationCaught = false;
+    $('[name="dateTested[]"]').each(function() {
+      if (!dateTestedValidationCaught) {
+        if (!$(this).val()) {
+          validationMessage += '\n- Please ensure Date Tested has been specified for each sample';
+          dateTestedValidationCaught = true;
+        } else if ($("#sampleRehydrationDate").val() &&
+          moment($("#testDate").val()).diff(new Date($("#sampleRehydrationDate").val())) < 0) {
+          validationMessage += '\n- Testing Date for each sample has to come after the Sample Rehydration Date';
+          dateTestedValidationCaught = true;
+        }
+      }
+    });
+
+    var mtbDetectedValidationCaught = false;
+    var mtbDetectedIndex = 0;
+    var rifResistanceValidationCaught = false;
+    var errorCodeValidationCaught = false;
+    $('[name="mtbDetected[]"]').each(function() {
+      if (!mtbDetectedValidationCaught) {
+        if (!$(this).val()) {
+          validationMessage += '\n- Please ensure MTB Detected has been specified for each sample';
+          mtbDetectedValidationCaught = true;
+        }
+      }
+      if (!rifResistanceValidationCaught) {
+        if (['high', 'medium', 'low', 'veryLow'].includes($(this).val()) &&
+          !['detected', 'notDetected'].includes($('[name="rifResistance[]"]').eq(mtbDetectedIndex).val())) {
+          validationMessage += '\n- If MTB was detected in a sample, please specify whether Rif Resistance was detected';
+          rifResistanceValidationCaught = true;
+        } else if (!['high', 'medium', 'low', 'veryLow', 'error'].includes($(this).val()) &&
+          $('[name="rifResistance[]"]').eq(mtbDetectedIndex).val() !== 'na') {
+          validationMessage += '\n- If there was no result or an invalid result for a sample, Rif Resistance should be N/A';
+          rifResistanceValidationCaught = true;
+        }
+      }
+      if (!errorCodeValidationCaught && $(this).val() === 'error' &&
+        !$('[name="errorCode[]"]').eq(mtbDetectedIndex).val()) {
+        validationMessage += '\n- If the result was an error, please specify what the error code was';
+        errorCodeValidationCaught = true;
+      }
+      mtbDetectedIndex++;
+    });
+
+    var probeValueValidationCaught = false;
+    $('[name="probeD[]"],[name="probeC[]"],[name="probeE[]"],[name="probeB[]"],[name="spc[]"],[name="probeA[]"]')
+      .each(function() {
+        if (!probeValueValidationCaught) {
+          if (!$(this).val()) {
+            validationMessage += '\n- Please ensure all SPC and Probe values have been specified for each sample';
+            probeValueValidationCaught = true;
+          } else if (!$.isNumeric($(this).val())) {
+            validationMessage += '\n- Please ensure all SPC and Probe values are valid numbers';
+            probeValueValidationCaught = true;
+          }
+        }
+      });
+
+    if (validationMessage) {
+      alert('Validation Check' + validationMessage);
+      $.unblockUI();
+      return false;
+    }
+    <?php
+    } else { ?>
     var dates=[];
     $(".sampleTestDate").each(function() {
       if ($(this).val()) {
@@ -222,13 +353,9 @@ $dtFormat =  $vHelper->getDateFormat();
       $.unblockUI();
       return false;
     }
-    $(".oneDecimal").each(function() {
-      if (!$.isNumeric($(this).val())) {
-        alert('Please ensure all SPC and Probe values are valid numbers');
-        $.unblockUI();
-        return false;
-      }
-    });
+    <?php
+    } ?>
+
     var flag = deforayValidator.init({
       formId: 'updateResultsForm'
     });

@@ -76,14 +76,11 @@ class Application_Service_Response {
             }
         }
 
-
         /*
          * SQL queries
          * Get data to display
          */
-
         $dbAdapter = Zend_Db_Table_Abstract::getDefaultAdapter();
-
         $sQuery = $dbAdapter->select()->from(array('d' => 'distributions'))
                 ->joinLeft(array('s' => 'shipment'), 's.distribution_id=d.distribution_id', array('shipments' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT s.shipment_code SEPARATOR ', ')"),'not_finalized_count' => new Zend_Db_Expr("SUM(IF(s.status!='finalized',1,0))")))
                 ->where("d.status='shipped'")
@@ -92,21 +89,14 @@ class Application_Service_Response {
         if (isset($sWhere) && $sWhere != "") {
             $sQuery = $sQuery->where($sWhere);
         }
-
         if (isset($sOrder) && $sOrder != "") {
             $sQuery = $sQuery->order($sOrder);
         }
-
         if (isset($sLimit) && isset($sOffset)) {
             $sQuery = $sQuery->limit($sLimit, $sOffset);
         }
-		
-		$sQuery = $dbAdapter->select()->from(array('temp' => $sQuery))->where("not_finalized_count>0");
-		
-        //die($sQuery);
-
+		$sQuery = $dbAdapter->select()->from(array('temp' => $sQuery))->where("not_finalized_count > 0");
         $rResult = $dbAdapter->fetchAll($sQuery);
-
 
         /* Data set length after filtering */
         $sQuery = $sQuery->reset(Zend_Db_Select::LIMIT_COUNT);
@@ -115,7 +105,6 @@ class Application_Service_Response {
         $iFilteredTotal = count($aResultFilterTotal);
 
         /* Total data set length */
-        //$sQuery = $dbAdapter->select()->from('distributions', new Zend_Db_Expr("COUNT('" . $sIndexColumn . "')"))->where("status='shipped'");
         $aResultTotal = $dbAdapter->fetchAll($sQuery);
         $iTotal = count($aResultTotal);
 
@@ -129,13 +118,10 @@ class Application_Service_Response {
             "aaData" => array()
         );
 
-
         $shipmentDb = new Application_Model_DbTable_Shipments();
 
         foreach ($rResult as $aRow) {
-
             $shipmentResults = $shipmentDb->getPendingShipmentsByDistribution($aRow['distribution_id']);
-
             $row = array();
             $row['DT_RowId'] = "dist" . $aRow['distribution_id'];
             $row[] = Pt_Commons_General::humanDateFormat($aRow['distribution_date']);
@@ -143,9 +129,6 @@ class Application_Service_Response {
             $row[] = $aRow['shipments'];
             $row[] = ucwords($aRow['status']);
             $row[] = '<a class="btn btn-primary btn-xs" href="javascript:void(0);" onclick="getShipments(\'' . ($aRow['distribution_id']) . '\')"><span><i class="icon-search"></i> View</span></a>';
-
-
-
             $output['aaData'][] = $row;
         }
 
@@ -156,7 +139,15 @@ class Application_Service_Response {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sql = $db->select()->from(array('s' => 'shipment'))
                 ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id')
-                ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array('map_id', 'responseDate' => 'shipment_test_report_date', 'participant_count' => new Zend_Db_Expr('count("participant_id")'), 'reported_count' => new Zend_Db_Expr("SUM(shipment_test_date <> '0000-00-00')"), 'number_passed' => new Zend_Db_Expr("SUM(final_result = 1)"), 'last_not_participated_mailed_on', 'last_not_participated_mail_count','shipment_status'=>'s.status'))
+                ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array(
+                    'map_id',
+                    'responseDate' => 'shipment_test_report_date',
+                    'participant_count' => new Zend_Db_Expr('count("participant_id")'),
+                    'reported_count' => new Zend_Db_Expr("SUM(shipment_test_date <> '0000-00-00')"),
+                    'number_passed' => new Zend_Db_Expr("SUM(final_result = 1)"),
+                    'last_not_participated_mailed_on',
+                    'last_not_participated_mail_count',
+                    'shipment_status' => 's.status'))
                 ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type')
                 ->joinLeft(array('rr' => 'r_results'), 'sp.final_result=rr.result_id')
                 ->where("s.distribution_id = ?", $distributionId)
@@ -235,21 +226,21 @@ class Application_Service_Response {
                 "updated_by_admin" => $admin,
                 "updated_on_admin" => new Zend_Db_Expr('now()')
             );
-            if (isset($params['responseDate']) && trim($params['responseDate'])!= '') {
-                $mapData['shipment_test_report_date'] = Pt_Commons_General::dateFormat($params['responseDate']);
+            if (isset($params['testReceiptDate']) && trim($params['testReceiptDate'])!= '') {
+                $mapData['shipment_test_report_date'] = Pt_Commons_General::dateFormat($params['testReceiptDate']);
             } else {
                 $mapData['shipment_test_report_date'] = new Zend_Db_Expr('now()');
             }
             if (isset($authNameSpace->qc_access) && $authNameSpace->qc_access =='yes') {
-                $data['qc_done'] = $params['qcDone'];
-                if (isset($data['qc_done']) && trim($data['qc_done'])=="yes") {
+                $mapData['qc_done'] = $params['qcDone'];
+                if (isset($mapData['qc_done']) && trim($mapData['qc_done']) == "yes") {
                     $mapData['qc_date'] = Pt_Commons_General::dateFormat($params['qcDate']);
                     $mapData['qc_done_by'] = trim($params['qcDoneBy']);
                     $mapData['qc_created_on'] = new Zend_Db_Expr('now()');
                 } else {
-                    $mapData['qc_date'] = NULL;
-                    $mapData['qc_done_by'] = NULL;
-                    $mapData['qc_created_on'] = NULL;
+                    $mapData['qc_date'] = null;
+                    $mapData['qc_done_by'] = null;
+                    $mapData['qc_created_on'] = null;
                 }
             }
 
@@ -270,21 +261,27 @@ class Application_Service_Response {
                     ->from("response_result_tb")
                     ->where("shipment_map_id = " . $params['smid'] . " and sample_id = " . $params['sampleId'][$i]);
                 $res = $db->fetchRow($sql);
+                $dateTested = Pt_Commons_General::dateFormat($params['dateTested'][$i]);
+                if ($dateTested == "" || $dateTested == "0000-00-00") {
+                    $dateTested = null;
+                }
                 $instrumentInstalledOn = Pt_Commons_General::dateFormat($params['instrumentInstalledOn'][$i]);
-                if (!isset($params['instrumentInstalledOn'][$i]) ||
-                    $params['instrumentInstalledOn'][$i] == "") {
+                if ($instrumentInstalledOn == "" || $instrumentInstalledOn == "0000-00-00") {
                     $instrumentInstalledOn = null;
                 }
                 $instrumentLastCalibratedOn = Pt_Commons_General::dateFormat($params['instrumentLastCalibratedOn'][$i]);
-                if (!isset($params['instrumentLastCalibratedOn'][$i]) ||
-                    $params['instrumentLastCalibratedOn'][$i] == "") {
+                if ($instrumentLastCalibratedOn == "" || $instrumentLastCalibratedOn == "0000-00-00") {
                     $instrumentLastCalibratedOn = null;
+                }
+                $cartridgeExpirationDate = Pt_Commons_General::dateFormat($params['cartridgeExpirationDate'][$i]);
+                if ($cartridgeExpirationDate == "" || $cartridgeExpirationDate == "0000-00-00") {
+                    $cartridgeExpirationDate = null;
                 }
                 if ($res == null || count($res) == 0) {
                     $db->insert('response_result_tb', array(
                         'shipment_map_id' => $params['smid'],
                         'sample_id' => $params['sampleId'][$i],
-                        'date_tested' => Pt_Commons_General::dateFormat($params['dateTested'][$i]),
+                        'date_tested' => $dateTested,
                         'mtb_detected' => $params['mtbDetected'][$i],
                         'error_code' => $params['errorCode'][$i],
                         'rif_resistance' => $params['rifResistance'][$i],
@@ -299,14 +296,14 @@ class Application_Service_Response {
                         'instrument_last_calibrated_on' => $instrumentLastCalibratedOn,
                         'module_name' => $params['moduleName'][$i],
                         'instrument_user' => $params['instrumentUser'][$i],
-                        'cartridge_expiration_date' => Pt_Commons_General::dateFormat($params['cartridgeExpirationDate'][$i]),
+                        'cartridge_expiration_date' => $cartridgeExpirationDate,
                         'reagent_lot_id' => $params['reagentLotId'][$i],
                         'created_by' => $admin,
                         'created_on' => new Zend_Db_Expr('now()')
                     ));
                 } else {
                     $db->update('response_result_tb', array(
-                        'date_tested' => Pt_Commons_General::dateFormat($params['dateTested'][$i]),
+                        'date_tested' => $dateTested,
                         'mtb_detected' => $params['mtbDetected'][$i],
                         'error_code' => $params['errorCode'][$i],
                         'rif_resistance' => $params['rifResistance'][$i],
@@ -321,7 +318,7 @@ class Application_Service_Response {
                         'instrument_last_calibrated_on' => $instrumentLastCalibratedOn,
                         'module_name' => $params['moduleName'][$i],
                         'instrument_user' => $params['instrumentUser'][$i],
-                        'cartridge_expiration_date' => Pt_Commons_General::dateFormat($params['cartridgeExpirationDate'][$i]),
+                        'cartridge_expiration_date' => $cartridgeExpirationDate,
                         'reagent_lot_id' => $params['reagentLotId'][$i],
                         'updated_by' => $admin,
                         'updated_on' => new Zend_Db_Expr('now()')
@@ -331,8 +328,8 @@ class Application_Service_Response {
                     $params['instrumentSerial'][$i] != "") {
                     $instrumentDetails = array(
                         'instrument_serial' => $params['instrumentSerial'][$i],
-                        'instrument_installed_on' => $params['instrumentInstalledOn'][$i],
-                        'instrument_last_calibrated_on' => $params['instrumentLastCalibratedOn'][$i]
+                        'instrument_installed_on' => $instrumentInstalledOn,
+                        'instrument_last_calibrated_on' => $instrumentLastCalibratedOn
                     );
                     $instrumentsDb->upsertInstrument($params['participantId'], $instrumentDetails);
                 }

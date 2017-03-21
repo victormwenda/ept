@@ -671,7 +671,7 @@ $dtFormat = $genderHelper->getDateFormat();
       if (!$("#qcDate").val()) {
         validationMessage += '\n- Please ensure QC Date has been entered';
       } else if ($("#testDate").val() &&
-        moment($("#testReceiptDate").val()).diff(moment($("#testDate").val())) < 0) {
+        moment($("#qcDate").val()).diff(moment($("#testDate").val())) < 0) {
         validationMessage += '\n- QC Date has to come after the Testing Date';
       }
 

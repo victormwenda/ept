@@ -562,7 +562,6 @@ class Application_Service_Shipments {
         try {
             $tbResponseDb = new Application_Model_DbTable_ResponseTb();
             $tbResponseDb->updateResult($params);
-
             $instrumentsDb = new Application_Model_DbTable_Instruments();
             if (isset($params['instrumentSerial']) &&
                 $params['instrumentSerial'] != "") {
@@ -651,9 +650,9 @@ class Application_Service_Shipments {
                     $data['qc_done_by'] = trim($params['qcDoneBy']);
                     $data['qc_created_on'] = new Zend_Db_Expr('now()');
                 } else {
-                    $data['qc_date']=NULL;
-                    $data['qc_done_by'] = NULL;
-                    $data['qc_created_on'] = NULL;
+                    $data['qc_date'] = null;
+                    $data['qc_done_by'] = null;
+                    $data['qc_created_on'] = null;
                 }
             }
             $shipmentParticipantDb->updateShipment($data, $params['smid'], $params['hdLastDate']);

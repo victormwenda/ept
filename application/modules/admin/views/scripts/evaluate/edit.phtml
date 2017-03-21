@@ -24,7 +24,8 @@ if ($this->scheme == 'tb' && isset($attributes['corrective_actions'])) {
     <strong>Participant/Lab Name :</strong> <?php echo $this->evaluateData['participant']['first_name']. " ".$this->evaluateData['participant']['last_name']; ?>
     <span class="pull-right"><strong>Reported on :</strong> <?php echo $this->dateFormat($reportDate[0]); ?></span>
 </h5>
-<form name="updateResultsForm" id="updateResultsForm" method="post" action="">
+<form name="updateResultsForm" id="updateResultsForm" method="post" action=""
+      onsubmit="return validateNow();return false;">
 	<input type="hidden" name="shipmentId" id="shipmentId" value="<?php echo $this->evaluateData['shipment']['shipment_id']; ?>" />
     <input type="hidden" name="shipmentDate" id="shipmentDate" value="<?php echo $this->dateFormat($this->evaluateData['shipment']['shipment_receipt_date']); ?>" />
     <input type="hidden" name="responseDeadlineDate" id="responseDeadlineDate" value="<?php echo $this->dateFormat($this->evaluateData['shipment']['lastdate_response']); ?>" />
@@ -43,8 +44,17 @@ if ($this->scheme == 'eid') {
 	include('edit-vl-evaluation.phtml');
 } else if ($this->scheme == 'tb') {
     include('edit-tb-evaluation.phtml');
-} else {
-	echo "<br/><br/><br/><h4 style='text-align:center;'>Evaluation for this scheme (" . $this->scheme . ") is not yet implemented</h4><br/><br/><br/>";
+} else { ?>
+    <br/>
+    <br/>
+    <br/>
+    <h4 style='text-align:center;'>
+        Evaluation for this scheme (<?php echo $this->scheme ?>) is not yet implemented
+    </h4>
+    <br/>
+    <br/>
+    <br/>
+<?php
 }
 $evalComments = array();
 if (isset($this->evaluateData['evalComments'])) {
@@ -163,9 +173,12 @@ if (isset($this->evaluateData['evalComments'])) {
 		<td style="vertical-align: middle;" colspan="2">
 			<label style="float: left;margin-top:10px;">Do you want to exclude this response from evaluation ? </label>
 			<div style="width:80px;float:left;margin-left:10px;">
-				<select name="isExcluded" id="isExcluded" class="form-control isRequired"  title="Please choose whether this response is excluded from evaluation or not">
-					<option <?php echo (isset($this->evaluateData['shipment']['is_excluded']) && $this->evaluateData['shipment']['is_excluded'] =="no") ? " selected='selected' " : ""; ?> value="no">No</option>
-					<option <?php echo (isset($this->evaluateData['shipment']['is_excluded']) && $this->evaluateData['shipment']['is_excluded'] =="yes") ? " selected='selected' " : ""; ?> value="yes">Yes</option>
+				<select name="isExcluded" id="isExcluded" class="form-control isRequired"
+                        title="Please choose whether this response is excluded from evaluation or not">
+					<option <?php echo (isset($this->evaluateData['shipment']['is_excluded']) && $this->evaluateData['shipment']['is_excluded'] =="no") ? " selected='selected' " : ""; ?>
+                            value="no">No</option>
+					<option <?php echo (isset($this->evaluateData['shipment']['is_excluded']) && $this->evaluateData['shipment']['is_excluded'] =="yes") ? " selected='selected' " : ""; ?>
+                            value="yes">Yes</option>
 				</select>
 			</div>
 		</td>
