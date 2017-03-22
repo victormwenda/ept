@@ -1,8 +1,6 @@
 <?php
 
-class Admin_SystemAdminsController extends Zend_Controller_Action
-{
-
+class Admin_SystemAdminsController extends Zend_Controller_Action {
     public function init()
     {
         $ajaxContext = $this->_helper->getHelper('AjaxContext');
