@@ -1642,7 +1642,7 @@ class Application_Service_Shipments {
 	
 	public function getAllFinalizedShipments($parameters){
 		$shipmentDb = new Application_Model_DbTable_Shipments();
-		return $shipmentDb->fecthAllFinalizedShipments($parameters);
+		return $shipmentDb->fetchAllFinalizedShipments($parameters);
 	}
 	
 	public function responseSwitch($shipmentId,$switchStatus){

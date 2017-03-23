@@ -49,10 +49,20 @@ class Application_Service_Distribution {
 		$db->beginTransaction();
 		try {
 			$shipmentDb = new Application_Model_DbTable_Shipments();
-			$shipmentDb->updateShipmentStatusByDistribution($distributionId,"shipped");		
+			$shipmentDb->updateShipmentStatusByDistribution($distributionId, "shipped");
 			
-			$disrtibutionDb = new Application_Model_DbTable_Distribution();		
-			$disrtibutionDb->updateDistributionStatus($distributionId,"shipped");
+			$distributionDb = new Application_Model_DbTable_Distribution();
+			$distributionDb->updateDistributionStatus($distributionId,"shipped");
+
+            $tempPushNotificationsDb = new Application_Model_DbTable_TempPushNotification();
+            $pushNotifications = $shipmentDb->getShipmentShippedPushNotifications($distributionId);
+            foreach ($pushNotifications as $pushNotificationData) {
+                $tempPushNotificationsDb->insertTempPushNotificationDetails(
+                    $pushNotificationData['push_notification_token'],
+                    'default', 'ePT '.$pushNotificationData['shipment_code'].' Shipped',
+                    'ePT panel '.$pushNotificationData['shipment_code'].' has been shipped to '.$pushNotificationData['lab_name'].'. Did you receive it?',
+                    '{"title": "ePT '.$pushNotificationData['shipment_code'].' Shipped", "body": "ePT panel '.$pushNotificationData['shipment_code'].' has been shipped to '.$pushNotificationData['lab_name'].'. Did you receive it?", "dismissText": "Close", "actionText": "Confirm", "shipmentId": '.$pushNotificationData['shipment_id'].', "participantId": '.$pushNotificationData['participant_id'].', "action": "receive_shipment"}');
+            }
 			$db->commit();
 			return "PT Event shipped!";
 		} catch (Exception $e) {

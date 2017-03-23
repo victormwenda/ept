@@ -72,6 +72,23 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
         }
     }
 
+    public function getShipmentShippedPushNotifications($distributionId) {
+        $query = $this->getAdapter()->select()
+            ->from(array('s' => 'shipment'), array('shipment_id', 'shipment_code'))
+            ->join(array('spm' => 'shipment_participant_map'), 'spm.shipment_id = s.shipment_id', array())
+            ->join(array('p' => 'participant'), 'p.participant_id = spm.participant_id', array('lab_name', 'participant_id'))
+            ->join(array('pmm' => 'participant_manager_map'), 'pmm.participant_id = spm.participant_id', array())
+            ->join(array('pnt' => 'push_notification_token'), 'pnt.dm_id = pmm.dm_id', array('push_notification_token'))
+            ->where('s.distribution_id = ?', $distributionId);
+
+        $results = $this->getAdapter()->fetchAll($query);
+
+        foreach ($results as $result) {
+            $output[] = $result;
+        }
+        return $output;
+    }
+
     public function getPendingShipmentsByDistribution($distributionId) {
         return $this->fetchAll("status ='pending' AND distribution_id = $distributionId");
     }
@@ -1525,7 +1542,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
         echo json_encode($output);
     }
 	
-	public function fecthAllFinalizedShipments($parameters)
+	public function fetchAllFinalizedShipments($parameters)
     {
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
          * you want to insert a non-database field (for example a counter or static image)
