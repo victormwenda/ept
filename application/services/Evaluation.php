@@ -2272,6 +2272,15 @@ class Application_Service_Evaluation {
                         if(!isset($attributes['sample_rehydration_date'])) {
                             $attributes['sample_rehydration_date'] = '';
                         }
+                        if(!isset($attributes['shipment_date'])) {
+                            $attributes['shipment_date'] = '';
+                        }
+                        if(!isset($attributes['expiry_date'])) {
+                            $attributes['expiry_date'] = '';
+                        }
+                        if(!isset($attributes['shipment_test_date'])) {
+                            $attributes['shipment_test_date'] = '';
+                        }
                         $documentationScore = $scoringService->calculateTbDocumentationScore($shipment['shipment_date'],
                             $attributes['expiry_date'], $shipment['shipment_receipt_date'], $attributes['sample_rehydration_date'],
                             $shipment['shipment_test_date'], $shipment['supervisor_approval'], $shipment['participant_supervisor'],
