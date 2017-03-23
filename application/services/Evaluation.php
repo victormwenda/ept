@@ -2269,6 +2269,9 @@ class Application_Service_Evaluation {
                     } else {
                         $attributes = json_decode($shipment['attributes'],true);
                         $shipmentData['shipment_score'] = $shipmentScore;
+                        if(!isset($attributes['sample_rehydration_date'])) {
+                            $attributes['sample_rehydration_date'] = '';
+                        }
                         $documentationScore = $scoringService->calculateTbDocumentationScore($shipment['shipment_date'],
                             $attributes['expiry_date'], $shipment['shipment_receipt_date'], $attributes['sample_rehydration_date'],
                             $shipment['shipment_test_date'], $shipment['supervisor_approval'], $shipment['participant_supervisor'],
