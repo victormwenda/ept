@@ -1390,6 +1390,7 @@ class Application_Service_Evaluation {
                         'res.shipment_map_id = spm.map_id and res.sample_id = ref.sample_id', array(
                             'mtb_detected',
                             'rif_resistance',
+                            'error_code',
                             'probe_d',
                             'probe_c',
                             'probe_e',
@@ -1422,6 +1423,7 @@ class Application_Service_Evaluation {
                         'sample_label' => $tbResult['sample_label'],
                         'mtb_detected' => $tbResult['mtb_detected'],
                         'rif_resistance' => $tbResult['rif_resistance'],
+                        'error_code' => $tbResult['error_code'],
                         'probe_d' => $tbResult['probe_d'],
                         'probe_c' => $tbResult['probe_c'],
                         'probe_e' => $tbResult['probe_e'],
@@ -1439,6 +1441,18 @@ class Application_Service_Evaluation {
                 }
                 $shipmentResult[$i]['shipment_score'] = $shipmentScore;
                 $shipmentResult[$i]['max_shipment_score'] = $maxShipmentScore;
+                if(!isset($attributes['sample_rehydration_date'])) {
+                    $attributes['sample_rehydration_date'] = '';
+                }
+                if(!isset($attributes['shipment_date'])) {
+                    $attributes['shipment_date'] = '';
+                }
+                if(!isset($attributes['expiry_date'])) {
+                    $attributes['expiry_date'] = '';
+                }
+                if(!isset($attributes['shipment_test_date'])) {
+                    $attributes['shipment_test_date'] = '';
+                }
                 $shipmentResult[$i]['documentation_score'] = $scoringService->calculateTbDocumentationScore(
                     $res['shipment_date'], $attributes['expiry_date'], $res['shipment_receipt_date'],
                     $attributes['sample_rehydration_date'], $res['shipment_test_date'], $res['supervisor_approval'],

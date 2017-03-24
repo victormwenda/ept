@@ -100,7 +100,8 @@ if (count($this->shipment) > 0) {
             </td>
         </tr>
     </table>
-    <br/><br/>
+    <br/>
+    <br/>
     <table cellpadding="0" cellspacing="0" border="0" class="table table-striped table-bordered table-hover" id="shipmentEvaluation" style="margin:10px auto;">
         <thead>
             <tr>
@@ -207,199 +208,196 @@ if (count($this->shipment) > 0) {
         <span id="summaryDiv" ></span>
     </div>
     <script type="text/javascript" charset="utf-8">
-        var oTable = null;
-        var nTr = null;
-        checkReportDate = false;
-        <?php
-        $currentDate = date('Y-m-d');
-        if ($this->shipment[0]['distribution_date'] < $currentDate) { ?>
-        checkReportDate = true;
-        <?php
-        }
-        if ($shipment['report_generated'] == 'yes') {
-            if (file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . "reports" . DIRECTORY_SEPARATOR . $shipment['shipment_code'] . DIRECTORY_SEPARATOR . $shipment['shipment_code']."-summary.pdf")) { ?>
-        document.getElementById("summaryDiv").innerHTML = "<a href=\"<?php echo $this->baseUrl("uploads/reports/" . $shipment['shipment_code'] . "/".$shipment['shipment_code'] ."-summary.pdf"); ?>\" id='summaryReport' class='btn btn-success btn-sm' target='_blank' style='margin-top:10px;clear:both;float:left;'><i class='icon-file-text'></i> &nbsp Download  Summary Report</a></a>";
-        <?php
-            }
-        } ?>
-        $(document).ready(function () {
-          <?php
-            if ($shipment['report_generated'] == 'yes') {
-                $buttonCount = (int)ceil($this->responseCount["reported_count"] / 50);
-                $responseCnt = $this->responseCount["reported_count"];
-                $start = 1;
-                if ($this->responseCount["reported_count"] >= 50) {
-                    $lastEnd = 50;
-                } else {
-                    $lastEnd = $this->responseCount["reported_count"];
-                }
-                for ($i = 1; $i <= $buttonCount; $i++) {
-                    if ($this->responseCount["reported_count"] >= 50) {
-                        $end = $i * 50;
-                    } else {
-                        $end = $this->responseCount["reported_count"];
-                    }
-                    if ($end > $this->responseCount["reported_count"]) {
-                        $sub = $this->responseCount["reported_count"] - $lastEnd;
-                        $start = $lastEnd + 1;
-                        $end = $lastEnd + $sub;
-                    } else if ($i != 1) {
-                        $start = $lastEnd + 1;
-                        $lastEnd = $end;
-                    }
-                    if (file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . "reports" . DIRECTORY_SEPARATOR . $shipment['shipment_code'] . DIRECTORY_SEPARATOR . $shipment['shipment_code']."-".$start."-".$end."-bulk-participant-report.pdf")) { ?>
-          $("#summaryDiv").append("&nbsp;&nbsp;<a href=\"<?php echo $this->baseUrl("uploads/reports/" . $shipment['shipment_code'] . "/".$shipment['shipment_code']."-".$start."-".$end."-bulk-participant-report.pdf"); ?>\" class='btn btn-info btn-sm' target='_BLANK' id=\"<?php echo $start."-".$end."-bulk-participant-report"; ?>\" style='margin-top:10px;clear:both;float:left;'><i class='icon-file-text'></i> Download <?php echo $start; ?> - <?php echo $end;?> Participants Report</a> ");
-          <?php
-                    }
-                }
-            } ?>
-          $('#shipmentEvaluation').on('click', ".clicker", function () {
-            nTr = $(this).parents('tr')[0];
-            aData = oTable.fnGetData( nTr );
-            if (oTable.fnIsOpen(nTr)) {
-              //console.log(aData[5]);
-		      /* This row is already open - close it */
-		      $(this).find('i').addClass("icon-plus");
-		      $(this).find('i').removeClass("icon-minus");
-		      //$(this).removeClass('btn-danger');
-              if (aData[4] == "Fail") {
-                $(this).addClass('btn-danger');
-              } else if (aData[5] == "") {
-                $(this).addClass('btn-success');
+      var oTable = null;
+      var nTr = null;
+      checkReportDate = false;
+      <?php
+      $currentDate = date('Y-m-d');
+      if ($this->shipment[0]['distribution_date'] < $currentDate) { ?>
+          checkReportDate = true;
+      <?php
+      }
+      if ($shipment['report_generated'] == 'yes') {
+          if (file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . "reports" . DIRECTORY_SEPARATOR . $shipment['shipment_code'] . DIRECTORY_SEPARATOR . $shipment['shipment_code']."-summary.pdf")) { ?>
+      document.getElementById("summaryDiv").innerHTML = "<a href=\"<?php echo $this->baseUrl("uploads/reports/" . $shipment['shipment_code'] . "/".$shipment['shipment_code'] ."-summary.pdf"); ?>\" id='summaryReport' class='btn btn-success btn-sm' target='_blank' style='margin-top:10px;clear:both;float:left;'><i class='icon-file-text'></i> &nbsp Download  Summary Report</a></a>";
+      <?php
+          }
+      } ?>
+      $(document).ready(function () {
+      <?php
+      if ($shipment['report_generated'] == 'yes') {
+          $buttonCount = (int)ceil($this->responseCount["reported_count"] / 50);
+          $responseCnt = $this->responseCount["reported_count"];
+          $start = 1;
+          if ($this->responseCount["reported_count"] >= 50) {
+              $lastEnd = 50;
+          } else {
+              $lastEnd = $this->responseCount["reported_count"];
+          }
+          for ($i = 1; $i <= $buttonCount; $i++) {
+              if ($this->responseCount["reported_count"] >= 50) {
+                  $end = $i * 50;
               } else {
-                $(this).addClass('btn-warning');
+                  $end = $this->responseCount["reported_count"];
               }
-              oTable.fnClose( nTr );
+              if ($end > $this->responseCount["reported_count"]) {
+                  $sub = $this->responseCount["reported_count"] - $lastEnd;
+                  $start = $lastEnd + 1;
+                  $end = $lastEnd + $sub;
+              } else if ($i != 1) {
+                  $start = $lastEnd + 1;
+                  $lastEnd = $end;
+              }
+              if (file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . "reports" . DIRECTORY_SEPARATOR . $shipment['shipment_code'] . DIRECTORY_SEPARATOR . $shipment['shipment_code']."-".$start."-".$end."-bulk-participant-report.pdf")) { ?>
+        $("#summaryDiv").append("&nbsp;&nbsp;<a href=\"<?php echo $this->baseUrl("uploads/reports/" . $shipment['shipment_code'] . "/".$shipment['shipment_code']."-".$start."-".$end."-bulk-participant-report.pdf"); ?>\" class='btn btn-info btn-sm' target='_BLANK' id=\"<?php echo $start."-".$end."-bulk-participant-report"; ?>\" style='margin-top:10px;clear:both;float:left;'><i class='icon-file-text'></i> Download <?php echo $start; ?> - <?php echo $end;?> Participants Report</a> ");
+      <?php
+              }
+          }
+      } ?>
+        $('#shipmentEvaluation').on('click', ".clicker", function () {
+          nTr = $(this).parents('tr')[0];
+          aData = oTable.fnGetData( nTr );
+          if (oTable.fnIsOpen(nTr)) {
+            /* This row is already open - close it */
+            $(this).find('i').addClass("icon-plus");
+            $(this).find('i').removeClass("icon-minus");
+            if (aData[4] == "Fail") {
+              $(this).addClass('btn-danger');
+            } else if (aData[5] == "") {
+              $(this).addClass('btn-success');
             } else {
-              /* Open this row */
-		      $(this).find('i').addClass("icon-minus");
-		      $(this).find('i').removeClass("icon-add");
-		      //$(this).removeClass('btn-success');
-		      //$(this).addClass('btn-danger');
-		      oTable.fnOpen(nTr, fnFormatDetails(oTable, nTr), 'details' );
+              $(this).addClass('btn-warning');
             }
-          });
-
-          oTable = $("#shipmentEvaluation").dataTable({
-            "oLanguage": {
-              "sLengthMenu": "_MENU_ records per page"
-            },
-            "bJQueryUI": false,
-            "bAutoWidth": false,
-            "bInfo": true,
-            "bScrollCollapse": true,
-            "sPaginationType": "bootstrap",
-            "bRetrieve": true,
-            "aoColumns": [
-              {"bSortable": false, "aTargets": [0]},
-              {"sClass": ""},
-              <?php if($this->shipment[0]['scheme_type'] != 'tb') { ?>
-              {"sClass":"center"},
-              <?php } ?>
-              {"sClass": "center"},
-              {"sClass": "center"},
-              {"bSearchable": false, "bVisible": false}
-            ],
-            "aaSorting": [[1, "asc"]],
-            "bProcessing": true,
-          });
+            oTable.fnClose( nTr );
+          } else {
+            /* Open this row */
+            $(this).find('i').addClass("icon-minus");
+            $(this).find('i').removeClass("icon-add");
+		    oTable.fnOpen(nTr, fnFormatDetails(oTable, nTr), 'details' );
+          }
         });
 
-        function fnFormatDetails(oTable, nTr) {
-          var aData = oTable.fnGetData(nTr);
-          var sOut = "";
-          if (aData[5] != "" && aData[5] != null && aData[5] != undefined) {
-            sOut = '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;width:100%;">';
-            sOut += '<tr><td>' + aData[5] + '</td></tr>';
-            sOut += '</table>';
-          } else {
-            sOut = 'No comments to show';
-          }
-          return sOut;
-        }
+        oTable = $("#shipmentEvaluation").dataTable({
+          "oLanguage": {
+            "sLengthMenu": "_MENU_ records per page"
+          },
+          "bJQueryUI": false,
+          "bAutoWidth": false,
+          "bInfo": true,
+          "bScrollCollapse": true,
+          "sPaginationType": "bootstrap",
+          "bRetrieve": true,
+          "aoColumns": [
+            {"bSortable": false, "aTargets": [0]},
+            {"sClass": ""},
+            <?php if($this->shipment[0]['scheme_type'] != 'tb') { ?>
+            {"sClass":"center"},
+            <?php } ?>
+            {"sClass": "center"},
+            {"sClass": "center"},
+            {"bSearchable": false, "bVisible": false}
+          ],
+          "aaSorting": [[1, "asc"]],
+          "bProcessing": true,
+        });
+      });
 
-        function updateComment(sid) {
-          if ($.trim($("#shipmentComment").val()) == "") {
-            alert("Please enter comment to proceed");
-            return;
-          }
+      function fnFormatDetails(oTable, nTr) {
+        var aData = oTable.fnGetData(nTr);
+        var sOut = "";
+        if (aData[5] != "" && aData[5] != null && aData[5] != undefined) {
+          sOut = '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;width:100%;">';
+          sOut += '<tr><td>' + aData[5] + '</td></tr>';
+          sOut += '</table>';
+        } else {
+          sOut = 'No comments to show';
+        }
+        return sOut;
+      }
+
+      function updateComment(sid) {
+        if ($.trim($("#shipmentComment").val()) == "") {
+          alert("Please enter comment to proceed");
+          return;
+        }
+        $.blockUI();
+        $.post("<?php echo $this->url(array('module' => 'admin', 'controller' => 'evaluate', 'action' => 'update-shipment-comment'), 'default', true); ?>",
+          { sid: sid, comment: $("#shipmentComment").val(), format: "html" },
+          function (data) {
+            $.unblockUI({
+            onUnblock: function () {
+              alert(data);
+            }});
+        });
+      }
+
+      function generateReport(sId, limit, offset, startVal, endVal) {
+        if (checkReportDate) {
           $.blockUI();
-          $.post("<?php echo $this->url(array('module' => 'admin', 'controller' => 'evaluate', 'action' => 'update-shipment-comment'), 'default', true); ?>",
-            { sid: sid, comment: $("#shipmentComment").val(), format: "html" },
+          var individual = null;
+          $.when(
+            $.post("<?php echo $this->url(array(
+              'module' => 'reports',
+              'controller' => 'distribution',
+              'action' => 'generate-reports'),
+              'default', true); ?>", {
+                sId: sId,
+                'comingFrom': 'generateReport',
+                limitVal: limit,
+                offsetVal: offset,
+                startVal: startVal,
+                endVal: endVal,
+                format: "html"
+              }, function (data) {
+                individual = data;
+              })).then(function() {
+                if (individual == 'success') {
+                  $( "#"+startVal+'-'+endVal+"-bulk-participant-report").remove();
+                  $( "#summaryDiv" ).append('&nbsp<a href="<?php echo $this->baseUrl() ;?>/uploads/reports/<?php echo $shipment['shipment_code'] ?>/<?php echo $shipment['shipment_code'] ?>-'+startVal+'-'+endVal+'-bulk-participant-report.pdf" id="'+startVal+'-'+endVal+'-bulk-participant-report" class="btn btn-info btn-sm" target="_BLANK" style="margin-top:10px;"> <i class="icon-file-text"></i> &nbsp Download '+startVal+'-'+ endVal +' Participants Report</a>');
+                }
+                $.unblockUI();
+              });
+        } else {
+          $.unblockUI();
+          alert("You cannot generate reports on or before PT Survey Date (<?php echo $this->dateFormat($this->shipment[0]['distribution_date']);?>).\n\n\nYou can change the PT Survey Date and retry.");
+        }
+      }
+
+      function generateSummaryReport(sId) {
+        if (checkReportDate) {
+          $.blockUI();
+          var summary = null;
+          $.when($.post("<?php echo $this->url(array(
+                  'module' => 'reports',
+                  'controller' => 'distribution',
+                  'action' => 'generate-summary-reports'
+              ), 'default', true); ?>",
+            { sId: sId,'comingFrom':'generateReport', format: "html" },
             function (data) {
-              $.unblockUI({
-                onUnblock: function () {
-                  alert(data);
-                }});
+              summary = data;
+            })).then(function() {
+              if (summary == 'success') {
+                $("#summaryReport").remove();
+                $("#summaryDiv").append("&nbsp <a href=\"<?php echo $this->baseUrl("uploads/reports/" . $shipment['shipment_code'] . "/".$shipment['shipment_code']."-summary.pdf"); ?>\" class='btn btn-success btn-sm' id='summaryReport' target='_BLANK' style='margin-top:10px;float:left;clear:both !important;'><i class='icon-file-text'></i>&nbsp Download Summary Report</a> ");
+              }
+              $.unblockUI();
             });
-        }
-
-        function generateReport(sId, limit, offset, startVal, endVal) {
-          if (checkReportDate) {
-            $.blockUI();
-            var individual = null;
-            $.when(
-              $.post("<?php echo $this->url(array(
-                      'module' => 'reports',
-                      'controller' => 'distribution',
-                      'action' => 'generate-reports'),
-                      'default', true); ?>",
-                {
-                  sId: sId,
-                  'comingFrom': 'generateReport',
-                  limitVal: limit,
-                  offsetVal: offset,
-                  startVal: startVal,
-                  endVal: endVal,
-                  format: "html"
-                },
-                function (data) {
-                  individual = data;
-                })).then(function() {
-                  if (individual == 'success') {
-                    $( "#"+startVal+'-'+endVal+"-bulk-participant-report").remove();
-                    $( "#summaryDiv" ).append('&nbsp<a href="<?php echo $this->baseUrl() ;?>/uploads/reports/<?php echo $shipment['shipment_code'] ?>/<?php echo $shipment['shipment_code'] ?>-'+startVal+'-'+endVal+'-bulk-participant-report.pdf" id="'+startVal+'-'+endVal+'-bulk-participant-report" class="btn btn-info btn-sm" target="_BLANK" style="margin-top:10px;"> <i class="icon-file-text"></i> &nbsp Download '+startVal+'-'+ endVal +' Participants Report</a>');
-                  }
-                  $.unblockUI();
-                });
           } else {
             $.unblockUI();
             alert("You cannot generate reports on or before PT Survey Date (<?php echo $this->dateFormat($this->shipment[0]['distribution_date']);?>).\n\n\nYou can change the PT Survey Date and retry.");
           }
-        }
-
-        function generateSummaryReport(sId) {
-          if (checkReportDate) {
-            $.blockUI();
-            var summary = null;
-            $.when(
-              $.post("<?php echo $this->url(array(
-                      'module' => 'reports',
-                      'controller' => 'distribution',
-                      'action' => 'generate-summary-reports'
-                  ), 'default', true); ?>",
-                { sId: sId,'comingFrom':'generateReport', format: "html" },
-                function (data) {
-                  summary = data;
-                })).then(function() {
-                  if (summary == 'success') {
-                    $("#summaryReport").remove();
-                    $("#summaryDiv").append("&nbsp <a href=\"<?php echo $this->baseUrl("uploads/reports/" . $shipment['shipment_code'] . "/".$shipment['shipment_code']."-summary.pdf"); ?>\" class='btn btn-success btn-sm' id='summaryReport' target='_BLANK' style='margin-top:10px;float:left;clear:both !important;'><i class='icon-file-text'></i>&nbsp Download Summary Report</a> ");
-                  }
-                  $.unblockUI();
-                });
-          } else {
-            $.unblockUI();
-            alert("You cannot generate reports on or before PT Survey Date (<?php echo $this->dateFormat($this->shipment[0]['distribution_date']);?>).\n\n\nYou can change the PT Survey Date and retry.");
-          }
-        }
+      }
     </script>
-<?php } else { ?>
-    <br/><br/><br/>
+<?php
+} else { ?>
+    <br/>
+    <br/>
+    <br/>
     <h3 style="text-align: center">
         No Shipment to evaluate.&nbsp;
         <a href="<?php echo $this->url(array('module' => 'admin', 'controller' => 'evaluate', 'action' => 'index'), 'default', true); ?>" >
             Click here to go back
         </a>
     </h3>
-<?php } ?>
+<?php
+} ?>

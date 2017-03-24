@@ -97,6 +97,21 @@ if (sizeof($this->result['shipment']) > 0) {
 
     $totalPages = count($this->result['shipment']);
     $j = 1;
+
+    $tbResultValueMapping = array(
+        'high' => 'High',
+        'medium' => 'Medium',
+        'low' => 'Low',
+        'veryLow' => 'Very Low',
+        'notDetected' => 'Not Detected',
+        'detected' => 'Detected',
+        'noResult' => 'No Result',
+        'na' => 'N/A',
+        'invalid' => 'Invalid',
+        'error' => 'Error',
+        '' => ''
+    );
+
     foreach ($this->result['shipment'] as $result) {
         if (!file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports'. DIRECTORY_SEPARATOR.$result['shipment_code']) &&
             !is_dir(UPLOAD_PATH . DIRECTORY_SEPARATOR .'reports'. DIRECTORY_SEPARATOR.$result['shipment_code'])) {
@@ -611,20 +626,25 @@ if (sizeof($this->result['shipment']) > 0) {
                     $labRes .= '    </tr>';
                     $labRes .= '    <tr>';
                     $labRes .= '	     <td style="width:46%;">Expected Results</td>';
-                    $labRes .= '	     <td style="width:22%;text-align:center;">'.$response['expected_mtb_detected'].'</td>';
-                    $labRes .= '	     <td style="width:22%;text-align:center;">'.$response['expected_rif_resistance'].'</td>';
+                    $labRes .= '	     <td style="width:22%;text-align:center;">'.$tbResultValueMapping[$response['expected_mtb_detected']].'</td>';
+                    $labRes .= '	     <td style="width:22%;text-align:center;">'.$tbResultValueMapping[$response['expected_rif_resistance']].'</td>';
                     $labRes .= '	     <td style="width:10%;"></td>';
                     $labRes .= '    </tr>';
                     $labRes .= '    <tr>';
                     $labRes .= '	     <td style="width:46%;">Consensus Results</td>';
-                    $labRes .= '	     <td style="width:22%;text-align:center;">'.$response['consensus_mtb_detected'].'</td>';
-                    $labRes .= '	     <td style="width:22%;text-align:center;">'.$response['consensus_rif_resistance'].'</td>';
+                    $labRes .= '	     <td style="width:22%;text-align:center;">'.$tbResultValueMapping[$response['consensus_mtb_detected']].'</td>';
+                    $labRes .= '	     <td style="width:22%;text-align:center;">'.$tbResultValueMapping[$response['consensus_rif_resistance']].'</td>';
                     $labRes .= '	     <td style="width:10%;"></td>';
                     $labRes .= '    </tr>';
                     $labRes .= '    <tr>';
                     $labRes .= '	     <td style="width:46%;"><strong>'.$result['first_name']." ".$result['last_name'].'</strong></td>';
-                    $labRes .= '	     <td style="width:22%;text-align:center;"><strong>'.$response['mtb_detected'].'</strong></td>';
-                    $labRes .= '	     <td style="width:22%;text-align:center;"><strong>'.$response['rif_resistance'].'</strong></td>';
+                    if ($response['mtb_detected'] == 'error') {
+                        $labRes .= '	     <td style="width:22%;text-align:center;"><strong>Error: '.$response['error_code'].'</strong></td>';
+                        $labRes .= '	     <td style="width:22%;text-align:center;"></td>';
+                    } else {
+                        $labRes .= '	     <td style="width:22%;text-align:center;"><strong>'.$tbResultValueMapping[$response['mtb_detected']].'</strong></td>';
+                        $labRes .= '	     <td style="width:22%;text-align:center;"><strong>'.$tbResultValueMapping[$response['rif_resistance']].'</strong></td>';
+                    }
                     $labRes .= '	     <td style="width:10%;text-align:center;"><strong>'.$response['score'].'</strong></td>';
                     $labRes .= '    </tr>';
                 }
