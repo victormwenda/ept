@@ -168,7 +168,7 @@ class Admin_EvaluateController extends Zend_Controller_Action {
             $sid = (int)base64_decode($this->_getParam('sid'));
             $status = $this->_getParam('status');
             $evalService = new Application_Service_Evaluation();
-            $this->view->message = $evalService->updateShipmentStatus($sid,$status);
+            $this->view->message = $evalService->updateShipmentStatus($sid, $status);
         } else {
             $this->view->message = "Unable to update shipment status. Please try again later.";
         }

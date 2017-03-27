@@ -503,7 +503,6 @@ class Application_Service_Reports {
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
          * you want to insert a non-database field (for example a counter or static image)
          */
-
         $aColumns = array(
             'sl.scheme_name',
             "DATE_FORMAT(s.shipment_date,'%d-%b-%Y')",
@@ -539,6 +538,7 @@ class Application_Service_Reports {
 
         /* Indexed column (used for fast and accurate table cardinality) */
         $sIndexColumn = 'shipment_id';
+
         /*
          * Paging
          */
@@ -597,7 +597,6 @@ class Application_Service_Reports {
             $sWhere .= $sWhereSub;
         }
 
-        //error_log($sHaving);
         /* Individual column filtering */
         for ($i = 0; $i < count($searchColumns); $i++) {
             if (isset($parameters['bSearchable_' . $i]) && $parameters['bSearchable_' . $i] == "true" && $parameters['sSearch_' . $i] != '') {
@@ -613,8 +612,6 @@ class Application_Service_Reports {
          * SQL queries
          * Get data to display
          */
-
-
         $dbAdapter = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sQuery = $dbAdapter->select()->from(array('s' => 'shipment'))
                 ->join(array('sl' => 'scheme_list'), 's.scheme_type=sl.scheme_id')
@@ -630,8 +627,6 @@ class Application_Service_Reports {
                 ->joinLeft(array('rr' => 'r_results'), 'sp.final_result=rr.result_id')
                 ->group(array('s.shipment_id'));
 
-
-
         if (isset($parameters['scheme']) && $parameters['scheme'] != "") {
             $sQuery = $sQuery->where("s.scheme_type = ?", $parameters['scheme']);
         }
@@ -645,11 +640,9 @@ class Application_Service_Reports {
             $sQuery = $sQuery->where("s.shipment_id = ?", $parameters['shipmentId']);
         }
 
-
         if (isset($sWhere) && $sWhere != "") {
             $sQuery = $sQuery->having($sWhere);
         }
-
 
         if (isset($sOrder) && $sOrder != "") {
             $sQuery = $sQuery->order($sOrder);
@@ -662,10 +655,7 @@ class Application_Service_Reports {
             $sQuery = $sQuery->limit($sLimit, $sOffset);
         }
 
-//        error_log($sQuery);
-
         $rResult = $dbAdapter->fetchAll($sQuery);
-
 
         /* Data set length after filtering */
         $sQuery = $sQuery->reset(Zend_Db_Select::LIMIT_COUNT);
@@ -706,10 +696,7 @@ class Application_Service_Reports {
             "aaData" => array()
         );
 
-
         foreach ($rResult as $aRow) {
-
-
             $row = array();
             $row['DT_RowId'] = "shipment" . $aRow['shipment_id'];
             $row[] = $aRow['scheme_name'];
@@ -721,8 +708,6 @@ class Application_Service_Reports {
             $row[] = $aRow['total_passed'];
             $row[] = round($aRow['pass_percentage'], 2);
             $row[] = round($aRow['average_score'], 2);
-
-
             $output['aaData'][] = $row;
         }
 

@@ -44,6 +44,20 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
 		return $result;
     }
 
+    public function getTbShipmentRowInfo($distibutionId) {
+        $result=$this->getAdapter()->fetchRow($this->getAdapter()->select()->from(array('s' => 'shipment'))
+            ->join(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id', array('distribution_code', 'distribution_date'))
+            ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('sl.scheme_name'))
+            ->group('s.shipment_id')
+            ->where("s.distribution_id = ?", $distibutionId)
+            ->where("s.scheme_type = 'tb'"));
+        if ($result != "") {
+            $result['referenceResult']=$this->getAdapter()->fetchAll($this->getAdapter()->select()->from(array($tableName))
+                ->where('shipment_id = ? ',$result['shipment_id']));
+        }
+        return $result;
+    }
+
     public function updateShipmentStatus($shipmentId, $status) {
         if (isset($status) && $status != null && $status != "") {
             return $this->update(array('status' => $status), "shipment_id = $shipmentId");
@@ -52,7 +66,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
         }
     }
 
-    public function responseSwitch($shipmentId,$switchStatus) {
+    public function responseSwitch($shipmentId, $switchStatus) {
         if (isset($switchStatus) && $switchStatus != null && $switchStatus != "") {
 			$this->update(array('response_switch' => $switchStatus), "shipment_id = $shipmentId");
 			return "Shipment status updated to $switchStatus successfully";
@@ -80,6 +94,23 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
             ->join(array('pmm' => 'participant_manager_map'), 'pmm.participant_id = spm.participant_id', array())
             ->join(array('pnt' => 'push_notification_token'), 'pnt.dm_id = pmm.dm_id', array('push_notification_token'))
             ->where('s.distribution_id = ?', $distributionId);
+
+        $results = $this->getAdapter()->fetchAll($query);
+
+        foreach ($results as $result) {
+            $output[] = $result;
+        }
+        return $output;
+    }
+
+    public function getShipmentFinalisedPushNotifications($shipmentId) {
+        $query = $this->getAdapter()->select()
+            ->from(array('s' => 'shipment'), array('shipment_id', 'shipment_code'))
+            ->join(array('spm' => 'shipment_participant_map'), 'spm.shipment_id = s.shipment_id', array())
+            ->join(array('p' => 'participant'), 'p.participant_id = spm.participant_id', array('lab_name', 'participant_id'))
+            ->join(array('pmm' => 'participant_manager_map'), 'pmm.participant_id = spm.participant_id', array())
+            ->join(array('pnt' => 'push_notification_token'), 'pnt.dm_id = pmm.dm_id', array('push_notification_token'))
+            ->where('s.shipment_id = ?', $shipmentId);
 
         $results = $this->getAdapter()->fetchAll($query);
 
@@ -1426,9 +1457,6 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
         /*
          * Ordering
          */
-
-
-
         $sOrder = "";
         if (isset($parameters['iSortCol_0'])) {
             $sOrder = "";
@@ -1490,7 +1518,8 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
 
         $sQuery = $db->select()->from(array('s' => 'shipment'))
 					->join(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id', array('distribution_code', 'distribution_date'))
-					->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('SCHEME' => 'sl.scheme_name'))
+					->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type',
+                        array('SCHEME' => 'sl.scheme_name'))
 					->group('s.shipment_id');
 
         if (isset($sWhere) && $sWhere != "") {

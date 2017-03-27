@@ -953,17 +953,44 @@ class Application_Service_Evaluation {
     }
 
     public function updateShipmentStatus($shipmentId, $status) {
+        $shipmentDb = new Application_Model_DbTable_Shipments();
+        $schemeType = '';
+        if ($status == 'finalized') {
+            $shipmentData = $shipmentDb->getShipmentRowInfo($shipmentId);
+            $schemeType = $shipmentData['scheme_type'];
+        }
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $authNameSpace = new Zend_Session_Namespace('administrators');
         $admin = $authNameSpace->primary_email;
-        $noOfRows = $db->update('shipment', array(
-            'status' => $status,
-            'updated_by_admin' => $admin,
-            'updated_on_admin' => new Zend_Db_Expr('now()')),
-            "shipment_id = " . $shipmentId);
-        if ($noOfRows > 0) {
-            return "Status updated";
-        } else {
+        $db->beginTransaction();
+        try {
+            $noOfRows = $db->update('shipment', array(
+                'status' => $status,
+                'updated_by_admin' => $admin,
+                'updated_on_admin' => new Zend_Db_Expr('now()')),
+                "shipment_id = " . $shipmentId);
+
+            if ($noOfRows > 0) {
+                if ($schemeType == 'tb') {
+                    $tempPushNotificationsDb = new Application_Model_DbTable_TempPushNotification();
+                    $pushNotifications = $shipmentDb->getShipmentFinalisedPushNotifications($shipmentId);
+                    foreach ($pushNotifications as $pushNotificationData) {
+                        $tempPushNotificationsDb->insertTempPushNotificationDetails(
+                            $pushNotificationData['push_notification_token'],
+                            'default', 'ePT ' . $pushNotificationData['shipment_code'] . ' Report Released',
+                            'Report for ePT panel ' . $pushNotificationData['shipment_code'] . ' has been released for ' . $pushNotificationData['lab_name'] . '. Tap to view it.',
+                            '{"title": "ePT ' . $pushNotificationData['shipment_code'] . ' Report Released", "body": "Report for ePT panel ' . $pushNotificationData['shipment_code'] . ' has been released for ' . $pushNotificationData['lab_name'] . '. Would you like to view it?", "dismissText": "Close", "actionText": "View Report", "shipmentId": ' . $pushNotificationData['shipment_id'] . ', "participantId": ' . $pushNotificationData['participant_id'] . ', "action": "view_report"}');
+                    }
+                }
+                $db->commit();
+                return "Status updated";
+            } else {
+                return "Unable to update shipment status. Please try again later.";
+            }
+        } catch (Exception $e) {
+            $db->rollBack();
+            error_log($e->getMessage());
+            error_log($e->getTraceAsString());
             return "Unable to update shipment status. Please try again later.";
         }
     }

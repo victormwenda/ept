@@ -149,12 +149,11 @@ class Application_Model_DbTable_Enrollments extends Zend_Db_Table_Abstract
             $row[] = $aRow['iso_name'];
             $row[] = $aRow['scheme_name'];
             $row[] = Pt_Commons_General::humanDateFormat($aRow['enrolled_on']);
-	    if(trim($aRow['scheme_name'])!=""){
-		$row[] = '<a href="/admin/enrollments/view/pid/' . $aRow['participant_id'] . '/sid/' . strtolower($aRow['scheme_id']) . '" class="btn btn-info btn-xs" style="margin-right: 2px;"><i class="icon-eye-open"></i> Know More</a>';
-	    }else{
-		$row[]="--";
-	    }
-
+            if (trim($aRow['scheme_name']) != "") {
+                $row[] = '<a href="/admin/enrollments/view/pid/' . $aRow['participant_id'] . '/sid/' . strtolower($aRow['scheme_id']) . '" class="btn btn-info btn-xs" style="margin-right: 2px;"><i class="icon-eye-open"></i> Know More</a>';
+            } else {
+                $row[] = "--";
+            }
             $output['aaData'][] = $row;
         }
 

@@ -29,18 +29,16 @@ class ShipmentFormController extends Zend_Controller_Action
         
     }
 
-    public function downloadAction()
-    {
-         $this->_helper->layout()->disableLayout();
-        if($this->_hasParam('sId')){
+    public function downloadAction() {
+        $this->_helper->layout()->disableLayout();
+        if ($this->_hasParam('sId')) {
             $id = (int)base64_decode($this->_getParam('sId'));
             $reportService = new Application_Service_Reports();
             $this->view->header=$reportService->getReportConfigValue('report-header');
             $this->view->logo=$reportService->getReportConfigValue('logo');
             $this->view->logoRight=$reportService->getReportConfigValue('logo-right');
             $shipmentService = new Application_Service_Shipments();
-            $this->view->shipment=$shipment= $shipmentService->getShipmentRowData($id);
-            
+            $this->view->shipment = $shipment= $shipmentService->getShipmentRowData($id);
         }
     }
 
