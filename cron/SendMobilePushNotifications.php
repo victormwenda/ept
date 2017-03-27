@@ -16,10 +16,18 @@ try {
 
     if (count($pushNotificationResults) > 0) {
         foreach ($pushNotificationResults as $pushNotificationResult) {
-           /*$db->update('temp_push_notification', array('status' => 'not-sent'),
-                'temp_id = ' . $pushNotificationResult['temp_id']);*/
+           $db->update('temp_push_notification', array('status' => 'not-sent'),
+                'temp_id = ' . $pushNotificationResult['temp_id']);
 
             $curl = curl_init();
+
+            $postBody = json_encode(array(array(
+                'to' => $pushNotificationResult['to'],
+                'sound' => $pushNotificationResult['sound'],
+                'title' => $pushNotificationResult['title'],
+                'body' => $pushNotificationResult['body'],
+                'data' => json_decode($pushNotificationResult['data'])
+            )), 0);
 
             curl_setopt_array($curl, array(
                 CURLOPT_URL => 'https://exp.host/--/api/v2/push/send',
@@ -29,27 +37,44 @@ try {
                     'accept: application/json'
                 ),
                 CURLOPT_POST => true,
-                CURLOPT_POSTFIELDS => http_build_query(array(array(
-                    'to' => $pushNotificationResult['to'],
-                    'sound' => $pushNotificationResult['sound'],
-                    'title' => $pushNotificationResult['title'],
-                    'body' => $pushNotificationResult['body'],
-                    'data' => json_decode($pushNotificationResult['data'])
-                ))),
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_POSTFIELDS => $postBody,
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_TIMEOUT => 30,
-                CURLOPT_HEADER => 1
+                CURLOPT_HEADER => 1,
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_SSL_VERIFYHOST => false
             ));
 
-            error_log(serialize($curl),0);
-
             $result = curl_exec($curl);
+            $err = curl_errno($curl);
+            if ($err > 0) {
+                error_log($result, 0);
+                error_log($err, 0);
+                error_log($errMsg, 0);
+                error_log(json_encode($header, true), 0);
+            } else {
+                $responseHeaderLength = curl_getinfo($curl, CURLINFO_HEADER_SIZE);
+                $responseBody = substr($result, $responseHeaderLength);
+
+                $response = json_decode($responseBody, true);
+
+                if ($response['data'][0]['status'] == "ok") {
+                    $db->delete('temp_push_notification', 'temp_id = ' . $pushNotificationResult['temp_id']);
+                } else {
+                    $db->update('temp_push_notification', array('status' => $response['data'][0]['status']),
+                        'temp_id = ' . $pushNotificationResult['temp_id']);
+                    error_log($result, 0);
+                    error_log($err, 0);
+
+                    $errMsg = curl_error($curl);
+                    $header = curl_getinfo($curl);
+                    error_log($errMsg, 0);
+                    error_log(json_encode($header, true), 0);
+                }
+            }
 
             curl_close($curl);
-
-            /*if ($sendResult == true){
-              $db->delete('temp_push_notification', $id);
-            }*/
         }
     }
 } catch (Exception $e) {
