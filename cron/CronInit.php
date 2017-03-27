@@ -11,11 +11,11 @@ defined('APPLICATION_ENV')
 // Define CRON PATH 
 defined('CRON_PATH')
     || define('CRON_PATH', realpath(dirname(__FILE__)));
- 
 
 // Define path to u directory
 defined('UPLOAD_PATH')
     || define('UPLOAD_PATH', realpath(dirname(__FILE__) . '/../public/uploads'));
+
 // Define path to u directory
 defined('TEMP_UPLOAD_PATH')
     || define('TEMP_UPLOAD_PATH', realpath(dirname(__FILE__) . '/../public/temporary')); 
@@ -25,7 +25,6 @@ set_include_path(implode(PATH_SEPARATOR, array(
     realpath(APPLICATION_PATH . '/../library'),
     get_include_path(),
 )));
-
 
 /** Zend_Application */
 require_once 'Zend/Application.php';
