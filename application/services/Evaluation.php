@@ -1055,7 +1055,8 @@ class Application_Service_Evaluation {
             ->joinLeft(array('ec' => 'r_evaluation_comments'), 'ec.comment_id=sp.evaluation_comment', array(
                 'evaluationComments' => 'comment'))
             ->where("s.shipment_id = ?", $shipmentId)
-            ->where("substring(sp.evaluation_status,4,1) != '0'");
+            ->where("substring(sp.evaluation_status,4,1) != '0'")
+            ->where("sp.is_excluded = 'no'");
         if (isset($sLimit) && isset($sOffset)) {
             $sql = $sql->limit($sLimit, $sOffset);
 		}
@@ -1082,6 +1083,7 @@ class Application_Service_Evaluation {
                     'ref.shipment_id = spm.shipment_id AND ref.sample_id = res.sample_id', array('ref.sample_label'))
                 ->where("spm.shipment_id = ?", $shipmentId)
                 ->where("substring(spm.evaluation_status,4,1) != '0'")
+                ->where("spm.is_excluded = 'no'")
                 ->group('ref.sample_label');
             $tbReportSummary = $db->fetchAll($summaryQuery);
 
@@ -1106,6 +1108,7 @@ class Application_Service_Evaluation {
                     'ref.shipment_id = spm.shipment_id AND ref.sample_id = res.sample_id', array())
                 ->where("spm.shipment_id = ?", $shipmentId)
                 ->where("substring(spm.evaluation_status,4,1) != '0'")
+                ->where("spm.is_excluded = 'no'")
                 ->group('res.sample_id')
                 ->group('res.mtb_detected')
                 ->order('res.sample_id ASC')
@@ -1143,6 +1146,7 @@ class Application_Service_Evaluation {
                     'ref.shipment_id = spm.shipment_id AND ref.sample_id = res.sample_id', array())
                 ->where("spm.shipment_id = ?", $shipmentId)
                 ->where("substring(spm.evaluation_status,4,1) != '0'")
+                ->where("spm.is_excluded = 'no'")
                 ->group('res.sample_id')
                 ->group('res.rif_resistance')
                 ->order('res.sample_id ASC')
@@ -1962,6 +1966,7 @@ class Application_Service_Evaluation {
                         'ref.shipment_id = spm.shipment_id AND ref.sample_id = res.sample_id', array('ref.sample_label'))
                     ->where("spm.shipment_id = ?", $shipmentId)
                     ->where("substring(spm.evaluation_status,4,1) != '0'")
+                    ->where("spm.is_excluded = 'no'")
                     ->group('ref.sample_label');
                 $tbReportSummary = $db->fetchAll($summaryQuery);
 
@@ -1986,6 +1991,7 @@ class Application_Service_Evaluation {
                         'ref.shipment_id = spm.shipment_id AND ref.sample_id = res.sample_id', array())
                     ->where("spm.shipment_id = ?", $shipmentId)
                     ->where("substring(spm.evaluation_status,4,1) != '0'")
+                    ->where("spm.is_excluded = 'no'")
                     ->group('res.sample_id')
                     ->group('res.mtb_detected')
                     ->order('res.sample_id ASC')
@@ -2023,6 +2029,7 @@ class Application_Service_Evaluation {
                         'ref.shipment_id = spm.shipment_id AND ref.sample_id = res.sample_id', array())
                     ->where("spm.shipment_id = ?", $shipmentId)
                     ->where("substring(spm.evaluation_status,4,1) != '0'")
+                    ->where("spm.is_excluded = 'no'")
                     ->group('res.sample_id')
                     ->group('res.rif_resistance')
                     ->order('res.sample_id ASC')
@@ -2094,6 +2101,7 @@ class Application_Service_Evaluation {
                         'evaluationComments' => 'comment'))
                     ->where("s.shipment_id = ?", $shipmentId)
                     ->where("substring(sp.evaluation_status,4,1) != '0'")
+                    ->where("sp.is_excluded = 'no'")
                     ->order('country_name ASC')
                     ->order("first_name ASC");
 
