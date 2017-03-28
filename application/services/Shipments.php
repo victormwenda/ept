@@ -1149,15 +1149,19 @@ class Application_Service_Shipments {
 
     public function updateShipment($params) {
         $dbAdapter = Zend_Db_Table_Abstract::getDefaultAdapter();
-        $shipmentRow = $dbAdapter->fetchRow($dbAdapter->select()->from(array('s' => 'shipment'))->where('shipment_id = ' . $params['shipmentId']));
+        $shipmentRow = $dbAdapter->fetchRow($dbAdapter->select()
+            ->from(array('s' => 'shipment'))
+            ->where('shipment_id = ' . $params['shipmentId']));
         $scheme = $shipmentRow['scheme_type'];
         $size = count($params['sampleName']);
 		$controlCount = 0;
-		foreach ($params['control'] as $control) {
-			if ($control == 1) {
-				$controlCount+=1;
-			}
-		}
+		if (isset($params['control'])) {
+            foreach ($params['control'] as $control) {
+                if ($control == 1) {
+                    $controlCount += 1;
+                }
+            }
+        }
         if ($scheme == 'eid') {
             $dbAdapter->delete('reference_result_eid', 'shipment_id = ' . $params['shipmentId']);
             for ($i = 0; $i < $size; $i++) {
@@ -1208,20 +1212,22 @@ class Application_Service_Shipments {
             $dbAdapter->delete('reference_result_tb', 'shipment_id = ' . $params['shipmentId']);
             for ($i = 0; $i < $size; $i++) {
                 $dbAdapter->insert('reference_result_tb', array(
-                    'shipment_id' => $params['shipmentId'],
-                    'sample_id' => ($i + 1),
-                    'sample_label' => $params['sampleName'][$i],
-                    'mtb_detected' => $params['mtbDetected'][$i],
-                    'rif_resistance' => $params['rifResistance'][$i],
-                    'probe_d' => $params['probeD'][$i],
-                    'probe_c' => $params['probeC'][$i],
-                    'probe_e' => $params['probeE'][$i],
-                    'probe_b' => $params['probeB'][$i],
-                    'spc' => $params['spc'][$i],
-                    'probe_a' => $params['probeA'][$i],
-                    'control' => 0,
-                    'mandatory' => 1,
-                    'sample_score' => 20
+                        'shipment_id' => $params['shipmentId'],
+                        'sample_id' => ($i + 1),
+                        'sample_label' => $params['sampleName'][$i],
+                        'mtb_detected' => $params['mtbDetected'][$i],
+                        'rif_resistance' => $params['rifResistance'][$i],
+                        'probe_d' => $params['probeD'][$i],
+                        'probe_c' => $params['probeC'][$i],
+                        'probe_e' => $params['probeE'][$i],
+                        'probe_b' => $params['probeB'][$i],
+                        'spc' => $params['spc'][$i],
+                        'probe_a' => $params['probeA'][$i],
+                        'control' => 0,
+                        'mandatory' => 1,
+                        'sample_score' => 20,
+                        'is_excluded' => $params['excluded'][$i] == 'yes_not_exempt' || $params['excluded'][$i] == 'yes_exempt' ? 'yes' : 'no',
+                        'is_exempt' => $params['excluded'][$i] == 'yes_exempt' ? 'yes' : 'no'
                     )
                 );
             }
