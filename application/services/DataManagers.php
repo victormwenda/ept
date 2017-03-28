@@ -42,22 +42,22 @@ class Application_Service_DataManagers {
 	return $userDb->getUserDetailsBySystemId($userSystemId);
     }
 	
-    public function resetPassword($email){
-	$userDb = new Application_Model_DbTable_DataManagers();
-	$newPassword = $userDb->resetPasswordForEmail($email);
-	$sessionAlert = new Zend_Session_Namespace('alertSpace');
-	if($newPassword != false){
-		$common = new Application_Service_Common();
-		$message = "Hi,<br/> We have reset your password. Please use <strong>$newPassword</strong> as your new password.<br/><small>This is a system generated email. Please do not reply.</small>";
-		$fromMail = Application_Service_Common::getConfig('admin_email');
-		$fromName = Application_Service_Common::getConfig('admin-name');
-		$common->sendMail($email,null,null,"Password Reset - e-PT",$message,$fromMail,$fromName);
-		$sessionAlert->message = "Your password has been reset. Please check your registered mail id for the instructions.";
-		$sessionAlert->status = "success";
-	}else{
-		$sessionAlert->message = "Sorry, we could not reset your password. Please make sure that you enter your registered primary email id";
-		$sessionAlert->status = "failure";
-	}
+    public function resetPassword ($email) {
+        $userDb = new Application_Model_DbTable_DataManagers();
+        $newPassword = $userDb->resetPasswordForEmail($email);
+        $sessionAlert = new Zend_Session_Namespace('alertSpace');
+        if ($newPassword != false) {
+            $common = new Application_Service_Common();
+            $message = "Hi,<br/> We have reset your password. Please use <strong>$newPassword</strong> as your new password.<br/><small>This is a system generated email. Please do not reply.</small>";
+            $fromMail = Application_Service_Common::getConfig('admin_email');
+            $fromName = Application_Service_Common::getConfig('admin-name');
+            $common->insertTempMail($email,null,null,"Password Reset - e-PT", $message, $fromMail, $fromName);
+            $sessionAlert->message = "Your password has been reset. Please check your registered mail id for the instructions.";
+            $sessionAlert->status = "success";
+        } else {
+            $sessionAlert->message = "Sorry, we could not reset your password. Please make sure that you enter your registered primary email id";
+            $sessionAlert->status = "failure";
+        }
     }
 	
 	
