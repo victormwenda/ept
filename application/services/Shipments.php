@@ -1574,7 +1574,6 @@ class Application_Service_Shipments {
                 $content = $newShipmentMailContent['mail_content'];
                 $message = str_replace($search, $replace, $content);
                 $subject = $newShipmentMailContent['mail_subject'];
-                $message = $message;
                 $fromEmail =$newShipmentMailContent['mail_from'];
                 $fromFullName = $newShipmentMailContent['from_name'];
                 $toEmail =$participantDetails['email'];
