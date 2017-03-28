@@ -15,6 +15,18 @@ class Api_ReportController extends Zend_Controller_Action {
             $sID = intval($this->getRequest()->getParam('sid'));
             $pID = intval($this->getRequest()->getParam('pid'));
             $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+            $db->insert('report_download_log', array(
+                'shipment_id' => $sID,
+                'participant_id' => $pID,
+                'request_data' => json_encode(
+                    array_diff_key(array_merge($this->getRequest()->getParams(), $_SERVER),
+                    array_flip(['REDIRECT_APPLICATION_ENV', 'REDIRECT_STATUS', 'APPLICATION_ENV',
+                            'HTTP_CONNECTION', 'PATH', 'SystemRoot', 'COMSPEC', 'PATHEXT', 'WINDIR',
+                            'SERVER_SIGNATURE', 'SERVER_SOFTWARE', 'SERVER_NAME', 'SERVER_ADDR',
+                            'SERVER_PORT', 'REMOTE_ADDR', 'DOCUMENT_ROOT', 'CONTEXT_DOCUMENT_ROOT',
+                            'SERVER_ADMIN']))),
+                'timestamp' => new Zend_Db_Expr('now()')
+            ));
             $this->view->result = $db->fetchRow($db->select()
                 ->from(array('spm' => 'shipment_participant_map'), array('spm.map_id'))
                 ->join(array('s' => 'shipment'), 's.shipment_id=spm.shipment_id', array('s.shipment_code'))
@@ -32,8 +44,19 @@ class Api_ReportController extends Zend_Controller_Action {
         } else {
             $sID = intval($this->getRequest()->getParam('sid'));
             $pID = intval($this->getRequest()->getParam('pid'));
-
             $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+            $db->insert('report_download_log', array(
+                'shipment_id' => $sID,
+                'participant_id' => $pID,
+                'request_data' => json_encode(
+                    array_diff_key(array_merge($this->getRequest()->getParams(), $_SERVER),
+                        array_flip(['REDIRECT_APPLICATION_ENV', 'REDIRECT_STATUS', 'APPLICATION_ENV',
+                            'HTTP_CONNECTION', 'PATH', 'SystemRoot', 'COMSPEC', 'PATHEXT', 'WINDIR',
+                            'SERVER_SIGNATURE', 'SERVER_SOFTWARE', 'SERVER_NAME', 'SERVER_ADDR',
+                            'SERVER_PORT', 'REMOTE_ADDR', 'DOCUMENT_ROOT', 'CONTEXT_DOCUMENT_ROOT',
+                            'SERVER_ADMIN']))),
+                'timestamp' => new Zend_Db_Expr('now()')
+            ));
             $result = $db->fetchRow($db->select()
                 ->from(array('spm' => 'shipment_participant_map'), array('spm.map_id'))
                 ->join(array('s' => 'shipment'), 's.shipment_id=spm.shipment_id', array('s.shipment_code'))
