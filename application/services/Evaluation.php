@@ -466,10 +466,10 @@ class Application_Service_Evaluation {
                 $sampleRes[$i]['calculated_score'] = $scoringService->calculateTbSamplePassStatus($sampleRes[$i]['ref_mtb_detected'],
                     $sampleRes[$i]['res_mtb_detected'], $sampleRes[$i]['ref_rif_resistance'], $sampleRes[$i]['res_rif_resistance'],
                     $sampleRes[$i]['res_probe_d'], $sampleRes[$i]['res_probe_c'], $sampleRes[$i]['res_probe_e'],
-                    $sampleRes[$i]['res_probe_b'], $sampleRes[$i]['res_spc'], $sampleRes[$i]['res_probe_a'], $sampleRes[$i]['is_excluded'],
-                    $sampleRes[$i]['is_exempt']);
+                    $sampleRes[$i]['res_probe_b'], $sampleRes[$i]['res_spc'], $sampleRes[$i]['res_probe_a'],
+                    $sampleRes[$i]['ref_is_excluded'], $sampleRes[$i]['ref_is_exempt']);
                 $submissionShipmentScore += $scoringService->calculateTbSampleScore($sampleRes[$i]['calculated_score'], $sampleRes[$i]['ref_sample_score']);
-                if ($sampleRes[$i]['is_excluded'] == 'no' || $sampleRes[$i]['is_exempt'] == 'yes') {
+                if ($sampleRes[$i]['ref_is_excluded'] == 'no' || $sampleRes[$i]['ref_is_exempt'] == 'yes') {
                     $maxShipmentScore += $sampleRes[$i]['ref_sample_score'];
                 }
                 array_push($samplePassStatuses, $sampleRes[$i]['calculated_score']);
@@ -558,9 +558,9 @@ class Application_Service_Evaluation {
                     $sampleRes[$i]['res_mtb_detected'], $sampleRes[$i]['ref_rif_resistance'], $sampleRes[$i]['res_rif_resistance'],
                     $sampleRes[$i]['res_probe_d'], $sampleRes[$i]['res_probe_c'], $sampleRes[$i]['res_probe_e'],
                     $sampleRes[$i]['res_probe_b'], $sampleRes[$i]['res_spc'], $sampleRes[$i]['res_probe_a'],
-                    $sampleRes[$i]['is_excluded'], $sampleRes[$i]['is_exempt']);
+                    $sampleRes[$i]['ref_is_excluded'], $sampleRes[$i]['ref_is_exempt']);
                 $submissionShipmentScore += $scoringService->calculateTbSampleScore($sampleRes[$i]['calculated_score'], $sampleRes[$i]['ref_sample_score']);
-                if ($sampleRes[$i]['is_excluded'] == 'no' || $sampleRes[$i]['is_exempt'] == 'yes') {
+                if ($sampleRes[$i]['ref_is_excluded'] == 'no' || $sampleRes[$i]['ref_is_exempt'] == 'yes') {
                     $maxShipmentScore += $sampleRes[$i]['ref_sample_score'];
                 }
                 array_push($samplePassStatuses, $sampleRes[$i]['calculated_score']);
@@ -1427,7 +1427,7 @@ class Application_Service_Evaluation {
             } else if ($res['scheme_type'] == 'tb') {
                 $attributes = json_decode($res['attributes'], true);
                 $sql = $db->select()->from(array('ref' => 'reference_result_tb'),
-                    array('sample_id', 'sample_label', 'sample_score', 'is_excluded', 'is_exempt'))
+                    array('sample_id', 'sample_label', 'sample_score', 'ref_is_excluded', 'ref_is_exempt'))
                     ->join(array('spm' => 'shipment_participant_map'),
                         'spm.shipment_id = ref.shipment_id', array())
                     ->joinLeft(array('res' => 'response_result_tb'),
@@ -1457,11 +1457,12 @@ class Application_Service_Evaluation {
                             $tbResultsExpected[$tbResult['sample_id']]['rif_resistance'],
                             $tbResult['rif_resistance'],
                             $tbResult['probe_d'], $tbResult['probe_c'], $tbResult['probe_e'], $tbResult['probe_b'],
-                            $tbResult['spc'], $tbResult['probe_a'], $tbResult['is_excluded'], $tbResult['is_exempt']);
+                            $tbResult['spc'], $tbResult['probe_a'], $tbResult['ref_is_excluded'],
+                            $tbResult['ref_is_exempt']);
                     array_push($sampleStatuses, $sampleScoreStatus);
                     $sampleScore = $scoringService->calculateTbSampleScore($sampleScoreStatus, $tbResult['sample_score']);
                     $shipmentScore += $sampleScore;
-                    if ($tbResult['is_excluded'] == 'no' || $tbResult['is_exempt'] == 'yes') {
+                    if ($tbResult['ref_is_excluded'] == 'no' || $tbResult['ref_is_exempt'] == 'yes') {
                         $maxShipmentScore += $tbResult['sample_score'];
                     }
                     $toReturn[$counter] = array(
@@ -2302,13 +2303,13 @@ class Application_Service_Evaluation {
                     $calculatedScorePassStatus = $scoringService->calculateTbSamplePassStatus($result['ref_mtb_detected'],
                         $result['res_mtb_detected'], $result['ref_rif_resistance'], $result['res_rif_resistance'],
                         $result['res_probe_d'], $result['res_probe_c'], $result['res_probe_e'], $result['res_probe_b'],
-                        $result['res_spc'], $result['res_probe_a'], $result['is_excluded'], $result['is_exempt']);
+                        $result['res_spc'], $result['res_probe_a'], $result['ref_is_excluded'], $result['ref_is_exempt']);
 
                     $shipmentScore += $scoringService->calculateTbSampleScore($calculatedScorePassStatus,
                         $result['ref_sample_score']);
                     $db->update('response_result_tb', array('calculated_score' => $calculatedScorePassStatus),
                         "shipment_map_id = " . $result['map_id'] . " and sample_id = " . $result['sample_id']);
-                    if ($result['is_excluded'] == 'no' || $result['is_exempt'] == 'yes') {
+                    if ($result['ref_is_excluded'] == 'no' || $result['ref_is_exempt'] == 'yes') {
                         $maxShipmentScore += $result['ref_sample_score'];
                     }
                     array_push($samplePassStatuses, $calculatedScorePassStatus);

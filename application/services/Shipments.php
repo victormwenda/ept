@@ -1215,33 +1215,37 @@ class Application_Service_Shipments {
             $existingSampleMap = array();
             foreach ($existingSamples as $existingResult) {
                 $existingSampleMap[$existingResult['sample_id']] = array(
-                    'mtb_detected' => $existingResult['sample_id'],
-                    'rif_resistance' => $existingResult['sample_id'],
-                    'is_excluded' => $existingResult['sample_id'],
-                    'is_exempt' => $existingResult['sample_id']
+                    'mtb_detected' => $existingResult['mtb_detected'],
+                    'rif_resistance' => $existingResult['rif_resistance'],
+                    'is_excluded' => $existingResult['is_excluded'],
+                    'is_exempt' => $existingResult['is_exempt']
                 );
             }
             $dbAdapter->delete('reference_result_tb', 'shipment_id = ' . $params['shipmentId']);
             $rescoringNecessary = false;
             $maxShipmentScore = 0;
+            $newSampleMap = array();
             for ($i = 0; $i < $size; $i++) {
-                $isExcluded = $params['excluded'][$i] == 'yes_not_exempt' || $params['excluded'][$i] == 'yes_exempt' ? 'yes' : 'no';
-                $isExempt = $params['excluded'][$i] == 'yes_exempt' ? 'yes' : 'no';
-                if (!isset($existingSampleMap[$i + 1]) ||
-                    $existingSampleMap[$i + 1]['mtb_detected'] != $params['mtbDetected'][$i] ||
-                    $existingSampleMap[$i + 1]['rif_resistance'] != $params['rifResistance'][$i] ||
-                    $existingSampleMap[$i + 1]['is_excluded'] != $isExcluded ||
-                    $existingSampleMap[$i + 1]['is_exempt'] != $isExempt) {
+                $sampleId = strval($i + 1);
+                $newSampleMap[$sampleId] = array(
+                    'mtb_detected' => $params['mtbDetected'][$i],
+                    'rif_resistance' => $params['rifResistance'][$i],
+                    'is_excluded' => $params['excluded'][$i] == 'yes_not_exempt' || $params['excluded'][$i] == 'yes_exempt' ? 'yes' : 'no',
+                    'is_exempt' => $params['excluded'][$i] == 'yes_exempt' ? 'yes' : 'no'
+                );
+                if (!isset($existingSampleMap[$sampleId]) ||
+                    $existingSampleMap[$sampleId]['mtb_detected'] != $newSampleMap[$sampleId]['mtb_detected'] ||
+                    $existingSampleMap[$sampleId]['rif_resistance'] != $newSampleMap[$sampleId]['rif_resistance'] ||
+                    $existingSampleMap[$sampleId]['is_excluded'] != $newSampleMap[$sampleId]['is_excluded'] ||
+                    $existingSampleMap[$sampleId]['is_exempt'] != $newSampleMap[$sampleId]['is_exempt']) {
                     $rescoringNecessary = true;
                 }
-                $isExcluded = $params['excluded'][$i] == 'yes_not_exempt' || $params['excluded'][$i] == 'yes_exempt' ? 'yes' : 'no';
-                $isExempt = $params['excluded'][$i] == 'yes_exempt' ? 'yes' : 'no';
                 $dbAdapter->insert('reference_result_tb', array(
                         'shipment_id' => $params['shipmentId'],
-                        'sample_id' => ($i + 1),
+                        'sample_id' => $sampleId,
                         'sample_label' => $params['sampleName'][$i],
-                        'mtb_detected' => $params['mtbDetected'][$i],
-                        'rif_resistance' => $params['rifResistance'][$i],
+                        'mtb_detected' => $newSampleMap[$sampleId]['mtb_detected'],
+                        'rif_resistance' => $newSampleMap[$sampleId]['rif_resistance'],
                         'probe_d' => $params['probeD'][$i],
                         'probe_c' => $params['probeC'][$i],
                         'probe_e' => $params['probeE'][$i],
@@ -1251,11 +1255,11 @@ class Application_Service_Shipments {
                         'control' => 0,
                         'mandatory' => 1,
                         'sample_score' => Application_Service_EvaluationScoring::SAMPLE_MAX_SCORE,
-                        'is_excluded' => $isExcluded,
-                        'is_exempt' => $isExempt
-                    )
-                );
-                if ($isExcluded == 'no' || $isExempt == 'yes') {
+                        'is_excluded' => $newSampleMap[$sampleId]['is_excluded'],
+                        'is_exempt' => $newSampleMap[$sampleId]['is_exempt']
+                    ));
+                if ($newSampleMap[$sampleId]['is_excluded'] == 'no' ||
+                    $newSampleMap[$sampleId]['is_exempt'] == 'yes') {
                     $maxShipmentScore += Application_Service_EvaluationScoring::SAMPLE_MAX_SCORE;
                 }
             }
@@ -1275,12 +1279,15 @@ class Application_Service_Shipments {
                     $failureReason = array();
                     $hasBlankResult = false;
                     for ($i = 0; $i < count($sampleRes); $i++) {
-                        $samplePassStatus = $scoringService->calculateTbSamplePassStatus($sampleRes[$i]['ref_mtb_detected'],
-                            $sampleRes[$i]['res_mtb_detected'], $sampleRes[$i]['ref_rif_resistance'], $sampleRes[$i]['res_rif_resistance'],
-                            $sampleRes[$i]['res_probe_d'], $sampleRes[$i]['res_probe_c'], $sampleRes[$i]['res_probe_e'],
-                            $sampleRes[$i]['res_probe_b'], $sampleRes[$i]['res_spc'], $sampleRes[$i]['res_probe_a'], $sampleRes[$i]['is_excluded'],
-                            $sampleRes[$i]['is_exempt']);
-                        $submissionShipmentScore += $scoringService->calculateTbSampleScore($samplePassStatus, $sampleRes[$i]['ref_sample_score']);
+                        $sampleId = $sampleRes[$i]['sample_id'];
+                        $samplePassStatus = $scoringService->calculateTbSamplePassStatus($newSampleMap[$sampleId]['mtb_detected'],
+                            $sampleRes[$i]['res_mtb_detected'], $newSampleMap[$sampleId]['rif_resistance'],
+                            $sampleRes[$i]['res_rif_resistance'], $sampleRes[$i]['res_probe_d'], $sampleRes[$i]['res_probe_c'],
+                            $sampleRes[$i]['res_probe_e'], $sampleRes[$i]['res_probe_b'], $sampleRes[$i]['res_spc'],
+                            $sampleRes[$i]['res_probe_a'], $newSampleMap[$sampleId]['is_excluded'],
+                            $newSampleMap[$sampleId]['is_exempt']);
+                        $submissionShipmentScore += $scoringService->calculateTbSampleScore($samplePassStatus,
+                            $sampleRes[$i]['ref_sample_score']);
                         array_push($samplePassStatuses, $samplePassStatus);
                         $hasBlankResult = $hasBlankResult || !isset($sampleRes[$i]['res_mtb_detected']);
                     }
