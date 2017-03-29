@@ -262,8 +262,8 @@ class Application_Service_Schemes {
         $sql = $db->select()->from(array('ref' => 'reference_result_tb'),
             array(
                 'sample_label', 'mandatory', 'sample_id', 'control',
-                'ref_is_exempt' => 'is_exempt',
-                'ref_is_excluded' => 'is_excluded',
+                'ref_is_exempt' => 'ref.is_exempt',
+                'ref_is_excluded' => 'ref.is_excluded',
                 'ref_mtb_detected' => 'ref.mtb_detected',
                 'ref_rif_resistance' => 'ref.rif_resistance',
                 'ref_probe_d' => 'ref.probe_d',

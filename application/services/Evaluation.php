@@ -139,9 +139,7 @@ class Application_Service_Evaluation {
         $shipmentDb = new Application_Model_DbTable_Shipments();
 
         foreach ($rResult as $aRow) {
-
             $shipmentResults = $shipmentDb->getPendingShipmentsByDistribution($aRow['distribution_id']);
-
             $row = array();
             $row['DT_RowId'] = "dist" . $aRow['distribution_id'];
             $row[] = Pt_Commons_General::humanDateFormat($aRow['distribution_date']);
@@ -149,8 +147,6 @@ class Application_Service_Evaluation {
             $row[] = $aRow['shipments'];
             $row[] = ucwords($aRow['status']);
             $row[] = '<a class="btn btn-primary btn-xs" href="javascript:void(0);" onclick="getShipments(\'' . ($aRow['distribution_id']) . '\')"><span><i class="icon-search"></i> View</span></a>';
-
-
 
             $output['aaData'][] = $row;
         }
@@ -1093,7 +1089,11 @@ class Application_Service_Evaluation {
                         'rif_result_not_reported' => "SUM(CASE WHEN `res`.`mtb_detected` NOT IN ('noResult', 'invalid', 'error') AND `res`.`mtb_detected` <> '' AND `ref`.`mtb_detected` IS NOT NULL AND (`res`.`rif_resistance` = '' OR `res`.`rif_resistance` IS NULL) THEN 1 ELSE 0 END)",
                         'no_of_responses' => 'COUNT(*)'))
                 ->join(array('ref' => 'reference_result_tb'),
-                    'ref.shipment_id = spm.shipment_id AND ref.sample_id = res.sample_id', array('ref.sample_label'))
+                    'ref.shipment_id = spm.shipment_id AND ref.sample_id = res.sample_id', array(
+                        'sample_label' => 'ref.sample_label',
+                        'ref_is_excluded' => 'ref.is_excluded',
+                        'ref_is_exempt' => 'ref.is_exempt'
+                    ))
                 ->where("spm.shipment_id = ?", $shipmentId)
                 ->where("substring(spm.evaluation_status,4,1) != '0'")
                 ->where("spm.is_excluded = 'no'")
@@ -1101,7 +1101,9 @@ class Application_Service_Evaluation {
             $tbReportSummary = $db->fetchAll($summaryQuery);
 
             $expectedResultsQuery = $db->select()->from(array('ref' => 'reference_result_tb'),
-                array('sample_id', 'sample_label', 'mtb_detected', 'rif_resistance'))
+                array('sample_id', 'sample_label', 'mtb_detected', 'rif_resistance',
+                    'ref_is_excluded' => 'ref.is_excluded',
+                    'ref_is_exempt' => 'ref.is_exempt'))
                 ->where("ref.shipment_id = ?", $shipmentId);
             $tbResultsExpectedResults = $db->fetchAll($expectedResultsQuery);
             foreach ($tbResultsExpectedResults as $tbResultsExpectedResult) {
@@ -1427,7 +1429,10 @@ class Application_Service_Evaluation {
             } else if ($res['scheme_type'] == 'tb') {
                 $attributes = json_decode($res['attributes'], true);
                 $sql = $db->select()->from(array('ref' => 'reference_result_tb'),
-                    array('sample_id', 'sample_label', 'sample_score', 'ref_is_excluded', 'ref_is_exempt'))
+                    array(
+                        'sample_id', 'sample_label', 'sample_score',
+                        'ref_is_excluded' => 'ref.is_excluded',
+                        'ref_is_exempt' => 'ref.is_exempt'))
                     ->join(array('spm' => 'shipment_participant_map'),
                         'spm.shipment_id = ref.shipment_id', array())
                     ->joinLeft(array('res' => 'response_result_tb'),
@@ -1481,6 +1486,8 @@ class Application_Service_Evaluation {
                         'expected_rif_resistance' => $tbResultsExpected[$tbResult['sample_id']]['rif_resistance'],
                         'consensus_mtb_detected' => $tbResultsConsensus[$tbResult['sample_id']]['mtb_detected'],
                         'consensus_rif_resistance' => $tbResultsConsensus[$tbResult['sample_id']]['rif_resistance'],
+                        'ref_is_excluded' => $tbResult['ref_is_excluded'],
+                        'ref_is_exempt' => $tbResult['ref_is_exempt'],
                         'max_score' => $tbResult['sample_score'],
                         'score' => $sampleScore,
                         'score_status' => $sampleScoreStatus);
@@ -1979,7 +1986,11 @@ class Application_Service_Evaluation {
                             'rif_result_not_reported' => "SUM(CASE WHEN `res`.`mtb_detected` NOT IN ('noResult', 'invalid', 'error') AND `res`.`mtb_detected` <> '' AND `ref`.`mtb_detected` IS NOT NULL AND (`res`.`rif_resistance` = '' OR `res`.`rif_resistance` IS NULL) THEN 1 ELSE 0 END)",
                             'no_of_responses' => 'COUNT(*)'))
                     ->join(array('ref' => 'reference_result_tb'),
-                        'ref.shipment_id = spm.shipment_id AND ref.sample_id = res.sample_id', array('ref.sample_label'))
+                        'ref.shipment_id = spm.shipment_id AND ref.sample_id = res.sample_id', array(
+                            'sample_label' => 'ref.sample_label',
+                            'ref_is_excluded' => 'ref.is_excluded',
+                            'ref_is_exempt' => 'ref.is_exempt'
+                        ))
                     ->where("spm.shipment_id = ?", $shipmentId)
                     ->where("substring(spm.evaluation_status,4,1) != '0'")
                     ->where("spm.is_excluded = 'no'")
@@ -1987,13 +1998,17 @@ class Application_Service_Evaluation {
                 $tbReportSummary = $db->fetchAll($summaryQuery);
 
                 $expectedResultsQuery = $db->select()->from(array('ref' => 'reference_result_tb'),
-                    array('sample_id', 'sample_label', 'mtb_detected', 'rif_resistance'))
+                    array('sample_id', 'sample_label', 'mtb_detected', 'rif_resistance',
+                        'ref_is_excluded' => 'ref.is_excluded',
+                        'ref_is_exempt' => 'ref.is_exempt'))
                     ->where("ref.shipment_id = ?", $shipmentId);
                 $tbResultsExpectedResults = $db->fetchAll($expectedResultsQuery);
                 foreach ($tbResultsExpectedResults as $tbResultsExpectedResult) {
                     $tbResultsExpected[$tbResultsExpectedResult['sample_id']] = array(
                         'mtb_detected' => $tbResultsExpectedResult['mtb_detected'],
-                        'rif_resistance' => $tbResultsExpectedResult['rif_resistance']
+                        'rif_resistance' => $tbResultsExpectedResult['rif_resistance'],
+                        'ref_is_excluded' => $tbResultsExpectedResult['ref_is_excluded'],
+                        'ref_is_exempt' => $tbResultsExpectedResult['ref_is_exempt']
                     );
                 }
 

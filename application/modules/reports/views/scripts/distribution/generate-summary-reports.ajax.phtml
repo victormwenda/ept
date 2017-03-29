@@ -55,7 +55,7 @@ if ($this->result['shipment'] != "") {
                 $this->writeHTMLCell(0, 0, 25, 10, $html, 0, 0, 0, true, 'C', true);
             }
             if ($this->schemeType == 'vl') {
-                $html='<p  style="font-weight: bold;text-align:center;">Proficiency Testing Program for HIV Viral load using Dried Tube Specimen<br><strong>All participants results summary report</strong></p>';
+                $html='<p style="font-weight: bold;text-align:center;">Proficiency Testing Program for HIV Viral load using Dried Tube Specimen<br><strong>All participants results summary report</strong></p>';
             } else if ($this->schemeType == 'eid') {
                 $html='<h3 style="font-weight: bold;text-align:center;">HIV-1 Proficiency Testing Program for Early Infant Diagnosis using Dried Blood Spot</h3>';
             } else if($this->schemeType == 'tb') {
@@ -383,7 +383,11 @@ if ($this->result['shipment'] != "") {
             $labInfo .= '    <tr>';
             $labInfo .= '	     <td></td>';
             $labInfo .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.$tbReportParticipant['country_name'].'</td>';
-            $labInfo .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.$tbReportParticipant['first_name']." ".$tbReportParticipant['last_name'].'</td>';
+            $labInfo .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.$tbReportParticipant['first_name']." ".$tbReportParticipant['last_name'];
+            if ($tbReportParticipant['is_excluded'] == 'yes') {
+                $labInfo .= ' <span style="color:#ff0000;">(Excluded)</span>';
+            }
+            $labInfo .= '</td>';
             $labInfo .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.$tbReportParticipant['unique_identifier'].'</td>';
             $labInfo .= '	     <td></td>';
             $labInfo .= '    </tr>';
@@ -396,7 +400,15 @@ if ($this->result['shipment'] != "") {
         $labInfo .= '    <tr>';
         $labInfo .= '	     <td style="width:40%;"></td>';
         foreach ($this->result['tbReportSummary'] as $sampleSummary) {
-            $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;"><strong>'.$sampleSummary['sample_label'].'</strong></td>';
+            $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;"><strong>'.$sampleSummary['sample_label'].'</strong>';
+            if ($sampleSummary['ref_is_excluded'] == 'yes') {
+                if ($sampleSummary['ref_is_exempt'] == 'yes') {
+                    $labInfo .= '<br /><span style="color:#ffa500;">(Exempt)</span>';
+                } else {
+                    $labInfo .= '<br /><span style="color:#ff0000;">(Excluded)</span>';
+                }
+            }
+            $labInfo .= '</td>';
         }
         $labInfo .= '    </tr>';
         $labInfo .= '    <tr>';

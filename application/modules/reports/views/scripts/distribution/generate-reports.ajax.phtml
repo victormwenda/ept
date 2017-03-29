@@ -282,7 +282,11 @@ if (sizeof($this->result['shipment']) > 0) {
             $labInfo .= '    <tr>';
             $labInfo .= '	     <td></td>';
             $labInfo .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.$result['country_name'].'</td>';
-            $labInfo .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.$result['first_name']." ".$result['last_name'].'</td>';
+            $labInfo .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.$result['first_name']." ".$result['last_name'];
+            if ($result['is_excluded'] == 'yes') {
+                $labInfo .= ' <span style="color:#ff0000;">(Excluded)</span>';
+            }
+            $labInfo .= '</td>';
             $labInfo .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.$result['unique_identifier'].'</td>';
             $labInfo .= '	     <td></td>';
             $labInfo .= '    </tr>';
@@ -294,7 +298,15 @@ if (sizeof($this->result['shipment']) > 0) {
             $labInfo .= '    <tr>';
             $labInfo .= '	     <td style="width:40%;"></td>';
             foreach ($this->result['tbReportSummary'] as $sampleSummary) {
-                $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;"><strong>'.$sampleSummary['sample_label'].'</strong></td>';
+                $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;"><strong>'.$sampleSummary['sample_label'].'</strong>';
+                if ($sampleSummary['ref_is_excluded'] == 'yes') {
+                    if ($sampleSummary['ref_is_exempt'] == 'yes') {
+                        $labInfo .= '<br /><span style="color:#ffa500;">(Exempt)</span>';
+                    } else {
+                        $labInfo .= '<br /><span style="color:#ff0000;">(Excluded)</span>';
+                    }
+                }
+                $labInfo .= '</td>';
             }
             $labInfo .= '    </tr>';
             $labInfo .= '    <tr>';
@@ -634,7 +646,15 @@ if (sizeof($this->result['shipment']) > 0) {
                     $labRes .= '	     <td style="width:46%;">Consensus Results</td>';
                     $labRes .= '	     <td style="width:22%;text-align:center;">'.$tbResultValueMapping[$response['consensus_mtb_detected']].'</td>';
                     $labRes .= '	     <td style="width:22%;text-align:center;">'.$tbResultValueMapping[$response['consensus_rif_resistance']].'</td>';
-                    $labRes .= '	     <td style="width:10%;"></td>';
+                    $labRes .= '	     <td style="width:10%;">';
+                    if ($response['ref_is_excluded'] == 'yes') {
+                        if ($response['ref_is_exempt'] == 'yes') {
+                            $labRes .= '<span style="color:#ffa500;">(Exempt)</span>';
+                        } else {
+                            $labRes .= '<span style="color:#ff0000;">(Excluded)</span>';
+                        }
+                    }
+                    $labRes .= '</td>';
                     $labRes .= '    </tr>';
                     $labRes .= '    <tr>';
                     $labRes .= '	     <td style="width:46%;"><strong>'.$result['first_name']." ".$result['last_name'].'</strong></td>';
