@@ -375,7 +375,8 @@ class Application_Service_Evaluation {
                     }
 
                     // if any of the results have failed, then the final result is fail
-                    if ($scoreResult == 'Fail' || $mandatoryResult == 'Fail' || $lotResult == 'Fail' || $testKitExpiryResult == 'Fail') {
+                    if ($scoreResult == 'Fail' || $mandatoryResult == 'Fail' || $lotResult == 'Fail' ||
+                        $testKitExpiryResult == 'Fail') {
                         $finalResult = 2;
                     } else {
                         $finalResult = 1;
@@ -383,7 +384,9 @@ class Application_Service_Evaluation {
                     $shipmentResult[$counter]['shipment_score'] = $totalScore;
                     $shipmentResult[$counter]['max_score'] = $maxScore;
 
-                    $fRes = $db->fetchCol($db->select()->from('r_results', array('result_name'))->where('result_id = ' . $finalResult));
+                    $fRes = $db->fetchCol($db->select()
+                        ->from('r_results', array('result_name'))
+                        ->where('result_id = ' . $finalResult));
 
                     $shipmentResult[$counter]['display_result'] = $fRes[0];
                     $shipmentResult[$counter]['failure_reason'] = $failureReason = json_encode($failureReason);
@@ -459,13 +462,16 @@ class Application_Service_Evaluation {
             $scoringService = new Application_Service_EvaluationScoring();
             $samplePassStatuses = array();
             $maxShipmentScore = 0;
-            for ($i=0; $i < count($sampleRes); $i++) {
+            for ($i = 0; $i < count($sampleRes); $i++) {
                 $sampleRes[$i]['calculated_score'] = $scoringService->calculateTbSamplePassStatus($sampleRes[$i]['ref_mtb_detected'],
                     $sampleRes[$i]['res_mtb_detected'], $sampleRes[$i]['ref_rif_resistance'], $sampleRes[$i]['res_rif_resistance'],
                     $sampleRes[$i]['res_probe_d'], $sampleRes[$i]['res_probe_c'], $sampleRes[$i]['res_probe_e'],
-                    $sampleRes[$i]['res_probe_b'], $sampleRes[$i]['res_spc'], $sampleRes[$i]['res_probe_a']);
+                    $sampleRes[$i]['res_probe_b'], $sampleRes[$i]['res_spc'], $sampleRes[$i]['res_probe_a'], $sampleRes[$i]['is_excluded'],
+                    $sampleRes[$i]['is_exempt']);
                 $submissionShipmentScore += $scoringService->calculateTbSampleScore($sampleRes[$i]['calculated_score'], $sampleRes[$i]['ref_sample_score']);
-                $maxShipmentScore += $sampleRes[$i]['ref_sample_score'];
+                if ($sampleRes[$i]['is_excluded'] == 'no' || $sampleRes[$i]['is_exempt'] == 'yes') {
+                    $maxShipmentScore += $sampleRes[$i]['ref_sample_score'];
+                }
                 array_push($samplePassStatuses, $sampleRes[$i]['calculated_score']);
             }
             $attributes = json_decode($shipmentData['attributes'],true);
@@ -551,9 +557,12 @@ class Application_Service_Evaluation {
                 $sampleRes[$i]['calculated_score'] = $scoringService->calculateTbSamplePassStatus($sampleRes[$i]['ref_mtb_detected'],
                     $sampleRes[$i]['res_mtb_detected'], $sampleRes[$i]['ref_rif_resistance'], $sampleRes[$i]['res_rif_resistance'],
                     $sampleRes[$i]['res_probe_d'], $sampleRes[$i]['res_probe_c'], $sampleRes[$i]['res_probe_e'],
-                    $sampleRes[$i]['res_probe_b'], $sampleRes[$i]['res_spc'], $sampleRes[$i]['res_probe_a']);
+                    $sampleRes[$i]['res_probe_b'], $sampleRes[$i]['res_spc'], $sampleRes[$i]['res_probe_a'],
+                    $sampleRes[$i]['is_excluded'], $sampleRes[$i]['is_exempt']);
                 $submissionShipmentScore += $scoringService->calculateTbSampleScore($sampleRes[$i]['calculated_score'], $sampleRes[$i]['ref_sample_score']);
-                $maxShipmentScore += $sampleRes[$i]['ref_sample_score'];
+                if ($sampleRes[$i]['is_excluded'] == 'no' || $sampleRes[$i]['is_exempt'] == 'yes') {
+                    $maxShipmentScore += $sampleRes[$i]['ref_sample_score'];
+                }
                 array_push($samplePassStatuses, $sampleRes[$i]['calculated_score']);
             }
             $attributes = json_decode($shipmentData['attributes'],true);
@@ -817,6 +826,7 @@ class Application_Service_Evaluation {
                 "updated_by_admin" => $admin,
                 "updated_on_admin" => new Zend_Db_Expr('now()')
             );
+
             if (isset($authNameSpace->qc_access) && $authNameSpace->qc_access =='yes') {
                 $mapData['qc_done'] = $params['qcDone'];
                 if (isset($mapData['qc_done']) && trim($mapData['qc_done']) == "yes") {
@@ -829,11 +839,12 @@ class Application_Service_Evaluation {
                     $mapData['qc_created_on'] = null;
                 }
             }
-            if(isset($params['customField1']) && trim($params['customField1']) != ""){
+
+            if (isset($params['customField1']) && trim($params['customField1']) != "") {
                 $mapData['custom_field_1'] = $params['customField1'];
             }
 
-            if(isset($params['customField2']) && trim($params['customField2']) != ""){
+            if (isset($params['customField2']) && trim($params['customField2']) != "") {
                 $mapData['custom_field_2'] = $params['customField2'];
             }
 
@@ -869,10 +880,11 @@ class Application_Service_Evaluation {
                     ->where('sample_id = ?', $params['sampleId'][$i]);
                 $referenceSample = $db->fetchRow($sql);
                 $calculatedScorePassStatus = $scoringService->calculateTbSamplePassStatus($referenceSample['mtb_detected'],
-                        $params['mtbDetected'][$i], $referenceSample['rif_resistance'], $params['rifResistance'][$i],
-                        $params['probeD'][$i], $params['probeC'][$i], $params['probeE'][$i], $params['probeB'][$i],
-                        $params['spc'][$i], $params['probeA'][$i]);
-                $shipmentScore += $scoringService->calculateTbSampleScore($calculatedScorePassStatus, $referenceSample['sample_score']);
+                    $params['mtbDetected'][$i], $referenceSample['rif_resistance'], $params['rifResistance'][$i],
+                    $params['probeD'][$i], $params['probeC'][$i], $params['probeE'][$i], $params['probeB'][$i],
+                    $params['spc'][$i], $params['probeA'][$i], $referenceSample['is_excluded'], $referenceSample['is_exempt']);
+                $shipmentScore += $scoringService->calculateTbSampleScore($calculatedScorePassStatus,
+                    $referenceSample['sample_score']);
 
                 $db->update('response_result_tb', array(
                     'date_tested' => $dateTested,
@@ -921,7 +933,8 @@ class Application_Service_Evaluation {
             $db->update('shipment_participant_map', $mapData, "map_id = " . $params['smid']);
         }
 
-        $params['isFollowUp'] = (isset($params['isFollowUp']) && $params['isFollowUp'] != "" ) ? $params['isFollowUp'] : "no";
+        $params['isFollowUp'] = (isset($params['isFollowUp']) && $params['isFollowUp'] != "" ) ?
+            $params['isFollowUp'] : "no";
 
 		$updateArray = array(
             'optional_eval_comment' => $params['optionalComments'],
@@ -1414,7 +1427,7 @@ class Application_Service_Evaluation {
             } else if ($res['scheme_type'] == 'tb') {
                 $attributes = json_decode($res['attributes'], true);
                 $sql = $db->select()->from(array('ref' => 'reference_result_tb'),
-                    array('sample_id', 'sample_label', 'sample_score'))
+                    array('sample_id', 'sample_label', 'sample_score', 'is_excluded', 'is_exempt'))
                     ->join(array('spm' => 'shipment_participant_map'),
                         'spm.shipment_id = ref.shipment_id', array())
                     ->joinLeft(array('res' => 'response_result_tb'),
@@ -1444,11 +1457,13 @@ class Application_Service_Evaluation {
                             $tbResultsExpected[$tbResult['sample_id']]['rif_resistance'],
                             $tbResult['rif_resistance'],
                             $tbResult['probe_d'], $tbResult['probe_c'], $tbResult['probe_e'], $tbResult['probe_b'],
-                            $tbResult['spc'], $tbResult['probe_a']);
+                            $tbResult['spc'], $tbResult['probe_a'], $tbResult['is_excluded'], $tbResult['is_exempt']);
                     array_push($sampleStatuses, $sampleScoreStatus);
                     $sampleScore = $scoringService->calculateTbSampleScore($sampleScoreStatus, $tbResult['sample_score']);
                     $shipmentScore += $sampleScore;
-                    $maxShipmentScore += $tbResult['sample_score'];
+                    if ($tbResult['is_excluded'] == 'no' || $tbResult['is_exempt'] == 'yes') {
+                        $maxShipmentScore += $tbResult['sample_score'];
+                    }
                     $toReturn[$counter] = array(
                         'sample_id' => $tbResult['sample_id'],
                         'sample_label' => $tbResult['sample_label'],
@@ -2287,15 +2302,17 @@ class Application_Service_Evaluation {
                     $calculatedScorePassStatus = $scoringService->calculateTbSamplePassStatus($result['ref_mtb_detected'],
                         $result['res_mtb_detected'], $result['ref_rif_resistance'], $result['res_rif_resistance'],
                         $result['res_probe_d'], $result['res_probe_c'], $result['res_probe_e'], $result['res_probe_b'],
-                        $result['res_spc'], $result['res_probe_a']);
+                        $result['res_spc'], $result['res_probe_a'], $result['is_excluded'], $result['is_exempt']);
 
                     $shipmentScore += $scoringService->calculateTbSampleScore($calculatedScorePassStatus,
                         $result['ref_sample_score']);
                     $db->update('response_result_tb', array('calculated_score' => $calculatedScorePassStatus),
                         "shipment_map_id = " . $result['map_id'] . " and sample_id = " . $result['sample_id']);
-                    $maxShipmentScore += $result['ref_sample_score'];
+                    if ($result['is_excluded'] == 'no' || $result['is_exempt'] == 'yes') {
+                        $maxShipmentScore += $result['ref_sample_score'];
+                    }
                     array_push($samplePassStatuses, $calculatedScorePassStatus);
-                    $hasBlankResult = !isset($result['res_mtb_detected']);
+                    $hasBlankResult = $hasBlankResult || !isset($result['res_mtb_detected']);
                 }
                 $maxTotalScore = $maxShipmentScore + Application_Service_EvaluationScoring::MAX_DOCUMENTATION_SCORE;
                 // if we are excluding this result, then let us not give pass/fail

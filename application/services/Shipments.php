@@ -1017,7 +1017,7 @@ class Application_Service_Shipments {
                         'probe_a' => $params['probeA'][$i],
                         'control' => 0,
                         'mandatory' => 1,
-                        'sample_score' => 20
+                        'sample_score' => Application_Service_EvaluationScoring::SAMPLE_MAX_SCORE
                     )
                 );
             }
@@ -1209,8 +1209,33 @@ class Application_Service_Shipments {
 				}
             }
         } else if ($scheme == 'tb') {
+            $existingSamples = $dbAdapter->fetchAll($dbAdapter->select()
+                ->from('reference_result_tb')
+                ->where('shipment_id = ' . $params['shipmentId']));
+            $existingSampleMap = array();
+            foreach ($existingSamples as $existingResult) {
+                $existingSampleMap[$existingResult['sample_id']] = array(
+                    'mtb_detected' => $existingResult['sample_id'],
+                    'rif_resistance' => $existingResult['sample_id'],
+                    'is_excluded' => $existingResult['sample_id'],
+                    'is_exempt' => $existingResult['sample_id']
+                );
+            }
             $dbAdapter->delete('reference_result_tb', 'shipment_id = ' . $params['shipmentId']);
+            $rescoringNecessary = false;
+            $maxShipmentScore = 0;
             for ($i = 0; $i < $size; $i++) {
+                $isExcluded = $params['excluded'][$i] == 'yes_not_exempt' || $params['excluded'][$i] == 'yes_exempt' ? 'yes' : 'no';
+                $isExempt = $params['excluded'][$i] == 'yes_exempt' ? 'yes' : 'no';
+                if (!isset($existingSampleMap[$i + 1]) ||
+                    $existingSampleMap[$i + 1]['mtb_detected'] != $params['mtbDetected'][$i] ||
+                    $existingSampleMap[$i + 1]['rif_resistance'] != $params['rifResistance'][$i] ||
+                    $existingSampleMap[$i + 1]['is_excluded'] != $isExcluded ||
+                    $existingSampleMap[$i + 1]['is_exempt'] != $isExempt) {
+                    $rescoringNecessary = true;
+                }
+                $isExcluded = $params['excluded'][$i] == 'yes_not_exempt' || $params['excluded'][$i] == 'yes_exempt' ? 'yes' : 'no';
+                $isExempt = $params['excluded'][$i] == 'yes_exempt' ? 'yes' : 'no';
                 $dbAdapter->insert('reference_result_tb', array(
                         'shipment_id' => $params['shipmentId'],
                         'sample_id' => ($i + 1),
@@ -1225,11 +1250,69 @@ class Application_Service_Shipments {
                         'probe_a' => $params['probeA'][$i],
                         'control' => 0,
                         'mandatory' => 1,
-                        'sample_score' => 20,
-                        'is_excluded' => $params['excluded'][$i] == 'yes_not_exempt' || $params['excluded'][$i] == 'yes_exempt' ? 'yes' : 'no',
-                        'is_exempt' => $params['excluded'][$i] == 'yes_exempt' ? 'yes' : 'no'
+                        'sample_score' => Application_Service_EvaluationScoring::SAMPLE_MAX_SCORE,
+                        'is_excluded' => $isExcluded,
+                        'is_exempt' => $isExempt
                     )
                 );
+                if ($isExcluded == 'no' || $isExempt == 'yes') {
+                    $maxShipmentScore += Application_Service_EvaluationScoring::SAMPLE_MAX_SCORE;
+                }
+            }
+            if ($rescoringNecessary) {
+                $scoredSubmissions = $dbAdapter->fetchAll($dbAdapter->select()
+                    ->from('shipment_participant_map')
+                    ->where('shipment_score is not null')
+                    ->where('shipment_id = '.$params['shipmentId']));
+                $schemeService = new Application_Service_Schemes();
+                $scoringService = new Application_Service_EvaluationScoring();
+                $samplePassStatuses = array();
+                foreach ($scoredSubmissions as $scoredSubmission) {
+                    $finalResult = $scoredSubmission['final_result'];
+                    $sampleRes = $schemeService->getTbSamples($params['shipmentId'],
+                        $scoredSubmission['participant_id']);
+                    $submissionShipmentScore = 0;
+                    $failureReason = array();
+                    $hasBlankResult = false;
+                    for ($i = 0; $i < count($sampleRes); $i++) {
+                        $samplePassStatus = $scoringService->calculateTbSamplePassStatus($sampleRes[$i]['ref_mtb_detected'],
+                            $sampleRes[$i]['res_mtb_detected'], $sampleRes[$i]['ref_rif_resistance'], $sampleRes[$i]['res_rif_resistance'],
+                            $sampleRes[$i]['res_probe_d'], $sampleRes[$i]['res_probe_c'], $sampleRes[$i]['res_probe_e'],
+                            $sampleRes[$i]['res_probe_b'], $sampleRes[$i]['res_spc'], $sampleRes[$i]['res_probe_a'], $sampleRes[$i]['is_excluded'],
+                            $sampleRes[$i]['is_exempt']);
+                        $submissionShipmentScore += $scoringService->calculateTbSampleScore($samplePassStatus, $sampleRes[$i]['ref_sample_score']);
+                        array_push($samplePassStatuses, $samplePassStatus);
+                        $hasBlankResult = $hasBlankResult || !isset($sampleRes[$i]['res_mtb_detected']);
+                    }
+                    $attributes = json_decode($scoredSubmission['attributes'],true);
+                    $shipmentData = array();
+                    $shipmentData['shipment_score'] = $submissionShipmentScore;
+                    $shipmentData['documentation_score'] = $scoringService->calculateTbDocumentationScore($shipmentRow['shipment_date'],
+                        $attributes['expiry_date'], $scoredSubmission['shipment_receipt_date'], $attributes['sample_rehydration_date'],
+                        $scoredSubmission['shipment_test_date'], $scoredSubmission['supervisor_approval'], $scoredSubmission['participant_supervisor'],
+                        $shipmentRow['lastdate_response']);
+                    $submissionPassStatus = $scoringService->calculateSubmissionPassStatus(
+                        $submissionShipmentScore, $shipmentData['documentation_score'], $maxShipmentScore,
+                        $samplePassStatuses);
+                    if ($scoredSubmission['is_excluded'] == 'yes') {
+                        $failureReason[] = array('warning' => 'Excluded from Evaluation');
+                        $finalResult = 3;
+                    } else if ($hasBlankResult) {
+                        $failureReason[]['warning'] = "Could not determine score. Not enough responses found in the submission.";
+                        $finalResult = 4;
+                    } else if ($submissionPassStatus == 'fail') {
+                        $totalScore = $shipmentData['shipment_score'] + $shipmentData['documentation_score'];
+                        $maxTotalScore = $maxShipmentScore + Application_Service_EvaluationScoring::MAX_DOCUMENTATION_SCORE;
+                        $failureReason[]['warning'] = "Participant did not meet the score criteria (Participant Score - <strong>$totalScore</strong> out of <strong>$maxTotalScore</strong>)";
+                        $finalResult = 2;
+                    } else if ($submissionPassStatus == 'pass') {
+                        $finalResult = 1;
+                    }
+                    $shipmentData['failure_reason'] = json_encode($failureReason);
+                    $shipmentData['final_result'] = $finalResult;
+                    $dbAdapter->update('shipment_participant_map', $shipmentData,
+                        "map_id = " . $scoredSubmission['map_id']);
+                }
             }
         } else if ($scheme == 'dts') {
             $dbAdapter->delete('reference_result_dts', 'shipment_id = ' . $params['shipmentId']);
@@ -1380,7 +1463,8 @@ class Application_Service_Shipments {
             }
         }
 		
-        $dbAdapter->update('shipment', array('number_of_samples' => $size - $controlCount,
+        $dbAdapter->update('shipment', array(
+            'number_of_samples' => $size - $controlCount,
             'number_of_controls' => $controlCount,
 			'shipment_code' => $params['shipmentCode'],
 			'lastdate_response' => Pt_Commons_General::dateFormat($params['lastDate'])),

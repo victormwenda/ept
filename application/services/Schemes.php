@@ -262,6 +262,7 @@ class Application_Service_Schemes {
         $sql = $db->select()->from(array('ref' => 'reference_result_tb'),
             array(
                 'sample_label', 'mandatory', 'sample_id', 'control',
+                'is_excluded', 'is_exempt',
                 'ref_mtb_detected' => 'ref.mtb_detected',
                 'ref_rif_resistance' => 'ref.rif_resistance',
                 'ref_probe_d' => 'ref.probe_d',
@@ -270,7 +271,7 @@ class Application_Service_Schemes {
                 'ref_probe_b' => 'ref.probe_b',
                 'ref_spc' => 'ref.spc',
                 'ref_probe_a' => 'ref.probe_a',
-                'ref_sample_score' => 'ref.sample_score'
+                'ref_sample_score' => 'ref.sample_score',
             ))
             ->join(array('s' => 'shipment'), 's.shipment_id=ref.shipment_id')
             ->join(array('sp' => 'shipment_participant_map'), 's.shipment_id=sp.shipment_id')

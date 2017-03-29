@@ -1,15 +1,21 @@
 <?php
 
 class Application_Service_EvaluationScoring {
+    const SAMPLE_MAX_SCORE = 20;
     const CONCERN_CT_MAX_VALUE = 42.00;
     const PASS_SCORE_PERCENT = 100.00;
     const CONCERN_SCORE_PERCENT = 100.00;
     const FAIL_SCORE_PERCENT = 0.00;
 
     public function calculateTbSamplePassStatus($refMtbDetected, $resMtbDetected, $refRifResistance, $resRifResistance,
-                                                $probeD, $probeC, $probeE, $probeB, $spc, $probeA) {
+                                                $probeD, $probeC, $probeE, $probeB, $spc, $probeA, $isExcluded, $isExempt) {
         $calculatedScore = "fail";
-        if ($resMtbDetected == $refMtbDetected &&
+        if ($isExcluded == 'yes') {
+            $calculatedScore = "excluded";
+            if ($isExempt == 'yes') {
+                $calculatedScore = "exempt";
+            }
+        } else if ($resMtbDetected == $refMtbDetected &&
             $resRifResistance == $refRifResistance) {
             $calculatedScore = "pass";
             $ctValues = array(
@@ -35,6 +41,10 @@ class Application_Service_EvaluationScoring {
                 return self::CONCERN_SCORE_PERCENT * ($sampleScore / 100.00);
             case "fail":
                 return self::FAIL_SCORE_PERCENT * ($sampleScore / 100.00);
+            case "excluded":
+                return self::FAIL_SCORE_PERCENT * ($sampleScore / 100.00);
+            case "exempt":
+                return self::PASS_SCORE_PERCENT * ($sampleScore / 100.00);
             default:
                 return self::FAIL_SCORE_PERCENT * ($sampleScore / 100.00);
         }
