@@ -3,7 +3,6 @@
 include_once "PHPExcel.php";
 
 class Application_Service_Reports {
-
     public function getAllShipments($parameters) {
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
          * you want to insert a non-database field (for example a counter or static image)
@@ -1285,8 +1284,7 @@ class Application_Service_Reports {
 			return false;
 		}
     }
-	
-	
+
 	public function generateDtsRapidHivExcelReport($shipmentId){
 			$db = Zend_Db_Table_Abstract::getDefaultAdapter();
 	
@@ -2400,8 +2398,7 @@ class Application_Service_Reports {
 		
 
 	}
-	
-	
+
 	public function generateDbsEidExcelReport($shipmentId){
 		
 			$db = Zend_Db_Table_Abstract::getDefaultAdapter();
@@ -2583,6 +2580,19 @@ class Application_Service_Reports {
                 ->where("DATE(s.shipment_date) <= ?", $endDate)
                 ->where("s.scheme_type = ?", $schemeType)
                 ->order("s.shipment_id");
+        $resultArray = $db->fetchAll($sQuery);
+        return $resultArray;
+    }
+
+    public function getFinalisedShipmentsByScheme($schemeType, $startDate, $endDate) {
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+
+        $sQuery = $db->select()->from(array('s' => 'shipment'), array('s.shipment_id', 's.shipment_code', 's.scheme_type', 's.shipment_date',))
+            ->where("DATE(s.shipment_date) >= ?", $startDate)
+            ->where("DATE(s.shipment_date) <= ?", $endDate)
+            ->where("s.scheme_type = ?", $schemeType)
+            ->where("s.status = 'finalized'")
+            ->order("s.shipment_id");
         $resultArray = $db->fetchAll($sQuery);
         return $resultArray;
     }
@@ -3180,6 +3190,191 @@ class Application_Service_Reports {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sQuerySession = new Zend_Session_Namespace('shipmentExportExcel');
         return $db->fetchAll($sQuerySession->shipmentExportQuery);
+    }
+
+    public function getResultsPerSiteReport($parameters) {
+        $aColumns = array('map_id', 'unique_identifier', 'first_name', 'iso_name', 'region',
+            'final_result', 'shipment_score', 'documentation_score');
+
+        $searchColumns = array('p.unique_identifier',
+            'p.first_name',
+            'c.iso_name',
+            'p.region'
+        );
+
+        $orderColumns = array(
+            'p.unique_identifier',
+            'p.first_name',
+            'c.iso_name',
+            'p.region',
+            'spm.shipment_score',
+            'smp.final_result'
+        );
+
+        /*
+         * Paging
+         */
+        $sLimit = "";
+        if (isset($parameters['iDisplayStart']) && $parameters['iDisplayLength'] != '-1') {
+            $sOffset = $parameters['iDisplayStart'];
+            $sLimit = $parameters['iDisplayLength'];
+        }
+
+        /*
+         * Ordering
+         */
+        $sOrder = "";
+        if (isset($parameters['iSortCol_0'])) {
+            $sOrder = "";
+            for ($i = 0; $i < intval($parameters['iSortingCols']); $i++) {
+                if ($parameters['bSortable_' . intval($parameters['iSortCol_' . $i])] == "true") {
+                    $sOrder .= $orderColumns[intval($parameters['iSortCol_' . $i])] . "
+					    " . ($parameters['sSortDir_' . $i]) . ", ";
+                }
+            }
+            $sOrder = substr_replace($sOrder, "", -2);
+        }
+
+        /*
+         * Filtering
+         * NOTE this does not match the built-in DataTables filtering which does it
+         * word by word on any field. It's possible to do here, but concerned about efficiency
+         * on very large tables, and MySQL's regex functionality is very limited
+         */
+        $sWhere = "";
+        if (isset($parameters['sSearch']) && $parameters['sSearch'] != "") {
+            $searchArray = explode(" ", $parameters['sSearch']);
+            $sWhereSub = "";
+            foreach ($searchArray as $search) {
+                if ($sWhereSub == "") {
+                    $sWhereSub .= "(";
+                } else {
+                    $sWhereSub .= " AND (";
+                }
+                $colSize = count($searchColumns);
+                for ($i = 0; $i < $colSize; $i++) {
+                    if ($searchColumns[$i] == "" || $searchColumns[$i] == null) {
+                        continue;
+                    }
+                    if ($i < $colSize - 1) {
+                        $sWhereSub .= $searchColumns[$i] . " LIKE '%" . ($search) . "%' OR ";
+                    } else {
+                        $sWhereSub .= $searchColumns[$i] . " LIKE '%" . ($search) . "%' ";
+                    }
+                }
+                $sWhereSub .= ")";
+            }
+            $sWhere .= $sWhereSub;
+        }
+
+        /* Individual column filtering */
+        for ($i = 0; $i < count($aColumns); $i++) {
+            if (isset($parameters['bSearchable_' . $i]) && $parameters['bSearchable_' . $i] == "true" && $parameters['sSearch_' . $i] != '') {
+                if ($sWhere == "") {
+                    $sWhere .= $aColumns[$i] . " LIKE '%" . ($parameters['sSearch_' . $i]) . "%' ";
+                } else {
+                    $sWhere .= " AND " . $aColumns[$i] . " LIKE '%" . ($parameters['sSearch_' . $i]) . "%' ";
+                }
+            }
+        }
+
+        $dbAdapter = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $sQuery = $dbAdapter->select()
+            ->from(array('spm' => 'shipment_participant_map'),
+                array('map_id', 'final_result', 'shipment_score', 'documentation_score'))
+            ->join(array('p' => 'participant'), 'spm.participant_id=p.participant_id',
+                array('unique_identifier', 'first_name', 'region'))
+            ->join(array('c' => 'countries'), 'p.country=c.id', array('iso_name'))
+            ->where('spm.shipment_id = '.$parameters['shipmentId']);
+
+        if (isset($sWhere) && $sWhere != "") {
+            $sQuery = $sQuery->where($sWhere);
+        }
+
+        if (isset($sOrder) && $sOrder != "") {
+            $sQuery = $sQuery->order($sOrder);
+        }
+
+        $sQuerySession = new Zend_Session_Namespace('resultsPerSiteReportExportExcel');
+        $sQuerySession->resultsPerSiteExportQuery = $sQuery;
+
+        if (isset($sLimit) && isset($sOffset)) {
+            $sQuery = $sQuery->limit($sLimit, $sOffset);
+        }
+
+        $rResult = $dbAdapter->fetchAll($sQuery);
+
+        /* Data set length after filtering */
+        $sQuery = $sQuery->reset(Zend_Db_Select::LIMIT_COUNT);
+        $sQuery = $sQuery->reset(Zend_Db_Select::LIMIT_OFFSET);
+        $aResultFilterTotal = $dbAdapter->fetchAll($sQuery);
+        $iFilteredTotal = count($aResultFilterTotal);
+
+        /* Total data set length */
+        $sQuery = $dbAdapter->select()
+            ->from(array('spm' => 'shipment_participant_map'), new Zend_Db_Expr("COUNT('spm.map_id')"))
+            ->where('spm.shipment_id = '.$parameters['shipmentId']);
+
+        $aResultTotal = $dbAdapter->fetchCol($sQuery);
+        $iTotal = $aResultTotal[0];
+
+        /*
+         * Output
+         */
+        $output = array(
+            "sEcho" => intval($parameters['sEcho']),
+            "iTotalRecords" => $iTotal,
+            "iTotalDisplayRecords" => $iFilteredTotal,
+            "aaData" => array()
+        );
+
+        foreach ($rResult as $aRow) {
+            $row = array();
+            $row[] = $aRow['first_name'].' ('.$aRow['unique_identifier'].')';
+            $row[] = $aRow['iso_name'];
+            $row[] = $aRow['region'];
+            $row[] = $aRow['shipment_score'] + $aRow['documentation_score'];
+            if ($aRow['final_result'] == 1) {
+                $row[] = 'Satisfactory';
+            } else if ($aRow['final_result'] == 2) {
+                $row[] = 'Unsatisfactory';
+            } else if ($aRow['final_result'] == 3) {
+                $row[] = 'Excluded';
+            } else {
+                $row[] = 'Not Participated';
+            }
+            $output['aaData'][] = $row;
+        }
+
+        echo json_encode($output);
+    }
+
+    public function exportResultsPerSiteReportInPdf() {
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $sQuerySession = new Zend_Session_Namespace('resultsPerSiteReportExportExcel');
+        return $db->fetchAll($sQuerySession->resultsPerSiteExportQuery);
+    }
+
+    //results count pie chart
+    public function getResultsPerSiteCount($params) {
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $resultsQuery = $db->select()
+            ->from(array('spm' => 'shipment_participant_map'),
+                array(
+                    'satisfactory' => 'sum(spm.final_result = 1)',
+                    'unsatisfactory' => 'sum(spm.final_result = 2)',
+                    'excluded' => 'sum(spm.final_result = 3)',
+                    'not_participated' => 'sum(spm.shipment_test_report_date is null)',
+                ))
+            ->where('spm.shipment_id = '.$params['shipmentId'])
+            ->group(array('spm.shipment_id'));;
+        $resultsCountResult = $db->fetchRow($resultsQuery);
+        return array(
+            array('name' => 'Satisfactory', 'count' => $resultsCountResult['satisfactory']),
+            array('name' => 'Unsatisfactory', 'count' => $resultsCountResult['unsatisfactory']),
+            array('name' => 'Excluded', 'count' => $resultsCountResult['excluded']),
+            array('name' => 'Not Participated', 'count' => $resultsCountResult['not_participated'])
+        );
     }
 
     public function getParticipantPerformanceRegionWiseReport($parameters) {
@@ -3943,31 +4138,34 @@ class Application_Service_Reports {
     }
 
     //vl assay particpant count pie chart
-    public function getAllVlAssayParticipantCount($params)
-    {
-	$db = Zend_Db_Table_Abstract::getDefaultAdapter();
-	$shipmentId = $params['shipmentId'];
-	$vlQuery=$db->select()->from(array('vl' => 'r_vl_assay'),array('vl.id','vl.name','vl.short_name'));
-	$assayResult=$db->fetchAll($vlQuery);
-	$i = 0;
-	$vlParticipantCount =array();
-	foreach ($assayResult as $assayRow) {
-	    $cQuery = $db->select()->from(array('sp' => 'shipment_participant_map'),array('sp.map_id','sp.attributes'))
-				->where("sp.shipment_id='".$shipmentId."'");
-	    $cResult=$db->fetchAll($cQuery);
-	    $k = 0;
-	    foreach($cResult as $val){
-		$valAttributes = json_decode($val['attributes'], true);
-		if($assayRow['id']==$valAttributes['vl_assay']){
-		    $k = $k + 1;
-		}
+    public function getAllVlAssayParticipantCount($params) {
+	    $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+	    $shipmentId = $params['shipmentId'];
+	    $vlQuery = $db->select()->from(array('vl' => 'r_vl_assay'),
+            array('vl.id','vl.name','vl.short_name'));
+	    $assayResult = $db->fetchAll($vlQuery);
+	    $i = 0;
+	    $vlParticipantCount = array();
+	    foreach ($assayResult as $assayRow) {
+	        $cQuery = $db->select()
+                ->from(array('sp' => 'shipment_participant_map'),
+                    array('sp.map_id', 'sp.attributes'))
+				->where("sp.shipment_id = '".$shipmentId."'");
+	        $cResult = $db->fetchAll($cQuery);
+	        $k = 0;
+	        foreach($cResult as $val){
+	            $valAttributes = json_decode($val['attributes'], true);
+	            if($assayRow['id'] == $valAttributes['vl_assay']) {
+	                $k = $k + 1;
+	            }
+	        }
+	        $vlParticipantCount[$i]['count']  = $k;
+            $vlParticipantCount[$i]['name']  = $assayRow['short_name'];
+            $i++;
 	    }
-	    $vlParticipantCount[$i]['count']  = $k;
-	    $vlParticipantCount[$i]['name']  = $assayRow['short_name'];
-	    $i++;
-	}
-	return $vlParticipantCount;
+	    return $vlParticipantCount;
     }
+
     public function getAllVlSampleResult($params)
     {
 	$db = Zend_Db_Table_Abstract::getDefaultAdapter();
