@@ -3300,9 +3300,6 @@ class Application_Service_Reports {
             $sQuery = $sQuery->order($sOrder);
         }
 
-        $sQuerySession = new Zend_Session_Namespace('resultsPerSiteReportExportExcel');
-        $sQuerySession->resultsPerSiteExportQuery = $sQuery;
-
         if (isset($sLimit) && isset($sOffset)) {
             $sQuery = $sQuery->limit($sLimit, $sOffset);
         }
@@ -3352,12 +3349,6 @@ class Application_Service_Reports {
         }
 
         echo json_encode($output);
-    }
-
-    public function exportResultsPerSiteReportInPdf() {
-        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
-        $sQuerySession = new Zend_Session_Namespace('resultsPerSiteReportExportExcel');
-        return $db->fetchAll($sQuerySession->resultsPerSiteExportQuery);
     }
 
     //results count pie chart
@@ -3477,9 +3468,6 @@ class Application_Service_Reports {
             $sQuery = $sQuery->order($sOrder);
         }
 
-        $sQuerySession = new Zend_Session_Namespace('participantsPerCountryReportExportExcel');
-        $sQuerySession->participantsPerCountryExportQuery = $sQuery;
-
         if (isset($sLimit) && isset($sOffset)) {
             $sQuery = $sQuery->limit($sLimit, $sOffset);
         }
@@ -3520,12 +3508,6 @@ class Application_Service_Reports {
         }
 
         echo json_encode($output);
-    }
-
-    public function exportParticipantsPerCountryReportInPdf() {
-        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
-        $sQuerySession = new Zend_Session_Namespace('participantsPerCountryReportExportExcel');
-        return $db->fetchAll($sQuerySession->participantsPerCountryExportQuery);
     }
 
     //results count pie chart
