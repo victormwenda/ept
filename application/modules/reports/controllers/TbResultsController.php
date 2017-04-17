@@ -1,6 +1,6 @@
 <?php
 
-class Reports_ResultsController extends Zend_Controller_Action {
+class Reports_TbResultsController extends Zend_Controller_Action {
 
     public function init(){
         $ajaxContext = $this->_helper->getHelper('AjaxContext');
@@ -18,19 +18,6 @@ class Reports_ResultsController extends Zend_Controller_Action {
             $response = $reportService->getResultsPerSiteReport($params);
             $this->view->response = $response;
         }
-    }
-
-    public function shipmentsExportPdfAction() {
-       $reportService = new Application_Service_Reports();
-       if ($this->getRequest()->isPost()) {
-           $params = $this->_getAllParams();
-           $this->view->dateRange=$params['dateRange'];
-           $this->view->shipmentName=$params['shipmentName'];
-           $this->view->header=$reportService->getReportConfigValue('report-header');
-           $this->view->logo=$reportService->getReportConfigValue('logo');
-           $this->view->logoRight=$reportService->getReportConfigValue('logo-right');
-           $this->view->result=$reportService->exportResultsPerSiteReportInPdf($params);
-       }
     }
 
     public function resultsCountAction() {

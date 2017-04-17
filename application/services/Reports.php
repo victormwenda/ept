@@ -3192,6 +3192,11 @@ class Application_Service_Reports {
         return $db->fetchAll($sQuerySession->shipmentExportQuery);
     }
 
+
+
+
+
+    // Results Per Site
     public function getResultsPerSiteReport($parameters) {
         $aColumns = array('map_id', 'unique_identifier', 'first_name', 'iso_name', 'region',
             'final_result', 'shipment_score', 'documentation_score');
@@ -3376,6 +3381,187 @@ class Application_Service_Reports {
             array('name' => 'Not Participated', 'count' => $resultsCountResult['not_participated'])
         );
     }
+
+
+    // Participants Per Country
+    public function getParticipantsPerCountryReport($parameters) {
+        $aColumns = array('id', 'country_name', 'participant_count');
+
+        $searchColumns = array('c.iso_name');
+
+        $orderColumns = array('country_name', 'participant_count');
+
+        /*
+         * Paging
+         */
+        $sLimit = "";
+        if (isset($parameters['iDisplayStart']) && $parameters['iDisplayLength'] != '-1') {
+            $sOffset = $parameters['iDisplayStart'];
+            $sLimit = $parameters['iDisplayLength'];
+        }
+
+        /*
+         * Ordering
+         */
+        $sOrder = "";
+        if (isset($parameters['iSortCol_0'])) {
+            $sOrder = "";
+            for ($i = 0; $i < intval($parameters['iSortingCols']); $i++) {
+                if ($parameters['bSortable_' . intval($parameters['iSortCol_' . $i])] == "true") {
+                    $sOrder .= $orderColumns[intval($parameters['iSortCol_' . $i])] . "
+					    " . ($parameters['sSortDir_' . $i]) . ", ";
+                }
+            }
+            $sOrder = substr_replace($sOrder, "", -2);
+        }
+
+        /*
+         * Filtering
+         * NOTE this does not match the built-in DataTables filtering which does it
+         * word by word on any field. It's possible to do here, but concerned about efficiency
+         * on very large tables, and MySQL's regex functionality is very limited
+         */
+        $sWhere = "";
+        if (isset($parameters['sSearch']) && $parameters['sSearch'] != "") {
+            $searchArray = explode(" ", $parameters['sSearch']);
+            $sWhereSub = "";
+            foreach ($searchArray as $search) {
+                if ($sWhereSub == "") {
+                    $sWhereSub .= "(";
+                } else {
+                    $sWhereSub .= " AND (";
+                }
+                $colSize = count($searchColumns);
+                for ($i = 0; $i < $colSize; $i++) {
+                    if ($searchColumns[$i] == "" || $searchColumns[$i] == null) {
+                        continue;
+                    }
+                    if ($i < $colSize - 1) {
+                        $sWhereSub .= $searchColumns[$i] . " LIKE '%" . ($search) . "%' OR ";
+                    } else {
+                        $sWhereSub .= $searchColumns[$i] . " LIKE '%" . ($search) . "%' ";
+                    }
+                }
+                $sWhereSub .= ")";
+            }
+            $sWhere .= $sWhereSub;
+        }
+
+        /* Individual column filtering */
+        for ($i = 0; $i < count($aColumns); $i++) {
+            if (isset($parameters['bSearchable_' . $i]) && $parameters['bSearchable_' . $i] == "true" && $parameters['sSearch_' . $i] != '') {
+                if ($sWhere == "") {
+                    $sWhere .= $aColumns[$i] . " LIKE '%" . ($parameters['sSearch_' . $i]) . "%' ";
+                } else {
+                    $sWhere .= " AND " . $aColumns[$i] . " LIKE '%" . ($parameters['sSearch_' . $i]) . "%' ";
+                }
+            }
+        }
+
+        $dbAdapter = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $sQuery = $dbAdapter->select()
+            ->from(array('spm' => 'shipment_participant_map'), array())
+            ->join(array('p' => 'participant'), 'spm.participant_id = p.participant_id',
+                array('participant_count' => new Zend_Db_Expr('COUNT(p.participant_id)')))
+            ->join(array('c' => 'countries'), 'p.country = c.id',
+                array('id', 'country_name' => 'c.iso_name'))
+            ->where('spm.shipment_id = '.$parameters['shipmentId']);
+
+        if (isset($sWhere) && $sWhere != "") {
+            $sQuery = $sQuery->where($sWhere);
+        }
+
+        $sQuery = $sQuery->group(array('c.id'));
+
+        if (isset($sOrder) && $sOrder != "") {
+            $sQuery = $sQuery->order($sOrder);
+        }
+
+        $sQuerySession = new Zend_Session_Namespace('participantsPerCountryReportExportExcel');
+        $sQuerySession->participantsPerCountryExportQuery = $sQuery;
+
+        if (isset($sLimit) && isset($sOffset)) {
+            $sQuery = $sQuery->limit($sLimit, $sOffset);
+        }
+
+        $rResult = $dbAdapter->fetchAll($sQuery);
+
+        /* Data set length after filtering */
+        $sQuery = $sQuery->reset(Zend_Db_Select::LIMIT_COUNT);
+        $sQuery = $sQuery->reset(Zend_Db_Select::LIMIT_OFFSET);
+        $aResultFilterTotal = $dbAdapter->fetchAll($sQuery);
+        $iFilteredTotal = count($aResultFilterTotal);
+
+        /* Total data set length */
+        $sQuery = $dbAdapter->select()
+            ->from(array('spm' => 'shipment_participant_map'), array())
+            ->join(array('p' => 'participant'), 'spm.participant_id = p.participant_id',
+                new Zend_Db_Expr("COUNT(DISTINCT p.country)"))
+            ->where('spm.shipment_id = '.$parameters['shipmentId']);
+
+        $aResultTotal = $dbAdapter->fetchCol($sQuery);
+        $iTotal = $aResultTotal[0];
+
+        /*
+         * Output
+         */
+        $output = array(
+            "sEcho" => intval($parameters['sEcho']),
+            "iTotalRecords" => $iTotal,
+            "iTotalDisplayRecords" => $iFilteredTotal,
+            "aaData" => array()
+        );
+
+        foreach ($rResult as $aRow) {
+            $row = array();
+            $row[] = $aRow['country_name'];
+            $row[] = $aRow['participant_count'];
+            $output['aaData'][] = $row;
+        }
+
+        echo json_encode($output);
+    }
+
+    public function exportParticipantsPerCountryReportInPdf() {
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $sQuerySession = new Zend_Session_Namespace('participantsPerCountryReportExportExcel');
+        return $db->fetchAll($sQuerySession->participantsPerCountryExportQuery);
+    }
+
+    //results count pie chart
+    public function getParticipantsPerCountryCount($params) {
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $resultsQuery = $db->select()
+            ->from(array('spm' => 'shipment_participant_map'), array())
+            ->join(array('p' => 'participant'), 'spm.participant_id = p.participant_id',
+                array('participant_count' => new Zend_Db_Expr('COUNT(p.participant_id)')))
+            ->join(array('c' => 'countries'), 'p.country = c.id',
+                array('id', 'country_name' => 'c.iso_name'))
+            ->where('spm.shipment_id = '.$params['shipmentId'])
+            ->group(array('c.id'))
+            ->order('participant_count DESC');
+
+        $resultsCountResult = $db->fetchAll($resultsQuery);
+
+        $output = array();
+
+        foreach ($resultsCountResult as $aRow) {
+            $row = array();
+            $row['name'] = $aRow['country_name'];
+            $row['count'] = $aRow['participant_count'];
+            $output[] = $row;
+        }
+
+        return $output;
+    }
+
+
+
+
+
+
+
+
 
     public function getParticipantPerformanceRegionWiseReport($parameters) {
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
