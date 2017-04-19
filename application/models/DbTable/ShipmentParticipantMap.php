@@ -49,24 +49,25 @@ class Application_Model_DbTable_ShipmentParticipantMap extends Zend_Db_Table_Abs
             }
         }
 
-        $params['evaluation_status'] = $row['evaluation_status'];
+        if ($params['submitAction'] == 'submit') {
+            $params['evaluation_status'] = $row['evaluation_status'];
 
-        // changing evaluation status 3rd character to 1 = responded
-        $params['evaluation_status'][2] = 1;
+            // changing evaluation status 3rd character to 1 = responded
+            $params['evaluation_status'][2] = 1;
 
-        // changing evaluation status 5th character to 1 = via web user
-        $params['evaluation_status'][4] = 1;
+            // changing evaluation status 5th character to 1 = via web user
+            $params['evaluation_status'][4] = 1;
 
-        // changing evaluation status 4th character to 1 = timely response or 2 = delayed response
-        $date = new Zend_Date();
-        $lastDate = new Zend_Date($lastDate, Zend_Date::ISO_8601);
-        // only if current date is LATER than last date we make status = 2
-        if ($date->compare($lastDate) == 1) {
-            $params['evaluation_status'][3] = 2;
-        } else {
-            $params['evaluation_status'][3] = 1;
+            // changing evaluation status 4th character to 1 = timely response or 2 = delayed response
+            $date = new Zend_Date();
+            $lastDate = new Zend_Date($lastDate, Zend_Date::ISO_8601);
+            // only if current date is LATER than last date we make status = 2
+            if ($date->compare($lastDate) == 1) {
+                $params['evaluation_status'][3] = 2;
+            } else {
+                $params['evaluation_status'][3] = 1;
+            }
         }
-
         return $this->update($params, "map_id = " . $shipmentMapId);
     }
 
