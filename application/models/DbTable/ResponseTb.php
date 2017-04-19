@@ -23,7 +23,7 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
             if ($instrumentLastCalibratedOn == "" || $instrumentLastCalibratedOn == "0000-00-00") {
                 $instrumentLastCalibratedOn = null;
             }
-            $cartridgeExpirationDate = Pt_Commons_General::dateFormat($params['cartridgeExpirationDate'][$key]);
+            $cartridgeExpirationDate = Pt_Commons_General::dateFormat($params['expiryDate']);
             if ($cartridgeExpirationDate == "" || $cartridgeExpirationDate == "0000-00-00") {
                 $cartridgeExpirationDate = null;
             }
@@ -46,7 +46,7 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
                     'module_name' => $params['moduleName'][$key],
                     'instrument_user' => $params['instrumentUser'][$key],
                     'cartridge_expiration_date' => $cartridgeExpirationDate,
-                    'reagent_lot_id' => $params['reagentLotId'][$key],
+                    'reagent_lot_id' => $params['mtbRifKitLotNo'],
                     'error_code' => $params['errorCode'][$key],
                     'created_by' => $dataManagerId,
                     'created_on' => new Zend_Db_Expr('now()')
@@ -70,7 +70,7 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
                     'module_name' => $params['moduleName'][$key],
                     'instrument_user' => $params['instrumentUser'][$key],
                     'cartridge_expiration_date' => $cartridgeExpirationDate,
-                    'reagent_lot_id' => $params['reagentLotId'][$key],
+                    'reagent_lot_id' => $params['mtbRifKitLotNo'],
                     'error_code' => $params['errorCode'][$key],
                     'updated_by' => $dataManagerId,
                     'updated_on' => new Zend_Db_Expr('now()')
@@ -79,7 +79,7 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
         }
     }
 
-    public function updateResult($params) {
+    public function updateResult($params, $cartridgeExpirationDate, $mtbRifKitLotNo) {
         $sampleId = $params['sampleId'];
         $authNameSpace = new Zend_Session_Namespace('datamanagers');
         $dataManagerId = $authNameSpace->dm_id;
@@ -97,12 +97,8 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
         if ($instrumentLastCalibratedOn == "" || $instrumentLastCalibratedOn == "0000-00-00") {
             $instrumentLastCalibratedOn = null;
         }
-        $cartridgeExpirationDate = Pt_Commons_General::stringToDbDate($params['cartridgeExpirationDate']);
-        if ($cartridgeExpirationDate == "" || $cartridgeExpirationDate == "0000-00-00") {
-            $cartridgeExpirationDate = null;
-        }
         if ($res == null || count($res) == 0) {
-            $this->insert(array(
+            $responseResult = array(
                 'shipment_map_id' => $params['smid'],
                 'sample_id' => $sampleId,
                 'date_tested' => $dateTested,
@@ -119,14 +115,19 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
                 'instrument_last_calibrated_on' => $instrumentLastCalibratedOn,
                 'module_name' => $params['moduleName'],
                 'instrument_user' => $params['instrumentUser'],
-                'cartridge_expiration_date' => $cartridgeExpirationDate,
-                'reagent_lot_id' => $params['reagentLotId'],
                 'error_code' => $params['errorCode'],
                 'created_by' => $dataManagerId,
                 'created_on' => new Zend_Db_Expr('now()')
-            ));
+            );
+            if (isset($cartridgeExpirationDate)) {
+                $responseResult['cartridge_expiration_date'] = $cartridgeExpirationDate;
+            }
+            if (isset($mtbRifKitLotNo)) {
+                $responseResult['reagent_lot_id'] = $mtbRifKitLotNo;
+            }
+            $this->insert($responseResult);
         } else {
-            $this->update(array(
+            $responseResult = array(
                 'shipment_map_id' => $params['smid'],
                 'sample_id' => $sampleId,
                 'date_tested' => $dateTested,
@@ -143,12 +144,18 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
                 'instrument_last_calibrated_on' => $instrumentLastCalibratedOn,
                 'module_name' => $params['moduleName'],
                 'instrument_user' => $params['instrumentUser'],
-                'cartridge_expiration_date' => $cartridgeExpirationDate,
-                'reagent_lot_id' => $params['reagentLotId'],
                 'error_code' => $params['errorCode'],
                 'updated_by' => $dataManagerId,
                 'updated_on' => new Zend_Db_Expr('now()')
-            ), "shipment_map_id = " . $params['smid'] . " and sample_id = " . $sampleId);
+            );
+            if (isset($cartridgeExpirationDate)) {
+                $responseResult['cartridge_expiration_date'] = $cartridgeExpirationDate;
+            }
+            if (isset($mtbRifKitLotNo)) {
+                $responseResult['reagent_lot_id'] = $mtbRifKitLotNo;
+            }
+            $this->update($responseResult,
+                "shipment_map_id = " . $params['smid'] . " and sample_id = " . $sampleId);
         }
     }
 }

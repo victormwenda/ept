@@ -550,7 +550,7 @@ class Application_Service_Shipments {
         $shipmentParticipantDb->updateShipmentValues($data, $params['smid']);
     }
 
-    public function updateTbResult($params) {
+    public function updateTbResult($params, $cartridgeExpirationDate, $mtbRifKitLotNo) {
         if (!$this->isShipmentEditable($params['shipmentId'], $params['participantId'])) {
             return false;
         }
@@ -558,7 +558,7 @@ class Application_Service_Shipments {
         $db->beginTransaction();
         try {
             $tbResponseDb = new Application_Model_DbTable_ResponseTb();
-            $tbResponseDb->updateResult($params);
+            $tbResponseDb->updateResult($params, $cartridgeExpirationDate, $mtbRifKitLotNo);
             $instrumentsDb = new Application_Model_DbTable_Instruments();
             if (isset($params['instrumentSerial']) &&
                 $params['instrumentSerial'] != "") {

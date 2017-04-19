@@ -348,16 +348,14 @@ foreach ($this->allSamples as $sample) {
                     </tr>
                     <tr>
                         <th rowspan="2" style="vertical-align: middle;">Instrument/Cartridge Details</th>
-                        <th colspan="2" style="vertical-align: bottom;">Serial Number</th>
-                        <th style="vertical-align: bottom;">Installed</th>
-                        <th style="vertical-align: bottom;">Last Calibrated</th>
+                        <th colspan="3" style="vertical-align: bottom;">Serial Number</th>
+                        <th colspan="2" style="vertical-align: bottom;">Installed</th>
+                        <th colspan="2" style="vertical-align: bottom;">Last Calibrated</th>
                         <th style="vertical-align: bottom;">Module Number</th>
                         <th colspan="2" style="vertical-align: bottom;">Instrument User</th>
-                        <th style="vertical-align: bottom;">Cartridge Expires</th>
-                        <th colspan="2" style="vertical-align: bottom;">Reagent Lot ID</th>
                     </tr>
                     <tr style="background-color: transparent;">
-                        <th colspan="2" style="white-space: nowrap;background-color: transparent;">
+                        <th colspan="3" style="white-space: nowrap;background-color: transparent;">
                             <input type="text" id="instrumentSerial<?php echo $count; ?>" name="instrumentSerial[]"
                                    class="form-control input-sm" value="<?php echo $sample['res_instrument_serial']; ?>"
                                    title="Please enter the instrument serial number for <?php echo $sample['sample_label']; ?>"
@@ -393,13 +391,13 @@ foreach ($this->allSamples as $sample) {
                             <?php
                             } ?>
                         </th>
-                        <td style="background-color: transparent;">
+                        <td colspan="2" style="background-color: transparent;">
                             <input type="text" id="instrumentInstalledOn<?php echo $count; ?>"
                                    class="form-control datepicker input-sm" readonly="readonly" name="instrumentInstalledOn[]"
                                    value="<?php echo $this->dateFormat($sample['res_instrument_installed_on']); ?>"
                                    title="Please enter the instrument installation date for <?php echo $sample['sample_label']; ?>" />
                         </td>
-                        <td style="background-color: transparent;">
+                        <td colspan="2" style="background-color: transparent;">
                             <input type="text" id="instrumentLastCalibratedOn<?php echo $count; ?>"
                                    class="form-control datepicker input-sm" readonly="readonly" name="instrumentLastCalibratedOn[]"
                                    value="<?php echo $this->dateFormat($sample['res_instrument_last_calibrated_on']); ?>"
@@ -414,17 +412,6 @@ foreach ($this->allSamples as $sample) {
                             <input type="text" name="instrumentUser[]" class="form-control input-sm"
                                    value="<?php echo $sample['res_instrument_user']; ?>"
                                    title="Please enter the instrument user for <?php echo $sample['sample_label']; ?>" />
-                        </th>
-                        <td style="background-color: transparent;">
-                            <input type="text" class="form-control datepicker input-sm" readonly="readonly"
-                                   name="cartridgeExpirationDate[]"
-                                   value="<?php echo $this->dateFormat($sample['res_cartridge_expiration_date']); ?>"
-                                   title="Please enter the cartridge expiration date for <?php echo $sample['sample_label']; ?>" />
-                        </td>
-                        <th colspan="2" style="white-space: nowrap;background-color: transparent;">
-                            <input type="text" name="reagentLotId[]" class="form-control input-sm"
-                                   value="<?php echo $sample['res_reagent_lot_id']; ?>"
-                                   title="Please enter the reagent lot ID for <?php echo $sample['sample_label']; ?>" />
                         </th>
                     </tr>
                 </table>
@@ -509,14 +496,14 @@ $dtFormat = $genderHelper->getDateFormat();
   var timeOut;
 
   $(function() {
-    $(".datepicker:not(#expiryDate, input[name='cartridgeExpirationDate[]'], input[name='instrumentLastCalibratedOn[]'], input[name='instrumentInstalledOn[]'])")
+    $(".datepicker:not(#expiryDate, input[name='instrumentLastCalibratedOn[]'], input[name='instrumentInstalledOn[]'])")
       .datepicker({
         dateFormat: '<?php echo $dtFormat;?>',
         maxDate: '0',
         minDate : new Date('<?php echo $this->shipment['shipment_date']; ?>')
       });
 
-    $("#expiryDate, input[name='cartridgeExpirationDate[]']")
+    $("#expiryDate")
       .datepicker({
         dateFormat: '<?php echo $dtFormat;?>',
         minDate : new Date('<?php echo $this->shipment['shipment_date']; ?>')

@@ -869,9 +869,8 @@ class Application_Service_Evaluation {
                     $params['instrumentLastCalibratedOn'][$i] == "") {
                     $instrumentLastCalibratedOn = null;
                 }
-                $cartridgeExpirationDate = Pt_Commons_General::dateFormat($params['cartridgeExpirationDate'][$i]);
-                if (!isset($params['cartridgeExpirationDate'][$i]) ||
-                    $params['cartridgeExpirationDate'][$i] == "") {
+                $cartridgeExpirationDate = Pt_Commons_General::dateFormat($params['expiryDate']);
+                if ($cartridgeExpirationDate == "" || $cartridgeExpirationDate == "0000-00-00") {
                     $cartridgeExpirationDate = null;
                 }
 
@@ -904,7 +903,7 @@ class Application_Service_Evaluation {
                     'module_name' => $params['moduleName'][$i],
                     'instrument_user' => $params['instrumentUser'][$i],
                     'cartridge_expiration_date' => $cartridgeExpirationDate,
-                    'reagent_lot_id' => $params['reagentLotId'][$i],
+                    'reagent_lot_id' => $params['mtbRifKitLotNo'],
                     'error_code' => $params['errorCode'][$i],
                     'updated_by' => $admin,
                     'updated_on' => new Zend_Db_Expr('now()')

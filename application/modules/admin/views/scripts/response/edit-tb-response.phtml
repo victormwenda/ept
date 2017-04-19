@@ -170,7 +170,7 @@ if (isset($this->shipment["shipment_test_report_date"]) &&
 $total = 0;
 $counter = 1;
 foreach ($this->responseData['results'] as $result) {
-    if (($counter%2) == 0) {
+    if (($counter % 2) == 0) {
         $class = "evenResult";
     } else {
         $class = "oddResult";
@@ -189,7 +189,7 @@ foreach ($this->responseData['results'] as $result) {
                     </th>
                 </tr>
                 <tr style="background-color: transparent;">
-                    <th style="background-color: transparent;">Date Tested</th>
+                    <th colspan="2" style="background-color: transparent;">Date Tested</th>
                     <th style="background-color: transparent;">MTB Detected</th>
                     <th style="background-color: transparent;">Error Code</th>
                     <th style="background-color: transparent;">Rif Resistance</th>
@@ -201,7 +201,7 @@ foreach ($this->responseData['results'] as $result) {
                     <th style="background-color: transparent;">Probe A</th>
                 </tr>
                 <tr>
-                    <td style="vertical-align: middle;text-align: center;width: 14%;background-color: transparent;">
+                    <td colspan="2" style="vertical-align: middle;text-align: center;width: 14%;background-color: transparent;">
                         <input type="text" class="form-control datepicker sampleTestDate input-sm" readonly="readonly"
                                name="dateTested[]" value="<?php echo $this->dateFormat($result['res_date_tested']); ?>"
                                title="Please enter the Test Date for <?php echo $result['sample_label']; ?>" />
@@ -288,25 +288,23 @@ foreach ($this->responseData['results'] as $result) {
                     </td>
                 </tr>
                 <tr>
-                    <th style="vertical-align: bottom;">Instrument Serial</th>
-                    <th style="vertical-align: bottom;">Installed</th>
-                    <th style="vertical-align: bottom;">Last Calibrated</th>
+                    <th colspan="3" style="vertical-align: bottom;">Instrument Serial</th>
+                    <th colspan="2" style="vertical-align: bottom;">Installed</th>
+                    <th colspan="2" style="vertical-align: bottom;">Last Calibrated</th>
                     <th style="vertical-align: bottom;">Module Number</th>
-                    <th colspan="2" style="vertical-align: bottom;">Instrument User</th>
-                    <th colspan="2" style="vertical-align: bottom;">Cartridge Expires</th>
-                    <th colspan="2" style="vertical-align: bottom;">Reagent Lot ID</th>
+                    <th colspan="3" style="vertical-align: bottom;">Instrument User</th>
                 </tr>
                 <tr style="background-color: transparent;">
-                    <th style="white-space: nowrap;background-color: transparent;">
+                    <th colspan="3" style="white-space: nowrap;background-color: transparent;">
                         <input type="text" name="instrumentSerial[]" class="form-control input-sm"
                                value="<?php echo $result['res_instrument_serial']; ?>" title="Please enter the instrument serial number for <?php echo $result['sample_label']; ?>" />
                     </th>
-                    <td style="background-color: transparent;">
+                    <td colspan="2" style="background-color: transparent;">
                         <input type="text" class="form-control datepicker input-sm" readonly="readonly"
                                name="instrumentInstalledOn[]" value="<?php echo $this->dateFormat($result['res_instrument_installed_on']); ?>"
                                title="Please enter the instrument installation date for <?php echo $result['sample_label']; ?>" />
                     </td>
-                    <td style="background-color: transparent;">
+                    <td colspan="2" style="background-color: transparent;">
                         <input type="text" class="form-control datepicker input-sm" readonly="readonly"
                                name="instrumentLastCalibratedOn[]"
                                value="<?php echo $this->dateFormat($result['res_instrument_last_calibrated_on']); ?>"
@@ -317,21 +315,10 @@ foreach ($this->responseData['results'] as $result) {
                                value="<?php echo $result['res_module_name']; ?>"
                                title="Please enter the module number for <?php echo $result['sample_label']; ?>" />
                     </th>
-                    <th colspan="2" style="white-space: nowrap;background-color: transparent;">
+                    <th colspan="3" style="white-space: nowrap;background-color: transparent;">
                         <input type="text" name="instrumentUser[]" class="form-control input-sm"
                                value="<?php echo $result['res_instrument_user']; ?>"
                                title="Please enter the instrument user for <?php echo $result['sample_label']; ?>" />
-                    </th>
-                    <td colspan="2" style="background-color: transparent;">
-                        <input type="text" class="form-control datepicker input-sm" readonly="readonly"
-                               name="cartridgeExpirationDate[]"
-                               value="<?php echo $this->dateFormat($result['res_cartridge_expiration_date']); ?>"
-                               title="Please enter the cartridge expiration date for <?php echo $result['sample_label']; ?>" />
-                    </td>
-                    <th colspan="2" style="white-space: nowrap;background-color: transparent;">
-                        <input type="text" name="reagentLotId[]" class="form-control input-sm"
-                               value="<?php echo $result['res_reagent_lot_id']; ?>"
-                               title="Please enter the reagent lot ID for <?php echo $result['sample_label']; ?>" />
                     </th>
                 </tr>
             </table>

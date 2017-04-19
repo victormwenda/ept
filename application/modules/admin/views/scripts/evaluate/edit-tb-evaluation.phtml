@@ -506,26 +506,24 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
                             </td>
                         </tr>
                         <tr>
-                            <th colspan="2" style="vertical-align: bottom;">Serial Number</th>
-                            <th style="vertical-align: bottom;">Installed</th>
-                            <th style="vertical-align: bottom;">Last Calibrated</th>
+                            <th colspan="3" style="vertical-align: bottom;">Serial Number</th>
+                            <th colspan="2" style="vertical-align: bottom;">Installed</th>
+                            <th colspan="2" style="vertical-align: bottom;">Last Calibrated</th>
                             <th style="vertical-align: bottom;">Module Number</th>
-                            <th colspan="2" style="vertical-align: bottom;">Instrument User</th>
-                            <th colspan="2" style="vertical-align: bottom;">Cartridge Expires</th>
-                            <th colspan="2" style="vertical-align: bottom;">Reagent Lot ID</th>
+                            <th colspan="3" style="vertical-align: bottom;">Instrument User</th>
                         </tr>
                         <tr style="background-color: transparent;">
-                            <th colspan="2" style="white-space: nowrap;background-color: transparent;">
+                            <th colspan="3" style="white-space: nowrap;background-color: transparent;">
                                 <input type="text" name="instrumentSerial[]" class="form-control input-sm"
                                        value="<?php echo $result['res_instrument_serial']; ?>"
                                        title="Please enter the instrument serial number for <?php echo $result['sample_label']; ?>" />
                             </th>
-                            <td style="background-color: transparent;">
+                            <td colspan="2" style="background-color: transparent;">
                                 <input type="text" class="form-control datepicker input-sm" readonly="readonly"
                                        name="instrumentInstalledOn[]" value="<?php echo $this->dateFormat($result['res_instrument_installed_on']); ?>"
                                        title="Please enter the instrument installation date for <?php echo $result['sample_label']; ?>" />
                             </td>
-                            <td style="background-color: transparent;">
+                            <td colspan="2" style="background-color: transparent;">
                                 <input type="text" class="form-control datepicker input-sm" readonly="readonly"
                                        name="instrumentLastCalibratedOn[]" value="<?php echo $this->dateFormat($result['res_instrument_last_calibrated_on']); ?>"
                                        title="Please enter the date that the instrument was last calibrated for <?php echo $result['sample_label']; ?>" />
@@ -535,21 +533,10 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
                                        value="<?php echo $result['res_module_name']; ?>"
                                        title="Please enter the module number for <?php echo $result['sample_label']; ?>" />
                             </th>
-                            <th colspan="2" style="white-space: nowrap;background-color: transparent;">
+                            <th colspan="3" style="white-space: nowrap;background-color: transparent;">
                                 <input type="text" name="instrumentUser[]" class="form-control input-sm"
                                        value="<?php echo $result['res_instrument_user']; ?>"
                                        title="Please enter the instrument user for <?php echo $result['sample_label']; ?>" />
-                            </th>
-                            <td colspan="2" style="background-color: transparent;">
-                                <input type="text" class="form-control datepicker input-sm" readonly="readonly"
-                                       name="cartridgeExpirationDate[]"
-                                       value="<?php echo $this->dateFormat($result['res_cartridge_expiration_date']); ?>"
-                                       title="Please enter the cartridge expiration date for <?php echo $result['sample_label']; ?>" />
-                            </td>
-                            <th colspan="2" style="white-space: nowrap;background-color: transparent;">
-                                <input type="text" name="reagentLotId[]" class="form-control input-sm"
-                                       value="<?php echo $result['res_reagent_lot_id']; ?>"
-                                       title="Please enter the reagent lot ID for <?php echo $result['sample_label']; ?>" />
                             </th>
                         </tr>
                     </table>

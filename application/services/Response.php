@@ -276,7 +276,7 @@ class Application_Service_Response {
                 if ($instrumentLastCalibratedOn == "" || $instrumentLastCalibratedOn == "0000-00-00") {
                     $instrumentLastCalibratedOn = null;
                 }
-                $cartridgeExpirationDate = Pt_Commons_General::dateFormat($params['cartridgeExpirationDate'][$i]);
+                $cartridgeExpirationDate = Pt_Commons_General::dateFormat($params['expiryDate']);
                 if ($cartridgeExpirationDate == "" || $cartridgeExpirationDate == "0000-00-00") {
                     $cartridgeExpirationDate = null;
                 }
@@ -300,7 +300,7 @@ class Application_Service_Response {
                         'module_name' => $params['moduleName'][$i],
                         'instrument_user' => $params['instrumentUser'][$i],
                         'cartridge_expiration_date' => $cartridgeExpirationDate,
-                        'reagent_lot_id' => $params['reagentLotId'][$i],
+                        'reagent_lot_id' => $params['mtbRifKitLotNo'],
                         'created_by' => $admin,
                         'created_on' => new Zend_Db_Expr('now()')
                     ));
@@ -322,7 +322,7 @@ class Application_Service_Response {
                         'module_name' => $params['moduleName'][$i],
                         'instrument_user' => $params['instrumentUser'][$i],
                         'cartridge_expiration_date' => $cartridgeExpirationDate,
-                        'reagent_lot_id' => $params['reagentLotId'][$i],
+                        'reagent_lot_id' => $params['mtbRifKitLotNo'],
                         'updated_by' => $admin,
                         'updated_on' => new Zend_Db_Expr('now()')
                     ), "shipment_map_id = " . $params['smid'] . " and sample_id = " . $params['sampleId'][$i]);

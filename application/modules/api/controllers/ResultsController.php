@@ -72,8 +72,19 @@ class Api_ResultsController extends Zend_Controller_Action {
                 $params['shipmentId'] = $sID;
                 $params['participantId'] = $pID;
                 $params['sampleId'] = $sampleID;
+                $cartridgeExpirationDate = null;
+                if (isset($params['expiryDate'])) {
+                    $cartridgeExpirationDate = Pt_Commons_General::dateFormat($params['expiryDate']);
+                }
+                if ($cartridgeExpirationDate == "" || $cartridgeExpirationDate == "0000-00-00") {
+                    $cartridgeExpirationDate = null;
+                }
+                $mtbRifKitLotNo = null;
+                if (isset($params['mtbRifKitLotNo'])) {
+                    $mtbRifKitLotNo = $params['mtbRifKitLotNo'];
+                }
                 $shipmentService = new Application_Service_Shipments();
-                $shipmentService->updateTbResult($params);
+                $shipmentService->updateTbResult($params, $cartridgeExpirationDate, $mtbRifKitLotNo);
                 $this->getResponse()->setBody('OK');
                 $this->getResponse()->setHttpResponseCode(200);
             } else {
