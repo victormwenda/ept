@@ -143,7 +143,7 @@ class Application_Service_Response {
                     'map_id',
                     'responseDate' => 'shipment_test_report_date',
                     'participant_count' => new Zend_Db_Expr('count("participant_id")'),
-                    'reported_count' => new Zend_Db_Expr("SUM(shipment_test_date <> '0000-00-00')"),
+                    'reported_count' => new Zend_Db_Expr("SUM(substr(sp.evaluation_status,3,1) = 1)"),
                     'number_passed' => new Zend_Db_Expr("SUM(final_result = 1)"),
                     'last_not_participated_mailed_on',
                     'last_not_participated_mail_count',
@@ -206,7 +206,6 @@ class Application_Service_Response {
 
         if ($params['scheme'] == 'tb') {
             $attributes = array(
-                "sample_rehydration_date" => Pt_Commons_General::dateFormat($params['sampleRehydrationDate']),
                 "mtb_rif_kit_lot_no" => $params['mtbRifKitLotNo'],
                 "expiry_date" => $params['expiryDate'],
                 "assay" => $params['assay'],
@@ -217,15 +216,19 @@ class Application_Service_Response {
             $attributes = json_encode($attributes);
             $mapData = array(
                 "shipment_receipt_date" => Pt_Commons_General::dateFormat($params['receiptDate']),
-                "shipment_test_date" => Pt_Commons_General::dateFormat($params['testDate']),
                 "attributes" => $attributes,
                 "supervisor_approval" => $params['supervisorApproval'],
                 "participant_supervisor" => $params['participantSupervisor'],
                 "user_comment" => $params['userComments'],
-                "mode_id" => $params['modeOfReceipt'],
                 "updated_by_admin" => $admin,
                 "updated_on_admin" => new Zend_Db_Expr('now()')
             );
+            if (isset($params['testDate'])) {
+                $mapData['shipment_test_date'] = Pt_Commons_General::dateFormat($params['testDate']);
+            }
+            if (isset($params['modeOfReceipt'])) {
+                $mapData['mode_id'] = $params['modeOfReceipt'];
+            }
             if (isset($params['testReceiptDate']) && trim($params['testReceiptDate'])!= '') {
                 $mapData['shipment_test_report_date'] = Pt_Commons_General::dateFormat($params['testReceiptDate']);
             } else {

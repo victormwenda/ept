@@ -515,7 +515,6 @@ class Application_Service_Shipments {
         $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
         $authNameSpace = new Zend_Session_Namespace('datamanagers');
         $attributes = array(
-            "sample_rehydration_date" => Pt_Commons_General::stringToDbDate($params['sampleRehydrationDate']),
             "mtb_rif_kit_lot_no" => $params['mtbRifKitLotNo'],
             "expiry_date" => $params['expiryDate'],
             "assay" => $params['assay'],
@@ -526,9 +525,7 @@ class Application_Service_Shipments {
         $attributes = json_encode($attributes);
         $data = array(
             "shipment_receipt_date" => Pt_Commons_General::stringToDbDate($params['dateReceived']),
-            "shipment_test_date" => Pt_Commons_General::stringToDbDate($params['testDate']),
             "attributes" => $attributes,
-            "mode_id" => $params['modeOfReceipt'],
             "updated_by_user" => $authNameSpace->dm_id,
             "updated_on_user" => new Zend_Db_Expr('now()')
         );
@@ -618,7 +615,6 @@ class Application_Service_Shipments {
             $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
             $authNameSpace = new Zend_Session_Namespace('datamanagers');
             $attributes = array(
-                "sample_rehydration_date" => Pt_Commons_General::dateFormat($params['sampleRehydrationDate']),
                 "mtb_rif_kit_lot_no" => $params['mtbRifKitLotNo'],
                 "expiry_date" => $params['expiryDate'],
                 "assay" => $params['assay'],
@@ -629,13 +625,11 @@ class Application_Service_Shipments {
             $attributes = json_encode($attributes);
             $data = array(
                 "shipment_receipt_date" => Pt_Commons_General::dateFormat($params['receiptDate']),
-                "shipment_test_date" => Pt_Commons_General::dateFormat($params['testDate']),
                 "attributes" => $attributes,
                 "supervisor_approval" => $params['supervisorApproval'],
                 "participant_supervisor" => $params['participantSupervisor'],
                 "user_comment" => $params['userComments'],
-		        "mode_id" => $params['modeOfReceipt'],
-                "updated_by_user" => $authNameSpace->dm_id,
+		        "updated_by_user" => $authNameSpace->dm_id,
                 "updated_on_user" => new Zend_Db_Expr('now()')
             );
             if (isset($params['testReceiptDate']) && trim($params['testReceiptDate'])!= '') {
@@ -1295,9 +1289,8 @@ class Application_Service_Shipments {
                     $shipmentData = array();
                     $shipmentData['shipment_score'] = $submissionShipmentScore;
                     $shipmentData['documentation_score'] = $scoringService->calculateTbDocumentationScore($shipmentRow['shipment_date'],
-                        $attributes['expiry_date'], $scoredSubmission['shipment_receipt_date'], $attributes['sample_rehydration_date'],
-                        $scoredSubmission['shipment_test_date'], $scoredSubmission['supervisor_approval'], $scoredSubmission['participant_supervisor'],
-                        $shipmentRow['lastdate_response']);
+                        $attributes['expiry_date'], $scoredSubmission['shipment_receipt_date'], $scoredSubmission['supervisor_approval'],
+                        $scoredSubmission['participant_supervisor'], $shipmentRow['lastdate_response']);
                     $submissionPassStatus = $scoringService->calculateSubmissionPassStatus(
                         $submissionShipmentScore, $shipmentData['documentation_score'], $maxShipmentScore,
                         $samplePassStatuses);
@@ -1562,7 +1555,7 @@ class Application_Service_Shipments {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
 
         $sQuery = $db->select()->from(array('s' => 'shipment'), array('s.shipment_code', 's.scheme_type', 's.lastdate_response'))
-            ->join(array('spm' => 'shipment_participant_map'), 'spm.shipment_id=s.shipment_id', array('participantCount' => new Zend_Db_Expr("count(spm.participant_id)"), 'receivedCount' => new Zend_Db_Expr("SUM(spm.shipment_test_date <> '0000-00-00')")))
+            ->join(array('spm' => 'shipment_participant_map'), 'spm.shipment_id=s.shipment_id', array('participantCount' => new Zend_Db_Expr("count(spm.participant_id)"), 'receivedCount' => new Zend_Db_Expr("SUM(spm.participant_id <> 0)")))
             ->join(array('p' => 'participant'), 'spm.participant_id=p.participant_id', array())
             ->where("s.status='shipped'")
             ->where("s.shipment_date > DATE_SUB(now(), INTERVAL 24 MONTH)");
@@ -1678,7 +1671,10 @@ class Application_Service_Shipments {
                 $bcc=$newShipmentMailContent['mail_bcc'];
                 $commonServices->insertTempMail($toEmail,$cc,$bcc, $subject, $message, $fromEmail, $fromFullName);
                 $count=$participantDetails['new_shipment_mail_count']+1;
-                $return=$db->update('shipment_participant_map', array('last_new_shipment_mailed_on' => new Zend_Db_Expr('now()'), 'new_shipment_mail_count' => $count), 'map_id = ' . $participantDetails['map_id']);
+                $return=$db->update('shipment_participant_map', array(
+                        'last_new_shipment_mailed_on' => new Zend_Db_Expr('now()'),
+                        'new_shipment_mail_count' => $count
+                ), 'map_id = ' . $participantDetails['map_id']);
             }
         }
         return $return;
@@ -1695,7 +1691,7 @@ class Application_Service_Shipments {
             ->joinLeft(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id', array('distribution_code', 'distribution_date'))
             ->joinLeft(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array('p.email','participantName' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT p.first_name,\" \",p.last_name ORDER BY p.first_name SEPARATOR ', ')")))
             ->joinLeft(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('SCHEME' => 'sl.scheme_name'))
-            ->where("(sp.shipment_test_date = '0000-00-00' OR sp.shipment_test_date IS NULL)")
+            ->where("(sp.shipment_receipt_date = '0000-00-00' OR sp.shipment_receipt_date IS NULL)")
             ->where("sp.shipment_id = ?", $sid)
             ->group("sp.participant_id");
         $participantEmails=$db->fetchAll($sQuery);
@@ -1715,7 +1711,10 @@ class Application_Service_Shipments {
                 $bcc=$notParticipatedMailContent['mail_bcc'];
                 $commonServices->insertTempMail($toEmail,$cc,$bcc, $subject, $message, $fromEmail, $fromFullName);
                 $count=$participantDetails['last_not_participated_mail_count']+1;
-                $return=$db->update('shipment_participant_map', array('last_not_participated_mailed_on' => new Zend_Db_Expr('now()'), 'last_not_participated_mail_count' => $count), 'map_id = ' . $participantDetails['map_id']);
+                $return=$db->update('shipment_participant_map', array(
+                    'last_not_participated_mailed_on' => new Zend_Db_Expr('now()'),
+                    'last_not_participated_mail_count' => $count
+                ),'map_id = ' . $participantDetails['map_id']);
             }
         }
         return $return;

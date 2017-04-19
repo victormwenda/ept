@@ -61,12 +61,6 @@ class MYPDF extends TCPDF {
 	// create new PDF document
 	$pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 	$pdf->setSchemeName($this->header,$this->logo,$this->logoRight);
-	// set document information
-	//$pdf->SetCreator(PDF_CREATOR);
-	//$pdf->SetAuthor('Nicola Asuni');
-	//$pdf->SetTitle('DEPARTMENT OF HEALTH AND HUMAN SERVICES');
-	//$pdf->SetSubject('TCPDF Tutorial');
-	//$pdf->SetKeywords('TCPDF, PDF, example, test, guide');
 
 	// set default header data
 	$pdf->SetHeaderData(PDF_HEADER_LOGO, PDF_HEADER_LOGO_WIDTH, PDF_HEADER_TITLE, PDF_HEADER_STRING);
@@ -143,21 +137,46 @@ class MYPDF extends TCPDF {
             $labInfo.='</tr>';
             
             $labInfo.='<tr style="background-color:#CCCCCC;">';
-                $labInfo.='<td style="font-weight:bold;width:25%">Shipment Receipt Date</td>';
+                $labInfo.='<td style="font-weight:bold;width:25%">Shipment Received On</td>';
                 $labInfo.='<td style="font-weight:bold;width:25%"></td>';
-                $labInfo.='<td style="font-weight:bold;width:25%">Testing Date</td> ';
+                $labInfo.='<td style="font-weight:bold;width:25%">Assay</td> ';
                 $labInfo.='<td style="font-weight:bold;width:25%"></td>';
             $labInfo.='</tr>';
 			
 			$labInfo.='<tr style="background-color:#CCCCCC;" cellspacing="0" cellpadding="4">';
+                $labInfo.='<td style="font-weight:bold;width:25%">MTB/RIF Kit Lot No</td>';
+                $labInfo.='<td style="font-weight:bold;width:25%"></td>';
                 $labInfo.='<td style="font-weight:bold;width:25%">Expiry Date</td>';
                 $labInfo.='<td style="font-weight:bold;width:25%"></td>';
-                $labInfo.='<td style="font-weight:bold;width:25%">MTB/RIF Kit Lot No</td>';
+            $labInfo.='</tr>';
+
+            $labInfo.='<tr style="background-color:#CCCCCC;" cellspacing="0" cellpadding="4">';
+                $labInfo.='<td style="font-weight:bold;width:25%">How many Xpert MTB/RIF tests have been conducted by this site in the last full month?</td>';
+                $labInfo.='<td style="font-weight:bold;width:25%"></td>';
+                $labInfo.='<td style="font-weight:bold;width:25%">How many errors occurred during testing in the last full month?</td>';
+                $labInfo.='<td style="font-weight:bold;width:25%"></td>';
+            $labInfo.='</tr>';
+
+            $labInfo.='<tr style="background-color:#CCCCCC;" cellspacing="0" cellpadding="4">';
+                $labInfo.='<td style="font-weight:bold;width:25%">What were the error codes?</td>';
+                $labInfo.='<td colspan="3" style="font-weight:bold;width:75%"></td>';
+            $labInfo.='</tr>';
+
+            $labInfo.='<tr style="background-color:#CCCCCC;" cellspacing="0" cellpadding="4">';
+                $labInfo.='<td style="font-weight:bold;width:25%">Monthy Maintenance Done?</td>';
+                $labInfo.='<td colspan="3" style="font-weight:bold;width:75%"></td>';
+            $labInfo.='</tr>';
+            $labInfo.='<tr style="background-color:#CCCCCC;" cellspacing="0" cellpadding="4">';
+                $labInfo.='<td colspan="4" style="font-weight:bold;width:100%">if yes...</td>';
+            $labInfo.='</tr>';
+
+            $labInfo.='<tr style="background-color:#CCCCCC;" cellspacing="0" cellpadding="4">';
+                $labInfo.='<td style="font-weight:bold;width:25%">Maintenance Date</td>';
+                $labInfo.='<td style="font-weight:bold;width:25%"></td>';
+                $labInfo.='<td style="font-weight:bold;width:25%">Maintenance Done By</td>';
                 $labInfo.='<td style="font-weight:bold;width:25%"></td>';
             $labInfo.='</tr>';
         $labInfo.='</table><br/><br/>';
-	
-		
 
 		foreach($this->referenceDetails as $sample){
             $labInfo.='<table border="1" style="font-size:13px;width:100%;page-break-inside:avoid;" cellspacing="0" cellpadding="4">';
@@ -199,8 +218,9 @@ class MYPDF extends TCPDF {
                     $labInfo.='<td></td>';
                     $labInfo.='<td colspan="5">Not Detected</td>';
                     $labInfo.='<td></td>';
+                    $labInfo.='<td colspan="5">RIF Indeterminate</td>';
+                    $labInfo.='<td></td>';
                     $labInfo.='<td colspan="5">N/A</td>';
-                    $labInfo.='<td colspan="6"></td>';
                 $labInfo.='</tr>';
                 $labInfo.='<tr style="background-color:#CCCCCC;">';
                     $labInfo.='<td colspan="4" style="text-align:center;font-weight:bold;width:16.6667%">Probe D</td>';
@@ -232,7 +252,7 @@ class MYPDF extends TCPDF {
                     $labInfo.='<td colspan="5" style="background-color:#F7F7F7;"></td>';
                 $labInfo.='</tr>';
                 $labInfo.='<tr style="background-color:#CCCCCC;">';
-                    $labInfo.='<td colspan="7" style="font-weight:bold;">Module Name</td>';
+                    $labInfo.='<td colspan="7" style="font-weight:bold;">Module Number</td>';
                     $labInfo.='<td colspan="5" style="background-color:#F7F7F7;"></td>';
                     $labInfo.='<td colspan="7" style="font-weight:bold;">Instrument User</td>';
                     $labInfo.='<td colspan="5" style="background-color:#F7F7F7;"></td>';
@@ -269,7 +289,6 @@ class MYPDF extends TCPDF {
 	$fileName = preg_replace('/[^A-Za-z0-9.]/', '-', $fileName);
 	$fileName = str_replace(" ", "-", $fileName);
 	$filePath = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports'. DIRECTORY_SEPARATOR .$fileName;
-	//$created=$pdf->Output($filePath, "F");
 	
 	$pdf->Output($fileName, 'I');
 

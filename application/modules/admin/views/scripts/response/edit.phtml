@@ -219,37 +219,16 @@ $dtFormat =  $vHelper->getDateFormat();
       validationMessage += '\n- Please ensure Shipment Receipt Date has been entered';
     }
 
-    if (!$("#sampleRehydrationDate").val()) {
-      validationMessage += '\n- Please ensure Sample Rehydration Date has been entered';
-    } else if ($("#receiptDate").val() &&
-      moment($("#sampleRehydrationDate").val()).diff(moment($("#receiptDate").val())) < 0) {
-      validationMessage += '\n- Sample Rehydration Date has to come after the Shipment Receipt Date';
-    }
-
-    if (!$("#testDate").val()) {
-      validationMessage += '\n- Please ensure Testing Date has been entered';
-    } else if ($("#sampleRehydrationDate").val() &&
-      moment($("#testDate").val()).diff(moment($("#sampleRehydrationDate").val())) < 0) {
-      validationMessage += '\n- Testing Date has to come after the Sample Rehydration Date';
-    }
-
     if (!$("#expiryDate").val()) {
       validationMessage += '\n- Please ensure Expiry Date has been entered';
     }
 
     if (!$("#testReceiptDate").val()) {
       validationMessage += '\n- Please ensure Response Date has been entered';
-    } else if ($("#testDate").val() &&
-      moment($("#testReceiptDate").val()).diff(moment($("#testDate").val())) < 0) {
-      validationMessage += '\n- Response Date has to come after the Testing Date';
     }
 
     if (!$("#mtbRifKitLotNo").val()) {
       validationMessage += '\n- Please ensure MTB/RIF Kit Lot No has been entered';
-    }
-
-    if (!$("#modeOfReceipt").val()) {
-      validationMessage += '\n- Please ensure Mode of Receipt has been specified';
     }
 
     if (!$("#assay").val()) {
@@ -258,14 +237,11 @@ $dtFormat =  $vHelper->getDateFormat();
 
     if ($('#qcDoneYes').is(':checked')) {
       if (!$("#qcDate").val()) {
-        validationMessage += '\n- Please ensure QC Date has been entered';
-      } else if ($("#testDate").val() &&
-        moment($("#qcDate").val()).diff(moment($("#testDate").val())) < 0) {
-        validationMessage += '\n- QC Date has to come after the Testing Date';
+        validationMessage += '\n- Please ensure Maintenance Date has been entered';
       }
 
       if (!$("#qcDoneBy").val()) {
-        validationMessage += '\n- Please ensure QC Done By has been entered';
+        validationMessage += '\n- Please ensure Maintenance Done By has been entered';
       }
     }
 
@@ -279,9 +255,9 @@ $dtFormat =  $vHelper->getDateFormat();
         if (!$(this).val()) {
           validationMessage += '\n- Please ensure Date Tested has been specified for each sample';
           dateTestedValidationCaught = true;
-        } else if ($("#sampleRehydrationDate").val() &&
-          moment($("#testDate").val()).diff(new Date($("#sampleRehydrationDate").val())) < 0) {
-          validationMessage += '\n- Testing Date for each sample has to come after the Sample Rehydration Date';
+        } else if ($("#receiptDate").val() &&
+          moment($(this).val()).diff(new Date($("#receiptDate").val())) < 0) {
+          validationMessage += '\n- Testing Date for each sample has to come after the Shipment Receipt Date';
           dateTestedValidationCaught = true;
         }
       }

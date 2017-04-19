@@ -193,7 +193,8 @@ if (sizeof($this->result['shipment']) > 0) {
         }
 
         $sampleRehydrationDate = "";
-        if (isset($attributes['sample_rehydration_date']) && trim($attributes['sample_rehydration_date'])!="") {
+        if (isset($attributes['sample_rehydration_date']) &&
+            trim($attributes['sample_rehydration_date'])!="") {
             $sampleRehydrationDate = $this->dateFormat($attributes['sample_rehydration_date']);
         }
         $shipmentReceiptDate = "";

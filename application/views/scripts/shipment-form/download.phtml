@@ -153,8 +153,7 @@ class MYPDF extends TCPDF {
 		
         $labInfo.='</table><br/><br/>';
 	
-	if($this->shipment["scheme_type"]=='dts')
-	{
+	if ($this->shipment["scheme_type"]=='dts') {
 		$labInfo.='<table border="1" style="font-size:13px;width:100%;" cellspacing="0" cellpadding="4">';
             $labInfo.='<tr style="background-color:#F7F7F7;">';
                 $labInfo.='<td style="font-weight:bold;width:25%">Shipment Date</td>';
@@ -243,7 +242,7 @@ class MYPDF extends TCPDF {
 				$labInfo.='<td colspan="3"></td>';
 			$labInfo.='</tr>';
 		$labInfo.='</table>';
-	}else if($this->shipment["scheme_type"]=='vl'){
+	}else if ($this->shipment["scheme_type"]=='vl') {
 		$labInfo.='<table border="1" style="font-size:13px;width:100%;" cellspacing="0" cellpadding="4">';
             $labInfo.='<tr style="background-color:#F7F7F7;">';
                 $labInfo.='<td style="font-weight:bold;width:25%">Shipment Date</td>';
@@ -315,7 +314,7 @@ class MYPDF extends TCPDF {
 				$labInfo.='<td colspan="3"></td>';
 			$labInfo.='</tr>';
 			$labInfo.='</table>';
-	}else if($this->shipment["scheme_type"]=='eid'){
+	} else if($this->shipment["scheme_type"]=='eid') {
 		$labInfo.='<table border="1" style="font-size:13px;width:100%;" cellspacing="0" cellpadding="4">';
             $labInfo.='<tr style="background-color:#F7F7F7;">';
                 $labInfo.='<td style="font-weight:bold;width:25%">Shipment Date</td>';

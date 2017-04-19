@@ -34,16 +34,10 @@ class Api_ResultsController extends Zend_Controller_Action {
                     $shipment['attributes'] = json_decode($shipment['attributes'],true);
                     $assays = $schemeService->getTbAssayReferenceMap();
                     $sampleIds = $schemeService->getTbSampleIds($sID, $pID);
-                    $commonService = new Application_Service_Common();
-                    $modesOfReceipt = $commonService->getAllModeOfReceiptReferenceMap();
-
                     $response = array(
-                        'sampleRehydrationDate' => Pt_Commons_General::dbDateToString($shipment['attributes']['sample_rehydration_date']),
-                        'testDate' => Pt_Commons_General::dbDateToString($shipment['shipment_test_date']),
                         'mtbRifKitLotNo' => $shipment['attributes']['mtb_rif_kit_lot_no'],
                         'expiryDate' => Pt_Commons_General::dbDateToString($shipment['attributes']['expiry_date']),
                         'testReceiptDate' => Pt_Commons_General::dbDateToString($shipment['shipment_test_report_date']),
-                        'modeOfReceipt' => $shipment['mode_id'],
                         'assay' => $shipment['attributes']['assay'],
                         'countTestsConductedOverMonth' => $shipment['attributes']['count_tests_conducted_over_month'],
                         'countErrorsEncounteredOverMonth' => $shipment['attributes']['count_errors_encountered_over_month'],
@@ -54,7 +48,6 @@ class Api_ResultsController extends Zend_Controller_Action {
                         'dateReceived' => Pt_Commons_General::dbDateToString($shipment['shipment_receipt_date']),
                         'smid' => $shipment['map_id'],
                         'assays' => $assays,
-                        'modesOfReceipt' => $modesOfReceipt,
                         'sampleIds' => $sampleIds
                     );
                     $this->getResponse()->setHeader("Content-Type", "application/json");

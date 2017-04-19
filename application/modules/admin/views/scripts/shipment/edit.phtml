@@ -2113,6 +2113,9 @@ $dtFormat=  $vHelper->getDateFormat(); ?>
                                     <option value="notDetected"  <?php echo ($reference['rif_resistance'] == 'notDetected' ? "selected='selected'" : ""); ?>>
                                         Not Detected
                                     </option>
+                                    <option value="indeterminate"  <?php echo ($result['rif_resistance'] == 'indeterminate' ? "selected='selected'" : ""); ?>>
+                                        RIF Indeterminate
+                                    </option>
                                     <option value="na"  <?php echo ($reference['rif_resistance'] == 'na' ? "selected='selected'" : ""); ?>>
                                         N/A
                                     </option>

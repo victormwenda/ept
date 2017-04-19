@@ -50,14 +50,14 @@ class Application_Service_EvaluationScoring {
         }
     }
 
-    const REHYDRATION_EXPIRY_HOURS = 48; // 2 days
     const FRIED_SAMPLE_HOURS = 336; // 14 Days
     const EXPIRY_FROM_DATE_OF_SHIPMENT_HOURS = 720; // 30 Days
     const MAX_DOCUMENTATION_SCORE = 0;
     const DEDUCTION_POINTS = 2;
 
-    public function calculateTbDocumentationScore($shipmentDate, $expiryDate, $receiptDate, $rehydrationDate, $testDate,
-                                                  $supervisorApproval, $supervisorName, $responseDeadlineDate) {
+    public function calculateTbDocumentationScore($shipmentDate, $expiryDate, $receiptDate,
+                                                  $supervisorApproval, $supervisorName,
+                                                  $responseDeadlineDate) {
         return self::MAX_DOCUMENTATION_SCORE;
     }
 

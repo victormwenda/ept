@@ -274,7 +274,6 @@ class Application_Service_Evaluation {
                     }
 
                     // checking test kit expiry dates
-
                     $testedOn = new Zend_Date($results[0]['shipment_test_date'], Zend_Date::ISO_8601);
                     $testDate = $testedOn->toString('dd-MMM-YYYY');
                     $expDate1 = "";
@@ -473,9 +472,8 @@ class Application_Service_Evaluation {
             $attributes = json_decode($shipmentData['attributes'],true);
             $shipmentData['shipment_score'] = $submissionShipmentScore;
             $shipmentData['documentation_score'] = $scoringService->calculateTbDocumentationScore($shipmentData['shipment_date'],
-                $attributes['expiry_date'], $shipmentData['shipment_receipt_date'], $attributes['sample_rehydration_date'],
-                $shipmentData['shipment_test_date'], $shipmentData['supervisor_approval'], $shipmentData['participant_supervisor'],
-                $shipmentData['lastdate_response']);
+                $attributes['expiry_date'], $shipmentData['shipment_receipt_date'], $shipmentData['supervisor_approval'],
+                $shipmentData['participant_supervisor'], $shipmentData['lastdate_response']);
             $shipmentData['calculated_score'] = $scoringService->calculateSubmissionPassStatus(
                 $submissionShipmentScore, $shipmentData['documentation_score'], $maxShipmentScore,
                 $samplePassStatuses);
@@ -564,9 +562,8 @@ class Application_Service_Evaluation {
             $attributes = json_decode($shipmentData['attributes'],true);
             $shipmentData['shipment_score'] = $submissionShipmentScore;
             $shipmentData['documentation_score'] = $scoringService->calculateTbDocumentationScore($shipmentData['shipment_date'],
-                $attributes['expiry_date'], $shipmentData['shipment_receipt_date'], $attributes['sample_rehydration_date'],
-                $shipmentData['shipment_test_date'], $shipmentData['supervisor_approval'], $shipmentData['participant_supervisor'],
-                $shipmentData['lastdate_response']);
+                $attributes['expiry_date'], $shipmentData['shipment_receipt_date'], $shipmentData['supervisor_approval'],
+                $shipmentData['participant_supervisor'], $shipmentData['lastdate_response']);
             $shipmentData['calculated_score'] = $scoringService->calculateSubmissionPassStatus(
                 $submissionShipmentScore, $shipmentData['documentation_score'], $maxShipmentScore,
                 $samplePassStatuses);
@@ -800,7 +797,6 @@ class Application_Service_Evaluation {
             }
 
             $attributes = array_merge($attributes, array(
-                "sample_rehydration_date" => Pt_Commons_General::dateFormat($params['sampleRehydrationDate']),
                 "mtb_rif_kit_lot_no" => $params['mtbRifKitLotNo'],
                 "expiry_date" => Pt_Commons_General::dateFormat($params['expiryDate']),
                 "assay" => $params['assay'],
@@ -812,9 +808,7 @@ class Application_Service_Evaluation {
             $attributes = json_encode($attributes);
             $mapData = array(
                 "shipment_receipt_date" => Pt_Commons_General::dateFormat($params['receiptDate']),
-                "shipment_test_date" => Pt_Commons_General::dateFormat($params['testDate']),
                 "shipment_test_report_date" => Pt_Commons_General::dateFormat($params['testReceiptDate']),
-                "mode_id" => $params['modeOfReceipt'],
                 "attributes" => $attributes,
                 "supervisor_approval" => $params['supervisorApproval'],
                 "participant_supervisor" => $params['participantSupervisor'],
@@ -822,7 +816,12 @@ class Application_Service_Evaluation {
                 "updated_by_admin" => $admin,
                 "updated_on_admin" => new Zend_Db_Expr('now()')
             );
-
+            if (isset($params['testDate'])) {
+                $mapData['shipment_test_date'] = Pt_Commons_General::dateFormat($params['testDate']);
+            }
+            if (isset($params['modeOfReceipt'])) {
+                $mapData['mode_id'] = $params['modeOfReceipt'];
+            }
             if (isset($authNameSpace->qc_access) && $authNameSpace->qc_access =='yes') {
                 $mapData['qc_done'] = $params['qcDone'];
                 if (isset($mapData['qc_done']) && trim($mapData['qc_done']) == "yes") {
@@ -848,8 +847,14 @@ class Application_Service_Evaluation {
 
             $scoringService = new Application_Service_EvaluationScoring();
             $shipmentScore = 0;
+            $shipmentTestDate = null;
             for ($i = 0; $i < $size; $i++) {
                 $dateTested = Pt_Commons_General::dateFormat($params['dateTested'][$i]);
+                if (isset($params['dateTested'][$i]) && $params['dateTested'][$i] != '0000-00-00' &&
+                    $params['dateTested'][$i] != '' &&
+                    (!isset($shipmentTestDate) || $dateTested > $shipmentTestDate)) {
+                    $shipmentTestDate = $dateTested;
+                }
                 if (!isset($params['dateTested'][$i]) ||
                     $params['dateTested'][$i] == "") {
                     $dateTested = null;
@@ -915,14 +920,14 @@ class Application_Service_Evaluation {
                     $instrumentsDb->upsertInstrument($params['participantId'], $instrumentDetails);
                 }
             }
-
+            if (isset($shipmentTestDate)) {
+                $mapData['shipment_test_date'] = $shipmentTestDate;
+            }
             $mapData['shipment_score'] = $shipmentScore;
             $mapData['documentation_score'] = $scoringService->calculateTbDocumentationScore(
                 Pt_Commons_General::dateFormat($params['shipmentDate']),
                 Pt_Commons_General::dateFormat($params['expiryDate']),
                 Pt_Commons_General::dateFormat($params['receiptDate']),
-                Pt_Commons_General::dateFormat($params['sampleRehydrationDate']),
-                Pt_Commons_General::dateFormat($params['testDate']),
                 $params['supervisorApproval'],
                 $params['participantSupervisor'],
                 Pt_Commons_General::dateFormat($params['responseDeadlineDate']));
@@ -1084,7 +1089,7 @@ class Application_Service_Evaluation {
                         'mtb_result_not_reported' => "SUM(CASE WHEN `res`.`mtb_detected` = '' OR `ref`.`mtb_detected` IS NULL THEN 1 ELSE 0 END)",
                         'rif_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('high', 'medium', 'low', 'veryLow') AND `res`.`rif_resistance` = 'detected' THEN 1 ELSE 0 END)",
                         'rif_not_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('high', 'medium', 'low', 'veryLow') AND `res`.`rif_resistance` = 'notDetected' THEN 1 ELSE 0 END)",
-                        'rif_indeterminate' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('high', 'medium', 'low', 'veryLow', 'notDetected') AND `res`.`rif_resistance` = 'na' THEN 1 ELSE 0 END)",
+                        'rif_indeterminate' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('high', 'medium', 'low', 'veryLow', 'notDetected') AND `res`.`rif_resistance` IN ('indeterminate', 'na') THEN 1 ELSE 0 END)",
                         'rif_uninterpretable' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('noResult', 'invalid', 'error') OR `res`.`mtb_detected` = '' OR `ref`.`mtb_detected` IS NULL OR `res`.`rif_resistance` = '' OR `res`.`rif_resistance` IS NULL THEN 1 ELSE 0 END)",
                         'rif_result_not_reported' => "SUM(CASE WHEN `res`.`mtb_detected` NOT IN ('noResult', 'invalid', 'error') AND `res`.`mtb_detected` <> '' AND `ref`.`mtb_detected` IS NOT NULL AND (`res`.`rif_resistance` = '' OR `res`.`rif_resistance` IS NULL) THEN 1 ELSE 0 END)",
                         'no_of_responses' => 'COUNT(*)'))
@@ -1495,22 +1500,15 @@ class Application_Service_Evaluation {
                 }
                 $shipmentResult[$i]['shipment_score'] = $shipmentScore;
                 $shipmentResult[$i]['max_shipment_score'] = $maxShipmentScore;
-                if(!isset($attributes['sample_rehydration_date'])) {
-                    $attributes['sample_rehydration_date'] = '';
-                }
                 if(!isset($attributes['shipment_date'])) {
                     $attributes['shipment_date'] = '';
                 }
                 if(!isset($attributes['expiry_date'])) {
                     $attributes['expiry_date'] = '';
                 }
-                if(!isset($attributes['shipment_test_date'])) {
-                    $attributes['shipment_test_date'] = '';
-                }
                 $shipmentResult[$i]['documentation_score'] = $scoringService->calculateTbDocumentationScore(
                     $res['shipment_date'], $attributes['expiry_date'], $res['shipment_receipt_date'],
-                    $attributes['sample_rehydration_date'], $res['shipment_test_date'], $res['supervisor_approval'],
-                    $res['participant_supervisor'], $res['lastdate_response']);
+                    $res['supervisor_approval'], $res['participant_supervisor'], $res['lastdate_response']);
                 $shipmentResult[$i]['submission_score_status'] = $scoringService->calculateSubmissionPassStatus(
                     $shipmentScore, $shipmentResult[$i]['documentation_score'], $maxShipmentScore,
                     $sampleStatuses);
@@ -1981,7 +1979,7 @@ class Application_Service_Evaluation {
                             'mtb_result_not_reported' => "SUM(CASE WHEN `res`.`mtb_detected` = '' OR `ref`.`mtb_detected` IS NULL THEN 1 ELSE 0 END)",
                             'rif_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('high', 'medium', 'low', 'veryLow') AND `res`.`rif_resistance` = 'detected' THEN 1 ELSE 0 END)",
                             'rif_not_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('high', 'medium', 'low', 'veryLow') AND `res`.`rif_resistance` = 'notDetected' THEN 1 ELSE 0 END)",
-                            'rif_indeterminate' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('high', 'medium', 'low', 'veryLow', 'notDetected') AND `res`.`rif_resistance` = 'na' THEN 1 ELSE 0 END)",
+                            'rif_indeterminate' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('high', 'medium', 'low', 'veryLow', 'notDetected') AND `res`.`rif_resistance` IN ('indeterminate', 'na') THEN 1 ELSE 0 END)",
                             'rif_uninterpretable' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('noResult', 'invalid', 'error') OR `res`.`mtb_detected` = '' OR `ref`.`mtb_detected` IS NULL OR `res`.`rif_resistance` = '' OR `res`.`rif_resistance` IS NULL THEN 1 ELSE 0 END)",
                             'rif_result_not_reported' => "SUM(CASE WHEN `res`.`mtb_detected` NOT IN ('noResult', 'invalid', 'error') AND `res`.`mtb_detected` <> '' AND `ref`.`mtb_detected` IS NOT NULL AND (`res`.`rif_resistance` = '' OR `res`.`rif_resistance` IS NULL) THEN 1 ELSE 0 END)",
                             'no_of_responses' => 'COUNT(*)'))
@@ -2283,7 +2281,8 @@ class Application_Service_Evaluation {
 			} else {
 				$failureReason = array('warning' => "Response was submitted after the last response date.");
 				$db->update('shipment_participant_map',
-                    array('failure_reason' => json_encode($failureReason)), "map_id = " . $shipment['map_id']);
+                    array('failure_reason' => json_encode($failureReason)),
+                    "map_id = " . $shipment['map_id']);
 			}
 			$counter++;
 		}
@@ -2351,22 +2350,15 @@ class Application_Service_Evaluation {
                     } else {
                         $attributes = json_decode($shipment['attributes'],true);
                         $shipmentData['shipment_score'] = $shipmentScore;
-                        if(!isset($attributes['sample_rehydration_date'])) {
-                            $attributes['sample_rehydration_date'] = '';
-                        }
                         if(!isset($attributes['shipment_date'])) {
                             $attributes['shipment_date'] = '';
                         }
                         if(!isset($attributes['expiry_date'])) {
                             $attributes['expiry_date'] = '';
                         }
-                        if(!isset($attributes['shipment_test_date'])) {
-                            $attributes['shipment_test_date'] = '';
-                        }
                         $documentationScore = $scoringService->calculateTbDocumentationScore($shipment['shipment_date'],
-                            $attributes['expiry_date'], $shipment['shipment_receipt_date'], $attributes['sample_rehydration_date'],
-                            $shipment['shipment_test_date'], $shipment['supervisor_approval'], $shipment['participant_supervisor'],
-                            $shipment['lastdate_response']);
+                            $attributes['expiry_date'], $shipment['shipment_receipt_date'], $shipment['supervisor_approval'],
+                            $shipment['participant_supervisor'], $shipment['lastdate_response']);
                         $scoreResult = ucfirst($scoringService->calculateSubmissionPassStatus(
                             $shipmentScore, $documentationScore, $maxShipmentScore,
                             $samplePassStatuses));
@@ -2397,7 +2389,8 @@ class Application_Service_Evaluation {
                 ), "map_id = " . $shipment['map_id']);
             } else {
                 $failureReason = array('warning' => "Response was submitted after the last response date.");
-                $db->update('shipment_participant_map', array('failure_reason' => json_encode($failureReason)),
+                $db->update('shipment_participant_map',
+                    array('failure_reason' => json_encode($failureReason)),
                     "map_id = " . $shipment['map_id']);
             }
             $counter++;
@@ -2490,7 +2483,9 @@ class Application_Service_Evaluation {
                     "map_id = " . $shipment['map_id']);
             } else {
                 $failureReason = array('warning' => "Response was submitted after the last response date.");
-                $db->update('shipment_participant_map', array('failure_reason' => json_encode($failureReason)), "map_id = " . $shipment['map_id']);
+                $db->update('shipment_participant_map',
+                    array('failure_reason' => json_encode($failureReason)),
+                    "map_id = " . $shipment['map_id']);
             }
             $counter++;
 		}

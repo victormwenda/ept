@@ -617,18 +617,17 @@ if ($this->scheme == 'eid') {
             <td>
                 <?php echo $this->dateFormat($this->evaluateData['shipment']["shipment_receipt_date"]); ?>
             </td>
-            <td><label>Sample Rehydration Date</label></td>
+            <td><label>Assay</label></td>
             <td>
-                <?php  echo  $this->dateFormat($attributes["sample_rehydration_date"]); ?>
+                <?php
+                if(isset($attributes['assay'])) {
+                    foreach($this->assays as $id => $name) {
+                        if($attributes['assay'] == $id) {
+                            echo $name;
+                        }
+                    }
+                } ?>
             </td>
-        </tr>
-        <tr>
-            <th><label>Samples Tested on</label></th>
-            <td>
-                <?php echo  $this->dateFormat($this->evaluateData['shipment']["shipment_test_date"]); ?>
-            </td>
-            <td></td>
-            <td></td>
         </tr>
         <tr>
             <th><label>MTB/RIF Kit Lot No</label></th>
@@ -641,33 +640,22 @@ if ($this->scheme == 'eid') {
             </td>
         </tr>
         <tr>
-            <td><label>Assay</label></td>
-            <td>
-                <?php
-                if(isset($attributes['assay'])) {
-                    foreach($this->assays as $id => $name) {
-                        if($attributes['assay'] == $id) {
-                            echo $name;
-                        }
-                    }
-                } ?>
-            </td>
             <td><label>How many Xpert MTB/RIF tests have been conducted by this site in the last full month?</label></td>
             <td>
                 <?php if(isset($attributes['count_tests_conducted_over_month'])) {
                     echo $attributes['count_tests_conducted_over_month'];
                 }?>
             </td>
-        </tr>
-        <tr>
             <td><label>How many errors occurred during testing in the last full month?</label></td>
             <td>
                 <?php if(isset($attributes['count_errors_encountered_over_month'])) {
                     echo $attributes['count_errors_encountered_over_month'];
                 }?>
             </td>
+        </tr>
+        <tr>
             <td><label>What were the error codes?</label></td>
-            <td>
+            <td colspan="3">
                 <?php if(isset($attributes['error_codes_encountered_over_month'])) {
                     echo $attributes['error_codes_encountered_over_month'];
                 }?>
@@ -771,6 +759,9 @@ if ($this->scheme == 'eid') {
                                     break;
                                 case "notDetected":
                                     echo "Not Detected";
+                                    break;
+                                case "indeterminate":
+                                    echo "RIF Indeterminate";
                                     break;
                                 case "na":
                                     echo "N/A";
@@ -908,7 +899,7 @@ if ($this->scheme == 'eid') {
                         <th colspan="2" style="vertical-align: bottom;">Serial Number</th>
                         <th style="vertical-align: bottom;">Installed</th>
                         <th style="vertical-align: bottom;">Last Calibrated</th>
-                        <th style="vertical-align: bottom;">Module Name</th>
+                        <th style="vertical-align: bottom;">Module Number</th>
                         <th colspan="2" style="vertical-align: bottom;">Instrument User</th>
                         <th colspan="2" style="vertical-align: bottom;">Cartridge Expires</th>
                         <th colspan="2" style="vertical-align: bottom;">Reagent Lot ID</th>

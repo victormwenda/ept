@@ -23,36 +23,22 @@ if (isset($this->shipment["shipment_test_report_date"]) &&
             <i class="icon-remove-sign" style="cursor:pointer;margin-top:10px;margin-left:10px;float:left;" alt="Clear Date" title="Clear Date"
                onclick="clearDate('receiptDate')"> Clear</i>
         </td>
-        <td style="width: 20%;">
-            <label>
-                Sample Rehydration Date
-                <span class="mandatory">*</span>
-            </label>
-        </td>
-        <td style="width: 30%;">
-            <input type="text" name="sampleRehydrationDate" id="sampleRehydrationDate" style="width:180px;float:left;"
-                   value="<?php  echo  $this->dateFormat($attributes["sample_rehydration_date"]); ?>"
-                   class="isRequired datepicker form-control" readonly="readonly" />
-            <i class="icon-remove-sign" style="cursor:pointer;margin-top:10px;margin-left:10px;float:left;" alt="Clear Date" title="Clear Date"
-               onclick="clearDate('sampleRehydrationDate')"> Clear</i>
-        </td>
-    </tr>
-    <tr>
-        <th>
-            <label>
-                Samples Tested on
-                <span class="mandatory">*</span>
-            </label>
-        </th>
         <td>
-            <input type="text" id="testDate" name="testDate" style="width:180px;float:left;" maxlength="11"
-                   value="<?php echo $this->dateFormat($this->responseData['shipment']["shipment_test_date"]); ?>"
-                   class="isRequired datepicker form-control" readonly="readonly" />
-            <i class="icon-remove-sign" style="cursor:pointer;margin-top:10px;margin-left:10px;float:left;" alt="Clear Date" title="Clear Date"
-               onclick="clearDate('testDate')"> Clear</i>
+            <label>
+                Assay
+                <span class='mandatory'>*</span>
+            </label>
         </td>
-        <td></td>
-        <td></td>
+        <td>
+            <select class="form-control" name="assay" id="assay" class="form-control"
+                    title="Please choose the assay type">
+                <?php foreach($this->assays as $id => $name) { ?>
+                    <option value="<?php echo $id; ?>" <?php if(isset($attributes['assay'])) { echo ($attributes['assay'] == $id) ? "selected='selected'" : ""; } ?>>
+                        <?php echo $name; ?>
+                    </option>
+                <?php } ?>
+            </select>
+        </td>
     </tr>
     <tr>
         <th>
@@ -93,40 +79,10 @@ if (isset($this->shipment["shipment_test_report_date"]) &&
             <i class="icon-remove-sign" style="cursor:pointer;margin-top:10px;margin-left:10px;float:left;" alt="Clear Date" title="Clear Date"
                onclick="clearDate('testReceiptDate')"> Clear</i>
         </td>
-        <td>
-            <label>
-                Mode of Receipt
-                <span class='mandatory'>*</span>
-            </label>
-        </td>
-        <td>
-            <select class="form-control" name="modeOfReceipt" id="modeOfReceipt" class="form-control"
-                    title="Please choose the mode of receipt">
-                <?php foreach ($this->modeOfReceipt as $receipt) { ?>
-                <option value="<?php echo $receipt['mode_id']; ?>" <?php echo (isset($this->responseData['shipment']["mode_id"]) && $this->responseData['shipment']["mode_id"] == $receipt['mode_id']) ? "selected='selected'" : ''; ?>>
-                    <?php echo $receipt['mode_name']; ?>
-                </option>
-                <?php } ?>
-            </select>
-        </td>
+        <td></td>
+        <td></td>
     </tr>
     <tr>
-        <td>
-            <label>
-                Assay
-                <span class='mandatory'>*</span>
-            </label>
-        </td>
-        <td>
-            <select class="form-control" name="assay" id="assay" class="form-control"
-                    title="Please choose the assay type">
-                <?php foreach($this->assays as $id => $name) { ?>
-                <option value="<?php echo $id; ?>" <?php if(isset($attributes['assay'])) { echo ($attributes['assay'] == $id) ? "selected='selected'" : ""; } ?>>
-                    <?php echo $name; ?>
-                </option>
-                <?php } ?>
-            </select>
-        </td>
         <td>
             <label>How many Xpert MTB/RIF tests have been conducted by this site in the last full month?</label>
         </td>
@@ -135,8 +91,6 @@ if (isset($this->shipment["shipment_test_report_date"]) &&
                    class="form-control"
                    value="<?php if(isset($attributes['count_tests_conducted_over_month'])) { echo $attributes['count_tests_conducted_over_month']; }?>" />
         </td>
-    </tr>
-    <tr>
         <td>
             <label>How many errors occurred during testing in the last full month?</label>
         </td>
@@ -145,8 +99,10 @@ if (isset($this->shipment["shipment_test_report_date"]) &&
                    class="form-control"
                    value="<?php if(isset($attributes['count_errors_encountered_over_month'])) { echo $attributes['count_errors_encountered_over_month']; }?>" />
         </td>
+    </tr>
+    <tr>
         <td><label>What were the error codes?</label></td>
-        <td>
+        <td colspan="3">
             <input type="text" name="errorCodesEncounteredOverMonth" id="errorCodesEncounteredOverMonth"
                    class="form-control"
                    value="<?php if(isset($attributes['error_codes_encountered_over_month'])) { echo $attributes['error_codes_encountered_over_month']; }?>" />
@@ -156,15 +112,15 @@ if (isset($this->shipment["shipment_test_report_date"]) &&
     if ($this->globalQcAccess == 'yes') { ?>
     <tr>
         <td>
-            <label>QC Done</label>
+            <label>Monthly Maintenance Done</label>
         </td>
         <td>
             <input type="radio" id="qcDoneYes" name="qcDone" value="yes"
-                   title="Please select QC done status" <?php echo ($this->responseData['shipment']['qc_done'] == "yes") ? " checked='checked' " : ""; ?>
+                   title="Please select monthly maintenance status" <?php echo ($this->responseData['shipment']['qc_done'] == "yes") ? " checked='checked' " : ""; ?>
                    onclick="checkQcStatus();" />
             <strong>Yes</strong>&nbsp;&nbsp;
             <input type="radio" id="qcDoneNo" name="qcDone" value="no"
-                   title="Please select QC done status" <?php echo ($this->responseData['shipment']['qc_done'] == null || $this->responseData['shipment']['qc_done'] == "" || $this->responseData['shipment']['qc_done'] == "no") ? " checked='checked' " : ""; ?>
+                   title="Please select monthly maintenance done status" <?php echo ($this->responseData['shipment']['qc_done'] == null || $this->responseData['shipment']['qc_done'] == "" || $this->responseData['shipment']['qc_done'] == "no") ? " checked='checked' " : ""; ?>
                    onclick="checkQcStatus();" />
             <strong>No</strong>
         </td>
@@ -181,7 +137,7 @@ if (isset($this->shipment["shipment_test_report_date"]) &&
     <tr id="qcSection" class="light" style="<?php echo $display; ?>">
         <td>
             <label>
-                QC Date
+                Maintenance Date
                 <span class='mandatory'>*</span>
             </label>
         </td>
@@ -189,19 +145,19 @@ if (isset($this->shipment["shipment_test_report_date"]) &&
             <input type="text" id="qcDate" name="qcDate" size="11" maxlength="11" style="width:180px;float:left;"
                    value="<?php echo $this->dateFormat($this->responseData['shipment']["qc_date"]); ?>"
                    class="form-control datepicker <?php echo $isRequired; ?>" readonly="readonly"
-                   title="Please enter QC Date" />
+                   title="Please enter Maintenance Date" />
             <i class="icon-remove-sign" style="cursor:pointer;margin-top:10px;margin-left:10px;float:left;" alt="Clear Date" title="Clear Date"
                onclick="clearDate('qcDate')"> Clear</i>
         </td>
         <td>
             <label>
-                QC Done By
+                Maintenance Done By
                 <span class='mandatory'>*</span>
             </label>
         </td>
         <td>
             <input type="text" id="qcDoneBy" name="qcDoneBy" class="form-control <?php echo $isRequired; ?>"
-                   title="Please enter QC done by name"
+                   title="Please enter who performed maintenance"
                    value="<?php echo $this->responseData['shipment']["qc_done_by"]; ?>" />
         </td>
     </tr>
@@ -298,6 +254,9 @@ foreach ($this->responseData['results'] as $result) {
                             <option value="notDetected"  <?php echo ($result['res_rif_resistance'] == 'notDetected' ? "selected='selected'" : ""); ?>>
                                 Not Detected
                             </option>
+                            <option value="indeterminate"  <?php echo ($result['res_rif_resistance'] == 'indeterminate' ? "selected='selected'" : ""); ?>>
+                                RIF Indeterminate
+                            </option>
                             <option value="na"  <?php echo ($result['res_rif_resistance'] == 'na' ? "selected='selected'" : ""); ?>>
                                 N/A
                             </option>
@@ -332,7 +291,7 @@ foreach ($this->responseData['results'] as $result) {
                     <th style="vertical-align: bottom;">Instrument Serial</th>
                     <th style="vertical-align: bottom;">Installed</th>
                     <th style="vertical-align: bottom;">Last Calibrated</th>
-                    <th style="vertical-align: bottom;">Module Name</th>
+                    <th style="vertical-align: bottom;">Module Number</th>
                     <th colspan="2" style="vertical-align: bottom;">Instrument User</th>
                     <th colspan="2" style="vertical-align: bottom;">Cartridge Expires</th>
                     <th colspan="2" style="vertical-align: bottom;">Reagent Lot ID</th>
@@ -356,7 +315,7 @@ foreach ($this->responseData['results'] as $result) {
                     <th style="white-space: nowrap;background-color: transparent;">
                         <input type="text" name="moduleName[]" class="form-control input-sm"
                                value="<?php echo $result['res_module_name']; ?>"
-                               title="Please enter the module name for <?php echo $result['sample_label']; ?>" />
+                               title="Please enter the module number for <?php echo $result['sample_label']; ?>" />
                     </th>
                     <th colspan="2" style="white-space: nowrap;background-color: transparent;">
                         <input type="text" name="instrumentUser[]" class="form-control input-sm"
