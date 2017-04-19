@@ -306,13 +306,13 @@ foreach ($this->allSamples as $sample) {
                                 <option value="detected" <?php echo ($sample['res_rif_resistance'] == 'detected' ? "selected='selected'" : ""); ?>>
                                     Detected
                                 </option>
-                                <option value="notDetected"  <?php echo ($sample['res_rif_resistance'] == 'notDetected' ? "selected='selected'" : ""); ?>>
+                                <option value="notDetected" <?php echo ($sample['res_rif_resistance'] == 'notDetected' ? "selected='selected'" : ""); ?>>
                                     Not Detected
                                 </option>
-                                <option value="indeterminate"  <?php echo ($result['res_rif_resistance'] == 'indeterminate' ? "selected='selected'" : ""); ?>>
+                                <option value="indeterminate" <?php echo ($sample['res_rif_resistance'] == 'indeterminate' ? "selected='selected'" : ""); ?>>
                                     RIF Indeterminate
                                 </option>
-                                <option value="na"  <?php echo ($sample['res_rif_resistance'] == 'na' ? "selected='selected'" : ""); ?>>
+                                <option value="na" <?php echo ($sample['res_rif_resistance'] == 'na' ? "selected='selected'" : ""); ?>>
                                     N/A
                                 </option>
                             </select>
