@@ -120,7 +120,7 @@ foreach ($this->allSamples as $sample) {
                    value="<?php echo $this->shipment['attributes']['mtb_rif_kit_lot_no'];?>"/>
 		</td>
 		<td style="width:20%; white-space: nowrap;">
-            <label>Expiry Date</label>
+            <label>Expiration date of MTB/RIF Kit</label>
             <span class='mandatory'>*</span>
         </td>
 		<td style="width:30%;">
@@ -558,7 +558,7 @@ $dtFormat = $genderHelper->getDateFormat();
       }
 
       if (!$("#expiryDate").val()) {
-        validationMessage += '\n- Please ensure Expiry Date has been entered';
+        validationMessage += '\n- Please ensure Expiration date of MTB/RIF Kit has been entered';
       }
 
       if (!$("#testReceiptDate").val()) {
