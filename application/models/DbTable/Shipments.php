@@ -44,15 +44,15 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
 		return $result;
     }
 
-    public function getTbShipmentRowInfo($distibutionId) {
+    public function getTbShipmentRowInfo($distributionId) {
         $result=$this->getAdapter()->fetchRow($this->getAdapter()->select()->from(array('s' => 'shipment'))
             ->join(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id', array('distribution_code', 'distribution_date'))
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('sl.scheme_name'))
             ->group('s.shipment_id')
-            ->where("s.distribution_id = ?", $distibutionId)
+            ->where("s.distribution_id = ?", $distributionId)
             ->where("s.scheme_type = 'tb'"));
         if ($result != "") {
-            $result['referenceResult']=$this->getAdapter()->fetchAll($this->getAdapter()->select()->from(array($tableName))
+            $result['referenceResult']=$this->getAdapter()->fetchAll($this->getAdapter()->select()->from(array("reference_result_tb"))
                 ->where('shipment_id = ? ',$result['shipment_id']));
         }
         return $result;
