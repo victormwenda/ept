@@ -401,6 +401,10 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
                 $sQuery = $sQuery->where("spm.shipment_receipt_date IS NULL AND substr(spm.evaluation_status, 2, 1) = '9' AND substr(spm.evaluation_status, 3, 1) = '9'");
             }
         }
+        if (isset($parameters['submitted']) && $parameters['submitted'] == 'yes') {
+            //evaluation_status[2] = 1 (Responded)
+            $sQuery = $sQuery->where("substr(spm.evaluation_status, 3, 1) = '1'");
+        }
         if (isset($parameters['sid'])) {
             $sQuery = $sQuery->where("spm.shipment_id = ".$parameters['sid']);
         }

@@ -512,6 +512,7 @@
               <actionMethod actionName="view"/>
             </controllerFile>
             <controllerFile controllerName="Results">
+              <actionMethod actionName="index"/>
               <actionMethod actionName="resultHeader"/>
               <actionMethod actionName="resultItem"/>
               <actionMethod actionName="resultFooter"/>
@@ -542,6 +543,7 @@
                 <viewScriptFile forActionName="view"/>
               </viewControllerScriptsDirectory>
               <viewControllerScriptsDirectory forControllerName="Results">
+                <viewScriptFile forActionName="index"/>
                 <viewScriptFile forActionName="resultHeader"/>
                 <viewScriptFile forActionName="resultItem"/>
                 <viewScriptFile forActionName="resultFooter"/>

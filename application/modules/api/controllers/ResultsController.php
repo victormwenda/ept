@@ -8,6 +8,22 @@ class Api_ResultsController extends Zend_Controller_Action {
         $this->_helper->layout()->setLayout('api');
     }
 
+    public function indexAction() {
+        $authNameSpace = new Zend_Session_Namespace('datamanagers');
+        if (!isset($authNameSpace->dm_id)) {
+            $this->getResponse()->setHttpResponseCode(401);
+            Zend_Session::namespaceUnset('datamanagers');
+        } else {
+            $this->getResponse()->setHeader("Content-Type", "application/json");
+            $shipmentService = new Application_Service_Shipments();
+            $shipmentService->getShipmentCurrent(array_merge(
+                array(
+                    "currentType" => "active",
+                    "forMobileApp" => true
+                ), $this->getRequest()->getParams()));
+        }
+    }
+
     public function resultHeaderAction() {
         $authNameSpace = new Zend_Session_Namespace('datamanagers');
         if (!isset($authNameSpace->dm_id)) {
