@@ -46,7 +46,7 @@
 						<?php if ($tester['status'] == 'active') { ?>
 						<a style="text-decoration : underline;" href="<?php  echo $this->url(array("controller"=>"participant","action"=>"testeredit","psid"=>$tester['participant_id']),null,true,false); ?>">Edit</a>
 						<?php } else { 
-								echo ucfirst($tester['status'])."<br/><hr/> Contact PT Admin to activate";
+								echo ucfirst($tester['status'])."<br/><hr/> Contact PE Admin to activate";
 						 } ?>
 					</td>
 									
