@@ -33,7 +33,7 @@ try {
                 $fromMail = '';
                 $fromName = '';
                 //Subject
-                $subject.= 'PT Results Submission - 2016';
+                $subject.= 'PE Results Submission - 2016';
                 //Message
                 $message.= '<table border="0" cellspacing="0" cellpadding="0" style="width:100%;background-color:#FFF;">';
                     $message.= '<tr><td align="center">';

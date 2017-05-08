@@ -2469,7 +2469,7 @@ class Application_Service_Reports {
 			$refResult = $db->fetchAll($refQuery);
 			
 	
-			$firstSheet = new PHPExcel_Worksheet($excel, 'DBS EID PT Results');
+			$firstSheet = new PHPExcel_Worksheet($excel, 'DBS EID PE Results');
 			$excel->addSheet($firstSheet, 0);
 			
 			$firstSheet->getCellByColumnAndRow(0, 1)->setValueExplicit(html_entity_decode("Lab ID", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
@@ -2513,7 +2513,7 @@ class Application_Service_Reports {
 			$firstSheet->getCellByColumnAndRow($colNameCount++, 1)->setValueExplicit(html_entity_decode("Date Tested", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 			
 			
-			$firstSheet->setTitle('DBS EID PT Results');
+			$firstSheet->setTitle('DBS EID PE Results');
 			
 			$queryOverAll = $db->select()->from(array('s'=>'shipment'))
 								->joinLeft(array('spm' => 'shipment_participant_map'),"spm.shipment_id = s.shipment_id")

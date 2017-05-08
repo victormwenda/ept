@@ -119,11 +119,11 @@ $activeSubMenu = isset($this->layout()->activeSubMenu) ? $this->layout()->active
 			  </li>
 			  <li class="<?php echo ($activeMenu == 'current-schemes') ? ' active ' : '';  ?>">
 				<a href="<?php echo $this->url(array("controller"=>"participant","action"=>"current-schemes"),null,true) ?>">
-				  <i class="icon icon-list-ul"></i> <span>PT Result Submission</span>
+				  <i class="icon icon-list-ul"></i> <span>PE Result Submission</span>
 				</a>
 			  </li>
               <li class="treeview <?php echo ($activeMenu == 'view-reports') ? ' active ' : '';  ?>">
-                <a href="#" class="" aria-haspopup="true" aria-expanded="false"><i class="icon icon-edit"></i> <span>View PT Result </span> <i class="fa fa-angle-left icon icon-angle-left pull-right"></i></a>
+                <a href="#" class="" aria-haspopup="true" aria-expanded="false"><i class="icon icon-edit"></i> <span>View PE Result </span> <i class="fa fa-angle-left icon icon-angle-left pull-right"></i></a>
                 <ul class="treeview-menu">
 				  <li class="<?php echo ($activeSubMenu == 'individual-reports') ? ' active ' : '';  ?>"><a href="<?php echo $this->url(array("controller"=>"participant","action"=>"report"),null,true) ?>"> Individual Report</a></li>
 				  <li class="<?php echo ($activeSubMenu == 'summary-reports') ? ' active ' : '';  ?>"><a href="<?php echo $this->url(array("controller"=>"participant","action"=>"summary-report"),null,true) ?>"> Summary Report</a></li>

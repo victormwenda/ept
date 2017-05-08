@@ -35,7 +35,7 @@ try {
                 $fromMail = '';
                 $fromName = '';
                 //Subject
-                $subject.= 'PT Results Summary Report and Individual Report - EID2016-I';
+                $subject.= 'PE Results Summary Report and Individual Report - EID2016-I';
                 //Message
                 $message.= '<table border="0" cellspacing="0" cellpadding="0" style="width:100%;background-color:#FFF;">';
                     $message.= '<tr><td align="center">';
