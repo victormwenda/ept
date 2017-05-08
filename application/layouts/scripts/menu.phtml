@@ -25,7 +25,7 @@
 	    
                       <?php if(!isset($authNameSpace->dm_id)){ ?>
               	<a href="<?php echo $this->url(array("controller"=>"auth","action"=>"login"),null,true) ?>" class="da-button">Participant Login</a>
-		<a href="<?php echo $this->url(array("controller"=>"contact-us","action"=>"index"),null,true) ?>" class="da-button">Register as a PT Participant</a>
+		<a href="<?php echo $this->url(array("controller"=>"contact-us","action"=>"index"),null,true) ?>" class="da-button">Register as a PE Participant</a>
         <?php }?>
             <nav>
                 <ul class="sf-menu">
@@ -34,7 +34,7 @@
                     <li><a href="javascript:void(0);">My Account</a>
                     	<ul>
                             <li><a href="<?php echo $this->url(array("controller"=>"participant","action"=>"user-info"),null,true) ?>">My Login Information</a></li>
-                            <li><a href="<?php echo $this->url(array("controller"=>"participant","action"=>"testers"),null,true) ?>">PT Participant Info</a></li>
+                            <li><a href="<?php echo $this->url(array("controller"=>"participant","action"=>"testers"),null,true) ?>">PE Participant Info</a></li>
                             <li><a href="<?php echo $this->url(array("controller"=>"participant","action"=>"scheme"),null,true) ?>">Scheme Information</a></li>
                             <li><a href="<?php echo $this->url(array("controller"=>"participant","action"=>"password"),null,true) ?>">Change Password</a></li>                                
                			</ul>

@@ -151,7 +151,7 @@ class Application_Model_DbTable_ContactUs extends Zend_Db_Table_Abstract
             $row[] = $aRow['additional_info'];
             $row[] = $aRow['contacted_on'];
             $row[] = $aRow['ip_address'];
-            $row[] = '<a href="/admin/data-managers/add/contact/' . $aRow['contact_id'] . '" class="btn btn-primary btn-xs" style="margin-right: 2px;"><i class="icon-plus"></i> Add PT Participant</a>';
+            $row[] = '<a href="/admin/data-managers/add/contact/' . $aRow['contact_id'] . '" class="btn btn-primary btn-xs" style="margin-right: 2px;"><i class="icon-plus"></i> Add PE Participant</a>';
 
             $output['aaData'][] = $row;
         }
