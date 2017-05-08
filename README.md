@@ -24,7 +24,7 @@ enter the following jobs
 ### Next Steps ###
 
 * Once you have the software set up, you can visit the admin panel http://ept/admin and log in with the credentials eptmanager@gmail.com and 123
-* Now you can start adding Participants, Participant logins, PT Surveys, Shipments etc.
+* Now you can start adding Participants, Participant logins, PE Surveys, Shipments etc.
 
 ### Who do I talk to? ###
 

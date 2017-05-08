@@ -489,7 +489,7 @@ if ($this->result['shipment'] != "") {
             count($this->result['shipment']['referenceResult']) > 0) {
             $referenceRes = '<table style="text-align:center;width:100%" align="left">';
             $referenceRes .= '    <tr>';
-            $referenceRes .= '        <td style="font-weight:bold;width:20%;">PT Survey</td><td style="font-weight:normal;width:30%;">' . $this->result['shipment']['distribution_code'] . '<br>(' . $this->dateFormat($this->result['shipment']['shipment_date']) . ')</td>';
+            $referenceRes .= '        <td style="font-weight:bold;width:20%;">PE Survey</td><td style="font-weight:normal;width:30%;">' . $this->result['shipment']['distribution_code'] . '<br>(' . $this->dateFormat($this->result['shipment']['shipment_date']) . ')</td>';
             $referenceRes .= '        <td style="font-weight:bold;width:20%;">Shipment Code</td><td style="font-weight:normal;width:30%;">' . $this->result['shipment']['shipment_code'] . '</td>';
             $referenceRes .= '    </tr>';
             $referenceRes .= '</table>';
@@ -670,7 +670,7 @@ if ($this->result['shipment'] != "") {
                 $piechart = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports' . DIRECTORY_SEPARATOR . $this->result['shipment']['shipment_code'] . DIRECTORY_SEPARATOR . 'pieChart.png';
                 $chart->setDataSet($dataSet);
                 $chart->getPlot()->setGraphCaptionRatio(0.5);
-                $chart->setTitle("Test kits used for DTS-based PT survey " . $this->result['shipment']['distribution_code']);
+                $chart->setTitle("Test kits used for DTS-based PE survey " . $this->result['shipment']['distribution_code']);
                 $chart->render($piechart);
 
                 $pdf->Image($piechart, 5, $y, '', '', '', '', '', false, 300);
@@ -703,7 +703,7 @@ if ($this->result['shipment'] != "") {
             $piechart = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports' . DIRECTORY_SEPARATOR . $this->result['shipment']['shipment_code'] . DIRECTORY_SEPARATOR . 'pieChart.png';
             $chart->setDataSet($dataSet);
 
-            $chart->setTitle("HIV Testing Algorithms used for DBS-based PT survey " . $this->result['shipment']['distribution_code']);
+            $chart->setTitle("HIV Testing Algorithms used for DBS-based PE survey " . $this->result['shipment']['distribution_code']);
             $chart->render($piechart);
 
             $pdf->Image($piechart, 5, $y, '', '', '', '', '', false, 300);

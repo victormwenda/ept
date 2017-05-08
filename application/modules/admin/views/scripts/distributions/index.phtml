@@ -1,7 +1,7 @@
 <h4 style="width:100%;height:50px;border-bottom:1px solid #777;">
-	<div style="font-size:22.5px;line-height:36px;color:#333;float:left;">List of All PT Survey</div>
+	<div style="font-size:22.5px;line-height:36px;color:#333;float:left;">List of All PE Survey</div>
 	<div style="margin-top:10px;">
-		<a href="<?php echo $this->url(array('module' => 'admin', 'controller' => 'distributions', 'action' => 'add'), 'default', true); ?>" class="btn btn-primary" style="float:right;"><i class="icon-plus"></i>&nbsp;&nbsp;Add New PT Survey</a>
+		<a href="<?php echo $this->url(array('module' => 'admin', 'controller' => 'distributions', 'action' => 'add'), 'default', true); ?>" class="btn btn-primary" style="float:right;"><i class="icon-plus"></i>&nbsp;&nbsp;Add New PE Survey</a>
 	</div>
 </h4>
 
@@ -9,8 +9,8 @@
     <thead>
     <tr>
         <th>See Shipments</th>
-        <th>PT Survey Date</th>
-        <th>PT Survey Code</th>
+        <th>PE Survey Date</th>
+        <th>PE Survey Code</th>
         <th>Shipment Code(s)</th>
         <th>Status</th>
         <th>Action</th>
@@ -82,7 +82,7 @@
     } );
 
 	function shipDistribution(did) {
-		var choice = confirm("Are you sure you want to ship this PT Survey ? \n You cannot undo this !")
+		var choice = confirm("Are you sure you want to ship this PE Survey ? \n You cannot undo this !")
 		if (!choice) {
 			return false;
 		}

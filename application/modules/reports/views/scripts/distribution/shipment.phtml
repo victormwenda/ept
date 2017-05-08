@@ -10,7 +10,7 @@ if (count($this->shipment) > 0) {
         <div id="allShipmentList">
             <legend>
                 <h4>
-                    All Shipments Under PT Survey&nbsp;
+                    All Shipments Under PE Survey&nbsp;
                     <?php echo $this->shipment[0]['distribution_code']; ?> (<?php echo $this->dateFormat($this->shipment[0]['distribution_date']); ?>)
                 </h4>
             </legend>
@@ -60,7 +60,7 @@ if (count($this->shipment) > 0) {
                 } else { ?>
                     <tr>
                         <td colspan="5" align="center" style="text-align:center">
-                            No shipments for this PT Survey yet
+                            No shipments for this PE Survey yet
                         </td>
                     </tr>
                     <?php
@@ -83,9 +83,9 @@ if (count($this->shipment) > 0) {
         <tr>
             <th style="text-align: right">Scheme Type</th>
             <td><?php echo $this->shipment[0]['scheme_name']; ?></td>
-            <th style="text-align: right">PT Survey Code</th>
+            <th style="text-align: right">PE Survey Code</th>
             <td><?php echo $this->shipment[0]['distribution_code']; ?> </td>
-            <th style="text-align: right">PT Survey/Shipment Date</th>
+            <th style="text-align: right">PE Survey/Shipment Date</th>
             <td><?php echo $this->dateFormat($this->shipment[0]['distribution_date']); ?></td>
         </tr>
     </table>
@@ -359,7 +359,7 @@ if (count($this->shipment) > 0) {
               });
         } else {
           $.unblockUI();
-          alert("You cannot generate reports on or before PT Survey Date (<?php echo $this->dateFormat($this->shipment[0]['distribution_date']);?>).\n\n\nYou can change the PT Survey Date and retry.");
+          alert("You cannot generate reports on or before PE Survey Date (<?php echo $this->dateFormat($this->shipment[0]['distribution_date']);?>).\n\n\nYou can change the PT Survey Date and retry.");
         }
       }
 
@@ -384,7 +384,7 @@ if (count($this->shipment) > 0) {
             });
           } else {
             $.unblockUI();
-            alert("You cannot generate reports on or before PT Survey Date (<?php echo $this->dateFormat($this->shipment[0]['distribution_date']);?>).\n\n\nYou can change the PT Survey Date and retry.");
+            alert("You cannot generate reports on or before PE Survey Date (<?php echo $this->dateFormat($this->shipment[0]['distribution_date']);?>).\n\n\nYou can change the PT Survey Date and retry.");
           }
       }
     </script>
