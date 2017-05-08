@@ -213,6 +213,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
 		   $data['individual']='yes';
 		} else {
 			$data['individual']='no';
+            $data['lab_name']=$params['pfname'];
 		}
 
         if (isset($params['status']) && $params['status'] != "" && $params['status'] != null) {
@@ -288,6 +289,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
 		   $data['individual']='yes';
 		} else {
 			$data['individual']='no';
+            $data['lab_name']=$params['pfname'];
 		}
 
         $participantId = $this->insert($data);
