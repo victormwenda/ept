@@ -246,14 +246,17 @@ class Application_Model_DbTable_DataManagers extends Zend_Db_Table_Abstract {
         return $db->fetchAll($sql);
     }
 	
-    public function updatePassword($oldpassword,$newpassword){
+    public function updatePassword($oldpassword, $newpassword) {
         $authNameSpace = new Zend_Session_Namespace('datamanagers');
     	$email = $authNameSpace->email;
-        $noOfRows = $this->update(array('password' => $newpassword,'force_password_reset'=>0),"primary_email = '".$email."' and password = '".$oldpassword."'");
-        if($noOfRows != null && count($noOfRows) ==1){
+        $noOfRows = $this->update(array(
+            'password' => str_replace("'", "\\", $newpassword),
+            'force_password_reset'=>0),
+            "primary_email = '".$email."' and password = '".str_replace("'", "\\'", $oldpassword)."'");
+        if ($noOfRows != null && count($noOfRows) ==1) {
             $authNameSpace->force_password_reset = 0;
             return true;
-        }else{
+        } else {
             return false;
         }
     }
