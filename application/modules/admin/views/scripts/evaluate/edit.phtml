@@ -370,6 +370,9 @@ $dtFormat=  $vHelper->getDateFormat();
           } else if (!$.isNumeric($(this).val())) {
             validationMessage += '\n- Please ensure all SPC and Probe values are valid numbers';
             probeValueValidationCaught = true;
+          } else if (parseFloat($(this).val()) > 42) {
+            validationMessage += '\n- Please capture SPC and Probe CT values. A value was detected above 42, have you entered endpoint values by mistake?';
+            probeValueValidationCaught = true;
           }
         }
       });
