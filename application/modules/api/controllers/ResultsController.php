@@ -41,14 +41,36 @@ class Api_ResultsController extends Zend_Controller_Action {
                 $shipment['attributes'] = json_decode($shipment['attributes'],true);
                 $assays = $schemeService->getTbAssayReferenceMap();
                 $sampleIds = $schemeService->getTbSampleIds($sID, $pID);
+                $attributes = array();
+                if (isset($shipment["attributes"])) {
+                    $attributes = $shipment["attributes"];
+                    if (!isset($attributes["mtb_rif_kit_lot_no"])) {
+                        $attributes["mtb_rif_kit_lot_no"] = "";
+                    }
+                    if (!isset($attributes["expiry_date"])) {
+                        $attributes["expiry_date"] = "";
+                    }
+                    if (!isset($attributes["assay"])) {
+                        $attributes["assay"] = "";
+                    }
+                    if (!isset($attributes["count_tests_conducted_over_month"])) {
+                        $attributes["count_tests_conducted_over_month"] = "";
+                    }
+                    if (!isset($attributes["count_errors_encountered_over_month"])) {
+                        $attributes["count_errors_encountered_over_month"] = "";
+                    }
+                    if (!isset($attributes["error_codes_encountered_over_month"])) {
+                        $attributes["error_codes_encountered_over_month"] = "";
+                    }
+                }
                 $response = array(
-                    'mtbRifKitLotNo' => $shipment['attributes']['mtb_rif_kit_lot_no'],
-                    'expiryDate' => Pt_Commons_General::dbDateToString($shipment['attributes']['expiry_date']),
+                    'mtbRifKitLotNo' => $attributes["mtb_rif_kit_lot_no"],
+                    'expiryDate' => Pt_Commons_General::dbDateToString($attributes["expiry_date"]),
                     'testReceiptDate' => Pt_Commons_General::dbDateToString($shipment['shipment_test_report_date']),
-                    'assay' => $shipment['attributes']['assay'],
-                    'countTestsConductedOverMonth' => $shipment['attributes']['count_tests_conducted_over_month'],
-                    'countErrorsEncounteredOverMonth' => $shipment['attributes']['count_errors_encountered_over_month'],
-                    'errorCodesEncounteredOverMonth' => $shipment['attributes']['error_codes_encountered_over_month'],
+                    'assay' => $attributes["assay"],
+                    'countTestsConductedOverMonth' => $attributes["count_tests_conducted_over_month"],
+                    'countErrorsEncounteredOverMonth' => $attributes["count_errors_encountered_over_month"],
+                    'errorCodesEncounteredOverMonth' => $attributes["error_codes_encountered_over_month"],
                     'qcDone' => $shipment['qc_done'],
                     'qcDate' => Pt_Commons_General::dbDateToString($shipment['qc_date']),
                     'qcDoneBy' => $shipment['qc_done_by'],
