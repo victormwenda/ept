@@ -106,7 +106,7 @@ class Api_ResultsController extends Zend_Controller_Action {
                         'probeB' => $sample['res_probe_b'],
                         'spc' => $sample['res_spc'],
                         'probeA' => $sample['res_probe_a'],
-                        'moduleName' => $sample['res_reagent_lot_id'],
+                        'moduleName' => $sample['res_module_name'],
                         'instrumentUser' => $sample['res_instrument_user'],
                         'cartridgeExpirationDate' => Pt_Commons_General::dbDateToString($sample['res_cartridge_expiration_date']),
                         'reagentLotId' => $sample['res_reagent_lot_id'],
