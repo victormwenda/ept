@@ -63,6 +63,7 @@ $reportDate = explode(" ", $this->responseData['shipment']['shipment_test_report
 <input type="hidden" name="smid" id="smid" value="<?php echo $this->responseData['shipment']['map_id']; ?>" />
 <input type="hidden" name="scheme" id="scheme" value="<?php echo $this->scheme; ?>" />
 <input type="hidden" name="whereToGo" id="whereToGo" value="" />
+<input type="hidden" name="submitAction" id="submitAction" value="" />
 <input type="hidden" id="hdLastDate" name="hdLastDate"
        value="<?php echo $this->responseData['shipment']['lastdate_response'];?>" />
 <?php
@@ -152,23 +153,49 @@ if (isset($this->haveCustom) && $this->haveCustom == 'yes') { ?>
 	<?php
 	if (isset($previousLink) && $previousLink != "") { ?>
 	<button class="btn btn-primary" type="button"
-            onclick="$('#whereToGo').val('<?php echo $previousLink; ?>');$('#updateResultsForm').submit();return false;">
+            onclick="save_form();$('#whereToGo').val('<?php echo $previousLink; ?>');$('#updateResultsForm').submit();return false;">
         <span><i class="icon-chevron-left"></i> Update and Previous</span>
     </button>
 	<?php
 	} ?>
 	<button class="btn btn-primary" type="button"
-            onclick="$('#whereToGo').val('');$('#updateResultsForm').submit();return false;">
+            onclick="save_form();$('#whereToGo').val('');$('#updateResultsForm').submit();return false;">
         <span>Update</span>
     </button>
 	<?php
 	if (isset($nextLink) && $nextLink != "") { ?>
     <button class="btn btn-primary" type="button"
-            onclick="$('#whereToGo').val('<?php echo $nextLink; ?>');$('#updateResultsForm').submit();return false;">
+            onclick="save_form();$('#whereToGo').val('<?php echo $nextLink; ?>');$('#updateResultsForm').submit();return false;">
         <span>Update and Next <i class="icon-chevron-right"></i></span>
     </button>
     <?php
 	} ?>
+    <br />
+    <br />
+    <?php
+    if ($this->responseData['shipment']['evaluation_status'][2] == '9') {
+        if (isset($previousLink) && $previousLink != "") { ?>
+            <button class="btn btn-warning" type="button"
+                    onclick="submit_form();$('#whereToGo').val('<?php echo $previousLink; ?>');$('#updateResultsForm').submit();return false;">
+                <span><i class="icon-chevron-left"></i> Submit and Previous</span>
+            </button>
+            <?php
+        } ?>
+        <button class="btn btn-warning" type="button"
+                onclick="submit_form();$('#whereToGo').val('');$('#updateResultsForm').submit();return false;">
+            <span>Submit</span>
+        </button>
+        <?php
+        if (isset($nextLink) && $nextLink != "") { ?>
+            <button class="btn btn-warning" type="button"
+                    onclick="submit_form();$('#whereToGo').val('<?php echo $nextLink; ?>');$('#updateResultsForm').submit();return false;">
+                    Submit and Next <i class="icon-chevron-right"></i></span>
+            </button>
+            <?php
+        }
+    }?>
+    <br />
+    <br />
 	<input class="btn btn-danger" type="button"
            onclick="document.location='/admin/response/shipment/sid/<?php echo base64_encode($this->responseData['shipment']['shipment_id']); ?>'"
            tabindex="8" value="Back to Listing "/>
@@ -208,6 +235,14 @@ $dtFormat =  $vHelper->getDateFormat();
       $('#participantSupervisor').hide();
     }
   });
+
+  function save_form() {
+    $('#submitAction').val('save');
+  }
+
+  function submit_form() {
+    $('#submitAction').val('submit');
+  }
 
   function validateNow(){
     $.blockUI();
