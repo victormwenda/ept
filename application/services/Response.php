@@ -148,24 +148,34 @@ class Application_Service_Response {
                     'last_not_participated_mailed_on',
                     'last_not_participated_mail_count',
                     'shipment_status' => 's.status'))
+                ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id')
                 ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type')
                 ->joinLeft(array('rr' => 'r_results'), 'sp.final_result=rr.result_id')
-                ->where("s.distribution_id = ?", $distributionId)
-                ->group('s.shipment_id');
+                ->where("s.distribution_id = ?", $distributionId);
+        $authNameSpace = new Zend_Session_Namespace('administrators');
+        if(isset($authNameSpace) && $authNameSpace->is_ptcc_coordinator) {
+            $sql = $sql->where("p.country IN (".implode(",",$authNameSpace->countries).")");
+        }
+        $sql = $sql->group('s.shipment_id');
         return $db->fetchAll($sql);
     }
     
-     public function getResponseCount($shipmentId,$distributionId) {
+    public function getResponseCount($shipmentId,$distributionId) {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sql = $db->select()->from(array('s' => 'shipment'),array(''))
                 ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id',array(''))
                 ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array(
                     'reported_count' => new Zend_Db_Expr("COUNT(CASE substr(sp.evaluation_status,4,1) WHEN '1' THEN 1 WHEN '2' THEN 1 END)")))
+                ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id')
                 ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type',array(''))
                 ->joinLeft(array('rr' => 'r_results'), 'sp.final_result=rr.result_id',array(''))
 		        ->where("s.shipment_id = ?", $shipmentId)
-                ->where("s.distribution_id = ?", $distributionId)
-                ->group('s.shipment_id');
+                ->where("s.distribution_id = ?", $distributionId);
+        $authNameSpace = new Zend_Session_Namespace('administrators');
+        if(isset($authNameSpace) && $authNameSpace->is_ptcc_coordinator) {
+            $sql = $sql->where("p.country IN (".implode(",",$authNameSpace->countries).")");
+        }
+        $sql = $sql->group('s.shipment_id');
         return $db->fetchRow($sql);
     }
 
@@ -177,6 +187,10 @@ class Application_Service_Response {
                 ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type')
                 ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id')
                 ->where("s.shipment_id = ?", $shipmentId);
+        $authNameSpace = new Zend_Session_Namespace('administrators');
+        if(isset($authNameSpace) && $authNameSpace->is_ptcc_coordinator) {
+            $sql = $sql->where("p.country IN (".implode(",",$authNameSpace->countries).")");
+        }
         $shipmentResult = $db->fetchAll($sql);
         return $shipmentResult;
     }
