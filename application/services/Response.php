@@ -270,7 +270,7 @@ class Application_Service_Response {
             }
 
             $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
-            $shipmentParticipantDb->updateShipment($mapData, $params['smid'], $params['hdLastDate']);
+            $shipmentParticipantDb->updateShipment($mapData, $params['smid'], $params['hdLastDate'], $params['submitAction']);
 
             $instrumentsDb = new Application_Model_DbTable_Instruments();
             for ($i = 0; $i < $size; $i++) {

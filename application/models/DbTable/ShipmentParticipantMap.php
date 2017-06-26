@@ -41,7 +41,7 @@ class Application_Model_DbTable_ShipmentParticipantMap extends Zend_Db_Table_Abs
         }
     }
 
-    public function updateShipment($params, $shipmentMapId, $lastDate) {
+    public function updateShipment($params, $shipmentMapId, $lastDate, $submitAction) {
         $row = $this->fetchRow("map_id = " . $shipmentMapId);
         if ($row != "") {
             if (trim($row['created_on_user']) == "" || $row['created_on_user'] == NULL) {
@@ -49,7 +49,7 @@ class Application_Model_DbTable_ShipmentParticipantMap extends Zend_Db_Table_Abs
             }
         }
 
-        if ($params['submitAction'] == 'submit') {
+        if (isset($submitAction) && $submitAction == 'submit') {
             $params['evaluation_status'] = $row['evaluation_status'];
 
             // changing evaluation status 3rd character to 1 = responded

@@ -275,7 +275,7 @@ class Application_Service_Shipments {
                     $data['qc_created_on'] = NULL;
                 }
             }
-            $noOfRowsAffected = $shipmentParticipantDb->updateShipment($data, $params['smid'], $params['hdLastDate']);
+            $noOfRowsAffected = $shipmentParticipantDb->updateShipment($data, $params['smid'], $params['hdLastDate'], null);
 
             $eidResponseDb = new Application_Model_DbTable_ResponseEid();
             $eidResponseDb->updateResults($params);
@@ -345,7 +345,7 @@ class Application_Service_Shipments {
                 $data['custom_field_2'] = $params['customField2'];
             }
 
-            $noOfRowsAffected = $shipmentParticipantDb->updateShipment($data, $params['smid'], $params['hdLastDate']);
+            $noOfRowsAffected = $shipmentParticipantDb->updateShipment($data, $params['smid'], $params['hdLastDate'], null);
 
             $dtsResponseDb = new Application_Model_DbTable_ResponseDts();
             $dtsResponseDb->updateResults($params);
@@ -492,7 +492,7 @@ class Application_Service_Shipments {
                     $data['qc_created_on'] = NULL;
                  }
             }
-            $noOfRowsAffected = $shipmentParticipantDb->updateShipment($data, $params['smid'], $params['hdLastDate']);
+            $noOfRowsAffected = $shipmentParticipantDb->updateShipment($data, $params['smid'], $params['hdLastDate'], null);
 
             $dbsResponseDb = new Application_Model_DbTable_ResponseDbs();
             $dbsResponseDb->updateResults($params);
@@ -599,7 +599,7 @@ class Application_Service_Shipments {
         if (isset($params['submitResponse']) &&
             isset($params['deadlineDate']) &&
             trim($params['submitResponse']) == 'yes') {
-            $shipmentParticipantDb->updateShipment($data, $params['smid'], $params['deadlineDate']);
+            $shipmentParticipantDb->updateShipment($data, $params['smid'], $params['deadlineDate'], 'submit');
         } else {
             $shipmentParticipantDb->updateShipmentValues($data, $params['smid']);
         }
@@ -649,7 +649,7 @@ class Application_Service_Shipments {
                     $data['qc_created_on'] = null;
                 }
             }
-            $shipmentParticipantDb->updateShipment($data, $params['smid'], $params['hdLastDate']);
+            $shipmentParticipantDb->updateShipment($data, $params['smid'], $params['hdLastDate'], $params['submitAction']);
 
             $tbResponseDb = new Application_Model_DbTable_ResponseTb();
             $tbResponseDb->updateResults($params);
@@ -750,7 +750,7 @@ class Application_Service_Shipments {
                 }
             }
 
-            $noOfRowsAffected = $shipmentParticipantDb->updateShipment($data, $params['smid'], $params['hdLastDate']);
+            $noOfRowsAffected = $shipmentParticipantDb->updateShipment($data, $params['smid'], $params['hdLastDate'], null);
 
             $eidResponseDb = new Application_Model_DbTable_ResponseVl();
             $eidResponseDb->updateResults($params);
