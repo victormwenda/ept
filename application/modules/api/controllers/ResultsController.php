@@ -41,9 +41,8 @@ class Api_ResultsController extends Zend_Controller_Action {
                 $shipment['attributes'] = json_decode($shipment['attributes'],true);
                 $assays = $schemeService->getTbAssayReferenceMap();
                 $sampleIds = $schemeService->getTbSampleIds($sID, $pID);
-                $attributes = array();
-                if (isset($shipment["attributes"])) {
-                    $attributes = $shipment["attributes"];
+                $attributes = $shipment["attributes"];
+                if (isset($attributes)) {
                     if (!isset($attributes["mtb_rif_kit_lot_no"])) {
                         $attributes["mtb_rif_kit_lot_no"] = "";
                     }
@@ -62,6 +61,15 @@ class Api_ResultsController extends Zend_Controller_Action {
                     if (!isset($attributes["error_codes_encountered_over_month"])) {
                         $attributes["error_codes_encountered_over_month"] = "";
                     }
+                } else {
+                    $attributes = array(
+                        "mtb_rif_kit_lot_no" => "",
+                        "expiry_date" => "",
+                        "assay" => "",
+                        "count_tests_conducted_over_month" => "",
+                        "count_errors_encountered_over_month" => "",
+                        "error_codes_encountered_over_month" => ""
+                    );
                 }
                 $response = array(
                     'mtbRifKitLotNo' => $attributes["mtb_rif_kit_lot_no"],
