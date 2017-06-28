@@ -374,10 +374,17 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('scheme_name'))
             ->join(array('spm' => 'shipment_participant_map'), 'spm.shipment_id=s.shipment_id', array(
                 "spm.map_id",
+                "spm.attributes",
                 "spm.evaluation_status",
                 "spm.participant_id",
                 "RESPONSEDATE" => "DATE_FORMAT(spm.shipment_test_report_date,'%Y-%m-%d')",
-                "spm.shipment_receipt_date"
+                "spm.shipment_receipt_date",
+                "qc_done",
+                "qc_date",
+                "qc_done_by",
+                "supervisor_approval",
+                "participant_supervisor",
+                "user_comment"
             ))
             ->join(array('p' => 'participant'), 'p.participant_id=spm.participant_id', array(
                 'p.unique_identifier','p.first_name', 'p.last_name'))
