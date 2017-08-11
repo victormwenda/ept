@@ -228,7 +228,7 @@ foreach ($this->allSamples as $sample) {
     foreach ($this->allSamples as $sample) {
         $count++;
         $errorCodeEnabled = $sample['res_mtb_detected'] == "error";
-        $rifResistanceEnabled = in_array($sample['res_mtb_detected'], array("high", "medium", "low", "veryLow")); ?>
+        $rifResistanceEnabled = in_array($sample['res_mtb_detected'], array("detected", "high", "medium", "low", "veryLow")); ?>
         <tr>
             <td style="padding: 0;">
                 <table class="table" style="width: 100%;background-color: transparent;">
@@ -264,6 +264,9 @@ foreach ($this->allSamples as $sample) {
                                     placeholder="Please enter the MTB Detected for this sample"
                                     onChange="changeMtbDetected(<?php echo $count; ?>)">
                                 <option value="">-- Select --</option>
+                                <option value="detected" <?php echo ($sample['res_mtb_detected'] == 'detected' ? "selected='selected'" : ""); ?>>
+                                    Detected
+                                </option>
                                 <option value="high" <?php echo ($sample['res_mtb_detected'] == 'high' ? "selected='selected'" : ""); ?>>
                                     High
                                 </option>
@@ -613,11 +616,11 @@ $dtFormat = $genderHelper->getDateFormat();
           }
         }
         if (!rifResistanceValidationCaught) {
-          if (['high', 'medium', 'low', 'veryLow'].includes($(this).val()) &&
+          if (['detected', 'high', 'medium', 'low', 'veryLow'].includes($(this).val()) &&
             !['detected', 'notDetected'].includes($('[name="rifResistance[]"]').eq(mtbDetectedIndex).val())) {
             validationMessage += '\n- If MTB was detected in a sample, please specify whether Rif Resistance was detected';
             rifResistanceValidationCaught = true;
-          } else if (!['high', 'medium', 'low', 'veryLow', 'error'].includes($(this).val()) &&
+          } else if (!['detected', 'high', 'medium', 'low', 'veryLow', 'error'].includes($(this).val()) &&
             $('[name="rifResistance[]"]').eq(mtbDetectedIndex).val() !== 'na') {
             validationMessage += '\n- If there was no result or an invalid result for a sample, Rif Resistance should be N/A';
             rifResistanceValidationCaught = true;
@@ -719,7 +722,7 @@ $dtFormat = $genderHelper->getDateFormat();
       errorCodeInput.attr("readonly", "");
       errorCodeInput.val('')
     }
-    if (["high", "medium", "low", "veryLow"].includes(mtbDetected)) {
+    if (["detected", "high", "medium", "low", "veryLow"].includes(mtbDetected)) {
       rifResistanceSelect.removeAttr("readonly");
     } else {
       rifResistanceSelect.attr("readonly", "");

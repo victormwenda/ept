@@ -279,7 +279,7 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
 				$class = "oddResult";
 			}
             $errorCodeEnabled = $result['res_mtb_detected'] == "invalid";
-            $rifResistanceEnabled = in_array($result['res_mtb_detected'], array("high", "medium", "low", "veryLow"));
+            $rifResistanceEnabled = in_array($result['res_mtb_detected'], array("detected", "high", "medium", "low", "veryLow"));
 			?>
 			<tr class="<?php echo $class ?>">
                 <td>
@@ -317,7 +317,10 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
                                         title="Please enter the MTB Detected for this sample"
                                         placeholder="Please enter the MTB Detected for this sample"
                                         onChange="changeMtbDetected(<?php echo $counter; ?>)">
-                                    <option value="">Unknown</option>
+                                    <option value="">-- Select --</option>
+                                    <option value="detected" <?php echo ($result['res_mtb_detected'] == 'detected' ? "selected='selected'" : ""); ?>>
+                                        Detected
+                                    </option>
                                     <option value="high" <?php echo ($result['res_mtb_detected'] == 'high' ? "selected='selected'" : ""); ?>>
                                         High
                                     </option>
@@ -569,7 +572,7 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
       errorCodeInput.attr("readonly", "");
       errorCodeInput.val('')
     }
-    if (["high", "medium", "low", "veryLow"].includes(mtbDetected)) {
+    if (["detected", "high", "medium", "low", "veryLow"].includes(mtbDetected)) {
       rifResistanceSelect.removeAttr("readonly");
     } else {
       rifResistanceSelect.attr("readonly", "");

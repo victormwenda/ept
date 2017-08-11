@@ -719,6 +719,9 @@ if ($this->scheme == 'eid') {
                         <td style="vertical-align: middle;text-align: center;width: 13%;background-color: transparent;">
                             <?php
                             switch ($result['res_mtb_detected']) {
+                                case "detected":
+                                    echo "Detected";
+                                    break;
                                 case "high":
                                     echo "High";
                                     break;

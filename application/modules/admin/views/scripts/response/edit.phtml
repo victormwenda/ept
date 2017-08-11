@@ -310,11 +310,11 @@ $dtFormat =  $vHelper->getDateFormat();
         }
       }
       if (!rifResistanceValidationCaught) {
-        if (['high', 'medium', 'low', 'veryLow'].includes($(this).val()) &&
+        if (['detected', 'high', 'medium', 'low', 'veryLow'].includes($(this).val()) &&
           !['detected', 'notDetected'].includes($('[name="rifResistance[]"]').eq(mtbDetectedIndex).val())) {
           validationMessage += '\n- If MTB was detected in a sample, please specify whether Rif Resistance was detected';
           rifResistanceValidationCaught = true;
-        } else if (!['high', 'medium', 'low', 'veryLow', 'error'].includes($(this).val()) &&
+        } else if (!['detected', 'high', 'medium', 'low', 'veryLow', 'error'].includes($(this).val()) &&
           $('[name="rifResistance[]"]').eq(mtbDetectedIndex).val() !== 'na') {
           validationMessage += '\n- If there was no result or an invalid result for a sample, Rif Resistance should be N/A';
           rifResistanceValidationCaught = true;

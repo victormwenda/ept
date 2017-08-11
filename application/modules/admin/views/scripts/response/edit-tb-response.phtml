@@ -176,7 +176,7 @@ foreach ($this->responseData['results'] as $result) {
         $class = "oddResult";
     }
     $errorCodeEnabled = $result['res_mtb_detected'] == "error";
-    $rifResistanceEnabled = in_array($result['res_mtb_detected'], array("high", "medium", "low", "veryLow")); ?>
+    $rifResistanceEnabled = in_array($result['res_mtb_detected'], array("detected", "high", "medium", "low", "veryLow")); ?>
     <tr class="<?php echo $class ?>">
         <td>
             <table class="table" style="background-color: transparent;">
@@ -212,7 +212,10 @@ foreach ($this->responseData['results'] as $result) {
                                 title="Please enter the MTB Detected for this sample"
                                 placeholder="Please enter the MTB Detected for this sample"
                                 onChange="changeMtbDetected(<?php echo $counter; ?>)">
-                            <option value="">Unknown</option>
+                            <option value="">-- Select --</option>
+                            <option value="detected" <?php echo ($result['res_mtb_detected'] == 'detected' ? "selected='selected'" : ""); ?>>
+                                Detected
+                            </option>
                             <option value="high" <?php echo ($result['res_mtb_detected'] == 'high' ? "selected='selected'" : ""); ?>>
                                 High
                             </option>
@@ -353,7 +356,7 @@ foreach ($this->responseData['results'] as $result) {
       errorCodeInput.attr("readonly", "");
       errorCodeInput.val('')
     }
-    if (["high", "medium", "low", "veryLow"].includes(mtbDetected)) {
+    if (["detected", "high", "medium", "low", "veryLow"].includes(mtbDetected)) {
       rifResistanceSelect.removeAttr("readonly");
     } else {
       rifResistanceSelect.attr("readonly", "");
