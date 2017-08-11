@@ -363,6 +363,7 @@ $dtFormat=  $vHelper->getDateFormat();
     var probeValueValidationCaught = false;
     $('[name="probeD[]"],[name="probeC[]"],[name="probeE[]"],[name="probeB[]"],[name="spc[]"],[name="probeA[]"]')
       .each(function() {
+        $(this).val($(this).val().replace(/,/g, '.'));
         if (!probeValueValidationCaught) {
           if (!$(this).val()) {
             validationMessage += '\n- Please ensure all SPC and Probe values have been specified for each sample';
