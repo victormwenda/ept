@@ -504,6 +504,9 @@
               <actionMethod actionName="signIn"/>
               <actionMethod actionName="signOut"/>
             </controllerFile>
+            <controllerFile controllerName="GxAlert">
+              <actionMethod actionName="index"/>
+            </controllerFile>
             <controllerFile controllerName="Ping">
               <actionMethod actionName="index"/>
             </controllerFile>
@@ -533,6 +536,9 @@
           <viewsDirectory>
             <viewScriptsDirectory>
               <viewControllerScriptsDirectory forControllerName="Auth">
+                <viewScriptFile forActionName="index"/>
+              </viewControllerScriptsDirectory>
+              <viewControllerScriptsDirectory forControllerName="GxAlert">
                 <viewScriptFile forActionName="index"/>
               </viewControllerScriptsDirectory>
               <viewControllerScriptsDirectory forControllerName="Ping">

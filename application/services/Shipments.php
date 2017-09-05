@@ -1730,6 +1730,11 @@ class Application_Service_Shipments {
         return $shipmentDb->getShipmentRowInfo($shipmentId);
     }
 
+    public function getTbShipmentRowInfoByShipmentCode($shipmentCode) {
+        $shipmentDb = new Application_Model_DbTable_Shipments();
+        return $shipmentDb->getTbShipmentRowInfoByShipmentCode($shipmentCode);
+    }
+
     public function getAllShipmentForm($parameters) {
         $shipmentDb = new Application_Model_DbTable_Shipments();
         return $shipmentDb->getAllShipmentFormDetails($parameters);

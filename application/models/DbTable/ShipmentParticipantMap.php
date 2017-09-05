@@ -41,6 +41,18 @@ class Application_Model_DbTable_ShipmentParticipantMap extends Zend_Db_Table_Abs
         }
     }
 
+    public function getByShipmentCodeAndParticipantUniqueId($shipmentCode, $participantUniqueIdentfier) {
+        $result = $this->getAdapter()->fetchRow(
+            $this->getAdapter()
+                ->select()
+                ->from(array('spm' => $this->_name))
+                ->join(array('p' => 'participant'), 'p.participant_id = spm.participant_id', array())
+                ->join(array('s' => 'shipment'), 's.shipment_id = spm.shipment_id', array())
+                ->where("s.shipment_code = ?", $shipmentCode)
+                ->where("p.unique_identifier = ?", $participantUniqueIdentfier));
+        return $result;
+    }
+
     public function updateShipment($params, $shipmentMapId, $lastDate, $submitAction) {
         $row = $this->fetchRow("map_id = " . $shipmentMapId);
         if ($row != "") {

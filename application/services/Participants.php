@@ -15,8 +15,13 @@ class Application_Service_Participants {
 		$participantDb = new Application_Model_DbTable_Participants();
 		return $participantDb->getParticipant($partSysId);
 	}
-	
-	public function addParticipant($params) {
+
+    public function getParticipantDetailsByUniqueId($uniqueId) {
+        $participantDb = new Application_Model_DbTable_Participants();
+        return $participantDb->getParticipantByUniqueId($uniqueId);
+    }
+
+    public function addParticipant($params) {
 		$participantDb = new Application_Model_DbTable_Participants();
 		return $participantDb->addParticipant($params);
 	}

@@ -58,6 +58,21 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
         return $result;
     }
 
+    public function getTbShipmentRowInfoByShipmentCode($shipmentCode) {
+        $result = $this->getAdapter()->fetchRow(
+            $this->getAdapter()
+                ->select()
+                ->from(array('s' => $this->_name))
+                ->join(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id',
+                    array('distribution_code', 'distribution_date'))
+                ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type',
+                    array('sl.scheme_name'))
+                ->group('s.shipment_id')
+                ->where("s.shipment_code = ?", $shipmentCode)
+                ->where("s.scheme_type = 'tb'"));
+        return $result;
+    }
+
     public function updateShipmentStatus($shipmentId, $status) {
         if (isset($status) && $status != null && $status != "") {
             return $this->update(array('status' => $status), "shipment_id = $shipmentId");

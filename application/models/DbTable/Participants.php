@@ -33,6 +33,19 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
                                 ->group('p.participant_id'));
     }
 
+    public function getParticipantByUniqueId($uniqueId) {
+        return $this->getAdapter()->fetchRow(
+            $this->getAdapter()
+                ->select()
+                ->from(array('p' => $this->_name))
+                ->joinLeft(array('pmm' => 'participant_manager_map'), 'pmm.participant_id=p.participant_id',
+                    array('data_manager' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT pmm.dm_id SEPARATOR ', ')")))
+                ->joinLeft(array('pe' => 'participant_enrolled_programs_map'), 'pe.participant_id=p.participant_id',
+                    array('enrolled_prog' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT pe.ep_id SEPARATOR ', ')")))
+                ->where("p.unique_identifier = ?", $uniqueId)
+                ->group('p.participant_id'));
+    }
+
     public function getAllParticipants($parameters) {
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
          * you want to insert a non-database field (for example a counter or static image)
