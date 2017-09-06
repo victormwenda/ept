@@ -229,8 +229,8 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
                     ))
             ->joinLeft(array('pmm' => 'participant_manager_map'), 'pmm.participant_id=sp.participant_id', array())
 			->joinLeft(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('scheme_name'))
-            ->where("s.status='shipped' OR s.status='evaluated' OR s.status='finalized'")
-            ->where("year(s.shipment_date)  + 5 > year(CURDATE())")
+            ->where("s.status = 'shipped' OR s.status = 'evaluated' OR s.status = 'finalized'")
+            ->where("year(s.shipment_date) + 5 > year(CURDATE())")
             ->where("pmm.dm_id=?", $this->_session->dm_id)
             ->group('s.scheme_type')
             ->group('SHIP_YEAR');
@@ -266,9 +266,9 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
                 'reported_count' => new Zend_Db_Expr("COUNT(CASE substr(sp.evaluation_status,4,1) WHEN '1' THEN 1 WHEN '2' THEN 1 END)")))
             ->joinLeft(array('pmm' => 'participant_manager_map'), 'pmm.participant_id=sp.participant_id', array())
 			->joinLeft(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array())
-            ->where("s.status='shipped' OR s.status='evaluated' OR s.status='finalized'")
+            ->where("s.status = 'shipped' OR s.status = 'evaluated' OR s.status = 'finalized'")
             ->where("year(s.shipment_date)  + 5 > year(CURDATE())")
-            ->where("pmm.dm_id=?", $this->_session->dm_id)
+            ->where("pmm.dm_id = ?", $this->_session->dm_id)
             ->group('s.scheme_type')
             ->group('SHIP_YEAR');
 
@@ -646,15 +646,15 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
          * Get data to display
          */
         $sQuery = $this->getAdapter()->select()->from(array('s' => 'shipment'), array('s.status','SHIP_YEAR' => 'year(s.shipment_date)', 's.scheme_type', 's.shipment_date', 's.shipment_code', 's.lastdate_response', 's.shipment_id','s.response_switch'))
-                ->join(array('spm' => 'shipment_participant_map'), 'spm.shipment_id=s.shipment_id', array("spm.map_id","spm.evaluation_status", "spm.participant_id", "RESPONSEDATE" => "DATE_FORMAT(spm.shipment_test_report_date,'%Y-%m-%d')", "ACTION" => new Zend_Db_Expr("CASE  WHEN substr(spm.evaluation_status,2,1)='1' THEN 'View' WHEN (substr(spm.evaluation_status,2,1)='9' AND s.lastdate_response>= CURDATE()) OR (s.status= 'finalized') THEN 'Enter Result' END"), "STATUS" => new Zend_Db_Expr("CASE substr(spm.evaluation_status,3,1) WHEN 1 THEN 'On Time' WHEN '2' THEN 'Late' WHEN '0' THEN 'No Response' END")))
-				->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('scheme_name'))
-                ->join(array('p' => 'participant'), 'p.participant_id=spm.participant_id', array('p.unique_identifier','p.first_name', 'p.last_name','p.participant_id'))
-                ->join(array('pmm' => 'participant_manager_map'), 'pmm.participant_id=p.participant_id')
-                ->where("pmm.dm_id=?", $this->_session->dm_id)
-                ->where("s.status='shipped' OR s.status='evaluated'")
-                ->where("year(s.shipment_date)  + 5 > year(CURDATE())")
+                ->join(array('spm' => 'shipment_participant_map'), 'spm.shipment_id = s.shipment_id', array("spm.map_id", "spm.evaluation_status", "spm.participant_id", "RESPONSEDATE" => "DATE_FORMAT(spm.shipment_test_report_date,'%Y-%m-%d')", "ACTION" => new Zend_Db_Expr("CASE WHEN substr(spm.evaluation_status, 2, 1) = '1' THEN 'View' WHEN (substr(spm.evaluation_status, 2, 1) = '9' AND s.lastdate_response >= CURDATE()) OR (s.status = 'finalized') THEN 'Enter Result' END"), "STATUS" => new Zend_Db_Expr("CASE substr(spm.evaluation_status, 3, 1) WHEN 1 THEN 'On Time' WHEN '2' THEN 'Late' WHEN '0' THEN 'No Response' END")))
+				->join(array('sl' => 'scheme_list'), 'sl.scheme_id = s.scheme_type', array('scheme_name'))
+                ->join(array('p' => 'participant'), 'p.participant_id = spm.participant_id', array('p.unique_identifier', 'p.first_name', 'p.last_name', 'p.participant_id'))
+                ->join(array('pmm' => 'participant_manager_map'), 'pmm.participant_id = p.participant_id')
+                ->where("pmm.dm_id = ?", $this->_session->dm_id)
+                ->where("s.status = 'shipped' OR s.status = 'evaluated'")
+                ->where("year(s.shipment_date) + 5 > year(CURDATE())")
                 ->where("s.lastdate_response <  CURDATE()")
-                ->where("substr(spm.evaluation_status,3,1) <> '1'")
+                ->where("substr(spm.evaluation_status, 3, 1) <> '1'")
                 ->order('s.shipment_date')
                 ->order('spm.participant_id');
 
@@ -680,17 +680,14 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
 
         /* Total data set length */
         $sQuery = $this->getAdapter()->select()->from(array('s' => 'shipment'), array('s.shipment_id'))
-                ->join(array('spm' => 'shipment_participant_map'), 'spm.shipment_id=s.shipment_id', array(''))
-                ->join(array('p' => 'participant'), 'p.participant_id=spm.participant_id', array('p.unique_identifier','p.first_name', 'p.last_name','p.participant_id'))
-                ->join(array('pmm' => 'participant_manager_map'), 'pmm.participant_id=p.participant_id', array(''))
-                ->where("pmm.dm_id=?", $this->_session->dm_id)
-                ->where("s.status='shipped' OR s.status='evaluated'")
-                ->where("year(s.shipment_date)  + 5 > year(CURDATE())")
-                ->where("s.lastdate_response <  CURDATE()")
-                ->where("substr(spm.evaluation_status,3,1) <> '1'")
-        //->order('s.shipment_date')
-        //->order('spm.participant_id')
-        ;
+                ->join(array('spm' => 'shipment_participant_map'), 'spm.shipment_id = s.shipment_id', array(''))
+                ->join(array('p' => 'participant'), 'p.participant_id = spm.participant_id', array('p.unique_identifier', 'p.first_name', 'p.last_name', 'p.participant_id'))
+                ->join(array('pmm' => 'participant_manager_map'), 'pmm.participant_id = p.participant_id', array(''))
+                ->where("pmm.dm_id = ?", $this->_session->dm_id)
+                ->where("s.status = 'shipped' OR s.status = 'evaluated'")
+                ->where("year(s.shipment_date) + 5 > year(CURDATE())")
+                ->where("s.lastdate_response < CURDATE()")
+                ->where("substr(spm.evaluation_status, 3, 1) <> '1'");
 
         $aResultTotal = $this->getAdapter()->fetchAll($sQuery);
         $iTotal = count($aResultTotal);
@@ -708,7 +705,6 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
         $general = new Pt_Commons_General();
         $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
         foreach ($rResult as $aRow) {
-            $delete='';
             $isEditable=$shipmentParticipantDb->isShipmentEditable($aRow['shipment_id'],$aRow['participant_id']);
             $row = array();
             if ($aRow['ACTION'] == "View") {
@@ -729,19 +725,18 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
             $row[] = $general->humanDateFormat($aRow['RESPONSEDATE']);
 
 			$buttonText = "View/Edit";
-			$download='';
-			$delete='';
-			if($isEditable){
-				if($aRow['RESPONSEDATE']!='' && $aRow['RESPONSEDATE']!='0000-00-00'){
-					if($this->_session->view_only_access=='no'){
+			$download = '';
+			$delete = '';
+			if ($isEditable) {
+				if ($aRow['RESPONSEDATE']!='' && $aRow['RESPONSEDATE']!='0000-00-00') {
+					if ($this->_session->view_only_access == 'no') {
 						$delete='<br/><a href="javascript:void(0);" onclick="removeSchemes(\'' . $aRow['scheme_type']. '\',\'' . base64_encode($aRow['map_id']) . '\')" class="btn btn-danger"  style="margin:3px 0;"> <i class="icon icon-remove-sign"></i> Delete Response</a>';
 					}
-				}else{
+				} else {
 					$buttonText = "Enter Response";
 					$download='<br/><a href="/' . $aRow['scheme_type'] . '/download/sid/' . $aRow['shipment_id'] . '/pid/' . $aRow['participant_id'] . '/eid/' . $aRow['evaluation_status'] . '" class="btn btn-default" style="margin:3px 0;" target="_BLANK" download> <i class="icon icon-download"></i> Download Form</a>';
 				}
 			}
-            
 			$row[] = '<a href="/' . $aRow['scheme_type'] . '/response/sid/' . $aRow['shipment_id'] . '/pid/' . $aRow['participant_id'] . '/eid/' . $aRow['evaluation_status'].'/comingFrom/defaulted-schemes' . '" class="btn btn-success"  style="margin:3px 0;"> <i class="icon icon-edit"></i>  '.$buttonText.' </a>'
 					.$delete
 					.$download;			
@@ -759,10 +754,6 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
 
         $aColumns = array('s.shipment_id','year(shipment_date)', 'DATE_FORMAT(shipment_date,"%d-%b-%Y")', 'scheme_name', 'shipment_code','unique_identifier','first_name', 'DATE_FORMAT(spm.shipment_test_report_date,"%d-%b-%Y")');
 
-        /* Indexed column (used for fast and accurate table cardinality) */
-        $sIndexColumn = $this->_primary;
-
-        $sTable = $this->_name;
         /*
          * Paging
          */
@@ -847,14 +838,11 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
                 ->where("pmm.dm_id=?", $this->_session->dm_id)
                 ->where("s.status='shipped' OR s.status='evaluated'OR s.status='finalized'")
                 ->where("year(s.shipment_date)  + 5 > year(CURDATE())");
-        //->order('s.shipment_date')
-        //->order('spm.participant_id')
-       // error_log($this->_session->dm_id);
      
         if (isset($sWhere) && $sWhere != "") {
             $sQuery = $sQuery->where($sWhere);
         }
-		if(isset($parameters['qualityChecked']) && trim($parameters['qualityChecked'])!="") {
+		if (isset($parameters['qualityChecked']) && trim($parameters['qualityChecked'])!="") {
             if ($parameters['qualityChecked']=='yes') {
                 $sQuery = $sQuery->where("spm.qc_date IS NOT NULL");
 			} else {
@@ -902,8 +890,6 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
         $general = new Pt_Commons_General();
         $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
         foreach ($rResult as $aRow) {
-            $delete='';
-            $download='';
             $qcChkbox='';
 			$qcResponse='';
 			
@@ -915,9 +901,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
                     $aRow['RESPONSE'] = "Edit/View";
                 }
             }
-            
-            //$aRow['lastdate_response'];
-			
+
 			$qcBtnText = " Quality Check";
 			if ($aRow['RESPONSEDATE']!='' && $aRow['RESPONSEDATE']!='0000-00-00') {
 				if ($aRow['qc_date']!="") {
@@ -941,8 +925,8 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
             $row[] = $general->humanDateFormat($aRow['RESPONSEDATE']);
 
 			$buttonText = "View";
-			$download='';
-			$delete='';
+			$download = '';
+			$delete = '';
 			
 			
 			if ($isEditable) {
@@ -981,10 +965,6 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
 
         $aColumns = array('year(shipment_date)', 'DATE_FORMAT(shipment_date,"%d-%b-%Y")', 'scheme_type', 'shipment_code');
 
-        /* Indexed column (used for fast and accurate table cardinality) */
-        $sIndexColumn = $this->_primary;
-
-        $sTable = $this->_name;
         /*
          * Paging
          */

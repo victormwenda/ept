@@ -1074,11 +1074,10 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
          * you want to insert a non-database field (for example a counter or static image)
          */
-
         $aColumns = array('first_name','unique_identifier', 'first_name', 'iso_name', 'mobile', 'phone', 'affiliation', 'email', 'p.status');
 
         /* Indexed column (used for fast and accurate table cardinality) */
-      //  $sIndexColumn = "participant_id";
+        //  $sIndexColumn = "participant_id";
         /*
          * Paging
          */
@@ -1194,7 +1193,8 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
         if($authNameSpace->is_ptcc_coordinator) {
             $sQuery = $sQuery->where("p.country IN (".implode(",",$authNameSpace->countries).")");
         }
-
+        echo $sQuery;
+        return;
         $aResultTotal = $this->getAdapter()->fetchAll($sQuery);
         $iTotal = count($aResultTotal);
 
