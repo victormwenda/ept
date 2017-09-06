@@ -155,15 +155,14 @@ class Application_Service_Shipments {
             $row[] = $aRow['total_participants'];
             $row[] = $responseSwitch;
             $row[] = ucfirst($aRow['status']);
-            $enrolled='';
-            $delete='';
-            $announcementMail='';
-            $manageEnroll='';
+            $enrolled = '';
+            $announcementMail = '';
+            $manageEnroll = '';
 
             if ($aRow['status'] != 'finalized') {
-                $edit='&nbsp;<a class="btn btn-primary btn-xs" href="/admin/shipment/edit/sid/' . base64_encode($aRow['shipment_id']) . '"><span><i class="icon-edit"></i> Edit</span></a>';
+                $edit = '&nbsp;<a class="btn btn-primary btn-xs" href="/admin/shipment/edit/sid/' . base64_encode($aRow['shipment_id']) . '"><span><i class="icon-edit"></i> Edit</span></a>';
             } else {
-                $edit='&nbsp;<a class="btn btn-danger btn-xs disabled" href="javascript:void(0);"><span><i class="icon-check"></i> Finalized</span></a>';
+                $edit = '&nbsp;<a class="btn btn-danger btn-xs disabled" href="javascript:void(0);"><span><i class="icon-check"></i> Finalized</span></a>';
             }
 
             if ($aRow['status'] != 'shipped' && $aRow['status'] != 'evaluated' && $aRow['status'] != 'finalized') {
@@ -175,7 +174,7 @@ class Application_Service_Shipments {
             if ($aRow['status']=='shipped' || $aRow['status']=='evaluated') {
                 $manageEnroll='&nbsp;<a class="btn btn-info btn-xs" href="/admin/shipment/manage-enroll/sid/' . base64_encode($aRow['shipment_id']) . '/sctype/'. base64_encode($aRow['scheme_type']) . '"><span><i class="icon-gear"></i> Enrollment </span></a>';
             }
-            $delete = '&nbsp;<a class="btn btn-primary btn-xs" href="javascript:void(0);" onclick="removeShipment(\'' . base64_encode($aRow['shipment_id']) . '\', \''.$aRow['shipment_id'].'\')"><span><i class="icon-remove"></i> Delete</span></a>';
+            $delete = '&nbsp;<a class="btn btn-primary btn-xs" href="javascript:void(0);" onclick="removeShipment(\'' . base64_encode($aRow['shipment_id']) . '\', \'' . $aRow['shipment_id'] . '\')"><span><i class="icon-remove"></i> Delete</span></a>';
 
             $row[] = $edit . $enrolled . $delete . $announcementMail . $manageEnroll;
             $output['aaData'][] = $row;
@@ -1053,7 +1052,7 @@ class Application_Service_Shipments {
             $shipmentParticipantMap = new Application_Model_DbTable_ShipmentParticipantMap();
             $shipmentParticipantMap->delete('shipment_id=' . $sid);
             $shipmentDb->delete('shipment_id=' . $sid);
-            return "Shipment deleted.";
+            return "";
         } catch (Exception $e) {
             return($e->getMessage());
             return "c Unable to delete. Please try again later or contact system admin for help";

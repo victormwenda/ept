@@ -4,7 +4,7 @@ class Application_Model_DbTable_Distribution extends Zend_Db_Table_Abstract {
     protected $_name = 'distributions';
     protected $_primary = 'distribution_id';
 
-    public function getAllDistributions($parameters) {
+    public function echoAllDistributions($parameters) {
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
          * you want to insert a non-database field (for example a counter or static image)
          */
@@ -136,21 +136,22 @@ class Application_Model_DbTable_Distribution extends Zend_Db_Table_Abstract {
         $shipmentDb = new Application_Model_DbTable_Shipments();
 
         foreach ($rResult as $aRow) {
-            $shipmentResults = $shipmentDb->getPendingShipmentsByDistribution($aRow['distribution_id']);
             $row = array();
-            $row[] = '<a class="btn btn-primary btn-xs" data-toggle="modal" data-target="#myModal" href="/admin/distributions/view-shipment/id/'.$aRow['distribution_id'].'"><span><i class="icon-search"></i></span></a>';
+            $row[] = '<a class="btn btn-primary btn-xs" data-toggle="modal" data-target="#myModal" href="/admin/distributions/view-shipment/id/' . $aRow['distribution_id'].'"><span><i class="icon-search"></i></span></a>';
             $row[] = Pt_Commons_General::humanDateFormat($aRow['distribution_date']);
-            $row[] = '<a href="/admin/shipment/index/searchString/'.$aRow['distribution_code'].'">'.$aRow['distribution_code'].'</a>';
+            $row[] = '<a href="/admin/shipment/index/searchString/' . $aRow['distribution_code'].'">' . $aRow['distribution_code'] . '</a>';
             $row[] = $aRow['shipments'];
             $row[] = ucwords($aRow['status']);
-	        $edit='<a class="btn btn-primary btn-xs" href="/admin/distributions/edit/d8s5_8d/'.base64_encode($aRow['distribution_id']).'"><span><i class="icon-pencil"></i> Edit</span></a>';
-            if(isset($aRow['status']) && $aRow['status'] == 'configured'){
-                $row[] = $edit.' '.'<a class="btn btn-primary btn-xs" href="javascript:void(0);" onclick="shipDistribution(\''.base64_encode($aRow['distribution_id']).'\')"><span><i class="icon-ambulance"></i> Ship Now</span></a>';	    
-            }else if(isset($aRow['status']) && $aRow['status'] == 'shipped'){
-                $row[] = '<a class="btn btn-primary btn-xs" href="/admin/distributions/edit/d8s5_8d/'.base64_encode($aRow['distribution_id']).'/5h8pp3t/shipped"><span><i class="icon-pencil"></i> Edit</span></a>'.' '.'<a class="btn btn-primary btn-xs disabled" href="javascript:void(0);"><span><i class="icon-ambulance"></i> Shipped</span></a>';	    
-            }else{
-                $row[] = $edit.' '.'<a class="btn btn-primary btn-xs" href="/admin/shipment/index/did/'.base64_encode($aRow['distribution_id']).'"><span><i class="icon-plus"></i> Add Scheme</span></a>';
+	        $action = '<a class="btn btn-primary btn-xs" href="/admin/distributions/edit/id/' . base64_encode($aRow['distribution_id']) . '"><span><i class="icon-pencil"></i> Edit</span></a>';
+            if (isset($aRow['status']) && $aRow['status'] == 'configured') {
+                $action .= '&nbsp;<a class="btn btn-primary btn-xs" href="javascript:void(0);" onclick="shipDistribution(\'' . base64_encode($aRow['distribution_id']) . '\')"><span><i class="icon-ambulance"></i> Ship Now</span></a>';
+            } else if (isset($aRow['status']) && $aRow['status'] == 'shipped') {
+                $action = '<a class="btn btn-primary btn-xs" href="/admin/distributions/edit/id/' . base64_encode($aRow['distribution_id']) . '/status/shipped"><span><i class="icon-pencil"></i> Edit</span></a>&nbsp;<a class="btn btn-primary btn-xs disabled" href="javascript:void(0);"><span><i class="icon-ambulance"></i> Shipped</span></a>';
+            } else {
+                $action .= '&nbsp;<a class="btn btn-primary btn-xs" href="/admin/shipment/index/did/' . base64_encode($aRow['distribution_id']).'"><span><i class="icon-plus"></i> Add Scheme</span></a>';
             }
+            $action .= '&nbsp;<a class="btn btn-primary btn-xs" href="javascript:void(0);" onclick="removeDistribution(\'' . base64_encode($aRow['distribution_id']) . '\', \'' . $aRow['distribution_id'] . '\')"><span><i class="icon-remove"></i> Delete</span></a>';
+            $row[] = $action;
             
 
             $output['aaData'][] = $row;

@@ -13,16 +13,16 @@ class Admin_IndexController extends Zend_Controller_Action
         $shipmentService = new Application_Service_Shipments();
         $scheme = new Application_Service_Schemes();
        
-        $this->view->events=$distributionService->getAllDistributionStatus();
-        $this->view->schemeCountResult=$scheme->countEnrollmentSchemes();
-        $this->view->shipmentCountResult=$shipmentService->getParticipantCountBasedOnShipment();
+        $this->view->events = $distributionService->getAllDistributionStatus();
+        $this->view->schemeCountResult = $scheme->countEnrollmentSchemes();
+        $this->view->shipmentCountResult = $shipmentService->getParticipantCountBasedOnShipment();
        
         $this->view->schemes = $scheme->getAllSchemes();
     }
 
     public function getSchemeParticipantsAction() {
         if($this->_hasParam('schemeType')){
-            $schemeType=$this->_getParam('schemeType');
+            $schemeType = $this->_getParam('schemeType');
             $participantService = new Application_Service_Participants();
             $this->view->participants = $participantService->getSchemeWiseParticipants($schemeType);
         }

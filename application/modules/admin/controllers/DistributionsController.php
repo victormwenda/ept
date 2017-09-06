@@ -4,6 +4,7 @@ class Admin_DistributionsController extends Zend_Controller_Action {
     public function init() {
         $ajaxContext = $this->_helper->getHelper('AjaxContext');
         $ajaxContext->addActionContext('index', 'html')
+                    ->addActionContext('remove', 'html')
                     ->addActionContext('view-shipment', 'html')
                     ->addActionContext('ship-distribution', 'html')
                     ->initContext();
@@ -14,7 +15,7 @@ class Admin_DistributionsController extends Zend_Controller_Action {
         if ($this->getRequest()->isPost()) {
             $params = $this->_getAllParams();            
             $distributionService = new Application_Service_Distribution();
-            $distributionService->getAllDistributions($params);
+            $distributionService->echoAllDistributions($params);
         } else if ($this->_hasParam('searchString')) {
            $this->view->searchData = $this->_getParam('searchString');
         }
@@ -55,15 +56,23 @@ class Admin_DistributionsController extends Zend_Controller_Action {
             $params = $this->_getAllParams();
             $distributionService->updateDistribution($params);
             $this->_redirect("/admin/distributions");
-        } else if ($this->_hasParam('d8s5_8d')) {
-            $id = (int)base64_decode($this->_getParam('d8s5_8d'));
+        } else {
+            $id = (int)base64_decode($this->_getParam('id'));
             $this->view->result = $distributionService->getDistribution($id);
             $this->view->distributionDates = $distributionService->getDistributionDates();
-            if ($this->_hasParam('5h8pp3t')) {
+            if ($this->_hasParam('status')) {
                 $this->view->fromStatus = 'shipped';
             }
+        }
+    }
+
+    public function removeAction() {
+        if ($this->_hasParam('did')) {
+            $did = (int) base64_decode($this->_getParam('did'));
+            $distributionService = new Application_Service_Distribution();
+            $this->view->message = $distributionService->removeDistribution($did);
         } else {
-            $this->_redirect('admin/distributions/index');
+            $this->view->message = "Unable to delete. Please try again later or contact system admin for help";
         }
     }
 }

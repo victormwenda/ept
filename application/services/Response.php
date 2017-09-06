@@ -1,11 +1,9 @@
 <?php
 
 class Application_Service_Response {
-    public function getAllDistributions($parameters) {
+    public function echoAllDistributions($parameters) {
         $aColumns = array("DATE_FORMAT(distribution_date,'%d-%b-%Y')", 'distribution_code', 's.shipment_code', 'd.status');
         $orderColumns = array('distribution_date', 'distribution_code', 's.shipment_code', 'd.status');
-        /* Indexed column (used for fast and accurate table cardinality) */
-        $sIndexColumn = 'distribution_id';
 
         /*
          * Paging

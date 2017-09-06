@@ -213,12 +213,13 @@ if (isset($this->unshippedDistro) && count($this->unshippedDistro) > 0 && $this-
     }
 
     function removeShipment(sidEncoded, sid) {
-        if (window.confirm("Are you sure you wish to delete? This cannot be undone !")) {
+        if (window.confirm("Are you sure you wish to delete? This cannot be undone!")) {
             $.blockUI();
             $.post("<?php echo $this->url(array('module' => 'admin', 'controller' => 'shipment', 'action' => 'remove')); ?>", {sid: sidEncoded, format: "html"},
             function (data) {
-                alert(data);
-                if(data === 'Shipment deleted.') {
+                if (data) {
+                    alert(data);
+                } else {
                     $('#followsUpFrom option[value="' + sid + '"]').remove();
                 }
                 drawTable();
@@ -274,12 +275,10 @@ if (isset($this->unshippedDistro) && count($this->unshippedDistro) > 0 && $this-
             },
         });
 <?php
-if (isset($this->searchData) && $this->searchData != '') {
-    ?>
+if (isset($this->searchData) && $this->searchData != '') { ?>
             oTable.fnFilter('<?php echo $this->searchData; ?>');
-    <?php
-}
-?>
+<?php
+} ?>
     }
 
     function newShipment() {

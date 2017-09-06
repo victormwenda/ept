@@ -16,7 +16,7 @@ class Admin_ResponseController extends Zend_Controller_Action
         if ($this->getRequest()->isPost()) {
             $params = $this->_getAllParams();            
             $responseService = new Application_Service_Response();
-            $responseService->getAllDistributions($params);
+            $responseService->echoAllDistributions($params);
         }
 		if ($this->_hasParam('scheme') && $this->_hasParam('showcalc')) {
             $this->view->showcalc = ($this->_getParam('showcalc'));

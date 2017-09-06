@@ -17,7 +17,7 @@ class Admin_EvaluateController extends Zend_Controller_Action {
         if ($this->getRequest()->isPost()) {
             $params = $this->_getAllParams();            
             $evalService = new Application_Service_Evaluation();
-            $evalService->getAllDistributions($params);
+            $evalService->echoAllDistributions($params);
         }
 		if ($this->_hasParam('scheme') && $this->_hasParam('showcalc')){
             $this->view->showcalc = ($this->_getParam('showcalc'));
