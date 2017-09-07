@@ -133,8 +133,6 @@ class Application_Model_DbTable_Distribution extends Zend_Db_Table_Abstract {
             "aaData" => array()
         );
 
-        $shipmentDb = new Application_Model_DbTable_Shipments();
-
         foreach ($rResult as $aRow) {
             $row = array();
             $row[] = '<a class="btn btn-primary btn-xs" data-toggle="modal" data-target="#myModal" href="/admin/distributions/view-shipment/id/' . $aRow['distribution_id'].'"><span><i class="icon-search"></i></span></a>';
@@ -150,7 +148,9 @@ class Application_Model_DbTable_Distribution extends Zend_Db_Table_Abstract {
             } else {
                 $action .= '&nbsp;<a class="btn btn-primary btn-xs" href="/admin/shipment/index/did/' . base64_encode($aRow['distribution_id']).'"><span><i class="icon-plus"></i> Add Scheme</span></a>';
             }
-            $action .= '&nbsp;<a class="btn btn-primary btn-xs" href="javascript:void(0);" onclick="removeDistribution(\'' . base64_encode($aRow['distribution_id']) . '\', \'' . $aRow['distribution_id'] . '\')"><span><i class="icon-remove"></i> Delete</span></a>';
+            if (!$authNameSpace->is_ptcc_coordinator) {
+                $action .= '&nbsp;<a class="btn btn-primary btn-xs" href="javascript:void(0);" onclick="removeDistribution(\'' . base64_encode($aRow['distribution_id']) . '\', \'' . $aRow['distribution_id'] . '\')"><span><i class="icon-remove"></i> Delete</span></a>';
+            }
             $row[] = $action;
             
 

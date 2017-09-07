@@ -83,7 +83,7 @@ class Application_Service_Shipments {
             ->group('s.shipment_id');
 
         $authNameSpace = new Zend_Session_Namespace('administrators');
-        if($authNameSpace->is_ptcc_coordinator) {
+        if ($authNameSpace->is_ptcc_coordinator) {
             $sQuery = $sQuery->where("p.country IS NULL OR p.country IN (".implode(",",$authNameSpace->countries).")");
         }
 
@@ -174,8 +174,10 @@ class Application_Service_Shipments {
             if ($aRow['status'] == 'shipped' || $aRow['status'] == 'evaluated') {
                 $manageResponses='&nbsp;<a class="btn btn-info btn-xs" href="/admin/shipment/manage-responses/sid/' . base64_encode($aRow['shipment_id']) . '/sctype/'. base64_encode($aRow['scheme_type']) . '"><span><i class="icon-gear"></i> Responses</span></a>';
             }
-            $delete = '&nbsp;<a class="btn btn-primary btn-xs" href="javascript:void(0);" onclick="removeShipment(\'' . base64_encode($aRow['shipment_id']) . '\', \'' . $aRow['shipment_id'] . '\')"><span><i class="icon-remove"></i> Delete</span></a>';
-
+            $delete = '';
+            if (!$authNameSpace->is_ptcc_coordinator) {
+                $delete = '&nbsp;<a class="btn btn-primary btn-xs" href="javascript:void(0);" onclick="removeShipment(\'' . base64_encode($aRow['shipment_id']) . '\', \'' . $aRow['shipment_id'] . '\')"><span><i class="icon-remove"></i> Delete</span></a>';
+            }
             $row[] = $edit . $shipped . $enrolled . $delete . $announcementMail . $manageResponses;
             $output['aaData'][] = $row;
         }
