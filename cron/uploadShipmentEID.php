@@ -11,7 +11,6 @@ try {
 
     $conf = new Zend_Config_Ini(APPLICATION_PATH . '/configs/application.ini', APPLICATION_ENV);
     
-        date_default_timezone_set('GMT');
         $filename = UPLOAD_PATH . DIRECTORY_SEPARATOR . "eid-spm.csv";
         if (!file_exists($filename) || !is_readable($filename))
             return FALSE;    

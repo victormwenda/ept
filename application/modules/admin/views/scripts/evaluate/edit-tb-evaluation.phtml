@@ -32,6 +32,11 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
                     case 'pass':
                         $labelType = 'success';
                         break;
+                    case 'partial':
+                    case 'noresult':
+                        $submissionSatisfactory = 'Unsatisfactory';
+                        $labelType = 'warning';
+                        break;
                     case 'fail':
                         $submissionSatisfactory = 'Unsatisfactory';
                         $labelType = 'danger';
@@ -414,6 +419,8 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
                                         case 'fail':
                                             $labelType = 'danger';
                                             break;
+                                        case 'partial':
+                                        case 'noresult':
                                         case 'concern':
                                             $labelType = 'warning';
                                             break;

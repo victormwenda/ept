@@ -585,6 +585,11 @@ if ($this->scheme == 'eid') {
                         case 'pass':
                             $labelType = 'success';
                             break;
+                        case 'partial':
+                        case 'noresult':
+                            $submissionSatisfactory = 'Unsatisfactory';
+                            $labelType = 'warning';
+                            break;
                         case 'fail':
                             $submissionSatisfactory = 'Unsatisfactory';
                             $labelType = 'danger';
@@ -804,6 +809,8 @@ if ($this->scheme == 'eid') {
                                     case 'fail':
                                         $labelType = 'danger';
                                         break;
+                                    case 'partial':
+                                    case 'noresult':
                                     case 'concern':
                                         $labelType = 'warning';
                                         break;

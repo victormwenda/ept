@@ -1277,7 +1277,8 @@ class Application_Service_Shipments {
                             $sampleRes[$i]['res_probe_e'], $sampleRes[$i]['res_probe_b'], $sampleRes[$i]['res_spc'],
                             $sampleRes[$i]['res_probe_a'], $newSampleMap[$sampleId]['is_excluded'],
                             $newSampleMap[$sampleId]['is_exempt']);
-                        $submissionShipmentScore += $scoringService->calculateTbSampleScore($samplePassStatus,
+                        $submissionShipmentScore += $scoringService->calculateTbSampleScore(
+                            $samplePassStatus,
                             $sampleRes[$i]['ref_sample_score']);
                         array_push($samplePassStatuses, $samplePassStatus);
                         $hasBlankResult = $hasBlankResult || !isset($sampleRes[$i]['res_mtb_detected']);

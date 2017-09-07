@@ -7,7 +7,6 @@ try {
     $db = Zend_Db::factory($conf->resources->db);
     Zend_Db_Table::setDefaultAdapter($db);
     
-        date_default_timezone_set('GMT');
         $filename = UPLOAD_PATH . DIRECTORY_SEPARATOR . "participants-mail.csv";
         if (!file_exists($filename) || !is_readable($filename))
             return FALSE;    

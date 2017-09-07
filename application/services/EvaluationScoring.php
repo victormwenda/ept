@@ -2,9 +2,12 @@
 
 class Application_Service_EvaluationScoring {
     const SAMPLE_MAX_SCORE = 20;
+
     const CONCERN_CT_MAX_VALUE = 42.00;
     const PASS_SCORE_PERCENT = 100.00;
     const CONCERN_SCORE_PERCENT = 100.00;
+    const PARTIAL_SCORE_PERCENT = 50.00;
+    const NO_RESULT_SCORE_PERCENT = 25.00;
     const FAIL_SCORE_PERCENT = 0.00;
 
     public function calculateTbSamplePassStatus($refMtbDetected, $resMtbDetected, $refRifResistance, $resRifResistance,
@@ -15,22 +18,35 @@ class Application_Service_EvaluationScoring {
             if ($isExempt == 'yes') {
                 $calculatedScore = "exempt";
             }
-        } else if ($resMtbDetected == $refMtbDetected &&
-            $resRifResistance == $refRifResistance) {
-            $calculatedScore = "pass";
-            $ctValues = array(
-                floatval($probeD),
-                floatval($probeC),
-                floatval($probeE),
-                floatval($probeB),
-                floatval($spc),
-                floatval($probeA)
-            );
-            if(max($ctValues) > self::CONCERN_CT_MAX_VALUE) {
-                $calculatedScore = "concern";
+        } else if ($this->resMtbDetectedEqualsRefMtbDetected($resMtbDetected, $refMtbDetected)) {
+            if ($resRifResistance == $refRifResistance) {
+                $calculatedScore = "pass";
+                $ctValues = array(
+                    floatval($probeD),
+                    floatval($probeC),
+                    floatval($probeE),
+                    floatval($probeB),
+                    floatval($spc),
+                    floatval($probeA)
+                );
+                if(max($ctValues) > self::CONCERN_CT_MAX_VALUE) {
+                    $calculatedScore = "concern";
+                }
+            } else if ($resRifResistance == "indeterminate") {
+                $calculatedScore = "partial";
             }
+        } else if ($resMtbDetected == "noResult") {
+            $calculatedScore = "noresult";
         }
         return $calculatedScore;
+    }
+
+    private function resMtbDetectedEqualsRefMtbDetected ($refMtbDetected, $resMtbDetected) {
+        $mtbDetectedValues = array("detected", "high", "medium", "low", "veryLow");
+        if (in_array($refMtbDetected, $mtbDetectedValues) && in_array($resMtbDetected, $mtbDetectedValues)) {
+            return true;
+        }
+        return $refMtbDetected == $resMtbDetected;
     }
 
     public function calculateTbSampleScore($passStatus, $sampleScore) {
@@ -39,6 +55,10 @@ class Application_Service_EvaluationScoring {
                 return self::PASS_SCORE_PERCENT * ($sampleScore / 100.00);
             case "concern":
                 return self::CONCERN_SCORE_PERCENT * ($sampleScore / 100.00);
+            case "partial":
+                return self::PARTIAL_SCORE_PERCENT * ($sampleScore / 100.00);
+            case "noresult":
+                return self::NO_RESULT_SCORE_PERCENT * ($sampleScore / 100.00);
             case "fail":
                 return self::FAIL_SCORE_PERCENT * ($sampleScore / 100.00);
             case "excluded":

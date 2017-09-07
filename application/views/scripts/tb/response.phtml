@@ -1,14 +1,12 @@
 <?php
-date_default_timezone_set('America/New_York');
 $authNameSpace = new Zend_Session_Namespace('datamanagers');
 if (isset($this->shipment["shipment_test_report_date"]) &&
-    trim($this->shipment["shipment_test_report_date"]) != "") {
+        trim($this->shipment["shipment_test_report_date"]) != "") {
     $expTestReceiptDate = explode(" ",$this->shipment["shipment_test_report_date"]);
     $testReceiptDate = $this->dateFormat($expTestReceiptDate[0]);
 } else {
 	$testReceiptDate = date('d-M-Y');
-}
-?>
+} ?>
 <style>
     th {
         text-align: center;
