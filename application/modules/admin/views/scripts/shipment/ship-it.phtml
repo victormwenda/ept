@@ -57,7 +57,6 @@ if (isset($this->previouslySelectedCountry) && $this->previouslySelectedCountry 
     foreach ($this->enrolledCountries as $country) { ?>
                 <optgroup label='<?php echo $country["iso_name"]; ?>'>
  <?php
-        // echo json_encode($country);
         foreach ($country["enrolled_participants"] as $participant) { ?>
 	    		    <option value="<?php echo $participant['participant_id']; ?>" selected>
                         <?php echo $participant['first_name'] . " " .$participant['last_name'] ; ?>
@@ -71,7 +70,6 @@ if (isset($this->previouslySelectedCountry) && $this->previouslySelectedCountry 
     foreach($this->unEnrolledCountries as $country) { ?>
                 <optgroup label='<?php echo $country["iso_name"]; ?>'>
 <?php
-        // echo json_encode($country);
         foreach ($country["unenrolled_participants"] as $participant) { ?>
 			        <option value="<?php echo $participant['participant_id']; ?>">
                         <?php echo $participant['first_name'] . " " .$participant['last_name'] ; ?>

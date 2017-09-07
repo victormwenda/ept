@@ -70,29 +70,94 @@ class Application_Service_Participants {
 
 	public function getUnEnrolled($scheme) {
 		$db = Zend_Db_Table_Abstract::getDefaultAdapter();
-		$subSql = $db->select()->from(array('e'=>'enrollments'), 'participant_id')->where("scheme_id = ?", $scheme);
-		$sql = $db->select()->from(array('p'=>'participant'))->where("participant_id NOT IN ?", $subSql)->where("p.status='active'")->order('first_name');
+		$subSql = $db->select()
+            ->from(array('e' => 'enrollments'), 'participant_id')
+            ->where("scheme_id = ?", $scheme);
+		$sql = $db->select()
+            ->from(array('p' => 'participant'))
+            ->where("participant_id NOT IN ?", $subSql)
+            ->where("p.status = 'active'")
+            ->order('first_name');
         $authNameSpace = new Zend_Session_Namespace('administrators');
         if($authNameSpace->is_ptcc_coordinator) {
-            $sql = $sql->where("p.country IS NULL OR p.country IN (".implode(",",$authNameSpace->countries).")");
+            $sql = $sql->where("p.country IS NULL OR p.country IN (" . implode(",", $authNameSpace->countries) . ")");
         }
 		return $db->fetchAll($sql);
 	}
 
+    public function getUnEnrolledCountriesBySchemeCode($scheme) {
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $subSql = $db->select()
+            ->from(array('e' => 'enrollments'), 'participant_id')->where("scheme_id = ?", $scheme);
+        $sql = $db->select()
+            ->from(array('p' => 'participant'))
+            ->join(array('c' => 'countries'), 'p.country = c.id', array('iso_name'))
+            ->where("participant_id NOT IN ?", $subSql)
+            ->where("p.status = 'active'")
+            ->order(array('c.iso_name', 'p.first_name'));
+        $authNameSpace = new Zend_Session_Namespace('administrators');
+        if($authNameSpace->is_ptcc_coordinator) {
+            $sql = $sql->where("p.country IS NULL OR p.country IN (" . implode(",", $authNameSpace->countries) . ")");
+        }
+        $participants = $db->fetchAll($sql);
+        $countries = array();
+        foreach ($participants as $participant) {
+            if (!array_key_exists($participant['iso_name'], $countries)) {
+                $countries[$participant['iso_name']] = array(
+                    "iso_name" => $participant['iso_name'],
+                    "previously_selected" => array(),
+                    "previously_unselected" => array(),
+                    "enrolled_participants" => array(),
+                    "unenrolled_participants" => array()
+                );
+            }
+            $countries[$participant['iso_name']]["unenrolled_participants"][] = $participant;
+        }
+        return $countries;
+    }
+
 	public function getEnrolledBySchemeCode($scheme){
 		$db = Zend_Db_Table_Abstract::getDefaultAdapter();
-		$sql = $db->select()->from(array('e'=>'enrollments'), array())
-			->join(array('p'=>'participant'),"p.participant_id=e.participant_id")
-            ->where("scheme_id = ?", $scheme)->where("p.status='active'")
+		$sql = $db->select()->from(array('e' => 'enrollments'), array())
+			->join(array('p' => 'participant'), "p.participant_id = e.participant_id")
+            ->where("scheme_id = ?", $scheme)->where("p.status = 'active'")
             ->order('first_name');
         $authNameSpace = new Zend_Session_Namespace('administrators');
         if($authNameSpace->is_ptcc_coordinator) {
-            $sql = $sql->where("p.country IS NULL OR p.country IN (".implode(",",$authNameSpace->countries).")");
+            $sql = $sql->where("p.country IS NULL OR p.country IN (" . implode(",", $authNameSpace->countries) . ")");
         }
 		return $db->fetchAll($sql);
 	}
-	
-	public function getEnrolledByShipmentId($shipmentId) {
+
+    public function getEnrolledCountriesBySchemeCode($scheme){
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $sql = $db->select()->from(array('e' => 'enrollments'), array())
+            ->join(array('p' => 'participant'), "p.participant_id = e.participant_id")
+            ->join(array('c' => 'countries'), 'p.country = c.id', array('iso_name'))
+            ->where("scheme_id = ?", $scheme)->where("p.status = 'active'")
+            ->order('first_name');
+        $authNameSpace = new Zend_Session_Namespace('administrators');
+        if($authNameSpace->is_ptcc_coordinator) {
+            $sql = $sql->where("p.country IS NULL OR p.country IN (" . implode(",", $authNameSpace->countries) . ")");
+        }
+        $participants = $db->fetchAll($sql);
+        $countries = array();
+        foreach ($participants as $participant) {
+            if (!array_key_exists($participant['iso_name'], $countries)) {
+                $countries[$participant['iso_name']] = array(
+                    "iso_name" => $participant['iso_name'],
+                    "previously_selected" => array(),
+                    "previously_unselected" => array(),
+                    "enrolled_participants" => array(),
+                    "unenrolled_participants" => array()
+                );
+            }
+            $countries[$participant['iso_name']]["enrolled_participants"][] = $participant;
+        }
+        return $countries;
+    }
+
+    public function getEnrolledByShipmentId($shipmentId) {
 		$db = Zend_Db_Table_Abstract::getDefaultAdapter();
 		$sql = $db->select()
             ->from(array('p' => 'participant'))

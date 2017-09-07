@@ -109,8 +109,8 @@ class Admin_ShipmentController extends Zend_Controller_Action {
                 $this->view->shipment = $shipmentDetails = $shipmentService->getShipment($sid);
                 $this->view->previouslySelectedCountry = $previouslySelectedCountry = $participantService->getEnrolledCountriesByShipmentId($sid);
                 if ($previouslySelectedCountry == "" || $previouslySelectedCountry == null) {
-                    $this->view->enrolledCountries = $participantService->getEnrolledBySchemeCode($shipmentDetails['scheme_type']);
-                    $this->view->unEnrolledCountries = $participantService->getUnEnrolled($shipmentDetails['scheme_type']);
+                    $this->view->enrolledCountries = $participantService->getEnrolledCountriesBySchemeCode($shipmentDetails['scheme_type']);
+                    $this->view->unEnrolledCountries = $participantService->getUnEnrolledCountriesBySchemeCode($shipmentDetails['scheme_type']);
                 } else {
                     $this->view->previouslyUnSelectedCountry = $participantService->getUnEnrolledCountriesByShipmentId($sid);
                 }
