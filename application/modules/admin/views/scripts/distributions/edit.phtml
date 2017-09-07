@@ -13,9 +13,11 @@ $this->distributionDates = array_diff($this->distributionDates, array($ptEveDate
                     &nbsp;<span class="mandatory">*</span>
                 </label>
                 <div class="col-lg-6">
-                    <input id="distributionCode" name="distributionCode" size="50" class="isRequired form-control"
+                    <input id="distributionCode" name="distributionCode" size="50"
+                           class="isRequired form-control"
                            title="Please enter a Unique PE Survey Code here"
-                           placeholder="Please enter a Unique PE Survey Code here" />
+                           placeholder="Please enter a Unique PE Survey Code here"
+                           value="<?php echo $this->result['distribution_code']; ?>" />
                     <input type="hidden" name="distributionId" id="distributionId"
                            value="<?php echo base64_encode($this->result['distribution_id']); ?>"/>
                 </div>
