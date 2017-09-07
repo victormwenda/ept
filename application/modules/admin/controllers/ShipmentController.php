@@ -105,14 +105,14 @@ class Admin_ShipmentController extends Zend_Controller_Action {
         } else {
             if ($this->_hasParam('sid')) {
                 $participantService = new Application_Service_Participants();
-                $sid = (int) base64_decode($this->_getParam('sid'));
+                $sid = (int)base64_decode($this->_getParam('sid'));
                 $this->view->shipment = $shipmentDetails = $shipmentService->getShipment($sid);
-                $this->view->previouslySelected = $previouslySelected = $participantService->getEnrolledByShipmentId($sid);
-                if ($previouslySelected == "" || $previouslySelected == null) {
-                    $this->view->enrolledParticipants = $participantService->getEnrolledBySchemeCode($shipmentDetails['scheme_type']);
-                    $this->view->unEnrolledParticipants = $participantService->getUnEnrolled($shipmentDetails['scheme_type']);
+                $this->view->previouslySelectedCountry = $previouslySelectedCountry = $participantService->getEnrolledCountriesByShipmentId($sid);
+                if ($previouslySelectedCountry == "" || $previouslySelectedCountry == null) {
+                    $this->view->enrolledCountries = $participantService->getEnrolledBySchemeCode($shipmentDetails['scheme_type']);
+                    $this->view->unEnrolledCountries = $participantService->getUnEnrolled($shipmentDetails['scheme_type']);
                 } else {
-                    $this->view->previouslyUnSelected = $participantService->getUnEnrolledByShipmentId($sid);
+                    $this->view->previouslyUnSelectedCountry = $participantService->getUnEnrolledCountriesByShipmentId($sid);
                 }
             }
         }
