@@ -1193,8 +1193,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
         if($authNameSpace->is_ptcc_coordinator) {
             $sQuery = $sQuery->where("p.country IN (".implode(",",$authNameSpace->countries).")");
         }
-        echo $sQuery;
-        return;
+
         $aResultTotal = $this->getAdapter()->fetchAll($sQuery);
         $iTotal = count($aResultTotal);
 

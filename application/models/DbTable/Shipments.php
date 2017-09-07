@@ -24,22 +24,27 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
     }
     
     public function getShipmentRowInfo($sId) {
-		$result=$this->getAdapter()->fetchRow($this->getAdapter()->select()->from(array('s' => 'shipment'))
-            ->join(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id', array('distribution_code', 'distribution_date'))
-			->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('sl.scheme_name'))
-			->group('s.shipment_id')
-			->where("s.shipment_id = ?", $sId));
-		if ($result!="") {
-			$tableName="reference_result_dts";
-			if ($result['scheme_type']=='vl') {
-			    $tableName="reference_result_vl";
-			} else if($result['scheme_type']=='eid') {
-				$tableName="reference_result_eid";
-			} else if($result['scheme_type']=='dts') {
-				$tableName="reference_result_dts";
+		$result = $this->getAdapter()
+            ->fetchRow(
+                $this->getAdapter()->select()
+                    ->from(array('s' => 'shipment'))
+                    ->join(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id', array('distribution_code', 'distribution_date'))
+                    ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('sl.scheme_name'))
+                    ->group('s.shipment_id')
+                    ->where("s.shipment_id = ?", $sId));
+		if ($result != "") {
+			$tableName = "reference_result_dts";
+			if ($result['scheme_type'] == 'vl') {
+			    $tableName = "reference_result_vl";
+			} else if($result['scheme_type'] == 'eid') {
+				$tableName = "reference_result_eid";
+			} else if($result['scheme_type'] == 'dts') {
+				$tableName = "reference_result_dts";
 			}
-			$result['referenceResult']=$this->getAdapter()->fetchAll($this->getAdapter()->select()->from(array($tableName))
-                ->where('shipment_id = ? ',$result['shipment_id']));
+			$result['referenceResult'] = $this->getAdapter()->fetchAll(
+			    $this->getAdapter()->select()
+                    ->from(array($tableName))
+                    ->where('shipment_id = ? ',$result['shipment_id']));
 		}
 		return $result;
     }
@@ -110,12 +115,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
             ->join(array('pnt' => 'push_notification_token'), 'pnt.dm_id = pmm.dm_id', array('push_notification_token'))
             ->where('s.distribution_id = ?', $distributionId);
 
-        $results = $this->getAdapter()->fetchAll($query);
-
-        foreach ($results as $result) {
-            $output[] = $result;
-        }
-        return $output;
+        return $this->getAdapter()->fetchAll($query);
     }
 
     public function getShipmentFinalisedPushNotifications($shipmentId) {

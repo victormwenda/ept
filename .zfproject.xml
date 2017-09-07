@@ -199,7 +199,7 @@
               <actionMethod actionName="getShipmentCode"/>
               <actionMethod actionName="newShipmentMail"/>
               <actionMethod actionName="notParticipatedMail"/>
-              <actionMethod actionName="manageEnroll"/>
+              <actionMethod actionName="manageResponses"/>
               <actionMethod actionName="shipmentRespondedParticipants"/>
               <actionMethod actionName="shipmentNotRespondedParticipants"/>
               <actionMethod actionName="deleteNonRespondedParticipant"/>
@@ -467,7 +467,7 @@
                 <viewScriptFile forActionName="index"/>
               </viewControllerScriptsDirectory>
               <viewControllerScriptsDirectory forControllerName="Shipment">
-                <viewScriptFile forActionName="manageEnroll"/>
+                <viewScriptFile forActionName="manageResponses"/>
               </viewControllerScriptsDirectory>
               <viewControllerScriptsDirectory forControllerName="Shipment">
                 <viewScriptFile forActionName="shipmentRespondedParticipants"/>

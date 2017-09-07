@@ -6,37 +6,52 @@ class Application_Model_DbTable_ShipmentParticipantMap extends Zend_Db_Table_Abs
     protected $_primary = 'map_id';
 
     public function shipItNow($params) {
+        $db = $this->getAdapter();
         try {
-            $this->getAdapter()->beginTransaction();
-            $authNameSpace = new Zend_Session_Namespace('administrators');
-            $this->delete('shipment_id=' . $params['shipmentId']);
+            $db->beginTransaction();
+            $authNameSpace = new Zend_Session_Namespace("administrators");
+            $existingEnrollments = $db->fetchAll(
+                $db->select()
+                    ->from(array("spm" => $this->_name), array("spm.participant_id"))
+                    ->where("spm.shipment_id = " . $params["shipmentId"]));
+            $existingEnrollmentParticipantIds = array_column($existingEnrollments, 'participant_id');
+            foreach ($existingEnrollmentParticipantIds as $existingEnrollmentParticipantId) {
+                if (!in_array($existingEnrollmentParticipantId, $params["participants"])) {
+                    $db->delete($this->_name,
+                        "shipment_id = " . $params["shipmentId"] .
+                        " AND participant_id = " . $existingEnrollmentParticipantId);
+                }
+            }
             foreach ($params['participants'] as $participant) {
-                $data = array('shipment_id' => $params['shipmentId'],
-                    'participant_id' => $participant,
-                    'evaluation_status' => '19901190',
-                    'created_by_admin' => $authNameSpace->admin_id,
-                    "created_on_admin" => new Zend_Db_Expr('now()'));
-                $this->insert($data);
+                if (!in_array($participant, $existingEnrollmentParticipantIds)) {
+                    $data = array('shipment_id' => $params['shipmentId'],
+                        'participant_id' => $participant,
+                        'evaluation_status' => '19901190',
+                        'created_by_admin' => $authNameSpace->admin_id,
+                        "created_on_admin" => new Zend_Db_Expr('now()'));
+                    $db->insert($this->_name, $data);
+                }
             }
 
             $shipmentDb = new Application_Model_DbTable_Shipments();
-            $shipmentDb->updateShipmentStatus($params['shipmentId'], 'ready');
-
             $shipmentRow = $shipmentDb->fetchRow('shipment_id=' . $params['shipmentId']);
+            if ($shipmentRow["status"] == "pending") {
+                $shipmentDb->updateShipmentStatus($params['shipmentId'], 'ready');
+            }
 
-            $resultSet = $shipmentDb->fetchAll($shipmentDb->select()->where("status = 'pending' AND distribution_id = " . $shipmentRow['distribution_id']));
+            $resultSet = $shipmentDb->fetchAll($shipmentDb->select()
+                ->where("status = 'pending' AND distribution_id = " . $shipmentRow['distribution_id']));
 
             if (count($resultSet) == 0) {
                 $distroService = new Application_Service_Distribution();
                 $distroService->updateDistributionStatus($shipmentRow['distribution_id'], 'configured');
             }
 
-            $this->getAdapter()->commit();
+            $db->commit();
             return true;
         } catch (Exception $e) {
-            $this->getAdapter()->rollBack();
-            die($e->getMessage());
-            error_log($e->getTraceAsString());
+            $db->rollBack();
+            error_log($e, 0);
             return false;
         }
     }

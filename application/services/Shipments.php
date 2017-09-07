@@ -130,7 +130,7 @@ class Application_Service_Shipments {
 
         foreach ($rResult as $aRow) {
             $row = array();
-            if ($aRow['status'] == 'ready') {
+            if ($aRow['status'] == 'ready' || $aRow['status'] == 'shipped') {
                 $btn = "btn-success";
             } else if ($aRow['status'] == 'pending') {
                 $btn = "btn-danger";
@@ -156,27 +156,27 @@ class Application_Service_Shipments {
             $row[] = $responseSwitch;
             $row[] = ucfirst($aRow['status']);
             $enrolled = '';
+            $shipped = '';
             $announcementMail = '';
-            $manageEnroll = '';
+            $manageResponses = '';
 
             if ($aRow['status'] != 'finalized') {
                 $edit = '&nbsp;<a class="btn btn-primary btn-xs" href="/admin/shipment/edit/sid/' . base64_encode($aRow['shipment_id']) . '"><span><i class="icon-edit"></i> Edit</span></a>';
+                $shipped = '&nbsp;<a class="btn ' . $btn . ' btn-xs" href="/admin/shipment/ship-it/sid/' . base64_encode($aRow['shipment_id']) . '"><span><i class="icon-user"></i> Enroll</span></a>';
             } else {
                 $edit = '&nbsp;<a class="btn btn-danger btn-xs disabled" href="javascript:void(0);"><span><i class="icon-check"></i> Finalized</span></a>';
             }
 
-            if ($aRow['status'] != 'shipped' && $aRow['status'] != 'evaluated' && $aRow['status'] != 'finalized') {
-                $enrolled='&nbsp;<a class="btn ' . $btn . ' btn-xs" href="/admin/shipment/ship-it/sid/' . base64_encode($aRow['shipment_id']) . '"><span><i class="icon-user"></i> Enroll</span></a>';
-            } else if($aRow['status']=='shipped') {
-                $enrolled='&nbsp;<a class="btn btn-primary btn-xs disabled" href="javascript:void(0);"><span><i class="icon-ambulance"></i> Shipped</span></a>';
-                $announcementMail='&nbsp;<a class="btn btn-warning btn-xs" href="javascript:void(0);" onclick="mailShipment(\'' . base64_encode($aRow['shipment_id']) . '\')"><span><i class="icon-bullhorn"></i> New Shipment Mail</span></a>';
+            if($aRow['status'] == 'shipped') {
+                $enrolled = '&nbsp;<a class="btn btn-primary btn-xs disabled" href="javascript:void(0);"><span><i class="icon-ambulance"></i> Shipped</span></a>';
+                $announcementMail = '&nbsp;<a class="btn btn-warning btn-xs" href="javascript:void(0);" onclick="mailShipment(\'' . base64_encode($aRow['shipment_id']) . '\')"><span><i class="icon-bullhorn"></i> New Shipment Mail</span></a>';
             }
-            if ($aRow['status']=='shipped' || $aRow['status']=='evaluated') {
-                $manageEnroll='&nbsp;<a class="btn btn-info btn-xs" href="/admin/shipment/manage-enroll/sid/' . base64_encode($aRow['shipment_id']) . '/sctype/'. base64_encode($aRow['scheme_type']) . '"><span><i class="icon-gear"></i> Enrollment </span></a>';
+            if ($aRow['status'] == 'shipped' || $aRow['status'] == 'evaluated') {
+                $manageResponses='&nbsp;<a class="btn btn-info btn-xs" href="/admin/shipment/manage-responses/sid/' . base64_encode($aRow['shipment_id']) . '/sctype/'. base64_encode($aRow['scheme_type']) . '"><span><i class="icon-gear"></i> Responses</span></a>';
             }
             $delete = '&nbsp;<a class="btn btn-primary btn-xs" href="javascript:void(0);" onclick="removeShipment(\'' . base64_encode($aRow['shipment_id']) . '\', \'' . $aRow['shipment_id'] . '\')"><span><i class="icon-remove"></i> Delete</span></a>';
 
-            $row[] = $edit . $enrolled . $delete . $announcementMail . $manageEnroll;
+            $row[] = $edit . $shipped . $enrolled . $delete . $announcementMail . $manageResponses;
             $output['aaData'][] = $row;
         }
 
