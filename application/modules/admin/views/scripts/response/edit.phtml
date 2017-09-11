@@ -205,16 +205,296 @@ if (isset($this->haveCustom) && $this->haveCustom == 'yes') { ?>
 $vHelper = $this->getHelper('DateFormat');
 $dtFormat =  $vHelper->getDateFormat();
 ?>
+<script type="text/javascript" src="<?php echo $this->baseUrl("js/jquery.validate.js"); ?>"></script>
 <script type="text/javascript">
+  var lastValue, formValidator;
   $(document).ready(function() {
     $(".datepicker" ).datepicker({dateFormat: '<?php echo $dtFormat;?>'});
     $('.oneDecimal, .zeroDecimal').keypress(function () {
       var $this = $(this);
       $this.val($this.val().replace(/[^\d.]/g, ''));
     });
+
+<?php
+if ($this->scheme == 'tb') { ?>
+    jQuery.validator.addMethod('dateLargerThan', function (value, dateInput, baseDateInputSelector) {
+      return moment(value).diff(new Date($(baseDateInputSelector).val())) >= 0;
+    });
+
+    jQuery.validator.addMethod('validRifForMtbDetected', function (value, rifInput, mtbInputSelector) {
+      if (['detected', 'high', 'medium', 'low', 'veryLow'].includes($(mtbInputSelector).val())) {
+        return ['detected', 'notDetected', 'indeterminate'].includes(value);
+      }
+      return true;
+    });
+
+    jQuery.validator.addMethod('validRifForNoMtb', function (value, rifInput, mtbInputSelector) {
+      if (!['detected', 'high', 'medium', 'low', 'veryLow'].includes($(mtbInputSelector).val())) {
+        return value === 'na';
+      }
+      return true;
+    });
+
+    jQuery.validator.addMethod('ctEndpointValue', function (value) {
+      return value <= 42;
+    });
+
+    var validationOptions = {
+      errorElement: "div",
+      focusInvalid: false,
+      errorPlacement: function(error, element) {
+        if (element.attr("name") == "receiptDate") {
+          error.insertAfter("#clearReceiptDate");
+        } else if (element.attr("name") == "expiryDate") {
+          error.insertAfter("#clearExpiryDate");
+        } else if (element.attr("name") == "testReceiptDate") {
+          error.insertAfter("#clearTestReceiptDate");
+        } else if (element.attr("name") == "qcDate") {
+          error.insertAfter("#clearQcDate");
+        } else {
+          error.insertAfter(element);
+        }
+      },
+      rules: {
+        receiptDate: "required",
+        expiryDate: "required",
+        testReceiptDate: "required",
+        mtbRifKitLotNo: "required",
+        assay: "required",
+        qcDate: {
+          required: {
+            depends: function () {
+              return $("#qcDoneYes").is(":checked");
+            }
+          }
+        },
+        qcDoneBy: {
+          required: {
+            depends: function () {
+              return $("#qcDoneYes").is(":checked");
+            }
+          }
+        },
+        participantSupervisor: {
+          required: {
+            depends: function () {
+              return $('#supervisorApproval').val() === 'yes';
+            }
+          }
+        },
+<?php
+    $count = 0;
+    $index = 0;
+    foreach ($this->responseData['results'] as $result) {
+        $count++; ?>
+        'dateTested[<?php echo $index; ?>]': {
+          required: true,
+          dateLargerThan: {
+            param: '#receiptDate'
+          }
+        },
+        'mtbDetected[<?php echo $index; ?>]': "required",
+        'rifResistance[<?php echo $index; ?>]': {
+          required: true,
+          validRifForMtbDetected: {
+            param: '#mtbDetected<?php echo $count; ?>',
+              depends: function () {
+              return $("#mtbDetected<?php echo $count; ?>").val() !== '';
+            }
+          },
+          validRifForNoMtb: {
+            param: '#mtbDetected<?php echo $count; ?>',
+              depends: function () {
+              return $("#mtbDetected<?php echo $count; ?>").val() !== '';
+            }
+          }
+        },
+        'errorCode[<?php echo $index; ?>]': {
+          required: {
+            depends: function () {
+              return $("#mtbDetected<?php echo $count; ?>").val() === 'error';
+            }
+          }
+        },
+        'probeD[<?php echo $index; ?>]': {
+          required: {
+            depends: function () {
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+            }
+          },
+          number: {
+            depends: function () {
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+            }
+          },
+          ctEndpointValue: {
+            depends: function () {
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+            }
+          }
+        },
+        'probeC[<?php echo $index; ?>]': {
+          required: {
+            depends: function () {
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+            }
+          },
+          number: {
+            depends: function () {
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+            }
+          },
+          ctEndpointValue: {
+            depends: function () {
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+            }
+          }
+        },
+        'probeE[<?php echo $index; ?>]': {
+          required: {
+            depends: function () {
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+            }
+          },
+          number: {
+            depends: function () {
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+            }
+          },
+          ctEndpointValue: {
+            depends: function () {
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+            }
+          }
+        },
+        'probeB[<?php echo $index; ?>]': {
+          required: {
+            depends: function () {
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+            }
+          },
+          number: {
+            depends: function () {
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+            }
+          },
+          ctEndpointValue: {
+            depends: function () {
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+            }
+          }
+        },
+        'spc[<?php echo $index; ?>]': {
+          required: {
+            depends: function () {
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+            }
+          },
+          number: {
+            depends: function () {
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+            }
+          },
+          ctEndpointValue: {
+            depends: function () {
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+            }
+          }
+        },
+        'probeA[<?php echo $index; ?>]': {
+          required: {
+            depends: function () {
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+            }
+          },
+          number: {
+            depends: function () {
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+            }
+          },
+          ctEndpointValue: {
+            depends: function () {
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+            }
+          }
+        },
+<?php
+        $index++;
+    } ?>
+      },
+      messages: {
+        receiptDate: "What date did you receipt the panel?",
+        expiryDate: "Please enter the expiration date of MTB/RIF kit",
+        testReceiptDate: "When did the lab submit the results?",
+        mtbRifKitLotNo: "Please enter the lot number of MTB/RIF kit",
+        assay: "Which assay was used to run the samples?",
+        qcDate: "When was monthly maintenance done?",
+        qcDoneBy: "Who performed monthly maintenance?",
+        participantSupervisor: "What is the name of the supervisor who approved this submission?",
+<?php
+    $index = 0;
+    foreach ($this->responseData['results'] as $result) { ?>
+        'dateTested[<?php echo $index; ?>]': {
+          required: "Required",
+          dateLargerThan: "Must be after Shipment Receipt Date"
+        },
+        'mtbDetected[<?php echo $index; ?>]': "Required",
+        'rifResistance[<?php echo $index; ?>]': {
+          required: "Required",
+          validRifForMtbDetected: "Invalid Selection for MTB Detected",
+          validRifForNoMtb: "Invalid Selection for MTB Detected"
+        },
+        'errorCode[<?php echo $index; ?>]': "Required",
+        'probeD[<?php echo $index; ?>]': {
+          required: "Required",
+          number: "Only numerical values allowed for probe/spc fields",
+          ctEndpointValue: "A value was detected above 42, have you entered endpoint values by mistake?"
+        },
+        'probeC[<?php echo $index; ?>]': {
+          required: "Required",
+          number: "Only numerical values allowed for probe/spc fields",
+          ctEndpointValue: "A value was detected above 42, have you entered endpoint values by mistake?"
+        },
+        'probeE[<?php echo $index; ?>]': {
+          required: "Required",
+          number: "Only numerical values allowed for probe/spc fields",
+          ctEndpointValue: "A value was detected above 42, have you entered endpoint values by mistake?"
+        },
+        'probeB[<?php echo $index; ?>]': {
+          required: "Required",
+          number: "Only numerical values allowed for probe/spc fields",
+          ctEndpointValue: "A value was detected above 42, have you entered endpoint values by mistake?"
+        },
+        'spc[<?php echo $index; ?>]': {
+          required: "Required",
+          number: "Only numerical values allowed for probe/spc fields",
+          ctEndpointValue: "A value was detected above 42, have you entered endpoint values by mistake?"
+        },
+        'probeA[<?php echo $index; ?>]': {
+          required: "Required",
+          number: "Only numerical values allowed for probe/spc fields",
+          ctEndpointValue: "A value was detected above 42, have you entered endpoint values by mistake?"
+        },
+<?php
+         $index++;
+     } ?>
+      }
+    };
+
+    formValidator = $("#updateResultsForm").validate(validationOptions);
+    $("#updateResultsForm").submit(function(event) {
+      var errors = formValidator.numberOfInvalids();
+      if (errors) {
+        $('html body').animate({
+          scrollTop: $(formValidator.errorList[0].element).offset().top - 100
+        }, 1000);
+        event.preventDefault();
+      }
+    });
+<?php
+} ?>
   });
 
-  var lastValue;
   $("#isExcluded").on("click", function(e) {
     lastValue = $(this).val();
   }).bind("change", function(e) {
@@ -245,114 +525,15 @@ $dtFormat =  $vHelper->getDateFormat();
   }
 
   function validateNow(){
-    $.blockUI();
-
-    <?php
+<?php
     if ($this->scheme == 'tb') { ?>
-    var validationMessage = '';
-    if (!$("#receiptDate").val()) {
-      validationMessage += '\n- Please ensure Shipment Receipt Date has been entered';
+    if (!formValidator.valid()) {
+      formValidator.showErrors();
     }
-
-    if (!$("#expiryDate").val()) {
-      validationMessage += '\n- Please ensure Expiration date of MTB/RIF Kit has been entered';
-    }
-
-    if (!$("#testReceiptDate").val()) {
-      validationMessage += '\n- Please ensure Response Date has been entered';
-    }
-
-    if (!$("#mtbRifKitLotNo").val()) {
-      validationMessage += '\n- Please ensure MTB/RIF Kit Lot No has been entered';
-    }
-
-    if (!$("#assay").val()) {
-      validationMessage += '\n- Please ensure Assay has been specified';
-    }
-
-    if ($('#qcDoneYes').is(':checked')) {
-      if (!$("#qcDate").val()) {
-        validationMessage += '\n- Please ensure Maintenance Date has been entered';
-      }
-
-      if (!$("#qcDoneBy").val()) {
-        validationMessage += '\n- Please ensure Maintenance Done By has been entered';
-      }
-    }
-
-    if($('#supervisorApproval').val() === 'yes' && !$("#participantSupervisor").val()) {
-      validationMessage += '\n- Please ensure Supervisor Name has been entered';
-    }
-
-    var dateTestedValidationCaught = false;
-    $('[name="dateTested[]"]').each(function() {
-      if (!dateTestedValidationCaught) {
-        if (!$(this).val()) {
-          validationMessage += '\n- Please ensure Date Tested has been specified for each sample';
-          dateTestedValidationCaught = true;
-        } else if ($("#receiptDate").val() &&
-          moment($(this).val()).diff(new Date($("#receiptDate").val())) < 0) {
-          validationMessage += '\n- Testing Date for each sample has to come after the Shipment Receipt Date';
-          dateTestedValidationCaught = true;
-        }
-      }
-    });
-
-    var mtbDetectedValidationCaught = false;
-    var mtbDetectedIndex = 0;
-    var rifResistanceValidationCaught = false;
-    var errorCodeValidationCaught = false;
-    $('[name="mtbDetected[]"]').each(function() {
-      if (!mtbDetectedValidationCaught) {
-        if (!$(this).val()) {
-          validationMessage += '\n- Please ensure MTB Detected has been specified for each sample';
-          mtbDetectedValidationCaught = true;
-        }
-      }
-      if (!rifResistanceValidationCaught) {
-        if (['detected', 'high', 'medium', 'low', 'veryLow'].includes($(this).val()) &&
-          !['detected', 'notDetected'].includes($('[name="rifResistance[]"]').eq(mtbDetectedIndex).val())) {
-          validationMessage += '\n- If MTB was detected in a sample, please specify whether Rif Resistance was detected';
-          rifResistanceValidationCaught = true;
-        } else if (!['detected', 'high', 'medium', 'low', 'veryLow', 'error'].includes($(this).val()) &&
-          $('[name="rifResistance[]"]').eq(mtbDetectedIndex).val() !== 'na') {
-          validationMessage += '\n- If there was no result or an invalid result for a sample, Rif Resistance should be N/A';
-          rifResistanceValidationCaught = true;
-        }
-      }
-      if (!errorCodeValidationCaught && $(this).val() === 'error' &&
-        !$('[name="errorCode[]"]').eq(mtbDetectedIndex).val()) {
-        validationMessage += '\n- If the result was an error, please specify what the error code was';
-        errorCodeValidationCaught = true;
-      }
-      mtbDetectedIndex++;
-    });
-
-    var probeValueValidationCaught = false;
-    $('[name="probeD[]"],[name="probeC[]"],[name="probeE[]"],[name="probeB[]"],[name="spc[]"],[name="probeA[]"]')
-      .each(function() {
-        $(this).val($(this).val().replace(/,/g, '.'));
-        if (!probeValueValidationCaught) {
-          if (!$(this).val()) {
-            validationMessage += '\n- Please ensure all SPC and Probe values have been specified for each sample';
-            probeValueValidationCaught = true;
-          } else if (!$.isNumeric($(this).val())) {
-            validationMessage += '\n- Please ensure all SPC and Probe values are valid numbers';
-            probeValueValidationCaught = true;
-          } else if (parseFloat($(this).val()) > 42) {
-            validationMessage += '\n- Please capture SPC and Probe CT values. A value was detected above 42, have you entered endpoint values by mistake?';
-            probeValueValidationCaught = true;
-          }
-        }
-      });
-
-    if (validationMessage) {
-      alert('Validation Check' + validationMessage);
-      $.unblockUI();
-      return false;
-    }
-    <?php
+    return formValidator.valid();
+<?php
     } else { ?>
+    $.blockUI();
     var dates=[];
     $(".sampleTestDate").each(function() {
       if ($(this).val()) {
@@ -368,9 +549,6 @@ $dtFormat =  $vHelper->getDateFormat();
       $.unblockUI();
       return false;
     }
-    <?php
-    } ?>
-
     var flag = deforayValidator.init({
       formId: 'updateResultsForm'
     });
@@ -378,5 +556,7 @@ $dtFormat =  $vHelper->getDateFormat();
       $.unblockUI();
     }
     return flag;
+<?php
+    } ?>
   }
 </script>

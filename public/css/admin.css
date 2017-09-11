@@ -43,9 +43,8 @@ text-align:center;
 
 
 	.evenResult td, .evenResult th{
-		background: #51697F !important;
-		border-color: #51697F !important;
-		color: #FFF !important;
+		background: #acb6d0 !important;
+		border-color: #acb6d0 !important;
 	}
 	
 	.oddResult td, .oddResult th{
