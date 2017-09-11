@@ -1,3 +1,8 @@
+<style>
+    .fieldLabel {
+        white-space: nowrap;
+    }
+</style>
 <?php
 $attributes = json_decode($this->evaluateData['shipment']['attributes'],true);
 $dateFormatHelper = $this->getHelper('DateFormat');
@@ -82,7 +87,7 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
 		</tr>
         <tr>
             <th>
-                <label>
+                <label class="fieldLabel">
                     Shipment Received on
                     <span class='mandatory'>*</span>
                 </label>
@@ -95,7 +100,7 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
                    onclick="clearDate('receiptDate')"> Clear</i>
             </td>
             <td>
-                <label>
+                <label class="fieldLabel">
                     Assay
                     <span class='mandatory'>*</span>
                 </label>
@@ -115,7 +120,7 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
         </tr>
         <tr>
             <th>
-                <label>
+                <label class="fieldLabel">
                     MTB/RIF Kit Lot No
                     <span class='mandatory'>*</span>
                 </label>
@@ -125,7 +130,7 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
                        value="<?php echo $attributes['mtb_rif_kit_lot_no'];?>"/>
             </td>
             <td>
-                <label>
+                <label class="fieldLabel">
                     Expiration date of MTB/RIF Kit
                     <span class='mandatory'>*</span>
                 </label>
@@ -139,7 +144,7 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
         </tr>
         <tr>
             <th>
-                <label>
+                <label class="fieldLabel">
                     Response Date
                     <span class='mandatory'>*</span>
                 </label>
@@ -210,7 +215,7 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
             } ?>
             <tr id="qcSection" class="light" style="<?php echo $display; ?>">
                 <td>
-                    <label>
+                    <label class="fieldLabel">
                         Maintenance Date
                         <span class='mandatory'>*</span>
                     </label>
@@ -224,7 +229,7 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
                        onclick="clearDate('qcDate')"> Clear</i>
                 </td>
                 <td>
-                    <label>
+                    <label class="fieldLabel">
                         Maintenance Done By
                         <span class='mandatory'>*</span>
                     </label>
@@ -239,7 +244,7 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
         } ?>
         <tr>
             <th>
-                <label>
+                <label class="fieldLabel">
                     Supervisor Review
                     <span class='mandatory'>*</span>
                 </label>
@@ -252,7 +257,7 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
                 </select>
             </td>
             <th id="labSupervisor" <?php echo(isset($this->evaluateData['shipment']['supervisor_approval']) && strtolower($this->evaluateData['shipment']['supervisor_approval']) == 'yes') ? "" : "style='display:none;'" ?>>
-                <label>
+                <label class="fieldLabel">
                     Supervisor Name
                     <span class='mandatory'>*</span>
                 </label>
