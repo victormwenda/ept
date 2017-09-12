@@ -200,9 +200,9 @@ class Application_Service_Reports {
             $responsePercentage = ($aRow['reported_percentage'] != "") ? $aRow['reported_percentage'] : "0";
             $row = array();
             $row[] = $aRow['distribution_code'];
-            $row[] = Pt_Commons_General::humanDateFormat($aRow['distribution_date']);
+            $row[] = Application_Service_Common::ParseDateHumanFormat($aRow['distribution_date']);
             $row[] = "<a href='javascript:void(0);' onclick='generateShipmentParticipantList(\"" . base64_encode($aRow['shipment_id']) . "\",\"".$aRow['scheme_type']."\")'>" . $aRow['shipment_code'] . "</a>";
-            $row[] = Pt_Commons_General::humanDateFormat($aRow['lastdate_response']);
+            $row[] = Application_Service_Common::ParseDateHumanFormat($aRow['lastdate_response']);
             $row[] = $aRow['scheme_name'];
             $row[] = $aRow['number_of_samples'];
             $row[] = $aRow['participant_count'];
@@ -501,7 +501,7 @@ class Application_Service_Reports {
             }
 
             $row[] = $aRow['distribution_code'];
-            $row[] = Pt_Commons_General::humanDateFormat($aRow['distribution_date']);
+            $row[] = Application_Service_Common::ParseDateHumanFormat($aRow['distribution_date']);
             $output['aaData'][] = $row;
         }
 
@@ -709,8 +709,8 @@ class Application_Service_Reports {
             $row = array();
             $row['DT_RowId'] = "shipment" . $aRow['shipment_id'];
             $row[] = $aRow['scheme_name'];
-            $row[] = Pt_Commons_General::humanDateFormat($aRow['shipment_date']);
-            $row[] = "<a href='javascript:void(0);' onclick='shipmetRegionReport(\"" . $aRow['shipment_id'] . "\"),regionDetails(\"" . $aRow['scheme_name'] . "\",\"" . Pt_Commons_General::humanDateFormat($aRow['shipment_date']) . "\",\"" . $aRow['shipment_code'] . "\")'>" . $aRow['shipment_code'] . "</a>";
+            $row[] = Application_Service_Common::ParseDateHumanFormat($aRow['shipment_date']);
+            $row[] = "<a href='javascript:void(0);' onclick='shipmetRegionReport(\"" . $aRow['shipment_id'] . "\"),regionDetails(\"" . $aRow['scheme_name'] . "\",\"" . Application_Service_Common::ParseDateHumanFormat($aRow['shipment_date']) . "\",\"" . $aRow['shipment_code'] . "\")'>" . $aRow['shipment_code'] . "</a>";
             $row[] = $aRow['total_shipped'];
             $row[] = $aRow['total_responses'];
             $row[] = $aRow['valid_responses'];
@@ -1279,7 +1279,7 @@ class Application_Service_Reports {
                 $result = $dbAdapter->fetchAll($sQuery);
                 $count = (isset($result[0]['reported_count']) && $result[0]['reported_count'] != "") ? $result[0]['reported_count'] : 0;
                 $responseResult[] = (int) $count;
-                $responseDate[] = Pt_Commons_General::humanDateFormat($date) . ' ' . Pt_Commons_General::humanDateFormat($endDate);
+                $responseDate[] = Application_Service_Common::ParseDateHumanFormat($date) . ' ' . Application_Service_Common::ParseDateHumanFormat($endDate);
                 $date = strftime("%Y-%m-%d", strtotime("$endDate +1 day"));
             }
 
@@ -1288,7 +1288,7 @@ class Application_Service_Reports {
                 $result = $dbAdapter->fetchAll($sQuery);
                 $count = (isset($result[0]['reported_count']) && $result[0]['reported_count'] != "") ? $result[0]['reported_count'] : 0;
                 $responseResult[] = (int) $count;
-                $responseDate[] = Pt_Commons_General::humanDateFormat($date) . '  and Above';
+                $responseDate[] = Application_Service_Common::ParseDateHumanFormat($date) . '  and Above';
             }
         }
         return json_encode($responseResult) . '#' . json_encode($responseDate);
@@ -1690,7 +1690,7 @@ class Application_Service_Reports {
 						if ($keyv == 1) {
 							//In Excel Third row added the Test kit name1,kit lot,exp date
 							if (trim($row['kitReference'][0]['expiry_date']) != "") {
-								$row['kitReference'][0]['expiry_date'] = Pt_Commons_General::excelDateFormat($row['kitReference'][0]['expiry_date']);
+								$row['kitReference'][0]['expiry_date'] = Application_Service_Common::ParseDateExcel($row['kitReference'][0]['expiry_date']);
 							}
 							$sheet->getCellByColumnAndRow($kitId++, 3)->setValueExplicit($row['kitReference'][0]['testKitName'], PHPExcel_Cell_DataType::TYPE_STRING);
 							$sheet->getCellByColumnAndRow($kitId++, 3)->setValueExplicit($row['kitReference'][0]['lot_no'], PHPExcel_Cell_DataType::TYPE_STRING);
@@ -1700,7 +1700,7 @@ class Application_Service_Reports {
 							if (isset($row['kitReference'][1]['referenceKitResult'])) {
 								//In Excel Third row added the Test kit name2,kit lot,exp date
 								if (trim($row['kitReference'][1]['expiry_date']) != "") {
-									$row['kitReference'][1]['expiry_date'] = Pt_Commons_General::excelDateFormat($row['kitReference'][1]['expiry_date']);
+									$row['kitReference'][1]['expiry_date'] = Application_Service_Common::ParseDateExcel($row['kitReference'][1]['expiry_date']);
 								}
 								$sheet->getCellByColumnAndRow($kitId++, 3)->setValueExplicit($row['kitReference'][1]['testKitName'], PHPExcel_Cell_DataType::TYPE_STRING);
 								$sheet->getCellByColumnAndRow($kitId++, 3)->setValueExplicit($row['kitReference'][1]['lot_no'], PHPExcel_Cell_DataType::TYPE_STRING);
@@ -1710,7 +1710,7 @@ class Application_Service_Reports {
 							if (isset($row['kitReference'][2]['referenceKitResult'])) {
 								//In Excel Third row added the Test kit name3,kit lot,exp date
 								if (trim($row['kitReference'][2]['expiry_date']) != "") {
-									$row['kitReference'][2]['expiry_date'] = Pt_Commons_General::excelDateFormat($row['kitReference'][2]['expiry_date']);
+									$row['kitReference'][2]['expiry_date'] = Application_Service_Common::ParseDateExcel($row['kitReference'][2]['expiry_date']);
 								}
 								$sheet->getCellByColumnAndRow($kitId++, 3)->setValueExplicit($row['kitReference'][2]['testKitName'], PHPExcel_Cell_DataType::TYPE_STRING);
 								$sheet->getCellByColumnAndRow($kitId++, 3)->setValueExplicit($row['kitReference'][2]['lot_no'], PHPExcel_Cell_DataType::TYPE_STRING);
@@ -1759,19 +1759,13 @@ class Application_Service_Reports {
 					$sheet->getCellByColumnAndRow($r++, $currentRow)->setValueExplicit($aRow['first_name'] . $aRow['last_name'], PHPExcel_Cell_DataType::TYPE_STRING);
 					$sheet->getCellByColumnAndRow($r++, $currentRow)->setValueExplicit($aRow['dataManagerFirstName'] . $aRow['dataManagerLastName'], PHPExcel_Cell_DataType::TYPE_STRING);
 					$sheet->getCellByColumnAndRow($r++, $currentRow)->setValueExplicit($aRow['region'], PHPExcel_Cell_DataType::TYPE_STRING);
-					$shipmentReceiptDate = "";
-					if (isset($aRow['shipment_receipt_date']) && trim($aRow['shipment_receipt_date']) != "") {
-						$shipmentReceiptDate = $aRow['shipment_receipt_date'] = Pt_Commons_General::excelDateFormat($aRow['shipment_receipt_date']);
-					}
-	
-					if (isset($aRow['shipment_test_date']) && trim($aRow['shipment_test_date']) != "" && trim($aRow['shipment_test_date']) != "0000-00-00") {
-						$shipmentTestDate = Pt_Commons_General::excelDateFormat($aRow['shipment_test_date']);
-					}
-	
+					$shipmentReceiptDate = Application_Service_Common::ParseDateExcel($aRow['shipment_receipt_date']);
+                    $shipmentTestDate = Application_Service_Common::ParseDateExcel($aRow['shipment_test_date']);
+
 					if (trim($aRow['attributes']) != "") {
 						$attributes = json_decode($aRow['attributes'], true);
-						$sampleRehydrationDate = new Zend_Date($attributes['sample_rehydration_date'], Zend_Date::ISO_8601);
-						$rehydrationDate = Pt_Commons_General::excelDateFormat($attributes["sample_rehydration_date"]);
+                        $sampleRehydrationDate = Application_Service_Common::ParseDateISO8601($attributes['sample_rehydration_date']);
+                        $rehydrationDate = Application_Service_Common::ParseDateExcel($attributes["sample_rehydration_date"]);
 					}
 	
 					$sheet->getCellByColumnAndRow($r++, $currentRow)->setValueExplicit($aRow['shipment_receipt_date'], PHPExcel_Cell_DataType::TYPE_STRING);
@@ -1806,15 +1800,13 @@ class Application_Service_Reports {
 						$docScoreSheet->getCellByColumnAndRow($docScoreCol++, $docScoreRow)->setValueExplicit(0, PHPExcel_Cell_DataType::TYPE_STRING);
 					}
 	
-					if (isset($aRow['shipment_test_date']) && trim($aRow['shipment_test_date']) != "" && trim($aRow['shipment_test_date']) != "0000-00-00") {
+					if ($shipmentTestDate != "") {
 						$docScoreSheet->getCellByColumnAndRow($docScoreCol++, $docScoreRow)->setValueExplicit($documentationScorePerItem, PHPExcel_Cell_DataType::TYPE_STRING);
 					} else {
 						$docScoreSheet->getCellByColumnAndRow($docScoreCol++, $docScoreRow)->setValueExplicit(0, PHPExcel_Cell_DataType::TYPE_STRING);
 					}
 	
-					if (isset($sampleRehydrationDate) && trim($aRow['shipment_test_date']) != "" && trim($aRow['shipment_test_date']) != "0000-00-00") {
-						
-						
+					if (isset($sampleRehydrationDate) && $shipmentTestDate != "") {
 						$config = new Zend_Config_Ini(APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini", APPLICATION_ENV);
 						$sampleRehydrationDate = new DateTime($attributes['sample_rehydration_date']);
 						$testedOnDate = new DateTime($aRow['shipment_test_date']);
@@ -1848,13 +1840,13 @@ class Application_Service_Reports {
 					if (count($aRow['response']) > 0) {
 	
 						if (isset($aRow['response'][0]['exp_date_1']) && trim($aRow['response'][0]['exp_date_1']) != "") {
-							$aRow['response'][0]['exp_date_1'] = Pt_Commons_General::excelDateFormat($aRow['response'][0]['exp_date_1']);
+							$aRow['response'][0]['exp_date_1'] = Application_Service_Common::ParseDateExcel($aRow['response'][0]['exp_date_1']);
 						}
 						if (isset($aRow['response'][0]['exp_date_2']) && trim($aRow['response'][0]['exp_date_2']) != "") {
-							$aRow['response'][0]['exp_date_2'] = Pt_Commons_General::excelDateFormat($aRow['response'][0]['exp_date_2']);
+							$aRow['response'][0]['exp_date_2'] = Application_Service_Common::ParseDateExcel($aRow['response'][0]['exp_date_2']);
 						}
 						if (isset($aRow['response'][0]['exp_date_3']) && trim($aRow['response'][0]['exp_date_3']) != "") {
-							$aRow['response'][0]['exp_date_3'] = Pt_Commons_General::excelDateFormat($aRow['response'][0]['exp_date_3']);
+							$aRow['response'][0]['exp_date_3'] = Application_Service_Common::ParseDateExcel($aRow['response'][0]['exp_date_3']);
 						}
 	
 						$sheet->getCellByColumnAndRow($r++, $currentRow)->setValueExplicit($aRow['response'][0]['testKitName1'], PHPExcel_Cell_DataType::TYPE_STRING);
@@ -2021,37 +2013,13 @@ class Application_Service_Reports {
 			
 			$colNamesArray = array();
 			$colNamesArray[] = "Lab ID";
-			//$colNamesArray[] = "Lab Name";
-			//$colNamesArray[] = "Department Name";
-			//$colNamesArray[] = "Region";
-			//$colNamesArray[] = "Site Type";
-			//$colNamesArray[] = "Assay";
-			//$colNamesArray[] = "Assay Expiration Date";
-			//$colNamesArray[] = "Assay Lot Number";
-			//$colNamesArray[] = "Specimen Volume";
-	
+
 			$firstSheet = new PHPExcel_Worksheet($excel, 'Overall Results');
 			$excel->addSheet($firstSheet, 0);
 			
 			$firstSheet->getCellByColumnAndRow(0, 1)->setValueExplicit(html_entity_decode("Lab ID", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-			//$firstSheet->getCellByColumnAndRow(1, 1)->setValueExplicit(html_entity_decode("Lab Name", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-			//$firstSheet->getCellByColumnAndRow(2, 1)->setValueExplicit(html_entity_decode("Department Name", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-			//$firstSheet->getCellByColumnAndRow(3, 1)->setValueExplicit(html_entity_decode("Region", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-			//$firstSheet->getCellByColumnAndRow(4, 1)->setValueExplicit(html_entity_decode("Site Type", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-			//$firstSheet->getCellByColumnAndRow(5, 1)->setValueExplicit(html_entity_decode("Assay", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-			//$firstSheet->getCellByColumnAndRow(6, 1)->setValueExplicit(html_entity_decode("Assay Expiration Date", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-			//$firstSheet->getCellByColumnAndRow(7, 1)->setValueExplicit(html_entity_decode("Assay Lot Number", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-			//$firstSheet->getCellByColumnAndRow(8, 1)->setValueExplicit(html_entity_decode("Specimen Volume", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-			
+
 			$firstSheet->getStyleByColumnAndRow(0, 1)->applyFromArray($borderStyle);
-			//$firstSheet->getStyleByColumnAndRow(1, 1)->applyFromArray($borderStyle);
-			//$firstSheet->getStyleByColumnAndRow(2, 1)->applyFromArray($borderStyle);
-			//$firstSheet->getStyleByColumnAndRow(3, 1)->applyFromArray($borderStyle);
-			//$firstSheet->getStyleByColumnAndRow(4, 1)->applyFromArray($borderStyle);
-			//$firstSheet->getStyleByColumnAndRow(5, 1)->applyFromArray($borderStyle);
-			//$firstSheet->getStyleByColumnAndRow(6, 1)->applyFromArray($borderStyle);
-			//$firstSheet->getStyleByColumnAndRow(7, 1)->applyFromArray($borderStyle);
-			//$firstSheet->getStyleByColumnAndRow(8, 1)->applyFromArray($borderStyle);
 			
 			$firstSheet->getDefaultRowDimension()->setRowHeight(15);
 			
@@ -2135,7 +2103,7 @@ class Application_Service_Reports {
 				
 				$assayExpirationDate = "";
 				if(isset($attributes['assay_expiration_date']) && $attributes['assay_expiration_date'] != ""){
-					$assayExpirationDate = Pt_Commons_General::humanDateFormat($attributes['assay_expiration_date']);
+					$assayExpirationDate = Application_Service_Common::ParseDateHumanFormat($attributes['assay_expiration_date']);
 				}
 				
 				$assayLotNumber = "";
@@ -2150,27 +2118,10 @@ class Application_Service_Reports {
 				// we are also building the data required for other Assay Sheets
 				if($attributes['vl_assay'] > 0){
 					$assayWiseData[$attributes['vl_assay']][$rowOverAll['unique_identifier']][] = $rowOverAll['unique_identifier'];
-					//$assayWiseData[$attributes['vl_assay']][$rowOverAll['unique_identifier']][] = $rowOverAll['first_name']." ".$rowOverAll['last_name'];
-					//$assayWiseData[$attributes['vl_assay']][$rowOverAll['unique_identifier']][] = $rowOverAll['department_name'];
-					//$assayWiseData[$attributes['vl_assay']][$rowOverAll['unique_identifier']][] = $rowOverAll['region'];
-					//$assayWiseData[$attributes['vl_assay']][$rowOverAll['unique_identifier']][] = $rowOverAll['site_type'];
-					//$assayWiseData[$attributes['vl_assay']][$rowOverAll['unique_identifier']][] = $assayName;
-					//$assayWiseData[$attributes['vl_assay']][$rowOverAll['unique_identifier']][] = $assayExpirationDate;
-					//$assayWiseData[$attributes['vl_assay']][$rowOverAll['unique_identifier']][] = $assayLotNumber;
-					//$assayWiseData[$attributes['vl_assay']][$rowOverAll['unique_identifier']][] = $specimenVolume;
 				}
 				
 				
 				$firstSheet->getCellByColumnAndRow(0, $row)->setValueExplicit(html_entity_decode($rowOverAll['unique_identifier'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-				//$firstSheet->getCellByColumnAndRow(1, $row)->setValueExplicit(html_entity_decode($rowOverAll['first_name']. " " .$rowOverAll['last_name'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-				//$firstSheet->getCellByColumnAndRow(2, $row)->setValueExplicit(html_entity_decode($rowOverAll['department_name'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-				//$firstSheet->getCellByColumnAndRow(3, $row)->setValueExplicit(html_entity_decode($rowOverAll['region'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-				//$firstSheet->getCellByColumnAndRow(4, $row)->setValueExplicit(html_entity_decode($rowOverAll['site_type'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-				//$firstSheet->getCellByColumnAndRow(5, $row)->setValueExplicit(html_entity_decode($assayName, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-				//$firstSheet->getCellByColumnAndRow(6, $row)->setValueExplicit(html_entity_decode($assayExpirationDate, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-				//$firstSheet->getCellByColumnAndRow(7, $row)->setValueExplicit(html_entity_decode($assayLotNumber, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-				//$firstSheet->getCellByColumnAndRow(8, $row)->setValueExplicit(html_entity_decode($specimenVolume, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-
 				
 				$col = 1;
 				foreach($resultResponse as $responseRow){
@@ -2181,8 +2132,8 @@ class Application_Service_Reports {
 					}
 				}
 				
-				$receiptDate = ($rowOverAll['shipment_receipt_date'] != "" && $rowOverAll['shipment_receipt_date'] != "0000-00-00") ? Pt_Commons_General::humanDateFormat($rowOverAll['shipment_receipt_date']) : "";
-				$testDate = ($rowOverAll['shipment_test_date'] != "" && $rowOverAll['shipment_test_date'] != "0000-00-00") ? Pt_Commons_General::humanDateFormat($rowOverAll['shipment_test_date']) : "";
+				$receiptDate = Application_Service_Common::ParseDateHumanFormat($rowOverAll['shipment_receipt_date']);
+				$testDate = Application_Service_Common::ParseDateHumanFormat($rowOverAll['shipment_test_date']);
 				$firstSheet->getCellByColumnAndRow($col++, $row)->setValueExplicit(html_entity_decode($receiptDate, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);	
 				$firstSheet->getCellByColumnAndRow($col++, $row)->setValueExplicit(html_entity_decode($testDate, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);	
 				
@@ -2542,7 +2493,7 @@ class Application_Service_Reports {
 				$attributes = json_decode($rowOverAll['attributes'], true);
 				$extraction = (array_key_exists ($attributes['extraction_assay'] , $extractionAssayList )) ? $extractionAssayList[$attributes['extraction_assay']] : "";
 				$detection = (array_key_exists ($attributes['detection_assay'] , $detectionAssayList )) ? $detectionAssayList[$attributes['detection_assay']] : "";
-				$sampleRehydrationDate = (isset($attributes['sample_rehydration_date'])) ? Pt_Commons_General::humanDateFormat($attributes['sample_rehydration_date']) : "";
+				$sampleRehydrationDate = (isset($attributes['sample_rehydration_date'])) ? Application_Service_Common::ParseDateHumanFormat($attributes['sample_rehydration_date']) : "";
 				
 				
 				$firstSheet->getCellByColumnAndRow(0, $row)->setValueExplicit(html_entity_decode($rowOverAll['unique_identifier'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
@@ -2560,8 +2511,8 @@ class Application_Service_Reports {
 				$firstSheet->getCellByColumnAndRow($col++, $row)->setValueExplicit(html_entity_decode($extraction, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 				$firstSheet->getCellByColumnAndRow($col++, $row)->setValueExplicit(html_entity_decode($detection, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);	
 				
-				$receiptDate = ($rowOverAll['shipment_receipt_date'] != "" && $rowOverAll['shipment_receipt_date'] != "0000-00-00") ? Pt_Commons_General::humanDateFormat($rowOverAll['shipment_receipt_date']) : "";
-				$testDate = ($rowOverAll['shipment_test_date'] != "" && $rowOverAll['shipment_test_date'] != "0000-00-00") ? Pt_Commons_General::humanDateFormat($rowOverAll['shipment_test_date']) : "";
+				$receiptDate = Application_Service_Common::ParseDateHumanFormat($rowOverAll['shipment_receipt_date']);
+				$testDate = Application_Service_Common::ParseDateHumanFormat($rowOverAll['shipment_test_date']);
 				$firstSheet->getCellByColumnAndRow($col++, $row)->setValueExplicit(html_entity_decode($receiptDate, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);	
 				$firstSheet->getCellByColumnAndRow($col++, $row)->setValueExplicit(html_entity_decode($testDate, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);	
 				
@@ -2904,7 +2855,7 @@ class Application_Service_Reports {
 
                 $row = array();
                 $row[] = $aRow['scheme_name'];
-                $row[] = Pt_Commons_General::humanDateFormat($aRow['shipment_date']);
+                $row[] = Application_Service_Common::ParseDateHumanFormat($aRow['shipment_date']);
                 $row[] = $aRow['shipment_code'];
                 $row[] = $aRow['total_shipped'];
                 $row[] = $aRow['total_responses'];
@@ -4312,8 +4263,8 @@ class Application_Service_Reports {
             $row = array();
             $row[] = $aRow['lab_name'];
             $row[] = $aRow['shipment_score'];
-            $row[] = Pt_Commons_General::humanDateFormat($aRow['shipment_test_date']);
-            $row[] = Pt_Commons_General::humanDateFormat($aRow['shipment_receipt_date']);
+            $row[] = Application_Service_Common::ParseDateHumanFormat($aRow['shipment_test_date']);
+            $row[] = Application_Service_Common::ParseDateHumanFormat($aRow['shipment_receipt_date']);
             $output['aaData'][] = $row;
         }
         echo json_encode($output);

@@ -81,10 +81,6 @@ class Application_Service_EvaluationScoring {
         return self::MAX_DOCUMENTATION_SCORE;
     }
 
-    private function isBlankDate ($dateValue) {
-        return $this->isNullOrEmpty($dateValue) || $dateValue == '0000-00-00';
-    }
-
     private function isNullOrEmpty ($stringValue) {
         return !isset($stringValue) || $stringValue == '';
     }

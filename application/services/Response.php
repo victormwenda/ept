@@ -122,7 +122,7 @@ class Application_Service_Response {
             $shipmentResults = $shipmentDb->getPendingShipmentsByDistribution($aRow['distribution_id']);
             $row = array();
             $row['DT_RowId'] = "dist" . $aRow['distribution_id'];
-            $row[] = Pt_Commons_General::humanDateFormat($aRow['distribution_date']);
+            $row[] = Application_Service_Common::ParseDateHumanFormat($aRow['distribution_date']);
             $row[] = $aRow['distribution_code'];
             $row[] = $aRow['shipments'];
             $row[] = ucwords($aRow['status']);
@@ -227,7 +227,7 @@ class Application_Service_Response {
             );
             $attributes = json_encode($attributes);
             $mapData = array(
-                "shipment_receipt_date" => Pt_Commons_General::dateFormat($params['receiptDate']),
+                "shipment_receipt_date" => Application_Service_Common::ParseDate($params['receiptDate']),
                 "attributes" => $attributes,
                 "supervisor_approval" => $params['supervisorApproval'],
                 "participant_supervisor" => $params['participantSupervisor'],
@@ -236,7 +236,7 @@ class Application_Service_Response {
                 "updated_on_admin" => new Zend_Db_Expr('now()')
             );
             if (isset($params['testDate'])) {
-                $mapData['shipment_test_date'] = Pt_Commons_General::dateFormat($params['testDate']);
+                $mapData['shipment_test_date'] = Application_Service_Common::ParseDate($params['testDate']);
             }
             if (isset($params['modeOfReceipt'])) {
                 $mapData['mode_id'] = $params['modeOfReceipt'];
@@ -256,14 +256,14 @@ class Application_Service_Response {
                 $mapData['pt_test_not_performed_comments'] = null;
             }
             if (isset($params['testReceiptDate']) && trim($params['testReceiptDate'])!= '') {
-                $mapData['shipment_test_report_date'] = Pt_Commons_General::dateFormat($params['testReceiptDate']);
+                $mapData['shipment_test_report_date'] = Application_Service_Common::ParseDate($params['testReceiptDate']);
             } else {
                 $mapData['shipment_test_report_date'] = new Zend_Db_Expr('now()');
             }
             if (isset($authNameSpace->qc_access) && $authNameSpace->qc_access =='yes') {
                 $mapData['qc_done'] = $params['qcDone'];
                 if (isset($mapData['qc_done']) && trim($mapData['qc_done']) == "yes") {
-                    $mapData['qc_date'] = Pt_Commons_General::dateFormat($params['qcDate']);
+                    $mapData['qc_date'] =  Application_Service_Common::ParseDate($params['qcDate']);
                     $mapData['qc_done_by'] = trim($params['qcDoneBy']);
                     $mapData['qc_created_on'] = new Zend_Db_Expr('now()');
                 } else {
@@ -290,22 +290,10 @@ class Application_Service_Response {
                     ->from("response_result_tb")
                     ->where("shipment_map_id = " . $params['smid'] . " and sample_id = " . $params['sampleId'][$i]);
                 $res = $db->fetchRow($sql);
-                $dateTested = Pt_Commons_General::dateFormat($params['dateTested'][$i]);
-                if ($dateTested == "" || $dateTested == "0000-00-00") {
-                    $dateTested = null;
-                }
-                $instrumentInstalledOn = Pt_Commons_General::dateFormat($params['instrumentInstalledOn'][$i]);
-                if ($instrumentInstalledOn == "" || $instrumentInstalledOn == "0000-00-00") {
-                    $instrumentInstalledOn = null;
-                }
-                $instrumentLastCalibratedOn = Pt_Commons_General::dateFormat($params['instrumentLastCalibratedOn'][$i]);
-                if ($instrumentLastCalibratedOn == "" || $instrumentLastCalibratedOn == "0000-00-00") {
-                    $instrumentLastCalibratedOn = null;
-                }
-                $cartridgeExpirationDate = Pt_Commons_General::dateFormat($params['expiryDate']);
-                if ($cartridgeExpirationDate == "" || $cartridgeExpirationDate == "0000-00-00") {
-                    $cartridgeExpirationDate = null;
-                }
+                $dateTested = Application_Service_Common::ParseDate($params['dateTested'][$i]);
+                $instrumentInstalledOn = Application_Service_Common::ParseDate($params['instrumentInstalledOn'][$i]);
+                $instrumentLastCalibratedOn = Application_Service_Common::ParseDate($params['instrumentLastCalibratedOn'][$i]);
+                $cartridgeExpirationDate = Application_Service_Common::ParseDate($params['expiryDate']);
                 if ($res == null || count($res) == 0) {
                     $db->insert('response_result_tb', array(
                         'shipment_map_id' => $params['smid'],

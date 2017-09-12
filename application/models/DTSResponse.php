@@ -14,10 +14,10 @@ class Application_Model_DTSResponse {
 		// Get all Shipment variables
 		$shipId = $data['shipmentId'];
 		$participantId = $data['participantId'];
-        $receiptDate = Pt_Commons_General::dateFormat($data['receipt_date']);
-        $lastDate = Pt_Commons_General::dateFormat($data['hdLastDate']);
-        $testDate = Pt_Commons_General::dateFormat($data['test_date']);
-        $rehydrationDate = Pt_Commons_General::dateFormat($data['reh_date']);
+        $receiptDate = Application_Service_Common::ParseDate($data['receipt_date']);
+        $lastDate = Application_Service_Common::ParseDate($data['hdLastDate']);
+        $testDate = Application_Service_Common::ParseDate($data['test_date']);
+        $rehydrationDate = Application_Service_Common::ParseDate($data['reh_date']);
 		$supervisorApproval =$data['supervisorApproval'];
 		$participantSupervisor = $data['participantSupervisor'];
 		$userCommnets = $data['userCommnets'];
@@ -39,17 +39,17 @@ class Application_Model_DTSResponse {
                 // Test 1
                 $testKit1 = $data['testkit1'];
                 $lotNo1 = $data['lot_no1'];
-                $expDate1 = Pt_Commons_General::dateFormat($data['exp_date1']);
+                $expDate1 = Application_Service_Common::ParseDate($data['exp_date1']);
                 $testResult1 = $data[$i . '_testresult1'];
                 // Test 2
                 $testKit2 = $data['testkit2'];
                 $lotNo2 = $data['lot_no2'];
-                $expDate2 = Pt_Commons_General::dateFormat($data['exp_date2']);
+                $expDate2 = Application_Service_Common::ParseDate($data['exp_date2']);
 	    		$testResult2 = $data[$i . '_testresult2'];
 				// Test 2
                 $testKit3 = $data['testkit3'];
                 $lotNo3 = $data['lot_no3'];
-                $expDate3 = Pt_Commons_General::dateFormat($data['exp_date3']);
+                $expDate3 = Application_Service_Common::ParseDate($data['exp_date3']);
                 $testResult3 = $data[$i . '_testresult3'];
                 $rptResult =  $data['testresultf_' . $i];
                 $stmtSample = $db->prepare("call RESPONSE_RESULT_DTS_UPDATE(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");

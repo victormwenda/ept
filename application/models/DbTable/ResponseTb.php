@@ -11,22 +11,10 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
         foreach ($sampleIds as $key => $sampleId) {
             $res = $this->fetchRow("shipment_map_id = " . $params['smid'] . " and sample_id = " . $sampleId);
 
-            $dateTested = Pt_Commons_General::dateFormat($params['dateTested'][$key]);
-            if ($dateTested == "" || $dateTested == "0000-00-00") {
-                $dateTested = null;
-            }
-            $instrumentInstalledOn = Pt_Commons_General::dateFormat($params['instrumentInstalledOn'][$key]);
-            if ($instrumentInstalledOn == "" || $instrumentInstalledOn == "0000-00-00") {
-                $instrumentInstalledOn = null;
-            }
-            $instrumentLastCalibratedOn = Pt_Commons_General::dateFormat($params['instrumentLastCalibratedOn'][$key]);
-            if ($instrumentLastCalibratedOn == "" || $instrumentLastCalibratedOn == "0000-00-00") {
-                $instrumentLastCalibratedOn = null;
-            }
-            $cartridgeExpirationDate = Pt_Commons_General::dateFormat($params['expiryDate']);
-            if ($cartridgeExpirationDate == "" || $cartridgeExpirationDate == "0000-00-00") {
-                $cartridgeExpirationDate = null;
-            }
+            $dateTested = Application_Service_Common::ParseDate($params['dateTested'][$key]);
+            $instrumentInstalledOn = Application_Service_Common::ParseDate($params['instrumentInstalledOn'][$key]);
+            $instrumentLastCalibratedOn = Application_Service_Common::ParseDate($params['instrumentLastCalibratedOn'][$key]);
+            $cartridgeExpirationDate = Application_Service_Common::ParseDate($params['expiryDate']);
             if ($res == null || count($res) == 0) {
                 $this->insert(array(
                     'shipment_map_id' => $params['smid'],
@@ -85,18 +73,9 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
         $dataManagerId = $authNameSpace->dm_id;
         $res = $this->fetchRow("shipment_map_id = " . $params['smid'] . " and sample_id = " . $sampleId);
 
-        $dateTested = Pt_Commons_General::dateFormat($params['dateTested']);
-        if ($dateTested == "" || $dateTested == "0000-00-00") {
-            $dateTested = null;
-        }
-        $instrumentInstalledOn = Pt_Commons_General::stringToDbDate($params['instrumentInstalledOn']);
-        if ($instrumentInstalledOn == "" || $instrumentInstalledOn == "0000-00-00") {
-            $instrumentInstalledOn = null;
-        }
-        $instrumentLastCalibratedOn = Pt_Commons_General::stringToDbDate($params['instrumentLastCalibratedOn']);
-        if ($instrumentLastCalibratedOn == "" || $instrumentLastCalibratedOn == "0000-00-00") {
-            $instrumentLastCalibratedOn = null;
-        }
+        $dateTested = Application_Service_Common::ParseDate($params['dateTested']);
+        $instrumentInstalledOn = Application_Service_Common::ParseDbDate($params['instrumentInstalledOn']);
+        $instrumentLastCalibratedOn = Application_Service_Common::ParseDbDate($params['instrumentLastCalibratedOn']);
         if ($res == null || count($res) == 0) {
             $responseResult = array(
                 'shipment_map_id' => $params['smid'],

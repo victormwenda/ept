@@ -138,7 +138,7 @@ class Application_Service_Evaluation {
             $shipmentResults = $shipmentDb->getPendingShipmentsByDistribution($aRow['distribution_id']);
             $row = array();
             $row['DT_RowId'] = "dist" . $aRow['distribution_id'];
-            $row[] = Pt_Commons_General::humanDateFormat($aRow['distribution_date']);
+            $row[] = Application_Service_Common::ParseDateHumanFormat($aRow['distribution_date']);
             $row[] = $aRow['distribution_code'];
             $row[] = $aRow['shipments'];
             $row[] = ucwords($aRow['status']);
@@ -205,14 +205,7 @@ class Application_Service_Evaluation {
             $maxScore = 0;
             foreach ($shipmentResult as $shipment) {
                 $createdOnUser = explode(" ", $shipment['created_on_user']);
-                if (trim($createdOnUser[0]) != "" && $createdOnUser[0] != null && trim($createdOnUser[0]) != "0000-00-00") {
-
-                    $createdOn = new Zend_Date($createdOnUser[0], Zend_Date::ISO_8601);
-                } else {
-                    $datearray = array('year' => 1970, 'month' => 1, 'day' => 01);
-                    $createdOn = new Zend_Date($datearray);
-                }
-
+                $createdOn = Application_Service_Common::ParseDateISO8601OrMin($createdOnUser[0]);
                 $lastDate = new Zend_Date($shipment['lastdate_response'], Zend_Date::ISO_8601);
                 if ($createdOn->isEarlier($lastDate)) {
 
@@ -687,11 +680,11 @@ class Application_Service_Evaluation {
             }
         } else {
             if ($params['scheme'] == 'eid') {
-                $attributes = array("sample_rehydration_date" => Pt_Commons_General::dateFormat($params['sampleRehydrationDate']),
+                $attributes = array("sample_rehydration_date" => Application_Service_Common::ParseDate($params['sampleRehydrationDate']),
                     "extraction_assay" => $params['extractionAssay'],
                     "detection_assay" => $params['detectionAssay'],
-                    "extraction_assay_expiry_date" => Pt_Commons_General::dateFormat($params['extractionAssayExpiryDate']),
-                    "detection_assay_expiry_date" => Pt_Commons_General::dateFormat($params['detectionAssayExpiryDate']),
+                    "extraction_assay_expiry_date" => Application_Service_Common::ParseDate($params['extractionAssayExpiryDate']),
+                    "detection_assay_expiry_date" => Application_Service_Common::ParseDate($params['detectionAssayExpiryDate']),
                     "extraction_assay_lot_no" => $params['extractionAssayLotNo'],
                     "detection_assay_lot_no" => $params['detectionAssayLotNo'],
                 );
@@ -705,8 +698,8 @@ class Application_Service_Evaluation {
 
                 $attributes = json_encode($attributes);
                 $mapData = array(
-                    "shipment_receipt_date" => Pt_Commons_General::dateFormat($params['receiptDate']),
-                    "shipment_test_date" => Pt_Commons_General::dateFormat($params['testDate']),
+                    "shipment_receipt_date" => Application_Service_Common::ParseDate($params['receiptDate']),
+                    "shipment_test_date" => Application_Service_Common::ParseDate($params['testDate']),
                     "attributes" => $attributes,
                     "supervisor_approval" => $params['supervisorApproval'],
                     "participant_supervisor" => $params['participantSupervisor'],
@@ -729,13 +722,13 @@ class Application_Service_Evaluation {
                     $db->update('response_result_eid', array('reported_result' => $params['reported'][$i], 'updated_by' => $admin, 'updated_on' => new Zend_Db_Expr('now()')), "shipment_map_id = " . $params['smid'] . " AND sample_id = " . $params['sampleId'][$i]);
                 }
             } else if ($params['scheme'] == 'dts') {
-                $attributes["sample_rehydration_date"] = Pt_Commons_General::dateFormat($params['rehydrationDate']);
+                $attributes["sample_rehydration_date"] = Application_Service_Common::ParseDate($params['rehydrationDate']);
                 $attributes["algorithm"] = $params['algorithm'];
                 $attributes = json_encode($attributes);
 
                 $mapdata = array(
-                    "shipment_receipt_date" => Pt_Commons_General::dateFormat($params['receivedOn']),
-                    "shipment_test_date" => Pt_Commons_General::dateFormat($params['testedOn']),
+                    "shipment_receipt_date" => Application_Service_Common::ParseDate($params['receivedOn']),
+                    "shipment_test_date" => Application_Service_Common::ParseDate($params['testedOn']),
                     "attributes" => $attributes,
                     "supervisor_approval" => $params['supervisorApproval'],
                     "participant_supervisor" => $params['participantSupervisor'],
@@ -756,15 +749,15 @@ class Application_Service_Evaluation {
                     $db->update('response_result_dts', array(
                         'test_kit_name_1' => $params['test_kit_name_1'],
                         'lot_no_1' => $params['lot_no_1'],
-                        'exp_date_1' => Pt_Commons_General::dateFormat($params['exp_date_1']),
+                        'exp_date_1' => Application_Service_Common::ParseDate($params['exp_date_1']),
                         'test_result_1' => $params['test_result_1'][$i],
                         'test_kit_name_2' => $params['test_kit_name_2'],
                         'lot_no_2' => $params['lot_no_2'],
-                        'exp_date_2' => Pt_Commons_General::dateFormat($params['exp_date_2']),
+                        'exp_date_2' => Application_Service_Common::ParseDate($params['exp_date_2']),
                         'test_result_2' => $params['test_result_2'][$i],
                         'test_kit_name_3' => $params['test_kit_name_3'],
                         'lot_no_3' => $params['lot_no_3'],
-                        'exp_date_3' => Pt_Commons_General::dateFormat($params['exp_date_3']),
+                        'exp_date_3' => Application_Service_Common::ParseDate($params['exp_date_3']),
                         'test_result_3' => $params['test_result_3'][$i],
                         'reported_result' => $params['reported_result'][$i],
                         'updated_by' => $admin,
@@ -772,10 +765,10 @@ class Application_Service_Evaluation {
                 }
             } else if ($params['scheme'] == 'vl') {
                 $attributes = array(
-                    "sample_rehydration_date" => Pt_Commons_General::dateFormat($params['sampleRehydrationDate']),
+                    "sample_rehydration_date" => Application_Service_Common::ParseDate($params['sampleRehydrationDate']),
                     "vl_assay" => $params['vlAssay'],
                     "assay_lot_number" => $params['assayLotNumber'],
-                    "assay_expiration_date" => Pt_Commons_General::dateFormat($params['assayExpirationDate']),
+                    "assay_expiration_date" => Application_Service_Common::ParseDate($params['assayExpirationDate']),
                     "specimen_volume" => $params['specimenVolume']
                 );
 
@@ -788,8 +781,8 @@ class Application_Service_Evaluation {
 
                 $attributes = json_encode($attributes);
                 $mapData = array(
-                    "shipment_receipt_date" => Pt_Commons_General::dateFormat($params['receiptDate']),
-                    "shipment_test_date" => Pt_Commons_General::dateFormat($params['testDate']),
+                    "shipment_receipt_date" => Application_Service_Common::ParseDate($params['receiptDate']),
+                    "shipment_test_date" => Application_Service_Common::ParseDate($params['testDate']),
                     "attributes" => $attributes,
                     "supervisor_approval" => $params['supervisorApproval'],
                     "participant_supervisor" => $params['participantSupervisor'],
@@ -820,22 +813,22 @@ class Application_Service_Evaluation {
                     $db->update('response_result_dbs', array(
                         'eia_1' => $params['eia_1'],
                         'lot_no_1' => $params['lot_no_1'],
-                        'exp_date_1' => Pt_Commons_General::dateFormat($params['exp_date_1']),
+                        'exp_date_1' => Application_Service_Common::ParseDate($params['exp_date_1']),
                         'od_1' => $params['od_1'][$i],
                         'cutoff_1' => $params['cutoff_1'][$i],
                         'eia_2' => $params['eia_2'],
                         'lot_no_2' => $params['lot_no_2'],
-                        'exp_date_2' => Pt_Commons_General::dateFormat($params['exp_date_2']),
+                        'exp_date_2' => Application_Service_Common::ParseDate($params['exp_date_2']),
                         'od_2' => $params['od_2'][$i],
                         'cutoff_2' => $params['cutoff_2'][$i],
                         'eia_3' => $params['eia_3'],
                         'lot_no_3' => $params['lot_no_3'],
-                        'exp_date_3' => Pt_Commons_General::dateFormat($params['exp_date_3']),
+                        'exp_date_3' => Application_Service_Common::ParseDate($params['exp_date_3']),
                         'od_3' => $params['od_3'][$i],
                         'cutoff_3' => $params['cutoff_3'][$i],
                         'wb' => $params['wb'],
                         'wb_lot' => $params['wb_lot'],
-                        'wb_exp_date' => Pt_Commons_General::dateFormat($params['wb_exp_date']),
+                        'wb_exp_date' => Application_Service_Common::ParseDate($params['wb_exp_date']),
                         'wb_160' => $params['wb_160'][$i],
                         'wb_120' => $params['wb_120'][$i],
                         'wb_66' => $params['wb_66'][$i],
@@ -895,7 +888,7 @@ class Application_Service_Evaluation {
 
                 $attributes = array_merge($attributes, array(
                     "mtb_rif_kit_lot_no" => $params['mtbRifKitLotNo'],
-                    "expiry_date" => Pt_Commons_General::dateFormat($params['expiryDate']),
+                    "expiry_date" => Application_Service_Common::ParseDate($params['expiryDate']),
                     "assay" => $params['assay'],
                     "count_tests_conducted_over_month" => $params['countTestsConductedOverMonth'],
                     "count_errors_encountered_over_month" => $params['countErrorsEncounteredOverMonth'],
@@ -904,8 +897,8 @@ class Application_Service_Evaluation {
 
                 $attributes = json_encode($attributes);
                 $mapData = array(
-                    "shipment_receipt_date" => Pt_Commons_General::dateFormat($params['receiptDate']),
-                    "shipment_test_report_date" => Pt_Commons_General::dateFormat($params['testReceiptDate']),
+                    "shipment_receipt_date" => Application_Service_Common::ParseDate($params['receiptDate']),
+                    "shipment_test_report_date" => Application_Service_Common::ParseDate($params['testReceiptDate']),
                     "attributes" => $attributes,
                     "supervisor_approval" => $params['supervisorApproval'],
                     "participant_supervisor" => $params['participantSupervisor'],
@@ -914,7 +907,7 @@ class Application_Service_Evaluation {
                     "updated_on_admin" => new Zend_Db_Expr('now()')
                 );
                 if (isset($params['testDate'])) {
-                    $mapData['shipment_test_date'] = Pt_Commons_General::dateFormat($params['testDate']);
+                    $mapData['shipment_test_date'] = Application_Service_Common::ParseDate($params['testDate']);
                 }
                 if (isset($params['modeOfReceipt'])) {
                     $mapData['mode_id'] = $params['modeOfReceipt'];
@@ -922,7 +915,7 @@ class Application_Service_Evaluation {
                 if (isset($authNameSpace->qc_access) && $authNameSpace->qc_access =='yes') {
                     $mapData['qc_done'] = $params['qcDone'];
                     if (isset($mapData['qc_done']) && trim($mapData['qc_done']) == "yes") {
-                        $mapData['qc_date'] = Pt_Commons_General::dateFormat($params['qcDate']);
+                        $mapData['qc_date'] = Application_Service_Common::ParseDate($params['qcDate']);
                         $mapData['qc_done_by'] = trim($params['qcDoneBy']);
                         $mapData['qc_created_on'] = new Zend_Db_Expr('now()');
                     } else {
@@ -946,30 +939,17 @@ class Application_Service_Evaluation {
                 $shipmentScore = 0;
                 $shipmentTestDate = null;
                 for ($i = 0; $i < $size; $i++) {
-                    $dateTested = Pt_Commons_General::dateFormat($params['dateTested'][$i]);
-                    if (isset($params['dateTested'][$i]) && $params['dateTested'][$i] != '0000-00-00' &&
-                        $params['dateTested'][$i] != '' &&
-                        (!isset($shipmentTestDate) || $dateTested > $shipmentTestDate)) {
+                    $dateTested = Application_Service_Common::ParseDate($params['dateTested'][$i]);
+                    if ($dateTested > $shipmentTestDate) {
                         $shipmentTestDate = $dateTested;
                     }
                     if (!isset($params['dateTested'][$i]) ||
                         $params['dateTested'][$i] == "") {
                         $dateTested = null;
                     }
-                    $instrumentInstalledOn = Pt_Commons_General::dateFormat($params['instrumentInstalledOn'][$i]);
-                    if (!isset($params['instrumentInstalledOn'][$i]) ||
-                        $params['instrumentInstalledOn'][$i] == "") {
-                        $instrumentInstalledOn = null;
-                    }
-                    $instrumentLastCalibratedOn = Pt_Commons_General::dateFormat($params['instrumentLastCalibratedOn'][$i]);
-                    if (!isset($params['instrumentLastCalibratedOn'][$i]) ||
-                        $params['instrumentLastCalibratedOn'][$i] == "") {
-                        $instrumentLastCalibratedOn = null;
-                    }
-                    $cartridgeExpirationDate = Pt_Commons_General::dateFormat($params['expiryDate']);
-                    if ($cartridgeExpirationDate == "" || $cartridgeExpirationDate == "0000-00-00") {
-                        $cartridgeExpirationDate = null;
-                    }
+                    $instrumentInstalledOn = Application_Service_Common::ParseDate($params['instrumentInstalledOn'][$i]);
+                    $instrumentLastCalibratedOn = Application_Service_Common::ParseDate($params['instrumentLastCalibratedOn'][$i]);
+                    $cartridgeExpirationDate = Application_Service_Common::ParseDate($params['expiryDate']);
 
                     $db = Zend_Db_Table_Abstract::getDefaultAdapter();
                     $sql = $db->select()->from(array('reference_result_tb'))
@@ -1022,12 +1002,12 @@ class Application_Service_Evaluation {
                 }
                 $mapData['shipment_score'] = $shipmentScore;
                 $mapData['documentation_score'] = $scoringService->calculateTbDocumentationScore(
-                    Pt_Commons_General::dateFormat($params['shipmentDate']),
-                    Pt_Commons_General::dateFormat($params['expiryDate']),
-                    Pt_Commons_General::dateFormat($params['receiptDate']),
+                    Application_Service_Common::ParseDate($params['shipmentDate']),
+                    Application_Service_Common::ParseDate($params['expiryDate']),
+                    Application_Service_Common::ParseDate($params['receiptDate']),
                     $params['supervisorApproval'],
                     $params['participantSupervisor'],
-                    Pt_Commons_General::dateFormat($params['responseDeadlineDate']));
+                    Application_Service_Common::ParseDate($params['responseDeadlineDate']));
                 $db->update('shipment_participant_map', $mapData, "map_id = " . $params['smid']);
             }
         }
@@ -2284,12 +2264,7 @@ class Application_Service_Evaluation {
 		}
 		foreach ($shipmentResult as $shipment) {
 			$createdOnUser = explode(" ", $shipment['shipment_test_report_date']);
-			if (trim($createdOnUser[0]) != "" && $createdOnUser[0] != null && trim($createdOnUser[0]) != "0000-00-00") {
-				$createdOn = new Zend_Date($createdOnUser[0], Zend_Date::ISO_8601);
-			} else {
-				$datearray = array('year' => 1970, 'month' => 1, 'day' => 01);
-				$createdOn = new Zend_Date($datearray);
-			}
+            $createdOn = Application_Service_Common::ParseDateISO8601OrMin($createdOnUser[0]);
 			$lastDate = new Zend_Date($shipment['lastdate_response'], Zend_Date::ISO_8601);
 			if ($createdOn->compare($lastDate,Zend_date::DATES) <= 0) {
 				$results = $schemeService->getVlSamples($shipmentId, $shipment['participant_id']);
@@ -2399,12 +2374,7 @@ class Application_Service_Evaluation {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         foreach ($shipmentResult as $shipment) {
             $createdOnUser = explode(" ", $shipment['shipment_test_report_date']);
-            if (trim($createdOnUser[0]) != "" && $createdOnUser[0] != null && trim($createdOnUser[0]) != "0000-00-00") {
-                $createdOn = new Zend_Date($createdOnUser[0], Zend_Date::ISO_8601);
-            } else {
-                $datearray = array('year' => 1970, 'month' => 1, 'day' => 01);
-                $createdOn = new Zend_Date($datearray);
-            }
+            $createdOn = Application_Service_Common::ParseDateISO8601OrMin($createdOnUser[0]);
             $lastDate = new Zend_Date($shipment['lastdate_response'], Zend_Date::ISO_8601);
             if ($createdOn->compare($lastDate,Zend_date::DATES) <= 0) {
                 $results = $schemeService->getTbSamples($shipmentId, $shipment['participant_id']);
@@ -2508,12 +2478,7 @@ class Application_Service_Evaluation {
 		$db = Zend_Db_Table_Abstract::getDefaultAdapter();
 		foreach ($shipmentResult as $shipment) {
 		    $createdOnUser = explode(" ", $shipment['shipment_test_report_date']);
-            if (trim($createdOnUser[0]) != "" && $createdOnUser[0] != null && trim($createdOnUser[0]) != "0000-00-00") {
-                $createdOn = new Zend_Date($createdOnUser[0], Zend_Date::ISO_8601);
-            } else {
-                $datearray = array('year' => 1970, 'month' => 1, 'day' => 01);
-                $createdOn = new Zend_Date($datearray);
-            }
+            $createdOn = Application_Service_Common::ParseDateISO8601OrMin($createdOnUser[0]);
             $lastDate = new Zend_Date($shipment['lastdate_response'], Zend_Date::ISO_8601);
             if ($createdOn->compare($lastDate) <= 0) {
                 $results = $schemeService->getEidSamples($shipmentId, $shipment['participant_id']);
@@ -2608,12 +2573,7 @@ class Application_Service_Evaluation {
 
 		foreach ($shipmentResult as $shipment) {
 			$createdOnUser = explode(" ", $shipment['created_on_user']);
-			if (trim($createdOnUser[0]) != "" && $createdOnUser[0] != null && trim($createdOnUser[0]) != "0000-00-00") {
-				$createdOn = new Zend_Date($createdOnUser[0], Zend_Date::ISO_8601);
-			} else {
-				$datearray = array('year' => 1970, 'month' => 1, 'day' => 01);
-				$createdOn = new Zend_Date($datearray);
-			}
+            $createdOn = Application_Service_Common::ParseDateISO8601OrMin($createdOnUser[0]);
 			$results = $schemeService->getDtsSamples($shipmentId, $shipment['participant_id']);
 			$totalScore = 0;
 			$maxScore = 0;
@@ -2641,20 +2601,9 @@ class Application_Service_Evaluation {
 			
 			// Getting test kit expiry dates as reported
 			$expDate1 = "";
-			if (isset($results[0]['exp_date_1']) && trim($results[0]['exp_date_1']) != "0000-00-00" &&
-                trim(strtotime($results[0]['exp_date_1'])) != "") {
-				$expDate1 = new Zend_Date($results[0]['exp_date_1'], Zend_Date::ISO_8601);
-			}
-			$expDate2 = "";
-			if (isset($results[0]['exp_date_2']) && trim($results[0]['exp_date_2']) != "0000-00-00" &&
-                trim(strtotime($results[0]['exp_date_2'])) != "") {
-				$expDate2 = new Zend_Date($results[0]['exp_date_2'], Zend_Date::ISO_8601);
-			}
-			$expDate3 = "";
-			if (isset($results[0]['exp_date_3']) && trim($results[0]['exp_date_3']) != "0000-00-00" &&
-                trim(strtotime($results[0]['exp_date_3'])) != "") {
-				$expDate3 = new Zend_Date($results[0]['exp_date_3'], Zend_Date::ISO_8601);
-			}
+            $expDate1 = Application_Service_Common::ParseDateISO8601($results[0]['exp_date_1']);
+            $expDate2 = Application_Service_Common::ParseDateISO8601($results[0]['exp_date_2']);
+            $expDate3 = Application_Service_Common::ParseDateISO8601($results[0]['exp_date_3']);
 
 			// Getting Test Kit Names
 			$testKitDb = new Application_Model_DbTable_TestkitnameDts();

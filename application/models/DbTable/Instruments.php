@@ -59,15 +59,8 @@ class Application_Model_DbTable_Instruments extends Zend_Db_Table_Abstract {
         }
         $instruments = $db->fetchAll($sql);
         $noOfRows = 0;
-        $instrumentInstalledOn = Pt_Commons_General::dateFormat($params['instrument_installed_on']);
-        if ($instrumentInstalledOn == "" || $instrumentInstalledOn == "0000-00-00") {
-            $instrumentInstalledOn = null;
-        }
-        $instrumentLastCalibratedOn = Pt_Commons_General::dateFormat($params['instrument_last_calibrated_on']);
-        if ($instrumentLastCalibratedOn == "" || $instrumentLastCalibratedOn == "0000-00-00") {
-            $instrumentLastCalibratedOn = null;
-        }
-
+        $instrumentInstalledOn = Application_Service_Common::ParseDate($params['instrument_installed_on']);
+        $instrumentLastCalibratedOn = Application_Service_Common::ParseDate($params['instrument_last_calibrated_on']);
         if (count($instruments) == 0) {
             if (isset($params['instrument_serial']) && $params['instrument_serial'] != "") {
                 $data = array(

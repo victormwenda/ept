@@ -27,9 +27,6 @@ class Application_Model_DbTable_HomeBanner extends Zend_Db_Table_Abstract
                     mkdir(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'home-banner');
                 }
                 if(move_uploaded_file($_FILES["home_banner"]["tmp_name"], UPLOAD_PATH . DIRECTORY_SEPARATOR."home-banner". DIRECTORY_SEPARATOR.$imageName)){
-                    //$resizeObj = new Pt_Commons_ImageResize(UPLOAD_PATH . DIRECTORY_SEPARATOR."home-banner". DIRECTORY_SEPARATOR . $imageName);
-                    //$resizeObj->resizeImage(1301, 531, 'auto');
-                    //$resizeObj->saveImage(UPLOAD_PATH . DIRECTORY_SEPARATOR."home-banner". DIRECTORY_SEPARATOR . $imageName, 100);
                     $this->update(array('image'=>$imageName),"banner_id = 1");
                 }
             }

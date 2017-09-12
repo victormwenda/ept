@@ -194,7 +194,7 @@ class Application_Model_DbTable_ShipmentParticipantMap extends Zend_Db_Table_Abs
         if(isset($params['mapId']) && trim($params['mapId'])!=""){
             $participantMapId = explode(',', $params['mapId']);
             $count = count($participantMapId);
-            $qcDate=Pt_Commons_General::dateFormat($params['qcDate']);
+            $qcDate=Application_Service_Common::ParseDate($params['qcDate']);
             for ($i = 0; $i < $count; $i++) {
                 if(trim($participantMapId[$i])!=""){
                     $data = array(

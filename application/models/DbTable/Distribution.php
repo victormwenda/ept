@@ -136,7 +136,7 @@ class Application_Model_DbTable_Distribution extends Zend_Db_Table_Abstract {
         foreach ($rResult as $aRow) {
             $row = array();
             $row[] = '<a class="btn btn-primary btn-xs" data-toggle="modal" data-target="#myModal" href="/admin/distributions/view-shipment/id/' . $aRow['distribution_id'].'"><span><i class="icon-search"></i></span></a>';
-            $row[] = Pt_Commons_General::humanDateFormat($aRow['distribution_date']);
+            $row[] = Application_Service_Common::ParseDateHumanFormat($aRow['distribution_date']);
             $row[] = '<a href="/admin/shipment/index/searchString/' . $aRow['distribution_code'].'">' . $aRow['distribution_code'] . '</a>';
             $row[] = $aRow['shipments'];
             $row[] = ucwords($aRow['status']);
@@ -164,7 +164,7 @@ class Application_Model_DbTable_Distribution extends Zend_Db_Table_Abstract {
 	    $authNameSpace = new Zend_Session_Namespace('administrators');
         $data = array(
             'distribution_code'=>$params['distributionCode'],
-            'distribution_date'=> Pt_Commons_General::dateFormat($params['distributionDate']),
+            'distribution_date'=> Application_Service_Common::ParseDate($params['distributionDate']),
             'status' => 'created',
 		    'created_by' => $authNameSpace->admin_id,
             'created_on' => new Zend_Db_Expr('now()')
@@ -189,7 +189,7 @@ class Application_Model_DbTable_Distribution extends Zend_Db_Table_Abstract {
 	    $authNameSpace = new Zend_Session_Namespace('administrators');
         $data = array(
             'distribution_code'=>$params['distributionCode'],
-            'distribution_date'=> Pt_Commons_General::dateFormat($params['distributionDate']),
+            'distribution_date'=> Application_Service_Common::ParseDate($params['distributionDate']),
 		    'updated_by' => $authNameSpace->admin_id,
             'updated_on' => new Zend_Db_Expr('now()')
         );
@@ -341,7 +341,7 @@ class Application_Model_DbTable_Distribution extends Zend_Db_Table_Abstract {
             
             $row = array();
     	    $row['DT_RowId']="dist".$aRow['distribution_id'];
-            $row[] = Pt_Commons_General::humanDateFormat($aRow['distribution_date']);
+            $row[] = Application_Service_Common::ParseDateHumanFormat($aRow['distribution_date']);
             $row[] = $aRow['distribution_code'];
             $row[] = $aRow['shipments'];
             $row[] = ucwords($aRow['status']);

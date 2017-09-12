@@ -52,7 +52,7 @@ class Api_ShipmentsController extends Zend_Controller_Action {
                 $params = Zend_Json::decode($this->getRequest()->getRawBody());
                 $params['shipment_id'] = $sID;
                 $params['participant_id'] = $pID;
-                $params['shipment_receipt_date'] = Pt_Commons_General::dateFormat($params['dateReceived']);
+                $params['shipment_receipt_date'] = Application_Service_Common::ParseDate($params['dateReceived']);
                 $shipmentService = new Application_Service_Shipments();
                 $shipmentService->receiveShipment($params);
                 $this->getResponse()->setBody('OK');

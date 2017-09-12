@@ -256,5 +256,49 @@ class Application_Service_Common {
         $db= new Application_Model_DbTable_HomeBanner();
         return $db->fetchHomeBanner();
     }
+
+    public static function ParseDate($dateValue) {
+        if (!isset($dateValue) || $dateValue == null || trim($dateValue) == "" || trim($dateValue) == "0000-00-00") {
+            return null;
+        }
+        return Pt_Commons_General::dateFormat($dateValue);
+    }
+
+    public static function ParseDbDate($dateValue) {
+        if (!isset($dateValue) || $dateValue == null || trim($dateValue) == "" || trim($dateValue) == "0000-00-00") {
+            return null;
+        }
+        return Pt_Commons_General::stringToDbDate($dateValue);
+    }
+
+    public static function ParseDateExcel($dateValue) {
+        if (!isset($dateValue) || $dateValue == null || trim($dateValue) == "" || trim($dateValue) == "0000-00-00") {
+            return "";
+        }
+        return Pt_Commons_General::excelDateFormat($dateValue);
+    }
+
+    public static function ParseDateISO8601($dateValue) {
+        if (!isset($dateValue) || $dateValue == null || trim($dateValue) == "" || trim($dateValue) == "0000-00-00") {
+            return null;
+        }
+        return new Zend_Date($dateValue, Zend_Date::ISO_8601);
+    }
+
+    public static function ParseDateHumanFormat($dateValue) {
+        if (!isset($dateValue) || $dateValue == null || trim($dateValue) == "" || trim($dateValue) == "0000-00-00") {
+            return "";
+        }
+        return Pt_Commons_General::humanDateFormat($dateValue);
+    }
+
+    public static function ParseDateISO8601OrMin($dateValue) {
+        $parsedDate = Application_Service_Common::ParseDateISO8601($dateValue);
+        if ($parsedDate == null) {
+            $dateArray = array('year' => 1970, 'month' => 1, 'day' => 01);
+            return new Zend_Date($dateArray);
+        }
+        return $parsedDate;
+    }
 }
 
