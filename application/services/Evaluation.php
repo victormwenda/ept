@@ -427,12 +427,14 @@ class Application_Service_Evaluation {
             $results = $schemeService->getTbSamples($shipmentId, $participantId);
         }
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
-        $sql = $db->select()->from(array('s' => 'shipment'))
-                ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id')
-                ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array('fullscore' => new Zend_Db_Expr("SUM(if(s.max_score = sp.shipment_score, 1, 0))")))
-                ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id')
-                ->where("sp.shipment_id = ?", $shipmentId)
-                ->where("substring(sp.evaluation_status,4,1) != '0'")->group('sp.map_id');
+        $sql = $db->select()
+            ->from(array('s' => 'shipment'))
+            ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id')
+            ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id',
+                array('fullscore' => new Zend_Db_Expr("SUM(if(s.max_score = sp.shipment_score, 1, 0))")))
+            ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id')
+            ->where("sp.shipment_id = ?", $shipmentId)
+            ->where("substring(sp.evaluation_status,4,1) != '0'")->group('sp.map_id');
         $shipmentOverall = $db->fetchAll($sql);
         $noOfParticipants = count($shipmentOverall);
         $numScoredFull = $shipmentOverall[0]['fullscore'];
@@ -588,350 +590,446 @@ class Application_Service_Evaluation {
         $authNameSpace = new Zend_Session_Namespace('administrators');
         $admin = $authNameSpace->primary_email;
         $size = count($params['sampleId']);
+        if ($params['unableToSubmit'] == "yes") {
+            if ($params['scheme'] == 'tb') {
+                $correctiveActions = array();
+                if (isset($params['correctiveActions']) && $params['correctiveActions'] != "") {
+                    if (is_array($params['correctiveActions'])) {
+                        foreach ($params['correctiveActions'] as $correctiveAction) {
+                            if($correctiveAction != null && trim($correctiveAction) != "") {
+                                array_push($correctiveActions, $correctiveAction);
+                            }
+                        }
+                    } else {
+                        array_push($correctiveActions, $params['correctiveActions']);
+                    }
+                }
 
-        if ($params['scheme'] == 'eid') {
-            $attributes = array("sample_rehydration_date" => Pt_Commons_General::dateFormat($params['sampleRehydrationDate']),
-                "extraction_assay" => $params['extractionAssay'],
-                "detection_assay" => $params['detectionAssay'],
-				"extraction_assay_expiry_date" => Pt_Commons_General::dateFormat($params['extractionAssayExpiryDate']),
-                "detection_assay_expiry_date" => Pt_Commons_General::dateFormat($params['detectionAssayExpiryDate']),
-                "extraction_assay_lot_no" => $params['extractionAssayLotNo'],
-                "detection_assay_lot_no" => $params['detectionAssayLotNo'],
-				);
-			
-			if(isset($params['otherAssay']) && $params['otherAssay'] != ""){
-				$attributes['other_assay'] = $params['otherAssay'];
-			}
-			if(isset($params['uploadedFilePath']) && $params['uploadedFilePath'] != ""){
-				$attributes['uploadedFilePath'] = $params['uploadedFilePath'];
-			}
+                $schemeService = new Application_Service_Schemes();
+                $shipmentData = $schemeService->getShipmentData($params['shipmentId'], $params['participantId']);
+                $attributes = json_decode($shipmentData['attributes'], true);
 
-            $attributes = json_encode($attributes);
-            $mapData = array(
-                "shipment_receipt_date" => Pt_Commons_General::dateFormat($params['receiptDate']),
-                "shipment_test_date" => Pt_Commons_General::dateFormat($params['testDate']),
-                "attributes" => $attributes,
-				"supervisor_approval" => $params['supervisorApproval'],
-				"participant_supervisor" => $params['participantSupervisor'],
-				"user_comment" => $params['userComments'],
-				"updated_by_admin" => $admin,
-			    "updated_on_admin" => new Zend_Db_Expr('now()')
-            );
-			
-			if(isset($params['customField1']) && trim($params['customField1']) != ""){
-				$mapData['custom_field_1'] = $params['customField1'];
-			}
-			
-			if(isset($params['customField2']) && trim($params['customField2']) != ""){
-				$mapData['custom_field_2'] = $params['customField2'];
-			}
+                if (isset($shipmentData['follows_up_from']) && $shipmentData['follows_up_from'] > 0) {
+                    $previousShipmentData = $schemeService->getShipmentData($shipmentData['follows_up_from'], $params['participantId']);
+                    $previousShipmentAttributes = json_decode($previousShipmentData['attributes'], true);
 
-            $db->update('shipment_participant_map', $mapData, "map_id = " . $params['smid']);
-			
-            for ($i = 0; $i < $size; $i++) {
-                $db->update('response_result_eid', array('reported_result' => $params['reported'][$i], 'updated_by' => $admin, 'updated_on' => new Zend_Db_Expr('now()')), "shipment_map_id = " . $params['smid'] . " AND sample_id = " . $params['sampleId'][$i]);
-            }
-        } else if ($params['scheme'] == 'dts') {
-			$attributes["sample_rehydration_date"] = Pt_Commons_General::dateFormat($params['rehydrationDate']);
-			$attributes["algorithm"] = $params['algorithm'];
-			$attributes = json_encode($attributes);
-	
-			$mapdata = array(
-				"shipment_receipt_date" => Pt_Commons_General::dateFormat($params['receivedOn']),
-				"shipment_test_date" => Pt_Commons_General::dateFormat($params['testedOn']),
-				"attributes" => $attributes,
-				"supervisor_approval" => $params['supervisorApproval'],
-				"participant_supervisor" => $params['participantSupervisor'],
-				"user_comment" => $params['userComments'],
-				"updated_by_admin" => $admin,
-				"updated_on_admin" => new Zend_Db_Expr('now()')
-			);
-			if(isset($params['customField1']) && trim($params['customField1']) != ""){
-				$mapdata['custom_field_1'] = $params['customField1'];
-			}
-			
-			if(isset($params['customField2']) && trim($params['customField2']) != ""){
-				$mapdata['custom_field_2'] = $params['customField2'];
-			}
-			$db->update('shipment_participant_map', $mapdata, "map_id = " . $params['smid']);			
-			
-            for ($i = 0; $i < $size; $i++) {
-                $db->update('response_result_dts', array(
-                    'test_kit_name_1' => $params['test_kit_name_1'],
-                    'lot_no_1' => $params['lot_no_1'],
-                    'exp_date_1' => Pt_Commons_General::dateFormat($params['exp_date_1']),
-                    'test_result_1' => $params['test_result_1'][$i],
-                    'test_kit_name_2' => $params['test_kit_name_2'],
-                    'lot_no_2' => $params['lot_no_2'],
-                    'exp_date_2' => Pt_Commons_General::dateFormat($params['exp_date_2']),
-                    'test_result_2' => $params['test_result_2'][$i],
-                    'test_kit_name_3' => $params['test_kit_name_3'],
-                    'lot_no_3' => $params['lot_no_3'],
-                    'exp_date_3' => Pt_Commons_General::dateFormat($params['exp_date_3']),
-                    'test_result_3' => $params['test_result_3'][$i],
-                    'reported_result' => $params['reported_result'][$i],
-                    'updated_by' => $admin,
-                    'updated_on' => new Zend_Db_Expr('now()')), "shipment_map_id = " . $params['smid'] . " AND sample_id = " . $params['sampleId'][$i]);
-            }
-        } else if ($params['scheme'] == 'vl') {
-            $attributes = array(
-				"sample_rehydration_date" => Pt_Commons_General::dateFormat($params['sampleRehydrationDate']),
-                "vl_assay" => $params['vlAssay'],
-                "assay_lot_number" => $params['assayLotNumber'],
-                "assay_expiration_date" => Pt_Commons_General::dateFormat($params['assayExpirationDate']),
-                "specimen_volume" => $params['specimenVolume']
-			);
-			
-			if (isset($params['otherAssay']) && $params['otherAssay'] != "") {
-				$attributes['other_assay'] = $params['otherAssay'];
-			}
-			if (isset($params['uploadedFilePath']) && $params['uploadedFilePath'] != "") {
-				$attributes['uploadedFilePath'] = $params['uploadedFilePath'];
-			}
-			
-            $attributes = json_encode($attributes);
-            $mapData = array(
-                "shipment_receipt_date" => Pt_Commons_General::dateFormat($params['receiptDate']),
-                "shipment_test_date" => Pt_Commons_General::dateFormat($params['testDate']),
-                "attributes" => $attributes,
-				"supervisor_approval" => $params['supervisorApproval'],
-				"participant_supervisor" => $params['participantSupervisor'],
-				"user_comment" => $params['userComments'],
-				"updated_by_admin" => $admin,
-			    "updated_on_admin" => new Zend_Db_Expr('now()')
-            );
-			
-			if (isset($params['customField1']) && trim($params['customField1']) != "") {
-				$mapData['custom_field_1'] = $params['customField1'];
-			}
-			
-			if (isset($params['customField2']) && trim($params['customField2']) != "") {
-				$mapData['custom_field_2'] = $params['customField2'];
-			}				
-
-            $db->update('shipment_participant_map', $mapData, "map_id = " . $params['smid']);	
-
-            for ($i = 0; $i < $size; $i++) {
-
-                $db->update('response_result_vl', array(
-                    'reported_viral_load' => $params['reported'][$i],
-                    'updated_by' => $admin,
-                    'updated_on' => new Zend_Db_Expr('now()')), "shipment_map_id = " . $params['smid'] . " AND sample_id = " . $params['sampleId'][$i]);
-            }
-        } else if ($params['scheme'] == 'dbs') {
-            for ($i = 0; $i < $size; $i++) {
-                $db->update('response_result_dbs', array(
-                    'eia_1' => $params['eia_1'],
-                    'lot_no_1' => $params['lot_no_1'],
-                    'exp_date_1' => Pt_Commons_General::dateFormat($params['exp_date_1']),
-                    'od_1' => $params['od_1'][$i],
-                    'cutoff_1' => $params['cutoff_1'][$i],
-                    'eia_2' => $params['eia_2'],
-                    'lot_no_2' => $params['lot_no_2'],
-                    'exp_date_2' => Pt_Commons_General::dateFormat($params['exp_date_2']),
-                    'od_2' => $params['od_2'][$i],
-                    'cutoff_2' => $params['cutoff_2'][$i],
-                    'eia_3' => $params['eia_3'],
-                    'lot_no_3' => $params['lot_no_3'],
-                    'exp_date_3' => Pt_Commons_General::dateFormat($params['exp_date_3']),
-                    'od_3' => $params['od_3'][$i],
-                    'cutoff_3' => $params['cutoff_3'][$i],
-                    'wb' => $params['wb'],
-                    'wb_lot' => $params['wb_lot'],
-                    'wb_exp_date' => Pt_Commons_General::dateFormat($params['wb_exp_date']),
-                    'wb_160' => $params['wb_160'][$i],
-                    'wb_120' => $params['wb_120'][$i],
-                    'wb_66' => $params['wb_66'][$i],
-                    'wb_55' => $params['wb_55'][$i],
-                    'wb_51' => $params['wb_51'][$i],
-                    'wb_41' => $params['wb_41'][$i],
-                    'wb_31' => $params['wb_31'][$i],
-                    'wb_24' => $params['wb_24'][$i],
-                    'wb_17' => $params['wb_17'][$i],
-                    'reported_result' => $params['reported_result'][$i],
-                    'updated_by' => $admin,
-                    'updated_on' => new Zend_Db_Expr('now()')), "shipment_map_id = " . $params['smid'] . " AND sample_id = " . $params['sampleId'][$i]);
-            }
-        } else if ($params['scheme'] == 'tb') {
-            $correctiveActions = array();
-            if (isset($params['correctiveActions']) && $params['correctiveActions'] != "") {
-                if (is_array($params['correctiveActions'])) {
-                    foreach ($params['correctiveActions'] as $correctiveAction) {
-                        if($correctiveAction != null && trim($correctiveAction) != "") {
-                            array_push($correctiveActions, $correctiveAction);
+                    $correctiveActionsFromPreviousRound = array();
+                    $correctiveActionsCheckedOff = array();
+                    if (isset($params['correctiveActionsFromPreviousRound'])) {
+                        if ($params['correctiveActionsFromPreviousRound'] == "") {
+                            array_push($correctiveActionsCheckedOff, $params['correctiveActionsFromPreviousRound']);
+                        } else {
+                            $correctiveActionsCheckedOff = $params['correctiveActionsFromPreviousRound'];
                         }
                     }
-                } else {
-                    array_push($correctiveActions, $params['correctiveActions']);
+
+                    if (isset($previousShipmentAttributes['corrective_actions'])) {
+                        foreach ($previousShipmentAttributes['corrective_actions'] as $correctiveActionFromPreviousRound) {
+                            array_push($correctiveActionsFromPreviousRound, array(
+                                'checked_off' => in_array($correctiveActionFromPreviousRound,
+                                    $correctiveActionsCheckedOff),
+                                'corrective_action' => $correctiveActionFromPreviousRound
+                            ));
+                        }
+                    }
+                    $attributes['corrective_actions_from_previous_round'] = $correctiveActionsFromPreviousRound;
                 }
+
+                $attributes = array_merge($attributes, array(
+                    "corrective_actions" => $correctiveActions));
+
+                $attributes = json_encode($attributes);
+                $mapData = array(
+                    "attributes" => $attributes,
+                    "user_comment" => $params['userComments'],
+                    "updated_by_admin" => $admin,
+                    "updated_on_admin" => new Zend_Db_Expr('now()')
+                );
+
+                if (isset($params['customField1']) && trim($params['customField1']) != "") {
+                    $mapData['custom_field_1'] = $params['customField1'];
+                }
+
+                if (isset($params['customField2']) && trim($params['customField2']) != "") {
+                    $mapData['custom_field_2'] = $params['customField2'];
+                }
+
+                $mapData['shipment_score'] = 0;
+                $mapData['documentation_score'] = 0;
+                $db->update('shipment_participant_map', $mapData, "map_id = " . $params['smid']);
+            } else {
+                $attributes = array();
+
+                if (isset($params['otherAssay']) && $params['otherAssay'] != "") {
+                    $attributes['other_assay'] = $params['otherAssay'];
+                }
+                if (isset($params['uploadedFilePath']) && $params['uploadedFilePath'] != "") {
+                    $attributes['uploadedFilePath'] = $params['uploadedFilePath'];
+                }
+
+                $attributes = json_encode($attributes);
+                $mapData = array(
+                    "attributes" => $attributes,
+                    "user_comment" => $params['userComments'],
+                    "updated_by_admin" => $admin,
+                    "updated_on_admin" => new Zend_Db_Expr('now()')
+                );
+
+                if (isset($params['customField1']) && trim($params['customField1']) != "") {
+                    $mapData['custom_field_1'] = $params['customField1'];
+                }
+
+                if (isset($params['customField2']) && trim($params['customField2']) != "") {
+                    $mapData['custom_field_2'] = $params['customField2'];
+                }
+
+                $db->update('shipment_participant_map', $mapData, "map_id = " . $params['smid']);
             }
+        } else {
+            if ($params['scheme'] == 'eid') {
+                $attributes = array("sample_rehydration_date" => Pt_Commons_General::dateFormat($params['sampleRehydrationDate']),
+                    "extraction_assay" => $params['extractionAssay'],
+                    "detection_assay" => $params['detectionAssay'],
+                    "extraction_assay_expiry_date" => Pt_Commons_General::dateFormat($params['extractionAssayExpiryDate']),
+                    "detection_assay_expiry_date" => Pt_Commons_General::dateFormat($params['detectionAssayExpiryDate']),
+                    "extraction_assay_lot_no" => $params['extractionAssayLotNo'],
+                    "detection_assay_lot_no" => $params['detectionAssayLotNo'],
+                );
 
-            $schemeService = new Application_Service_Schemes();
-            $shipmentData = $schemeService->getShipmentData($params['shipmentId'], $params['participantId']);
-            $attributes = json_decode($shipmentData['attributes'], true);
+                if(isset($params['otherAssay']) && $params['otherAssay'] != ""){
+                    $attributes['other_assay'] = $params['otherAssay'];
+                }
+                if(isset($params['uploadedFilePath']) && $params['uploadedFilePath'] != ""){
+                    $attributes['uploadedFilePath'] = $params['uploadedFilePath'];
+                }
 
-            if (isset($shipmentData['follows_up_from']) && $shipmentData['follows_up_from'] > 0) {
-                $previousShipmentData = $schemeService->getShipmentData($shipmentData['follows_up_from'], $params['participantId']);
-                $previousShipmentAttributes = json_decode($previousShipmentData['attributes'], true);
+                $attributes = json_encode($attributes);
+                $mapData = array(
+                    "shipment_receipt_date" => Pt_Commons_General::dateFormat($params['receiptDate']),
+                    "shipment_test_date" => Pt_Commons_General::dateFormat($params['testDate']),
+                    "attributes" => $attributes,
+                    "supervisor_approval" => $params['supervisorApproval'],
+                    "participant_supervisor" => $params['participantSupervisor'],
+                    "user_comment" => $params['userComments'],
+                    "updated_by_admin" => $admin,
+                    "updated_on_admin" => new Zend_Db_Expr('now()')
+                );
 
-                $correctiveActionsFromPreviousRound = array();
-                $correctiveActionsCheckedOff = array();
-                if (isset($params['correctiveActionsFromPreviousRound'])) {
-                    if ($params['correctiveActionsFromPreviousRound'] == "") {
-                        array_push($correctiveActionsCheckedOff, $params['correctiveActionsFromPreviousRound']);
+                if(isset($params['customField1']) && trim($params['customField1']) != ""){
+                    $mapData['custom_field_1'] = $params['customField1'];
+                }
+
+                if(isset($params['customField2']) && trim($params['customField2']) != ""){
+                    $mapData['custom_field_2'] = $params['customField2'];
+                }
+
+                $db->update('shipment_participant_map', $mapData, "map_id = " . $params['smid']);
+
+                for ($i = 0; $i < $size; $i++) {
+                    $db->update('response_result_eid', array('reported_result' => $params['reported'][$i], 'updated_by' => $admin, 'updated_on' => new Zend_Db_Expr('now()')), "shipment_map_id = " . $params['smid'] . " AND sample_id = " . $params['sampleId'][$i]);
+                }
+            } else if ($params['scheme'] == 'dts') {
+                $attributes["sample_rehydration_date"] = Pt_Commons_General::dateFormat($params['rehydrationDate']);
+                $attributes["algorithm"] = $params['algorithm'];
+                $attributes = json_encode($attributes);
+
+                $mapdata = array(
+                    "shipment_receipt_date" => Pt_Commons_General::dateFormat($params['receivedOn']),
+                    "shipment_test_date" => Pt_Commons_General::dateFormat($params['testedOn']),
+                    "attributes" => $attributes,
+                    "supervisor_approval" => $params['supervisorApproval'],
+                    "participant_supervisor" => $params['participantSupervisor'],
+                    "user_comment" => $params['userComments'],
+                    "updated_by_admin" => $admin,
+                    "updated_on_admin" => new Zend_Db_Expr('now()')
+                );
+                if(isset($params['customField1']) && trim($params['customField1']) != ""){
+                    $mapdata['custom_field_1'] = $params['customField1'];
+                }
+
+                if(isset($params['customField2']) && trim($params['customField2']) != ""){
+                    $mapdata['custom_field_2'] = $params['customField2'];
+                }
+                $db->update('shipment_participant_map', $mapdata, "map_id = " . $params['smid']);
+
+                for ($i = 0; $i < $size; $i++) {
+                    $db->update('response_result_dts', array(
+                        'test_kit_name_1' => $params['test_kit_name_1'],
+                        'lot_no_1' => $params['lot_no_1'],
+                        'exp_date_1' => Pt_Commons_General::dateFormat($params['exp_date_1']),
+                        'test_result_1' => $params['test_result_1'][$i],
+                        'test_kit_name_2' => $params['test_kit_name_2'],
+                        'lot_no_2' => $params['lot_no_2'],
+                        'exp_date_2' => Pt_Commons_General::dateFormat($params['exp_date_2']),
+                        'test_result_2' => $params['test_result_2'][$i],
+                        'test_kit_name_3' => $params['test_kit_name_3'],
+                        'lot_no_3' => $params['lot_no_3'],
+                        'exp_date_3' => Pt_Commons_General::dateFormat($params['exp_date_3']),
+                        'test_result_3' => $params['test_result_3'][$i],
+                        'reported_result' => $params['reported_result'][$i],
+                        'updated_by' => $admin,
+                        'updated_on' => new Zend_Db_Expr('now()')), "shipment_map_id = " . $params['smid'] . " AND sample_id = " . $params['sampleId'][$i]);
+                }
+            } else if ($params['scheme'] == 'vl') {
+                $attributes = array(
+                    "sample_rehydration_date" => Pt_Commons_General::dateFormat($params['sampleRehydrationDate']),
+                    "vl_assay" => $params['vlAssay'],
+                    "assay_lot_number" => $params['assayLotNumber'],
+                    "assay_expiration_date" => Pt_Commons_General::dateFormat($params['assayExpirationDate']),
+                    "specimen_volume" => $params['specimenVolume']
+                );
+
+                if (isset($params['otherAssay']) && $params['otherAssay'] != "") {
+                    $attributes['other_assay'] = $params['otherAssay'];
+                }
+                if (isset($params['uploadedFilePath']) && $params['uploadedFilePath'] != "") {
+                    $attributes['uploadedFilePath'] = $params['uploadedFilePath'];
+                }
+
+                $attributes = json_encode($attributes);
+                $mapData = array(
+                    "shipment_receipt_date" => Pt_Commons_General::dateFormat($params['receiptDate']),
+                    "shipment_test_date" => Pt_Commons_General::dateFormat($params['testDate']),
+                    "attributes" => $attributes,
+                    "supervisor_approval" => $params['supervisorApproval'],
+                    "participant_supervisor" => $params['participantSupervisor'],
+                    "user_comment" => $params['userComments'],
+                    "updated_by_admin" => $admin,
+                    "updated_on_admin" => new Zend_Db_Expr('now()')
+                );
+
+                if (isset($params['customField1']) && trim($params['customField1']) != "") {
+                    $mapData['custom_field_1'] = $params['customField1'];
+                }
+
+                if (isset($params['customField2']) && trim($params['customField2']) != "") {
+                    $mapData['custom_field_2'] = $params['customField2'];
+                }
+
+                $db->update('shipment_participant_map', $mapData, "map_id = " . $params['smid']);
+
+                for ($i = 0; $i < $size; $i++) {
+
+                    $db->update('response_result_vl', array(
+                        'reported_viral_load' => $params['reported'][$i],
+                        'updated_by' => $admin,
+                        'updated_on' => new Zend_Db_Expr('now()')), "shipment_map_id = " . $params['smid'] . " AND sample_id = " . $params['sampleId'][$i]);
+                }
+            } else if ($params['scheme'] == 'dbs') {
+                for ($i = 0; $i < $size; $i++) {
+                    $db->update('response_result_dbs', array(
+                        'eia_1' => $params['eia_1'],
+                        'lot_no_1' => $params['lot_no_1'],
+                        'exp_date_1' => Pt_Commons_General::dateFormat($params['exp_date_1']),
+                        'od_1' => $params['od_1'][$i],
+                        'cutoff_1' => $params['cutoff_1'][$i],
+                        'eia_2' => $params['eia_2'],
+                        'lot_no_2' => $params['lot_no_2'],
+                        'exp_date_2' => Pt_Commons_General::dateFormat($params['exp_date_2']),
+                        'od_2' => $params['od_2'][$i],
+                        'cutoff_2' => $params['cutoff_2'][$i],
+                        'eia_3' => $params['eia_3'],
+                        'lot_no_3' => $params['lot_no_3'],
+                        'exp_date_3' => Pt_Commons_General::dateFormat($params['exp_date_3']),
+                        'od_3' => $params['od_3'][$i],
+                        'cutoff_3' => $params['cutoff_3'][$i],
+                        'wb' => $params['wb'],
+                        'wb_lot' => $params['wb_lot'],
+                        'wb_exp_date' => Pt_Commons_General::dateFormat($params['wb_exp_date']),
+                        'wb_160' => $params['wb_160'][$i],
+                        'wb_120' => $params['wb_120'][$i],
+                        'wb_66' => $params['wb_66'][$i],
+                        'wb_55' => $params['wb_55'][$i],
+                        'wb_51' => $params['wb_51'][$i],
+                        'wb_41' => $params['wb_41'][$i],
+                        'wb_31' => $params['wb_31'][$i],
+                        'wb_24' => $params['wb_24'][$i],
+                        'wb_17' => $params['wb_17'][$i],
+                        'reported_result' => $params['reported_result'][$i],
+                        'updated_by' => $admin,
+                        'updated_on' => new Zend_Db_Expr('now()')), "shipment_map_id = " . $params['smid'] . " AND sample_id = " . $params['sampleId'][$i]);
+                }
+            } else if ($params['scheme'] == 'tb') {
+                $correctiveActions = array();
+                if (isset($params['correctiveActions']) && $params['correctiveActions'] != "") {
+                    if (is_array($params['correctiveActions'])) {
+                        foreach ($params['correctiveActions'] as $correctiveAction) {
+                            if($correctiveAction != null && trim($correctiveAction) != "") {
+                                array_push($correctiveActions, $correctiveAction);
+                            }
+                        }
                     } else {
-                        $correctiveActionsCheckedOff = $params['correctiveActionsFromPreviousRound'];
+                        array_push($correctiveActions, $params['correctiveActions']);
                     }
                 }
 
-                if (isset($previousShipmentAttributes['corrective_actions'])) {
-                    foreach ($previousShipmentAttributes['corrective_actions'] as $correctiveActionFromPreviousRound) {
-                        array_push($correctiveActionsFromPreviousRound, array(
-                            'checked_off' => in_array($correctiveActionFromPreviousRound,
-                                $correctiveActionsCheckedOff),
-                            'corrective_action' => $correctiveActionFromPreviousRound
-                        ));
+                $schemeService = new Application_Service_Schemes();
+                $shipmentData = $schemeService->getShipmentData($params['shipmentId'], $params['participantId']);
+                $attributes = json_decode($shipmentData['attributes'], true);
+
+                if (isset($shipmentData['follows_up_from']) && $shipmentData['follows_up_from'] > 0) {
+                    $previousShipmentData = $schemeService->getShipmentData($shipmentData['follows_up_from'], $params['participantId']);
+                    $previousShipmentAttributes = json_decode($previousShipmentData['attributes'], true);
+
+                    $correctiveActionsFromPreviousRound = array();
+                    $correctiveActionsCheckedOff = array();
+                    if (isset($params['correctiveActionsFromPreviousRound'])) {
+                        if ($params['correctiveActionsFromPreviousRound'] == "") {
+                            array_push($correctiveActionsCheckedOff, $params['correctiveActionsFromPreviousRound']);
+                        } else {
+                            $correctiveActionsCheckedOff = $params['correctiveActionsFromPreviousRound'];
+                        }
+                    }
+
+                    if (isset($previousShipmentAttributes['corrective_actions'])) {
+                        foreach ($previousShipmentAttributes['corrective_actions'] as $correctiveActionFromPreviousRound) {
+                            array_push($correctiveActionsFromPreviousRound, array(
+                                'checked_off' => in_array($correctiveActionFromPreviousRound,
+                                    $correctiveActionsCheckedOff),
+                                'corrective_action' => $correctiveActionFromPreviousRound
+                            ));
+                        }
+                    }
+                    $attributes['corrective_actions_from_previous_round'] = $correctiveActionsFromPreviousRound;
+                }
+
+                $attributes = array_merge($attributes, array(
+                    "mtb_rif_kit_lot_no" => $params['mtbRifKitLotNo'],
+                    "expiry_date" => Pt_Commons_General::dateFormat($params['expiryDate']),
+                    "assay" => $params['assay'],
+                    "count_tests_conducted_over_month" => $params['countTestsConductedOverMonth'],
+                    "count_errors_encountered_over_month" => $params['countErrorsEncounteredOverMonth'],
+                    "error_codes_encountered_over_month" => $params['errorCodesEncounteredOverMonth'],
+                    "corrective_actions" => $correctiveActions));
+
+                $attributes = json_encode($attributes);
+                $mapData = array(
+                    "shipment_receipt_date" => Pt_Commons_General::dateFormat($params['receiptDate']),
+                    "shipment_test_report_date" => Pt_Commons_General::dateFormat($params['testReceiptDate']),
+                    "attributes" => $attributes,
+                    "supervisor_approval" => $params['supervisorApproval'],
+                    "participant_supervisor" => $params['participantSupervisor'],
+                    "user_comment" => $params['userComments'],
+                    "updated_by_admin" => $admin,
+                    "updated_on_admin" => new Zend_Db_Expr('now()')
+                );
+                if (isset($params['testDate'])) {
+                    $mapData['shipment_test_date'] = Pt_Commons_General::dateFormat($params['testDate']);
+                }
+                if (isset($params['modeOfReceipt'])) {
+                    $mapData['mode_id'] = $params['modeOfReceipt'];
+                }
+                if (isset($authNameSpace->qc_access) && $authNameSpace->qc_access =='yes') {
+                    $mapData['qc_done'] = $params['qcDone'];
+                    if (isset($mapData['qc_done']) && trim($mapData['qc_done']) == "yes") {
+                        $mapData['qc_date'] = Pt_Commons_General::dateFormat($params['qcDate']);
+                        $mapData['qc_done_by'] = trim($params['qcDoneBy']);
+                        $mapData['qc_created_on'] = new Zend_Db_Expr('now()');
+                    } else {
+                        $mapData['qc_date'] = null;
+                        $mapData['qc_done_by'] = null;
+                        $mapData['qc_created_on'] = null;
                     }
                 }
-                $attributes['corrective_actions_from_previous_round'] = $correctiveActionsFromPreviousRound;
-            }
 
-            $attributes = array_merge($attributes, array(
-                "mtb_rif_kit_lot_no" => $params['mtbRifKitLotNo'],
-                "expiry_date" => Pt_Commons_General::dateFormat($params['expiryDate']),
-                "assay" => $params['assay'],
-                "count_tests_conducted_over_month" => $params['countTestsConductedOverMonth'],
-                "count_errors_encountered_over_month" => $params['countErrorsEncounteredOverMonth'],
-                "error_codes_encountered_over_month" => $params['errorCodesEncounteredOverMonth'],
-                "corrective_actions" => $correctiveActions));
-
-            $attributes = json_encode($attributes);
-            $mapData = array(
-                "shipment_receipt_date" => Pt_Commons_General::dateFormat($params['receiptDate']),
-                "shipment_test_report_date" => Pt_Commons_General::dateFormat($params['testReceiptDate']),
-                "attributes" => $attributes,
-                "supervisor_approval" => $params['supervisorApproval'],
-                "participant_supervisor" => $params['participantSupervisor'],
-                "user_comment" => $params['userComments'],
-                "updated_by_admin" => $admin,
-                "updated_on_admin" => new Zend_Db_Expr('now()')
-            );
-            if (isset($params['testDate'])) {
-                $mapData['shipment_test_date'] = Pt_Commons_General::dateFormat($params['testDate']);
-            }
-            if (isset($params['modeOfReceipt'])) {
-                $mapData['mode_id'] = $params['modeOfReceipt'];
-            }
-            if (isset($authNameSpace->qc_access) && $authNameSpace->qc_access =='yes') {
-                $mapData['qc_done'] = $params['qcDone'];
-                if (isset($mapData['qc_done']) && trim($mapData['qc_done']) == "yes") {
-                    $mapData['qc_date'] = Pt_Commons_General::dateFormat($params['qcDate']);
-                    $mapData['qc_done_by'] = trim($params['qcDoneBy']);
-                    $mapData['qc_created_on'] = new Zend_Db_Expr('now()');
-                } else {
-                    $mapData['qc_date'] = null;
-                    $mapData['qc_done_by'] = null;
-                    $mapData['qc_created_on'] = null;
-                }
-            }
-
-            if (isset($params['customField1']) && trim($params['customField1']) != "") {
-                $mapData['custom_field_1'] = $params['customField1'];
-            }
-
-            if (isset($params['customField2']) && trim($params['customField2']) != "") {
-                $mapData['custom_field_2'] = $params['customField2'];
-            }
-
-            $instrumentsDb = new Application_Model_DbTable_Instruments();
-
-            $scoringService = new Application_Service_EvaluationScoring();
-            $shipmentScore = 0;
-            $shipmentTestDate = null;
-            for ($i = 0; $i < $size; $i++) {
-                $dateTested = Pt_Commons_General::dateFormat($params['dateTested'][$i]);
-                if (isset($params['dateTested'][$i]) && $params['dateTested'][$i] != '0000-00-00' &&
-                    $params['dateTested'][$i] != '' &&
-                    (!isset($shipmentTestDate) || $dateTested > $shipmentTestDate)) {
-                    $shipmentTestDate = $dateTested;
-                }
-                if (!isset($params['dateTested'][$i]) ||
-                    $params['dateTested'][$i] == "") {
-                    $dateTested = null;
-                }
-                $instrumentInstalledOn = Pt_Commons_General::dateFormat($params['instrumentInstalledOn'][$i]);
-                if (!isset($params['instrumentInstalledOn'][$i]) ||
-                    $params['instrumentInstalledOn'][$i] == "") {
-                    $instrumentInstalledOn = null;
-                }
-                $instrumentLastCalibratedOn = Pt_Commons_General::dateFormat($params['instrumentLastCalibratedOn'][$i]);
-                if (!isset($params['instrumentLastCalibratedOn'][$i]) ||
-                    $params['instrumentLastCalibratedOn'][$i] == "") {
-                    $instrumentLastCalibratedOn = null;
-                }
-                $cartridgeExpirationDate = Pt_Commons_General::dateFormat($params['expiryDate']);
-                if ($cartridgeExpirationDate == "" || $cartridgeExpirationDate == "0000-00-00") {
-                    $cartridgeExpirationDate = null;
+                if (isset($params['customField1']) && trim($params['customField1']) != "") {
+                    $mapData['custom_field_1'] = $params['customField1'];
                 }
 
-                $db = Zend_Db_Table_Abstract::getDefaultAdapter();
-                $sql = $db->select()->from(array('reference_result_tb'))
-                    ->where('shipment_id = ? ', $params['shipmentId'])
-                    ->where('sample_id = ?', $params['sampleId'][$i]);
-                $referenceSample = $db->fetchRow($sql);
-                $calculatedScorePassStatus = $scoringService->calculateTbSamplePassStatus($referenceSample['mtb_detected'],
-                    $params['mtbDetected'][$i], $referenceSample['rif_resistance'], $params['rifResistance'][$i],
-                    $params['probeD'][$i], $params['probeC'][$i], $params['probeE'][$i], $params['probeB'][$i],
-                    $params['spc'][$i], $params['probeA'][$i], $referenceSample['is_excluded'], $referenceSample['is_exempt']);
-                $shipmentScore += $scoringService->calculateTbSampleScore(
-                    $calculatedScorePassStatus,
-                    $referenceSample['sample_score']);
+                if (isset($params['customField2']) && trim($params['customField2']) != "") {
+                    $mapData['custom_field_2'] = $params['customField2'];
+                }
 
-                $db->update('response_result_tb', array(
-                    'date_tested' => $dateTested,
-                    'mtb_detected' => $params['mtbDetected'][$i],
-                    'rif_resistance' => $params['rifResistance'][$i],
-                    'probe_d' => $params['probeD'][$i],
-                    'probe_c' => $params['probeC'][$i],
-                    'probe_e' => $params['probeE'][$i],
-                    'probe_b' => $params['probeB'][$i],
-                    'spc' => $params['spc'][$i],
-                    'probe_a' => $params['probeA'][$i],
-                    'calculated_score' => $calculatedScorePassStatus,
-                    'instrument_serial' => $params['instrumentSerial'][$i],
-                    'instrument_installed_on' => $instrumentInstalledOn,
-                    'instrument_last_calibrated_on' => $instrumentLastCalibratedOn,
-                    'module_name' => $params['moduleName'][$i],
-                    'instrument_user' => $params['instrumentUser'][$i],
-                    'cartridge_expiration_date' => $cartridgeExpirationDate,
-                    'reagent_lot_id' => $params['mtbRifKitLotNo'],
-                    'error_code' => $params['errorCode'][$i],
-                    'updated_by' => $admin,
-                    'updated_on' => new Zend_Db_Expr('now()')
-                ), "shipment_map_id = " . $params['smid'] . " and sample_id = " . $params['sampleId'][$i]);
+                $instrumentsDb = new Application_Model_DbTable_Instruments();
 
-                if (isset($params['instrumentSerial'][$i]) &&
-                    $params['instrumentSerial'][$i] != "") {
-                    $instrumentDetails = array(
+                $scoringService = new Application_Service_EvaluationScoring();
+                $shipmentScore = 0;
+                $shipmentTestDate = null;
+                for ($i = 0; $i < $size; $i++) {
+                    $dateTested = Pt_Commons_General::dateFormat($params['dateTested'][$i]);
+                    if (isset($params['dateTested'][$i]) && $params['dateTested'][$i] != '0000-00-00' &&
+                        $params['dateTested'][$i] != '' &&
+                        (!isset($shipmentTestDate) || $dateTested > $shipmentTestDate)) {
+                        $shipmentTestDate = $dateTested;
+                    }
+                    if (!isset($params['dateTested'][$i]) ||
+                        $params['dateTested'][$i] == "") {
+                        $dateTested = null;
+                    }
+                    $instrumentInstalledOn = Pt_Commons_General::dateFormat($params['instrumentInstalledOn'][$i]);
+                    if (!isset($params['instrumentInstalledOn'][$i]) ||
+                        $params['instrumentInstalledOn'][$i] == "") {
+                        $instrumentInstalledOn = null;
+                    }
+                    $instrumentLastCalibratedOn = Pt_Commons_General::dateFormat($params['instrumentLastCalibratedOn'][$i]);
+                    if (!isset($params['instrumentLastCalibratedOn'][$i]) ||
+                        $params['instrumentLastCalibratedOn'][$i] == "") {
+                        $instrumentLastCalibratedOn = null;
+                    }
+                    $cartridgeExpirationDate = Pt_Commons_General::dateFormat($params['expiryDate']);
+                    if ($cartridgeExpirationDate == "" || $cartridgeExpirationDate == "0000-00-00") {
+                        $cartridgeExpirationDate = null;
+                    }
+
+                    $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+                    $sql = $db->select()->from(array('reference_result_tb'))
+                        ->where('shipment_id = ? ', $params['shipmentId'])
+                        ->where('sample_id = ?', $params['sampleId'][$i]);
+                    $referenceSample = $db->fetchRow($sql);
+                    $calculatedScorePassStatus = $scoringService->calculateTbSamplePassStatus($referenceSample['mtb_detected'],
+                        $params['mtbDetected'][$i], $referenceSample['rif_resistance'], $params['rifResistance'][$i],
+                        $params['probeD'][$i], $params['probeC'][$i], $params['probeE'][$i], $params['probeB'][$i],
+                        $params['spc'][$i], $params['probeA'][$i], $referenceSample['is_excluded'], $referenceSample['is_exempt']);
+                    $shipmentScore += $scoringService->calculateTbSampleScore(
+                        $calculatedScorePassStatus,
+                        $referenceSample['sample_score']);
+
+                    $db->update('response_result_tb', array(
+                        'date_tested' => $dateTested,
+                        'mtb_detected' => $params['mtbDetected'][$i],
+                        'rif_resistance' => $params['rifResistance'][$i],
+                        'probe_d' => $params['probeD'][$i],
+                        'probe_c' => $params['probeC'][$i],
+                        'probe_e' => $params['probeE'][$i],
+                        'probe_b' => $params['probeB'][$i],
+                        'spc' => $params['spc'][$i],
+                        'probe_a' => $params['probeA'][$i],
+                        'calculated_score' => $calculatedScorePassStatus,
                         'instrument_serial' => $params['instrumentSerial'][$i],
-                        'instrument_installed_on' => $params['instrumentInstalledOn'][$i],
-                        'instrument_last_calibrated_on' => $params['instrumentLastCalibratedOn'][$i]
-                    );
-                    $instrumentsDb->upsertInstrument($params['participantId'], $instrumentDetails);
+                        'instrument_installed_on' => $instrumentInstalledOn,
+                        'instrument_last_calibrated_on' => $instrumentLastCalibratedOn,
+                        'module_name' => $params['moduleName'][$i],
+                        'instrument_user' => $params['instrumentUser'][$i],
+                        'cartridge_expiration_date' => $cartridgeExpirationDate,
+                        'reagent_lot_id' => $params['mtbRifKitLotNo'],
+                        'error_code' => $params['errorCode'][$i],
+                        'updated_by' => $admin,
+                        'updated_on' => new Zend_Db_Expr('now()')
+                    ), "shipment_map_id = " . $params['smid'] . " and sample_id = " . $params['sampleId'][$i]);
+
+                    if (isset($params['instrumentSerial'][$i]) &&
+                        $params['instrumentSerial'][$i] != "") {
+                        $instrumentDetails = array(
+                            'instrument_serial' => $params['instrumentSerial'][$i],
+                            'instrument_installed_on' => $params['instrumentInstalledOn'][$i],
+                            'instrument_last_calibrated_on' => $params['instrumentLastCalibratedOn'][$i]
+                        );
+                        $instrumentsDb->upsertInstrument($params['participantId'], $instrumentDetails);
+                    }
                 }
+                if (isset($shipmentTestDate)) {
+                    $mapData['shipment_test_date'] = $shipmentTestDate;
+                }
+                $mapData['shipment_score'] = $shipmentScore;
+                $mapData['documentation_score'] = $scoringService->calculateTbDocumentationScore(
+                    Pt_Commons_General::dateFormat($params['shipmentDate']),
+                    Pt_Commons_General::dateFormat($params['expiryDate']),
+                    Pt_Commons_General::dateFormat($params['receiptDate']),
+                    $params['supervisorApproval'],
+                    $params['participantSupervisor'],
+                    Pt_Commons_General::dateFormat($params['responseDeadlineDate']));
+                $db->update('shipment_participant_map', $mapData, "map_id = " . $params['smid']);
             }
-            if (isset($shipmentTestDate)) {
-                $mapData['shipment_test_date'] = $shipmentTestDate;
-            }
-            $mapData['shipment_score'] = $shipmentScore;
-            $mapData['documentation_score'] = $scoringService->calculateTbDocumentationScore(
-                Pt_Commons_General::dateFormat($params['shipmentDate']),
-                Pt_Commons_General::dateFormat($params['expiryDate']),
-                Pt_Commons_General::dateFormat($params['receiptDate']),
-                $params['supervisorApproval'],
-                $params['participantSupervisor'],
-                Pt_Commons_General::dateFormat($params['responseDeadlineDate']));
-            $db->update('shipment_participant_map', $mapData, "map_id = " . $params['smid']);
         }
 
         $params['isFollowUp'] = (isset($params['isFollowUp']) && $params['isFollowUp'] != "" ) ?

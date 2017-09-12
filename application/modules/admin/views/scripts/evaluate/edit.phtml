@@ -33,6 +33,7 @@ if ($this->scheme == 'tb' && isset($attributes['corrective_actions'])) {
 	<input type="hidden" name="smid" id="smid" value="<?php echo $this->evaluateData['shipment']['map_id']; ?>" />
 	<input type="hidden" name="scheme" id="scheme" value="<?php echo $this->scheme; ?>" />   
 	<input type="hidden" name="whereToGo" id="whereToGo" value="" />
+    <input type="hidden" name="unableToSubmit" id="unableToSubmit" value="<?php echo $this->evaluateData['shipment']['is_pt_test_not_performed']; ?>" />
 <?php
 if ($this->scheme == 'eid') {
 	include('edit-eid-evaluation.phtml');
@@ -275,29 +276,70 @@ $dtFormat=  $vHelper->getDateFormat();
         }
       },
       rules: {
-        receiptDate: "required",
-        expiryDate: "required",
-        testReceiptDate: "required",
-        mtbRifKitLotNo: "required",
-        assay: "required",
+        receiptDate: {
+          required: {
+            depends: function () {
+              return $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
+            }
+          }
+        },
+        expiryDate: {
+          required: {
+            depends: function () {
+              return $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
+            }
+          }
+        },
+        testReceiptDate: {
+          required: {
+            depends: function () {
+              return $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
+            }
+          }
+        },
+        mtbRifKitLotNo: {
+          required: {
+            depends: function () {
+              return $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
+            }
+          }
+        },
+        assay: {
+          required: {
+            depends: function () {
+              return $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
+            }
+          }
+        },
         qcDate: {
           required: {
             depends: function () {
-              return $("#qcDoneYes").is(":checked");
+              return $("#qcDoneYes").is(":checked") &&
+                $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
             }
           }
         },
         qcDoneBy: {
           required: {
             depends: function () {
-              return $("#qcDoneYes").is(":checked");
+              return $("#qcDoneYes").is(":checked") &&
+                $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
             }
           }
         },
         participantSupervisor: {
           required: {
             depends: function () {
-              return $('#supervisorApproval').val() === 'yes';
+              return $('#supervisorApproval').val() === 'yes' &&
+                $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
             }
           }
         },
@@ -307,82 +349,127 @@ $dtFormat=  $vHelper->getDateFormat();
         foreach ($this->evaluateData['results'] as $result) {
             $count++; ?>
         'dateTested[<?php echo $index; ?>]': {
-          required: true,
+          required: {
+            depends: function () {
+              return $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
+            }
+          },
           dateLargerThan: {
-            param: '#receiptDate'
+            param: '#receiptDate',
+            depends: function () {
+              return $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
+            }
           }
         },
-        'mtbDetected[<?php echo $index; ?>]': "required",
+        'mtbDetected[<?php echo $index; ?>]': {
+          required: {
+            depends: function () {
+              return $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
+            }
+          }
+        },
         'rifResistance[<?php echo $index; ?>]': {
-          required: true,
+          required: {
+            depends: function () {
+              return $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
+            }
+          },
           validRifForMtbDetected: {
             param: '#mtbDetected<?php echo $count; ?>',
             depends: function () {
-              return $("#mtbDetected<?php echo $count; ?>").val() !== '';
+              return $("#mtbDetected<?php echo $count; ?>").val() !== '' &&
+                $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
             }
           },
           validRifForNoMtb: {
             param: '#mtbDetected<?php echo $count; ?>',
             depends: function () {
-              return $("#mtbDetected<?php echo $count; ?>").val() !== '';
+              return $("#mtbDetected<?php echo $count; ?>").val() !== '' &&
+                $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
             }
           }
         },
         'errorCode[<?php echo $index; ?>]': {
           required: {
             depends: function () {
-              return $("#mtbDetected<?php echo $count; ?>").val() === 'error';
+              return $("#mtbDetected<?php echo $count; ?>").val() === 'error' &&
+                $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
             }
           }
         },
         'probeD[<?php echo $index; ?>]': {
           required: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
             }
           },
           number: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
             }
           },
           ctEndpointValue: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
             }
           }
         },
         'probeC[<?php echo $index; ?>]': {
           required: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
             }
           },
           number: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
             }
           },
           ctEndpointValue: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
             }
           }
         },
         'probeE[<?php echo $index; ?>]': {
           required: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
             }
           },
           number: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
             }
           },
           ctEndpointValue: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
             }
           }
         },
@@ -394,46 +481,62 @@ $dtFormat=  $vHelper->getDateFormat();
           },
           number: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
             }
           },
           ctEndpointValue: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
             }
           }
         },
         'spc[<?php echo $index; ?>]': {
           required: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
             }
           },
           number: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
             }
           },
           ctEndpointValue: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
             }
           }
         },
         'probeA[<?php echo $index; ?>]': {
           required: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
             }
           },
           number: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
             }
           },
           ctEndpointValue: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                $("#isExcluded").val() != "yes" &&
+                $("#unableToSubmit").val() != "yes";
             }
           }
         },

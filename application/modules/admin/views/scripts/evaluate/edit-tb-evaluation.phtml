@@ -94,6 +94,25 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
                 <?php echo $this->dateFormat($this->evaluateData['shipment']['lastdate_response']); ?>
             </td>
 		</tr>
+<?php
+    if ($this->evaluateData['shipment']['is_pt_test_not_performed'] == "yes") { ?>
+        <tr>
+            <td colspan="2">
+                <strong>
+                    Participant was unable to test the performance evaluation panel.
+                </strong>
+            </td>
+            <td colspan="2">
+                <strong>
+                    Reason:
+                </strong>
+<?php echo (isset($this->evaluateData['shipment']['pt_test_not_performed_comments']) && trim($this->evaluateData['shipment']['pt_test_not_performed_comments']) != "") ?
+        $this->evaluateData['shipment']['pt_test_not_performed_comments'] :
+        $this->evaluateData['shipment']['NotTestedReason']; ?>
+            </td>
+        </tr>
+<?php
+    } else { ?>
         <tr>
             <th>
                 <label class="fieldLabel">
@@ -570,7 +589,8 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
 			<?php
             $index++;
 			$counter++;
-		} ?>
+		}
+    }?>
 </table>
 <script>
   $(function() {
