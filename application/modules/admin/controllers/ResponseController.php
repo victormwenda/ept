@@ -76,6 +76,7 @@ class Admin_ResponseController extends Zend_Controller_Action
                 $this->view->haveCustom = $globalConfigDb->getValue('custom_field_needed');
                 $commonService = new Application_Service_Common();
                 $this->view->globalQcAccess = $commonService->getConfig('qc_access');
+                $this->view->allNotTestedReason = $schemeService->getNotTestedReasons($scheme);
             } else {
                 $this->_redirect("/admin/response/");
             }

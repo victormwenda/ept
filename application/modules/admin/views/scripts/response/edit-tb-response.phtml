@@ -17,11 +17,60 @@ $attributes = json_decode($this->responseData['shipment']['attributes'], true);
 $dateFormatHelper = $this->getHelper('DateFormat');
 $dtFormat = $dateFormatHelper->getDateFormat();
 $testReceiptDate = date('d-M-Y');
-if (isset($this->shipment["shipment_test_report_date"]) &&
-    trim($this->shipment["shipment_test_report_date"]) != "") {
+if (isset($this->responseData['shipment']["shipment_test_report_date"]) &&
+    trim($this->responseData['shipment']["shipment_test_report_date"]) != "") {
     $expTestReceiptDate = explode(" ", $this->responseData['shipment']["shipment_test_report_date"]);
     $testReceiptDate = $this->dateFormat($expTestReceiptDate[0]);
 } ?>
+<hr />
+<table class="table table-bordered table-striped" style="width:100%;margin:0 auto 10px auto;">
+    <tr>
+        <td colspan="2">
+            <h4 class="text-info">
+                Was the participant able to test the performance evaluation panel?
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <input type="radio" id="ableToEnterResultsYes" name="ableToEnterResults" value="yes"
+                <?php echo ($this->responseData['shipment']['is_pt_test_not_performed'] == "no" || $this->responseData['shipment']['is_pt_test_not_performed'] == "" || $this->responseData['shipment']['is_pt_test_not_performed'] == null) ? " checked='checked' " : ""; ?> />
+                <label for="ableToEnterResultsYes">Yes</label>&nbsp;&nbsp;
+                <input type="radio" id="ableToEnterResultsNo" name="ableToEnterResults" value="no"
+                <?php echo ($this->responseData['shipment']['is_pt_test_not_performed'] == "yes") ? " checked='checked' " : ""; ?> />
+                    <label for="ableToEnterResultsNo">No</label>
+            </h4>
+        </td>
+    </tr>
+    <tr id="ableToEnterResultsReasonsRow" style="display: <?php echo ($this->responseData['shipment']['is_pt_test_not_performed'] == "no" || $this->responseData['shipment']['is_pt_test_not_performed'] == '' || $this->responseData['shipment']['is_pt_test_not_performed'] == null) ? "none" : "table-row"; ?>;">
+        <td style="width: 30%;">
+            <label for="notTestedReason" class="fieldLabel">Reason for not testing the panel <span class="mandatory">*</span>:</label>
+        </td>
+        <td>
+            <select id="notTestedReason" name="notTestedReason" class="form-control" title="Please select reason" style="width:60%;">
+                <option value="">--Select--</option>
+<?php
+    foreach($this->allNotTestedReason as $reason) { ?>
+                <option value="<?php echo $reason['not_tested_reason_id']; ?>"
+                    <?php echo($this->responseData['shipment']['not_tested_reason'] == $reason['not_tested_reason_id']) ? 'selected="selected"':''; ?>>
+                    <?php echo ucwords($reason['not_tested_reason']); ?>
+                </option>
+<?php
+    } ?>
+                <option value="other"
+                    <?php echo (isset($this->responseData['shipment']['pt_test_not_performed_comments']) && trim($this->responseData['shipment']['pt_test_not_performed_comments']) != "") ? 'selected="selected"' : ''; ?>>
+                    Other
+                </option>
+            </select>
+        </td>
+    </tr>
+    <tr id="ableToEnterResultsOtherReasonRow" style="display: <?php echo (isset($this->responseData['shipment']['pt_test_not_performed_comments']) && trim($this->responseData['shipment']['pt_test_not_performed_comments']) != '') ? 'table-row' : 'none'; ?>;">
+        <td>
+            <label for="notTestedOtherReason" class="fieldLabel">Please specify <span class="mandatory">*</span>:</label>
+        </td>
+        <td>
+            <input type="text" name="notTestedOtherReason" id="notTestedOtherReason" class="form-control isRequired"
+                value="<?php echo $this->responseData['shipment']['pt_test_not_performed_comments']; ?>" />
+        </td>
+    </tr>
+</table>
+<hr />
 <table class="table table-bordered table-striped" style="width:100%;margin:0 auto 10px auto;">
     <tr>
         <th style="width: 20%;">
@@ -356,6 +405,26 @@ foreach ($this->responseData['results'] as $result) {
     $("#tbResponseForm").find("input:enabled, select:enabled, textarea:enabled").attr("disabled", "disabled");
     <?php
       } ?>
+
+    $("input[name='ableToEnterResults']").on('click change', function(e) {
+      if ($("input[name='ableToEnterResults']:checked").val() === "yes") {
+        $("#ableToEnterResultsReasonsRow").hide();
+        $("#ableToEnterResultsOtherReasonRow").hide();
+        $("#notTestedReason").val("");
+        $("#notTestedOtherReason").val("");
+      } else if ($("input[name='ableToEnterResults']:checked").val() === "no") {
+        $("#ableToEnterResultsReasonsRow").show();
+      }
+    });
+
+    $("#notTestedReason").on('change', function(e) {
+      if ($("#notTestedReason").val() === "other") {
+        $("#ableToEnterResultsOtherReasonRow").show();
+      } else {
+        $("#ableToEnterResultsOtherReasonRow").hide();
+        $("#notTestedOtherReason").val("");
+      }
+    });
   });
 
   function clearDate(id) {

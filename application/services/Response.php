@@ -241,6 +241,20 @@ class Application_Service_Response {
             if (isset($params['modeOfReceipt'])) {
                 $mapData['mode_id'] = $params['modeOfReceipt'];
             }
+            if ($params['ableToEnterResults'] == "no") {
+                $mapData['is_pt_test_not_performed'] = "yes";
+                if ($params["notTestedReason"] == "other") {
+                    $mapData['not_tested_reason'] = null;
+                    $mapData['pt_test_not_performed_comments'] = $params["notTestedOtherReason"];
+                } else if (isset($params["notTestedReason"]) && trim($params["notTestedReason"]) != "") {
+                    $mapData['not_tested_reason'] = $params["notTestedReason"];
+                    $mapData['pt_test_not_performed_comments'] = null;
+                }
+            } else {
+                $mapData['is_pt_test_not_performed'] = "no";
+                $mapData['not_tested_reason'] = null;
+                $mapData['pt_test_not_performed_comments'] = null;
+            }
             if (isset($params['testReceiptDate']) && trim($params['testReceiptDate'])!= '') {
                 $mapData['shipment_test_report_date'] = Pt_Commons_General::dateFormat($params['testReceiptDate']);
             } else {
