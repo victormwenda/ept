@@ -72,7 +72,7 @@ class VlController extends Zend_Controller_Action
             $participantService = new Application_Service_Participants();
             $this->view->participant = $participantService->getParticipantDetails($pID);
             $this->view->allSamples =$schemeService->getVlSamples($sID,$pID);
-            $this->view->allNotTestedReason =$schemeService->getVlNotTestedReasons();
+            $this->view->allNotTestedReason =$schemeService->getNotTestedReasons('vl');
             $shipment = $schemeService->getShipmentData($sID,$pID);
 	    $shipment['attributes'] = json_decode($shipment['attributes'],true);
             $this->view->shipment = $shipment;
@@ -103,7 +103,7 @@ class VlController extends Zend_Controller_Action
 	$this->view->participant = $participantService->getParticipantDetails($pID);
 	$schemeService = new Application_Service_Schemes();
 	$this->view->referenceDetails = $schemeService->getVlReferenceData($sID);
-	$this->view->allNotTestedReason =$schemeService->getVlNotTestedReasons();
+	$this->view->allNotTestedReason =$schemeService->getNotTestedReasons('vl');
 	$shipment = $schemeService->getShipmentData($sID,$pID);
 	$shipment['attributes'] = json_decode($shipment['attributes'],true);
 	$this->view->shipment = $shipment;

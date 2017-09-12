@@ -719,10 +719,12 @@ class Application_Service_Schemes {
         }
     }
 
-    public function getVlNotTestedReasons(){
+    public function getNotTestedReasons($schemeType){
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
-        $sql = $db->select()->from(array('response_vl_not_tested_reason'))
-                 ->where('status = ? ', 'active');
+        $sql = $db->select()
+            ->from(array('response_not_tested_reason'))
+            ->where('status = ? ', 'active')
+            ->where('scheme_type = ?', $schemeType);
         return $db->fetchAll($sql);
     }
 }

@@ -631,6 +631,20 @@ class Application_Service_Shipments {
 		        "updated_by_user" => $authNameSpace->dm_id,
                 "updated_on_user" => new Zend_Db_Expr('now()')
             );
+            if ($params['ableToEnterResults'] == "no") {
+                $data['is_pt_test_not_performed'] = "yes";
+                if ($params["notTestedReason"] == "other") {
+                    $data['not_tested_reason'] = null;
+                    $data['pt_test_not_performed_comments'] = $params["notTestedOtherReason"];
+                } else if (isset($params["notTestedReason"]) && trim($params["notTestedReason"]) != "") {
+                    $data['not_tested_reason'] = $params["notTestedReason"];
+                    $data['pt_test_not_performed_comments'] = null;
+                }
+            } else {
+                $data['is_pt_test_not_performed'] = "no";
+                $data['not_tested_reason'] = null;
+                $data['pt_test_not_performed_comments'] = null;
+            }
             if (isset($params['testReceiptDate']) && trim($params['testReceiptDate'])!= '') {
                 $data['shipment_test_report_date'] = Pt_Commons_General::dateFormat($params['testReceiptDate']);
             } else {
@@ -726,12 +740,12 @@ class Application_Service_Shipments {
 
             if (isset($params['isPtTestNotPerformed']) && $params['isPtTestNotPerformed']== 'yes') {
                 $data['is_pt_test_not_performed'] = 'yes';
-                $data['vl_not_tested_reason'] = $params['vlNotTestedReason'];
+                $data['not_tested_reason'] = $params['notTestedReason'];
                 $data['pt_test_not_performed_comments'] = $params['ptNotTestedComments'];
                 $data['pt_support_comments'] = $params['ptSupportComments'];
             } else {
                 $data['is_pt_test_not_performed'] = NULL;
-                $data['vl_not_tested_reason'] = NULL;
+                $data['not_tested_reason'] = NULL;
                 $data['pt_test_not_performed_comments'] = NULL;
                 $data['pt_support_comments'] = NULL;
             }

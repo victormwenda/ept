@@ -35,7 +35,8 @@ class TbController extends Zend_Controller_Action
             $this->view->isEditable = $shipmentService->isShipmentEditable($sID,$pID);
 	    
             $commonService = new Application_Service_Common();
-            $this->view->globalQcAccess=$commonService->getConfig('qc_access');
+            $this->view->globalQcAccess = $commonService->getConfig('qc_access');
+            $this->view->allNotTestedReason = $schemeService->getNotTestedReasons('tb');
     	}
     }
 
