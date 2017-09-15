@@ -527,6 +527,21 @@ class Application_Service_Shipments {
             "updated_by_user" => $authNameSpace->dm_id,
             "updated_on_user" => new Zend_Db_Expr('now()')
         );
+
+        if ($params['unableToSubmit'] == "yes") {
+            $data['is_pt_test_not_performed'] = "yes";
+            if ($params["unableToSubmitReason"] == "other") {
+                $data['not_tested_reason'] = null;
+                $data['pt_test_not_performed_comments'] = $params["unableToSubmitComment"];
+            } else if (isset($params["unableToSubmitReason"]) && trim($params["unableToSubmitReason"]) != "") {
+                $data['not_tested_reason'] = $params["unableToSubmitReason"];
+                $data['pt_test_not_performed_comments'] = null;
+            }
+        } else {
+            $data['is_pt_test_not_performed'] = "no";
+            $data['not_tested_reason'] = null;
+            $data['pt_test_not_performed_comments'] = null;
+        }
         if (isset($params['testReceiptDate']) && trim($params['testReceiptDate'])!= '') {
             $data['shipment_test_report_date'] = Application_Service_Common::ParseDbDate($params['testReceiptDate']);
         } else {

@@ -727,4 +727,14 @@ class Application_Service_Schemes {
             ->where('scheme_type = ?', $schemeType);
         return $db->fetchAll($sql);
     }
+
+    public function getNotTestedReasonsReferenceMap($schemeType) {
+        $reasons = $this->getNotTestedReasons($schemeType);
+        $response = array();
+        foreach ($reasons as $reason) {
+            $response[$reason['not_tested_reason_id']] = $reason['not_tested_reason'];
+        }
+        $response["other"] = "Other";
+        return $response;
+    }
 }

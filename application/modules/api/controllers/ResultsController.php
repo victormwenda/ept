@@ -40,6 +40,7 @@ class Api_ResultsController extends Zend_Controller_Action {
             } else {
                 $shipment['attributes'] = json_decode($shipment['attributes'],true);
                 $assays = $schemeService->getTbAssayReferenceMap();
+                $unableToSubmitReasons = $schemeService->getNotTestedReasonsReferenceMap('tb');
                 $sampleIds = $schemeService->getTbSampleIds($sID, $pID);
                 $attributes = $shipment["attributes"];
                 if (isset($attributes)) {
@@ -85,6 +86,10 @@ class Api_ResultsController extends Zend_Controller_Action {
                     'dateReceived' => Pt_Commons_General::dbDateToString($shipment['shipment_receipt_date']),
                     'smid' => $shipment['map_id'],
                     'assays' => $assays,
+                    'unableToSubmit' => $shipment['is_pt_test_not_performed'],
+                    'unableToSubmitReason' => (isset($shipment['pt_test_not_performed_comments']) && trim($shipment['pt_test_not_performed_comments']) != "") ? "other" : $shipment['not_tested_reason'],
+                    'unableToSubmitComment' => $shipment['pt_test_not_performed_comments'],
+                    'unableToSubmitReasons' => $unableToSubmitReasons,
 
                     'sampleIds' => $sampleIds,
                     'samples' => array(),
