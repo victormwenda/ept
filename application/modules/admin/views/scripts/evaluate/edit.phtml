@@ -354,13 +354,6 @@ $dtFormat=  $vHelper->getDateFormat();
               return $("#isExcluded").val() != "yes" &&
                 $("#unableToSubmit").val() != "yes";
             }
-          },
-          dateLargerThan: {
-            param: '#receiptDate',
-            depends: function () {
-              return $("#isExcluded").val() != "yes" &&
-                $("#unableToSubmit").val() != "yes";
-            }
           }
         },
         'mtbDetected[<?php echo $index; ?>]': {
@@ -557,8 +550,7 @@ $dtFormat=  $vHelper->getDateFormat();
       $index = 0;
       foreach ($this->evaluateData['results'] as $result) { ?>
         'dateTested[<?php echo $index; ?>]': {
-          required: "Required",
-          dateLargerThan: "Must be after Shipment Receipt Date"
+          required: "Required"
         },
         'mtbDetected[<?php echo $index; ?>]': "Required",
         'rifResistance[<?php echo $index; ?>]': {

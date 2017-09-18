@@ -393,9 +393,8 @@ $dtFormat=  $genderHelper->getDateFormat();
 
 
     $(function () {
-// $(".datepicker" ).datepicker({dateFormat: '<?php echo $dtFormat;?>',maxDate: '0', minDate : new Date('<?php echo $this->shipment['shipment_date']; ?>')});
-  	    //$(".expDatepicker" ).datepicker({dateFormat: '<?php echo $dtFormat;?>'});
-		$(".datepicker,.expDatepicker").datepicker({dateFormat: '<?php echo $dtFormat; ?>'});
+        $(".datepicker,.expDatepicker").datepicker({dateFormat: '<?php echo $dtFormat; ?>'});
+    }
 <?php if (!$this->isEditable) {
     ?>
             $("#eidResponseForm").find("input:enabled, select:enabled, textarea:enabled").attr("disabled", "disabled");

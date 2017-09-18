@@ -565,15 +565,12 @@ $dtFormat = $genderHelper->getDateFormat();
   $(function() {
     $(".datepicker:not(#expiryDate, input[name='instrumentLastCalibratedOn[]'], input[name='instrumentInstalledOn[]'])")
       .datepicker({
-        dateFormat: '<?php echo $dtFormat;?>',
-        maxDate: '0',
-        minDate : new Date('<?php echo $this->shipment['shipment_date']; ?>')
+        dateFormat: '<?php echo $dtFormat;?>'
       });
 
     $("#expiryDate")
       .datepicker({
-        dateFormat: '<?php echo $dtFormat;?>',
-        minDate : new Date('<?php echo $this->shipment['shipment_date']; ?>')
+        dateFormat: '<?php echo $dtFormat;?>'
       });
 
     $("input[name='instrumentLastCalibratedOn[]'], input[name='instrumentInstalledOn[]']")
@@ -731,13 +728,6 @@ foreach ($this->allSamples as $sample) {
     $count++; ?>
         'dateTested[<?php echo $index; ?>]': {
           required: {
-            depends: function () {
-              return $('#submitAction').val() === 'submit' &&
-                $("input[name='ableToEnterResults']:checked").val() === "yes";
-            }
-          },
-          dateLargerThan: {
-            param: '#receiptDate',
             depends: function () {
               return $('#submitAction').val() === 'submit' &&
                 $("input[name='ableToEnterResults']:checked").val() === "yes";
@@ -942,8 +932,7 @@ foreach ($this->allSamples as $sample) {
 $index = 0;
 foreach ($this->allSamples as $sample) { ?>
         'dateTested[<?php echo $index; ?>]': {
-          required: "Required",
-          dateLargerThan: "Must be after Shipment Receipt Date"
+          required: "Required"
         },
         'mtbDetected[<?php echo $index; ?>]': "Required",
         'rifResistance[<?php echo $index; ?>]': {

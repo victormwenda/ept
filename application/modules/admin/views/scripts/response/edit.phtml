@@ -347,13 +347,6 @@ if ($this->scheme == 'tb') { ?>
               return $('#submitAction').val() === 'submit' &&
                 $("input[name='ableToEnterResults']:checked").val() === "yes";
             }
-          },
-          dateLargerThan: {
-            param: '#receiptDate',
-            depends: function () {
-              return $('#submitAction').val() === 'submit' &&
-                $("input[name='ableToEnterResults']:checked").val() === "yes";
-            }
           }
         },
         'mtbDetected[<?php echo $index; ?>]': {
@@ -554,8 +547,7 @@ if ($this->scheme == 'tb') { ?>
     $index = 0;
     foreach ($this->responseData['results'] as $result) { ?>
         'dateTested[<?php echo $index; ?>]': {
-          required: "Required",
-          dateLargerThan: "Must be after Shipment Receipt Date"
+          required: "Required"
         },
         'mtbDetected[<?php echo $index; ?>]': "Required",
         'rifResistance[<?php echo $index; ?>]': {
