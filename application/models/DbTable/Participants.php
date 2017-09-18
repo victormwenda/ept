@@ -755,11 +755,11 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
          }
 	}
     
-    public function getShipmentRespondedParticipants($parameters) {
+    public function echoShipmentRespondedParticipants($parameters) {
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
          * you want to insert a non-database field (for example a counter or static image)
         */
-        $aColumns = array('unique_identifier', 'first_name', 'iso_name', 'mobile', 'phone', 'affiliation', 'email', 'status');
+        $aColumns = array('unique_identifier', 'first_name', 'iso_name', 'mobile', 'phone', 'affiliation', 'email', 'RESPONSE');
 
         /*
          * Paging
@@ -802,23 +802,24 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
                 } else {
                     $sWhereSub .= " AND (";
                 }
-                $colSize = count($aColumns);
-
-                for ($i = 0; $i < $colSize; $i++) {
-                    if ($i < $colSize - 1) {
-                        $sWhereSub .= $aColumns[$i] . " LIKE '%" . ($search) . "%' OR ";
-                    } else {
-                        $sWhereSub .= $aColumns[$i] . " LIKE '%" . ($search) . "%' ";
+                $sWhereSubSub = "";
+                for ($i = 0; $i < count($aColumns); $i++) {
+                    if (isset($parameters['bSearchable_' . $i]) && $parameters['bSearchable_' . $i] == "true") {
+                        if ($sWhereSubSub != "") {
+                            $sWhereSubSub .= " OR ";
+                        }
+                        $sWhereSubSub .= $aColumns[$i] . " LIKE '%" . ($search) . "%' ";
                     }
                 }
-                $sWhereSub .= ")";
+                $sWhereSub .= $sWhereSubSub . ")";
             }
             $sWhere .= $sWhereSub;
         }
 
         /* Individual column filtering */
         for ($i = 0; $i < count($aColumns); $i++) {
-            if (isset($parameters['bSearchable_' . $i]) && $parameters['bSearchable_' . $i] == "true" && $parameters['sSearch_' . $i] != '') {
+            if (isset($parameters['bSearchable_' . $i]) && $parameters['bSearchable_' . $i] == "true" &&
+                $parameters['sSearch_' . $i] != '') {
                 if ($sWhere == "") {
                     $sWhere .= $aColumns[$i] . " LIKE '%" . ($parameters['sSearch_' . $i]) . "%' ";
                 } else {
@@ -831,12 +832,36 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
          * SQL queries
          * Get data to display
          */
-         $sQuery = $this->getAdapter()->select()->from(array('sp' => 'shipment_participant_map'), array('sp.participant_id','sp.shipment_test_date',"RESPONSE" => new Zend_Db_Expr("CASE WHEN (sp.is_excluded ='yes') THEN 'Excluded'  WHEN (sp.shipment_test_date!='' AND sp.shipment_test_date!='0000-00-00' AND sp.shipment_test_date!='NULL') THEN 'Responded' ELSE 'Not Responded' END")))
-             ->joinLeft(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array('p.participant_id', 'p.unique_identifier', 'p.country', 'p.mobile', 'p.phone', 'p.affiliation', 'p.email', 'p.status', 'participantName' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT p.first_name,\" \",p.last_name ORDER BY p.first_name SEPARATOR ', ')")))
-             ->joinLeft(array('c' => 'countries'), 'c.id=p.country')
-             ->where("substr(sp.evaluation_status,3,1) = 1")
-             ->where("sp.shipment_id = ?", $parameters['shipmentId'])
-             ->group("sp.participant_id");
+         $sQuery = $this->getAdapter()
+             ->select()
+             ->from(array('spm' => 'shipment_participant_map'),
+                 array(
+                     'spm.participant_id',
+                     'spm.shipment_test_date',
+                     'RESPONSE' => new Zend_Db_Expr("CASE WHEN spm.is_excluded = 'yes' THEN 'Excluded' ".
+                         "WHEN spm.is_pt_test_not_performed = 'yes' THEN 'Unable to Perform Test' ".
+                         "WHEN substr(spm.evaluation_status, 7, 1) = '1' THEN 'Evaluated' ".
+                         "WHEN substr(spm.evaluation_status, 3, 1) = '1' AND substr(spm.evaluation_status, 4, 1) = '2' THEN 'Submitted (Late)' ".
+                         "WHEN substr(spm.evaluation_status, 3, 1) = '1' THEN 'Submitted' ".
+                         "WHEN spm.shipment_receipt_date IS NOT NULL AND spm.shipment_receipt_date <> '' AND spm.shipment_receipt_date <> '0000-00-00' THEN 'Panel Received' ".
+                         "WHEN spm.updated_on_user IS NOT NULL THEN 'Saved' ".
+                         "ELSE 'Waiting for Response' END")))
+             ->joinLeft(array('p' => 'participant'), 'p.participant_id = spm.participant_id',
+                 array(
+                     'p.participant_id',
+                     'p.unique_identifier',
+                     'p.country',
+                     'p.mobile',
+                     'p.phone',
+                     'p.affiliation',
+                     'p.email',
+                     'p.status',
+                     'participantName' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT p.first_name, \" \", p.last_name ORDER BY p.first_name SEPARATOR ', ')")
+                 ))
+             ->joinLeft(array('c' => 'countries'), 'c.id = p.country')
+             ->where("substr(spm.evaluation_status, 3, 1) = 1")
+             ->where("spm.shipment_id = ?", $parameters['shipmentId'])
+             ->group("spm.participant_id");
 
         $authNameSpace = new Zend_Session_Namespace('administrators');
         if($authNameSpace->is_ptcc_coordinator) {
@@ -871,12 +896,12 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
         $iFilteredTotal = count($aResultFilterTotal);
 
         /* Total data set length */
-        $sQuery = $this->getAdapter()->select()->from(array('sp' => 'shipment_participant_map'), array())
-            ->joinLeft(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array())
-            ->joinLeft(array('c' => 'countries'), 'c.id=p.country')
-            ->where("substr(sp.evaluation_status,3,1) = 1")
-            ->where("sp.shipment_id = ?", $parameters['shipmentId'])
-            ->group("sp.participant_id");
+        $sQuery = $this->getAdapter()->select()->from(array('spm' => 'shipment_participant_map'), array())
+            ->joinLeft(array('p' => 'participant'), 'p.participant_id = spm.participant_id', array())
+            ->joinLeft(array('c' => 'countries'), 'c.id = p.country')
+            ->where("substr(spm.evaluation_status, 3, 1) = 1")
+            ->where("spm.shipment_id = ?", $parameters['shipmentId'])
+            ->group("spm.participant_id");
 
         if($authNameSpace->is_ptcc_coordinator) {
             $sQuery = $sQuery->where("p.country IN (".implode(",",$authNameSpace->countries).")");
@@ -916,12 +941,12 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
         echo json_encode($output);
     }
 
-    public function getShipmentNotRespondedParticipants($parameters) {
+    public function echoShipmentNotRespondedParticipants($parameters) {
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
          * you want to insert a non-database field (for example a counter or static image)
          */
 
-        $aColumns = array('unique_identifier', 'first_name', 'iso_name', 'mobile', 'phone', 'affiliation', 'email', 'status');
+        $aColumns = array('unique_identifier', 'first_name', 'iso_name', 'mobile', 'phone', 'affiliation', 'email', 'RESPONSE');
 
         /*
          * Paging
@@ -963,16 +988,16 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
                 } else {
                     $sWhereSub .= " AND (";
                 }
-                $colSize = count($aColumns);
-
-                for ($i = 0; $i < $colSize; $i++) {
-                    if ($i < $colSize - 1) {
-                        $sWhereSub .= $aColumns[$i] . " LIKE '%" . ($search) . "%' OR ";
-                    } else {
-                        $sWhereSub .= $aColumns[$i] . " LIKE '%" . ($search) . "%' ";
+                $sWhereSubSub = "";
+                for ($i = 0; $i < count($aColumns); $i++) {
+                    if (isset($parameters['bSearchable_' . $i]) && $parameters['bSearchable_' . $i] == "true") {
+                        if ($sWhereSubSub != "") {
+                            $sWhereSubSub .= " OR ";
+                        }
+                        $sWhereSubSub .= $aColumns[$i] . " LIKE '%" . ($search) . "%' ";
                     }
                 }
-                $sWhereSub .= ")";
+                $sWhereSub .= $sWhereSubSub . ")";
             }
             $sWhere .= $sWhereSub;
         }
@@ -992,12 +1017,35 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
          * SQL queries
          * Get data to display
          */
-        $sQuery = $this->getAdapter()->select()->from(array('sp' => 'shipment_participant_map'), array('sp.participant_id','sp.map_id','sp.shipment_test_date','shipment_id',"RESPONSE" => new Zend_Db_Expr("CASE WHEN (sp.is_excluded ='yes') THEN 'Excluded'  WHEN (sp.shipment_test_date!='' AND sp.shipment_test_date!='0000-00-00' AND sp.shipment_test_date!='NULL') THEN 'Responded' ELSE 'Not Responded' END")))
-            ->joinLeft(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array('p.participant_id', 'p.unique_identifier', 'p.country', 'p.mobile', 'p.phone', 'p.affiliation', 'p.email', 'p.status', 'participantName' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT p.first_name,\" \",p.last_name ORDER BY p.first_name SEPARATOR ', ')")))
-            ->joinLeft(array('c' => 'countries'), 'c.id=p.country')
-            ->where("(substr(sp.evaluation_status,3,1) <> 1)")
-            ->where("sp.shipment_id = ?", $parameters['shipmentId'])
-            ->group("sp.participant_id");
+        $sQuery = $this->getAdapter()
+            ->select()
+            ->from(array('spm' => 'shipment_participant_map'), array(
+                'spm.participant_id',
+                'spm.map_id',
+                'spm.shipment_test_date',
+                'spm.shipment_id',
+                'RESPONSE' => new Zend_Db_Expr("CASE WHEN spm.is_excluded = 'yes' THEN 'Excluded' ".
+                    "WHEN spm.is_pt_test_not_performed = 'yes' THEN 'Unable to Perform Test' ".
+                    "WHEN substr(spm.evaluation_status, 7, 1) = '1' THEN 'Evaluated' ".
+                    "WHEN substr(spm.evaluation_status, 3, 1) = '1' AND substr(spm.evaluation_status, 4, 1) = '2' THEN 'Submitted (Late)' ".
+                    "WHEN substr(spm.evaluation_status, 3, 1) = '1' THEN 'Submitted' ".
+                    "WHEN spm.shipment_receipt_date IS NOT NULL AND spm.shipment_receipt_date <> '' AND spm.shipment_receipt_date <> '0000-00-00' THEN 'Panel Received' ".
+                    "WHEN spm.updated_on_user IS NOT NULL THEN 'Saved' ".
+                    "ELSE 'Waiting for Response' END")))
+            ->joinLeft(array('p' => 'participant'), 'p.participant_id = spm.participant_id', array(
+                'p.participant_id',
+                'p.unique_identifier',
+                'p.country',
+                'p.mobile',
+                'p.phone',
+                'p.affiliation',
+                'p.email',
+                'p.status',
+                'participantName' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT p.first_name,\" \",p.last_name ORDER BY p.first_name SEPARATOR ', ')")))
+            ->joinLeft(array('c' => 'countries'), 'c.id = p.country')
+            ->where("substr(spm.evaluation_status, 3, 1) <> 1")
+            ->where("spm.shipment_id = ?", $parameters['shipmentId'])
+            ->group("spm.participant_id");
 
         $authNameSpace = new Zend_Session_Namespace('administrators');
         if($authNameSpace->is_ptcc_coordinator) {

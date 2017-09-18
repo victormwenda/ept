@@ -343,14 +343,14 @@ class Application_Service_Participants {
 		$db->getUnEnrolledByShipments($parameters);
 	}
 
-    public function getShipmentRespondedParticipants($params) {
+    public function echoShipmentRespondedParticipants($params) {
 		$participantDb = new Application_Model_DbTable_Participants();
-		return $participantDb->getShipmentRespondedParticipants($params);
+		$participantDb->echoShipmentRespondedParticipants($params);
 	}
 
-	public function getShipmentNotRespondedParticipants($params) {
+	public function echoShipmentNotRespondedParticipants($params) {
 		$participantDb = new Application_Model_DbTable_Participants();
-		return $participantDb->getShipmentNotRespondedParticipants($params);
+		$participantDb->echoShipmentNotRespondedParticipants($params);
 	}
 
     public function getShipmentNotEnrolledParticipants($params) {

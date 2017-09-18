@@ -13,9 +13,7 @@ try {
             ->join(array('p' => 'participant'), 'p.email=dm.primary_email',array('p.participant_id','unique_identifier'))
             ->order("dm_id ASC");
     $dmResult = $db->fetchAll($sQuery);
-    
-    //error_log('RUNNING CRON TO SEND MAIL PA');
-    
+
     if (count($dmResult) > 0) {
         $oldDmId='';
         foreach ($dmResult as $result) {

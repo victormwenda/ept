@@ -34,7 +34,6 @@ require_once('tcpdf/tcpdf.php');
             $this->header = str_replace("<div", "<span", trim($this->header));
             $this->header = str_replace("</div>", "</span><br/>", $this->header);
 
-            //error_log($this->header);
             //$y = $this->getY();
             $html = $this->header;
 
