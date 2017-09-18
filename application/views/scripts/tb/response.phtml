@@ -565,15 +565,12 @@ $dtFormat = $genderHelper->getDateFormat();
   $(function() {
     $(".datepicker:not(#expiryDate, input[name='instrumentLastCalibratedOn[]'], input[name='instrumentInstalledOn[]'])")
       .datepicker({
-        dateFormat: '<?php echo $dtFormat;?>',
-        maxDate: '0',
-        minDate : new Date('<?php echo $this->shipment['shipment_date']; ?>')
+        dateFormat: '<?php echo $dtFormat;?>'
       });
 
     $("#expiryDate")
       .datepicker({
-        dateFormat: '<?php echo $dtFormat;?>',
-        minDate : new Date('<?php echo $this->shipment['shipment_date']; ?>')
+        dateFormat: '<?php echo $dtFormat;?>'
       });
 
     $("input[name='instrumentLastCalibratedOn[]'], input[name='instrumentInstalledOn[]']")
