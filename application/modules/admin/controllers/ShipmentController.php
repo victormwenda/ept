@@ -244,7 +244,7 @@ class Admin_ShipmentController extends Zend_Controller_Action {
         if ($this->getRequest()->isPost()) {
             $params = $this->_getAllParams();            
             $clientsServices = new Application_Service_Participants();
-            $clientsServices->getShipmentRespondedParticipants($params);
+            $clientsServices->echoShipmentRespondedParticipants($params);
         }
     }
 
@@ -252,7 +252,7 @@ class Admin_ShipmentController extends Zend_Controller_Action {
         if ($this->getRequest()->isPost()) {
             $params = $this->_getAllParams();            
             $clientsServices = new Application_Service_Participants();
-            $clientsServices->getShipmentNotRespondedParticipants($params);
+            $clientsServices->echoShipmentNotRespondedParticipants($params);
         }
     }
 

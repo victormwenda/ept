@@ -135,7 +135,7 @@
                 {"sClass": "center"},
                 {"sClass": "center"},
                 {"sClass": ""},
-                {"sClass": "center"}
+                {"sClass": "center", "bSearchable": false}
             ],
             "aaSorting": [[0, "asc"]],
             "bProcessing": true,
@@ -174,8 +174,8 @@
                 {"sClass": "center"},
                 {"sClass": "center"},
                 {"sClass": ""},
-                {"sClass": "center"},
-                {"sClass": "center", "bSortable": false}
+                {"sClass": "center", "bSearchable": false},
+                {"sClass": "center", "bSearchable": false}
             ],
             "fnServerParams": function (aoData) {
                 aoData.push({"name": "shipmentId", "value": '<?php echo $this->shipmentId ?>'});
