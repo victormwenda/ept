@@ -15,9 +15,7 @@ try {
     $limit = '10';
     $sQuery = $db->select()->from(array('tm' => 'temp_mail'))->where("tm.status=?",'pending')->limit($limit);
     $mailResult = $db->fetchAll($sQuery);
-    
-    //error_log('RUNNING CRON TO SEND MAIL PA');
-    
+
     if (count($mailResult) > 0) {
         foreach ($mailResult as $result) {
             $alertMail = new Zend_Mail();

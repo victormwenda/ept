@@ -97,7 +97,6 @@ class Application_Service_Reports {
             $sWhere .= $sWhereSub;
         }
 
-        //error_log($sHaving);
         /* Individual column filtering */
         for ($i = 0; $i < count($searchColumns); $i++) {
             if (isset($parameters['bSearchable_' . $i]) && $parameters['bSearchable_' . $i] == "true" && $parameters['sSearch_' . $i] != '') {
@@ -161,10 +160,7 @@ class Application_Service_Reports {
             $sQuery = $sQuery->limit($sLimit, $sOffset);
         }
 
-        //error_log($sQuery);
-
         $rResult = $dbAdapter->fetchAll($sQuery);
-
 
         /* Data set length after filtering */
         $sQuery = $sQuery->reset(Zend_Db_Select::LIMIT_COUNT);
@@ -833,7 +829,6 @@ class Application_Service_Reports {
             $sWhere .= $sWhereSub;
         }
 
-        //error_log($sHaving);
         /* Individual column filtering */
         for ($i = 0; $i < count($aColumns); $i++) {
             if (isset($parameters['bSearchable_' . $i]) && $parameters['bSearchable_' . $i] == "true" && $parameters['sSearch_' . $i] != '') {
@@ -1127,7 +1122,6 @@ class Application_Service_Reports {
             $sWhere .= $sWhereSub;
         }
 
-        //error_log($sHaving);
         /* Individual column filtering */
         for ($i = 0; $i < count($searchColumns); $i++) {
             if (isset($parameters['bSearchable_' . $i]) && $parameters['bSearchable_' . $i] == "true" && $parameters['sSearch_' . $i] != '') {
@@ -2640,7 +2634,6 @@ class Application_Service_Reports {
             $sWhere .= $sWhereSub;
         }
 
-        //error_log($sHaving);
         /* Individual column filtering */
         for ($i = 0; $i < count($searchColumns); $i++) {
             if (isset($parameters['bSearchable_' . $i]) && $parameters['bSearchable_' . $i] == "true" && $parameters['sSearch_' . $i] != '') {
@@ -3602,7 +3595,6 @@ class Application_Service_Reports {
             $sWhere .= $sWhereSub;
         }
 
-        //error_log($sHaving);
         /* Individual column filtering */
         for ($i = 0; $i < count($searchColumns); $i++) {
             if (isset($parameters['bSearchable_' . $i]) && $parameters['bSearchable_' . $i] == "true" && $parameters['sSearch_' . $i] != '') {
@@ -3891,7 +3883,6 @@ class Application_Service_Reports {
             $sWhere .= $sWhereSub;
         }
 
-        //error_log($sHaving);
         /* Individual column filtering */
         for ($i = 0; $i < count($aColumns); $i++) {
             if (isset($parameters['bSearchable_' . $i]) && $parameters['bSearchable_' . $i] == "true" && $parameters['sSearch_' . $i] != '') {
@@ -4171,7 +4162,6 @@ class Application_Service_Reports {
             $sWhere .= $sWhereSub;
         }
 
-        //error_log($sHaving);
         /* Individual column filtering */
         for ($i = 0; $i < count($searchColumns); $i++) {
             if (isset($parameters['bSearchable_' . $i]) && $parameters['bSearchable_' . $i] == "true" && $parameters['sSearch_' . $i] != '') {
