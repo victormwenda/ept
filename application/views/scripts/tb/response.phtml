@@ -735,13 +735,6 @@ foreach ($this->allSamples as $sample) {
               return $('#submitAction').val() === 'submit' &&
                 $("input[name='ableToEnterResults']:checked").val() === "yes";
             }
-          },
-          dateLargerThan: {
-            param: '#receiptDate',
-            depends: function () {
-              return $('#submitAction').val() === 'submit' &&
-                $("input[name='ableToEnterResults']:checked").val() === "yes";
-            }
           }
         },
         'mtbDetected[<?php echo $index; ?>]': {
@@ -942,8 +935,7 @@ foreach ($this->allSamples as $sample) {
 $index = 0;
 foreach ($this->allSamples as $sample) { ?>
         'dateTested[<?php echo $index; ?>]': {
-          required: "Required",
-          dateLargerThan: "Must be after Shipment Receipt Date"
+          required: "Required"
         },
         'mtbDetected[<?php echo $index; ?>]': "Required",
         'rifResistance[<?php echo $index; ?>]': {
