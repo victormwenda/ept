@@ -681,8 +681,20 @@ class Application_Service_Shipments {
             $tbResponseDb = new Application_Model_DbTable_ResponseTb();
             $tbResponseDb->updateResults($params);
 
-            $sampleIds = $params['sampleId'];
             $instrumentsDb = new Application_Model_DbTable_Instruments();
+            $headerInstrumentSerials = $params['headerInstrumentSerial'];
+            foreach ($headerInstrumentSerials as $key => $headerInstrumentSerial) {
+                if (isset($headerInstrumentSerial) &&
+                    $headerInstrumentSerial != "") {
+                    $headerInstrumentDetails = array(
+                        'instrument_serial' => $headerInstrumentSerial,
+                        'instrument_installed_on' => $params['headerInstrumentInstalledOn'][$key],
+                        'instrument_last_calibrated_on' => $params['headerInstrumentLastCalibratedOn'][$key]
+                    );
+                    $instrumentsDb->upsertInstrument($params['participantId'], $headerInstrumentDetails);
+                }
+            }
+            $sampleIds = $params['sampleId'];
             foreach ($sampleIds as $key => $sampleId) {
                 if (isset($params['instrumentSerial'][$key]) &&
                     $params['instrumentSerial'][$key] != "") {
