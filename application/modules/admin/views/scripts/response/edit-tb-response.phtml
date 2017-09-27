@@ -226,6 +226,77 @@ if (isset($this->responseData['shipment']["shipment_test_report_date"]) &&
     </tr>
     <?php
     } ?>
+    <tr>
+        <td colspan="4">
+            <label>Instruments at Facility:</label>
+            <table class="table table-bordered table-striped" style="width:100%;margin:10px auto;">
+                <thead>
+                <tr>
+                    <td>
+                        <label>Serial Number</label>
+                    </td>
+                    <td>
+                        <label>Installed</label>
+                    </td>
+                    <td>
+                        <label>Last Calibrated</label>
+                    </td>
+                    <td>
+                        <label>Add/Remove</label>
+                    </td>
+                </tr>
+                </thead>
+                <tbody>
+<?php
+    $instrumentCount = 0;
+    $instrumentIndex = 0;
+    foreach ($this->instruments as $id => $instrument_details) {
+        $instrumentCount++; ?>
+                <tr>
+                    <td>
+                        <input type="hidden" name="headerInstrumentIndex[<?php echo $instrumentIndex; ?>]"
+                               class="instrumentIndex" value="<?php echo $instrumentIndex; ?>" />
+                        <input type="hidden" id="headerInstrumentId<?php echo $instrumentCount; ?>"
+                               name="headerInstrumentId[<?php echo $instrumentIndex; ?>]"
+                               value="<?php echo $id; ?>"  />
+                        <input type="text" id="headerInstrumentSerial<?php echo $instrumentCount; ?>"
+                               name="headerInstrumentSerial[<?php echo $instrumentIndex; ?>]"
+                               class="form-control input-sm" value="<?php echo $instrument_details['instrument_serial']; ?>"
+                               title="Please enter the instrument serial number"
+                               onblur="updateInstrumentLists()" />
+                    </td>
+                    <td>
+                        <input type="text" id="headerInstrumentInstalledOn<?php echo $instrumentCount; ?>"
+                               class="form-control datepicker input-sm" readonly="readonly"
+                               name="headerInstrumentInstalledOn[<?php echo $instrumentIndex; ?>]"
+                               value="<?php echo $this->dateFormat($instrument_details['instrument_installed_on']); ?>"
+                               title="Please enter the instrument installation date" />
+                    </td>
+                    <td>
+                        <input type="text" id="headerInstrumentLastCalibratedOn<?php echo $instrumentCount; ?>"
+                               class="form-control datepicker input-sm" readonly="readonly"
+                               name="headerInstrumentLastCalibratedOn[<?php echo $instrumentIndex; ?>]"
+                               value="<?php echo $this->dateFormat($instrument_details['instrument_last_calibrated_on']); ?>"
+                               title="Please enter the date that the instrument was last calibrated" />
+                    </td>
+                    <td>
+                        <a href="javascript:void(0);" onclick="addInstrumentRow(this);"
+                           class="btn btn-xs btn-info">
+                            <i class="icon-plus"></i>
+                        </a>&nbsp;&nbsp;
+                        <a href="javascript:void(0);" onclick="removeInstrumentRow(this)" class="btn btn-xs btn-danger"
+                           title="Remove this instrument" alt="Remove this instrument">
+                            <i class="icon-minus"></i>
+                        </a>
+                    </td>
+                </tr>
+                <?php
+        $instrumentIndex++;
+    } ?>
+                </tbody>
+            </table>
+        </td>
+    </tr>
 </table>
 <br />
 <table class="table table-bordered table-striped table-hover" style="width:100%;margin:0 auto;">

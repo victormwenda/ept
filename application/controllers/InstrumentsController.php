@@ -16,7 +16,7 @@ class InstrumentsController extends Zend_Controller_Action
             $db->beginTransaction();
             try {
                 $instrumentsDb = new Application_Model_DbTable_Instruments();
-                $existingInstruments = $instrumentsDb->getInstruments();
+                $existingInstruments = $instrumentsDb->getInstruments(null, false);
                 foreach ($existingInstruments as $instrument_id => $instrumentDetails) {
                     if (!in_array($instrument_id, $instrumentIds)) {
                         $instrumentsDb.deleteInstrument($instrument_id);
@@ -40,7 +40,7 @@ class InstrumentsController extends Zend_Controller_Action
             $this->_redirect("/participant/dashboard");
         } else {
             $instrumentsDb = new Application_Model_DbTable_Instruments();
-            $this->view->instruments = $instrumentsDb->getInstruments();
+            $this->view->instruments = $instrumentsDb->getInstruments(null, true);
             $participantService = new Application_Service_Participants();
             $this->view->participants = $participantService->getUsersParticipants();;
         }

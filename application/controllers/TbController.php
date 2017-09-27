@@ -26,7 +26,8 @@ class TbController extends Zend_Controller_Action
 	        $shipment['attributes'] = json_decode($shipment['attributes'],true);
             $this->view->assays = $schemeService->getTbAssayReferenceMap();
             $instrumentDb = new Application_Model_DbTable_Instruments();
-            $this->view->instruments = $instrumentDb->getInstruments($pID);
+            $this->view->instruments = $instrumentDb->getInstruments($pID, true);
+
             $this->view->shipment = $shipment;
             $this->view->shipId = $sID;
             $this->view->participantId = $pID;

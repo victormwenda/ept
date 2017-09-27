@@ -4,7 +4,7 @@ class Application_Model_DbTable_Instruments extends Zend_Db_Table_Abstract {
     protected $_name = 'instrument';
     protected $_primary = 'instrument_id';
 
-    public function getInstruments($pid = null) {
+    public function getInstruments($pid, $insertBlankRowIfEmpty) {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sql = null;
         if ($pid == null) {
@@ -27,11 +27,19 @@ class Application_Model_DbTable_Instruments extends Zend_Db_Table_Abstract {
                 'instrument_last_calibrated_on' => $row['instrument_last_calibrated_on']
             );
         }
+        if(count($response) == 0 && $insertBlankRowIfEmpty) {
+            $response["-1"] = array(
+                'participant_id' => $pid,
+                'instrument_serial' => "",
+                'instrument_installed_on' => "",
+                'instrument_last_calibrated_on' => ""
+            );
+        }
         return $response;
     }
 
-    public function getInstrumentsReferenceMap($pid = null) {
-        $instruments = $this->getInstruments($pid);
+    public function getInstrumentsReferenceMap($pid, $insertBlankRowIfEmpty) {
+        $instruments = $this->getInstruments($pid, $insertBlankRowIfEmpty);
         $response = array();
         foreach ($instruments as $instrumentId => $instrumentDetails) {
             $response[$instrumentId] = array(

@@ -315,14 +315,14 @@ foreach($this->allNotTestedReason as $reason) { ?>
                     </td>
                     <td>
                         <input type="text" id="headerInstrumentInstalledOn<?php echo $instrumentCount; ?>"
-                               class="form-control datepicker input-sm" readonly="readonly"
+                               class="form-control datepicker input-sm instrument-date-picker" readonly="readonly"
                                name="headerInstrumentInstalledOn[<?php echo $instrumentIndex; ?>]"
                                value="<?php echo $this->dateFormat($instrument_details['instrument_installed_on']); ?>"
                                title="Please enter the instrument installation date" />
                     </td>
                     <td>
                         <input type="text" id="headerInstrumentLastCalibratedOn<?php echo $instrumentCount; ?>"
-                               class="form-control datepicker input-sm" readonly="readonly"
+                               class="form-control datepicker input-sm instrument-date-picker" readonly="readonly"
                                name="headerInstrumentLastCalibratedOn[<?php echo $instrumentIndex; ?>]"
                                value="<?php echo $this->dateFormat($instrument_details['instrument_last_calibrated_on']); ?>"
                                title="Please enter the date that the instrument was last calibrated" />
@@ -491,12 +491,8 @@ foreach($this->allNotTestedReason as $reason) { ?>
                     </tr>
                     <tr style="background-color: transparent;">
                         <th style="white-space: nowrap;background-color: transparent;">
-                            <input type="text" id="instrumentSerial<?php echo $count; ?>" name="instrumentSerial[<?php echo $index; ?>]"
-                                   class="form-control input-sm" value="<?php echo $sample['res_instrument_serial']; ?>"
-                                   title="Please enter the instrument serial number for <?php echo $sample['sample_label']; ?>"
-                                   style="display: <?php if (!isset($this->instruments) || count($this->instruments) == 0) { echo "block"; } else { echo "none"; }?>;" />
-                            <?php
-                            if (isset($this->instruments) && count($this->instruments) > 0) { ?>
+                            <input type="hidden" id="instrumentSerial<?php echo $count; ?>" name="instrumentSerial[<?php echo $index; ?>]"
+                                   class="form-control input-sm" value="<?php echo $sample['res_instrument_serial']; ?>" />
                             <div id="instrumentDropDown<?php echo $count; ?>" class="btn-group" style="display: block; border: solid 1px #ccc; width: 100%; height: 2.13em;">
                                 <a class="btn dropdown-toggle" data-toggle="dropdown" href="#" style="width: 100%; padding-top: 3px;">
                                     <span class="dropdownText">
@@ -506,25 +502,18 @@ foreach($this->allNotTestedReason as $reason) { ?>
                                 </a>
                                 <ul class="dropdown-menu instrument-list">
                                     <?php
-                                    foreach ($this->instruments as $id => $instrument_details) { ?>
+                                    foreach ($this->instruments as $id => $instrument_details) {
+                                        if ($id != "-1") { ?>
                                     <li class="instrument-list-item">
                                         <a href="" onClick="return changeInstrument({serial: '<?php echo $instrument_details["instrument_serial"]; ?>', installedOn: '<?php echo $this->dateFormat($instrument_details["instrument_installed_on"]); ?>', lastCalibratedOn: '<?php echo $this->dateFormat($instrument_details["instrument_last_calibrated_on"]); ?>', dropDownId: 'instrumentDropDown<?php echo $count; ?>', serialTextFieldId: 'instrumentSerial<?php echo $count; ?>', installedOnTextFieldId: 'instrumentInstalledOn<?php echo $count; ?>', lastCalibratedOnTextFieldId: 'instrumentLastCalibratedOn<?php echo $count; ?>'})">
                                             <?php echo $instrument_details['instrument_serial']; ?>
                                         </a>
                                     </li>
                                     <?php
+                                        }
                                     } ?>
-                                    <li role="separator" class="divider"></li>
-                                    <li>
-                                        <a href=""
-                                           onClick="return newInstrument({dropDownId: 'instrumentDropDown<?php echo $count; ?>', serialTextFieldId: 'instrumentSerial<?php echo $count; ?>', installedOnTextFieldId: 'instrumentInstalledOn<?php echo $count; ?>', lastCalibratedOnTextFieldId: 'instrumentLastCalibratedOn<?php echo $count; ?>'})">
-                                            New Instrument
-                                        </a>
-                                    </li>
                                 </ul>
                             </div>
-                            <?php
-                            } ?>
                         </th>
                         <td style="background-color: transparent;">
                             <input type="text" id="instrumentInstalledOn<?php echo $count; ?>"
@@ -634,10 +623,15 @@ $dtFormat = $genderHelper->getDateFormat();
   var timeOut, formValidator;
 
   $(function() {
-    $(".datepicker")
+    $(".datepicker:not(.instrument-date-picker)")
       .datepicker({
         dateFormat: '<?php echo $dtFormat;?>'
       });
+
+    $(".instrument-date-picker").datepicker({
+      dateFormat: '<?php echo $dtFormat;?>',
+      onSelect: updateInstrumentLists
+    });
 
     <?php if (!$this->isEditable) { ?>
     $("#tbResponseForm").find("input:enabled, select:enabled, textarea:enabled").attr("disabled", "disabled");
@@ -1131,16 +1125,6 @@ foreach ($this->allSamples as $sample) { ?>
     return false;
   }
 
-  function newInstrument(details) {
-    $("#" + details.serialTextFieldId).val('');
-    $("#" + details.installedOnTextFieldId).val('');
-    $("#" + details.lastCalibratedOnTextFieldId).val('');
-    $("#" + details.dropDownId).css('display', 'none');
-    $("#" + details.serialTextFieldId).css('display', 'block');
-    $("#" + details.serialTextFieldId).focus();
-    return false;
-  }
-
   function changeMtbDetected(resultNumber) {
     var mtbDetected = $("#mtbDetected" + resultNumber).val();
     var errorCodeInput = $("#errorCode" + resultNumber);
@@ -1171,7 +1155,7 @@ foreach ($this->instruments as $id => $instrument_details) { ?>
       calibrated: "<?php echo $this->dateFormat($instrument_details['instrument_last_calibrated_on']); ?>"
     },
 <?php
-    $instrumentsListIndex++;
+  $instrumentsListIndex++;
 } ?>
   };
 
@@ -1217,6 +1201,9 @@ foreach ($this->instruments as $id => $instrument_details) { ?>
   }
 
   function removeInstrumentRow(obj) {
+    if (Object.keys(instrumentsMap).length == 1) {
+      addInstrumentRow(obj);
+    }
     var removeInstrumentIndex = $(obj.parentNode.parentNode).find('.instrumentIndex').val();
     $(obj.parentNode.parentNode).fadeOut("normal",function(){
       $(this).remove();

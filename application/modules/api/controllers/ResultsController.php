@@ -101,7 +101,7 @@ class Api_ResultsController extends Zend_Controller_Action {
                 );
 
                 $instrumentDb = new Application_Model_DbTable_Instruments();
-                $instruments = $instrumentDb->getInstrumentsReferenceMap($pID);
+                $instruments = $instrumentDb->getInstrumentsReferenceMap($pID, false);
                 foreach ($sampleIds as $sampleId) {
                     $sample = $schemeService->getTbSample($sID,$pID,$sampleId);
                     $response['samples'][(string)$sampleId] = $responseSample = array(
