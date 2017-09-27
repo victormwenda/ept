@@ -138,6 +138,8 @@ class Admin_EvaluateController extends Zend_Controller_Action {
                         $this->view->followsUpFrom = $previousShipmentData['shipment_code'];
                         $this->view->correctiveActionsFromPreviousRound = $correctiveActionsFromPreviousRound;
                     }
+                    $instrumentDb = new Application_Model_DbTable_Instruments();
+                    $this->view->instruments = $instrumentDb->getInstruments($pid, true);
                 }
                 $globalConfigDb = new Application_Model_DbTable_GlobalConfig();
                 $this->view->customField1 = $globalConfigDb->getValue('custom_field_1');

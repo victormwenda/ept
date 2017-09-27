@@ -491,8 +491,9 @@ foreach($this->allNotTestedReason as $reason) { ?>
                     </tr>
                     <tr style="background-color: transparent;">
                         <th style="white-space: nowrap;background-color: transparent;">
-                            <input type="hidden" id="instrumentSerial<?php echo $count; ?>" name="instrumentSerial[<?php echo $index; ?>]"
-                                   class="form-control input-sm" value="<?php echo $sample['res_instrument_serial']; ?>" />
+                            <input type="hidden" id="instrumentSerial<?php echo $count; ?>"
+                                   name="instrumentSerial[<?php echo $index; ?>]"
+                                   value="<?php echo $sample['res_instrument_serial']; ?>" />
                             <div id="instrumentDropDown<?php echo $count; ?>" class="btn-group" style="display: block; border: solid 1px #ccc; width: 100%; height: 2.13em;">
                                 <a class="btn dropdown-toggle" data-toggle="dropdown" href="#" style="width: 100%; padding-top: 3px;">
                                     <span class="dropdownText">

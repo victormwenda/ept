@@ -67,6 +67,8 @@ class Admin_ResponseController extends Zend_Controller_Action
                 $schemeService = new Application_Service_Schemes();
                 if ($scheme == 'tb') {
                     $this->view->assays = $schemeService->getTbAssayReferenceMap();
+                    $instrumentDb = new Application_Model_DbTable_Instruments();
+                    $this->view->instruments = $instrumentDb->getInstruments($pid, true);
                 }
                 $responseService = new Application_Service_Response();
                 $this->view->responseData = $responseService->editResponse($sid,$pid,$scheme);
