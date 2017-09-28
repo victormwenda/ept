@@ -2392,6 +2392,11 @@ class Application_Service_Evaluation {
             $samplePassStatuses = array();
             $maxShipmentScore = 0;
             $hasBlankResult = false;
+            $createdOn = Application_Service_Common::ParseDateISO8601OrMin($createdOnUser[0]);
+            $lastDate = new Zend_Date($shipment['lastdate_response'], Zend_Date::ISO_8601);
+            if ($createdOn->compare($lastDate,Zend_date::DATES) <= 0) {
+                $failureReason['warning'] = "Response was submitted after the last response date.";
+            }
             foreach ($results as $result) {
                 $calculatedScorePassStatus = $scoringService->calculateTbSamplePassStatus($result['ref_mtb_detected'],
                     $result['res_mtb_detected'], $result['ref_rif_resistance'], $result['res_rif_resistance'],
@@ -2418,14 +2423,14 @@ class Application_Service_Evaluation {
                 $shipmentResult[$counter]['shipment_score'] = $shipmentScore;
                 $shipmentResult[$counter]['documentation_score'] = 0;
                 $shipmentResult[$counter]['display_result'] = 'Excluded';
-                $failureReason[] = array('warning' => 'Excluded from Evaluation');
+                $failureReason = array('warning' => 'Excluded from Evaluation');
                 $finalResult = 3;
                 $shipmentResult[$counter]['failure_reason'] = $failureReason = json_encode($failureReason);
             } else {
                 $shipment['is_excluded'] = 'no';
                 // checking if total score and maximum scores are the same
                 if ($hasBlankResult) {
-                    $failureReason[]['warning'] = "Could not determine score. Not enough responses found in the submission.";
+                    $failureReason['warning'] = "Could not determine score. Not enough responses found in the submission.";
                     $scoreResult = 'Not Evaluated';
                 } else {
                     $attributes = json_decode($shipment['attributes'],true);
@@ -2444,7 +2449,7 @@ class Application_Service_Evaluation {
                         $samplePassStatuses));
                     if ($scoreResult == 'Fail') {
                         $totalScore = $shipmentScore + $documentationScore;
-                        $failureReason[]['warning'] = "Participant did not meet the score criteria (Participant Score - <strong>$totalScore</strong> out of <strong>$maxTotalScore</strong>)";
+                        $failureReason['warning'] = "Participant did not meet the score criteria (Participant Score - <strong>$totalScore</strong> out of <strong>$maxTotalScore</strong>)";
                     }
                 }
                 if ($scoreResult == 'Not Evaluated') {
@@ -2459,11 +2464,6 @@ class Application_Service_Evaluation {
                 $fRes = $db->fetchCol($db->select()->from('r_results', array('result_name'))->where('result_id = ' . $finalResult));
                 $shipmentResult[$counter]['display_result'] = $fRes[0];
                 $shipmentResult[$counter]['failure_reason'] = $failureReason = json_encode($failureReason);
-            }
-            $createdOn = Application_Service_Common::ParseDateISO8601OrMin($createdOnUser[0]);
-            $lastDate = new Zend_Date($shipment['lastdate_response'], Zend_Date::ISO_8601);
-            if ($createdOn->compare($lastDate,Zend_date::DATES) <= 0) {
-                $failureReason[]['warning'] = "Response was submitted after the last response date.";
             }
             $db->update('shipment_participant_map', array(
                 'shipment_score' => $shipmentScore,
