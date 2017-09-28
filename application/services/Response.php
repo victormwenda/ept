@@ -260,17 +260,16 @@ class Application_Service_Response {
             } else {
                 $mapData['shipment_test_report_date'] = new Zend_Db_Expr('now()');
             }
-            if (isset($authNameSpace->qc_access) && $authNameSpace->qc_access =='yes') {
-                $mapData['qc_done'] = $params['qcDone'];
-                if (isset($mapData['qc_done']) && trim($mapData['qc_done']) == "yes") {
-                    $mapData['qc_date'] =  Application_Service_Common::ParseDate($params['qcDate']);
-                    $mapData['qc_done_by'] = trim($params['qcDoneBy']);
-                    $mapData['qc_created_on'] = new Zend_Db_Expr('now()');
-                } else {
-                    $mapData['qc_date'] = null;
-                    $mapData['qc_done_by'] = null;
-                    $mapData['qc_created_on'] = null;
-                }
+
+            $mapData['qc_done'] = $params['qcDone'];
+            if (isset($mapData['qc_done']) && trim($mapData['qc_done']) == "yes") {
+                $mapData['qc_date'] =  Application_Service_Common::ParseDate($params['qcDate']);
+                $mapData['qc_done_by'] = trim($params['qcDoneBy']);
+                $mapData['qc_created_on'] = new Zend_Db_Expr('now()');
+            } else {
+                $mapData['qc_date'] = null;
+                $mapData['qc_done_by'] = null;
+                $mapData['qc_created_on'] = null;
             }
 
             if (isset($params['customField1']) && trim($params['customField1']) != "") {
@@ -285,6 +284,18 @@ class Application_Service_Response {
             $shipmentParticipantDb->updateShipment($mapData, $params['smid'], $params['hdLastDate'], $params['submitAction']);
 
             $instrumentsDb = new Application_Model_DbTable_Instruments();
+            $headerInstrumentSerials = $params['headerInstrumentSerial'];
+            foreach ($headerInstrumentSerials as $key => $headerInstrumentSerial) {
+                if (isset($headerInstrumentSerial) &&
+                    $headerInstrumentSerial != "") {
+                    $headerInstrumentDetails = array(
+                        'instrument_serial' => $headerInstrumentSerial,
+                        'instrument_installed_on' => $params['headerInstrumentInstalledOn'][$key],
+                        'instrument_last_calibrated_on' => $params['headerInstrumentLastCalibratedOn'][$key]
+                    );
+                    $instrumentsDb->upsertInstrument($params['participantId'], $headerInstrumentDetails);
+                }
+            }
             for ($i = 0; $i < $size; $i++) {
                 $sql = $db->select()
                     ->from("response_result_tb")
