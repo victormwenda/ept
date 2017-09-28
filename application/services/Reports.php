@@ -4439,19 +4439,6 @@ class Application_Service_Reports {
 		$shipmentPassResult=array();
 		$shipmentFailResult=array();
 		$headings = array('Shipment Code','Participants Identifier','Participants Name','Institute Name','Address','Country','State','City');
-		//foreach($shipmentParticipantResult as $shipment){
-		//	if($shipment['final_result']==1){
-		//		$shipmentPassResult[$shipment['shipment_code']][$shipment['unique_identifier']]=array();
-		//		$shipmentPassResult[$shipment['shipment_code']][$shipment['unique_identifier']][]=$shipment['unique_identifier'];
-		//		$shipmentPassResult[$shipment['shipment_code']][$shipment['unique_identifier']][]=$shipment['first_name'];
-		//	}
-		//	if($shipment['final_result']==2){
-		//		$shipmentFailResult[$shipment['shipment_code']][$shipment['unique_identifier']]=array();
-		//		$shipmentFailResult[$shipment['shipment_code']][$shipment['unique_identifier']][]=$shipment['unique_identifier'];
-		//		$shipmentFailResult[$shipment['shipment_code']][$shipment['unique_identifier']][]=$shipment['first_name'];
-		//	}
-		//}
-
 		$excel = new PHPExcel();
 		$cacheMethod = PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp;
 		$cacheSettings = array('memoryCacheSize' => '80MB');

@@ -582,7 +582,6 @@ class Application_Service_Evaluation {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $authNameSpace = new Zend_Session_Namespace('administrators');
         $admin = $authNameSpace->primary_email;
-        $size = count($params['sampleId']);
         if ($params['unableToSubmit'] == "yes") {
             if ($params['scheme'] == 'tb') {
                 $correctiveActions = array();
@@ -634,10 +633,12 @@ class Application_Service_Evaluation {
                 $attributes = json_encode($attributes);
                 $mapData = array(
                     "attributes" => $attributes,
-                    "user_comment" => $params['userComments'],
                     "updated_by_admin" => $admin,
                     "updated_on_admin" => new Zend_Db_Expr('now()')
                 );
+                if (isset($params["userComments"])) {
+                    $mapData["user_comment"] = $params['userComments'];
+                }
 
                 if (isset($params['customField1']) && trim($params['customField1']) != "") {
                     $mapData['custom_field_1'] = $params['customField1'];
@@ -679,6 +680,7 @@ class Application_Service_Evaluation {
                 $db->update('shipment_participant_map', $mapData, "map_id = " . $params['smid']);
             }
         } else {
+            $size = count($params['sampleId']);
             if ($params['scheme'] == 'eid') {
                 $attributes = array("sample_rehydration_date" => Application_Service_Common::ParseDate($params['sampleRehydrationDate']),
                     "extraction_assay" => $params['extractionAssay'],
@@ -2384,96 +2386,91 @@ class Application_Service_Evaluation {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         foreach ($shipmentResult as $shipment) {
             $createdOnUser = explode(" ", $shipment['shipment_test_report_date']);
+            $results = $schemeService->getTbSamples($shipmentId, $shipment['participant_id']);
+            $failureReason = array();
+            $shipmentScore = 0;
+            $samplePassStatuses = array();
+            $maxShipmentScore = 0;
+            $hasBlankResult = false;
+            foreach ($results as $result) {
+                $calculatedScorePassStatus = $scoringService->calculateTbSamplePassStatus($result['ref_mtb_detected'],
+                    $result['res_mtb_detected'], $result['ref_rif_resistance'], $result['res_rif_resistance'],
+                    $result['res_probe_d'], $result['res_probe_c'], $result['res_probe_e'], $result['res_probe_b'],
+                    $result['res_spc'], $result['res_probe_a'], $result['ref_is_excluded'], $result['ref_is_exempt']);
+
+                $shipmentScore += $scoringService->calculateTbSampleScore(
+                    $calculatedScorePassStatus,
+                    $result['ref_sample_score']);
+                $db->update('response_result_tb', array('calculated_score' => $calculatedScorePassStatus),
+                    "shipment_map_id = " . $result['map_id'] . " and sample_id = " . $result['sample_id']);
+                if ($result['ref_is_excluded'] == 'no' || $result['ref_is_exempt'] == 'yes') {
+                    $maxShipmentScore += $result['ref_sample_score'];
+                }
+                array_push($samplePassStatuses, $calculatedScorePassStatus);
+                $hasBlankResult = $hasBlankResult || !isset($result['res_mtb_detected']);
+            }
+            $maxTotalScore = $maxShipmentScore + Application_Service_EvaluationScoring::MAX_DOCUMENTATION_SCORE;
+            // if we are excluding this result, then let us not give pass/fail
+            $documentationScore = 0;
+            if ($shipment['is_excluded'] == 'yes') {
+                $shipmentScore = 0;
+                $failureReason = array();
+                $shipmentResult[$counter]['shipment_score'] = $shipmentScore;
+                $shipmentResult[$counter]['documentation_score'] = 0;
+                $shipmentResult[$counter]['display_result'] = 'Excluded';
+                $failureReason[] = array('warning' => 'Excluded from Evaluation');
+                $finalResult = 3;
+                $shipmentResult[$counter]['failure_reason'] = $failureReason = json_encode($failureReason);
+            } else {
+                $shipment['is_excluded'] = 'no';
+                // checking if total score and maximum scores are the same
+                if ($hasBlankResult) {
+                    $failureReason[]['warning'] = "Could not determine score. Not enough responses found in the submission.";
+                    $scoreResult = 'Not Evaluated';
+                } else {
+                    $attributes = json_decode($shipment['attributes'],true);
+                    $shipmentData['shipment_score'] = $shipmentScore;
+                    if(!isset($attributes['shipment_date'])) {
+                        $attributes['shipment_date'] = '';
+                    }
+                    if(!isset($attributes['expiry_date'])) {
+                        $attributes['expiry_date'] = '';
+                    }
+                    $documentationScore = $scoringService->calculateTbDocumentationScore($shipment['shipment_date'],
+                        $attributes['expiry_date'], $shipment['shipment_receipt_date'], $shipment['supervisor_approval'],
+                        $shipment['participant_supervisor'], $shipment['lastdate_response']);
+                    $scoreResult = ucfirst($scoringService->calculateSubmissionPassStatus(
+                        $shipmentScore, $documentationScore, $maxShipmentScore,
+                        $samplePassStatuses));
+                    if ($scoreResult == 'Fail') {
+                        $totalScore = $shipmentScore + $documentationScore;
+                        $failureReason[]['warning'] = "Participant did not meet the score criteria (Participant Score - <strong>$totalScore</strong> out of <strong>$maxTotalScore</strong>)";
+                    }
+                }
+                if ($scoreResult == 'Not Evaluated') {
+                    $finalResult = 4;
+                } else if ($scoreResult == 'Fail') {
+                    $finalResult = 2;
+                } else {
+                    $finalResult = 1;
+                }
+                $shipmentResult[$counter]['shipment_score'] = $shipmentScore;
+                $shipmentResult[$counter]['max_score'] = $maxTotalScore;
+                $fRes = $db->fetchCol($db->select()->from('r_results', array('result_name'))->where('result_id = ' . $finalResult));
+                $shipmentResult[$counter]['display_result'] = $fRes[0];
+                $shipmentResult[$counter]['failure_reason'] = $failureReason = json_encode($failureReason);
+            }
             $createdOn = Application_Service_Common::ParseDateISO8601OrMin($createdOnUser[0]);
             $lastDate = new Zend_Date($shipment['lastdate_response'], Zend_Date::ISO_8601);
             if ($createdOn->compare($lastDate,Zend_date::DATES) <= 0) {
-                $results = $schemeService->getTbSamples($shipmentId, $shipment['participant_id']);
-                $failureReason = array();
-                $shipmentScore = 0;
-                $samplePassStatuses = array();
-                $maxShipmentScore = 0;
-                $hasBlankResult = false;
-                foreach ($results as $result) {
-                    $calculatedScorePassStatus = $scoringService->calculateTbSamplePassStatus($result['ref_mtb_detected'],
-                        $result['res_mtb_detected'], $result['ref_rif_resistance'], $result['res_rif_resistance'],
-                        $result['res_probe_d'], $result['res_probe_c'], $result['res_probe_e'], $result['res_probe_b'],
-                        $result['res_spc'], $result['res_probe_a'], $result['ref_is_excluded'], $result['ref_is_exempt']);
-
-                    $shipmentScore += $scoringService->calculateTbSampleScore(
-                        $calculatedScorePassStatus,
-                        $result['ref_sample_score']);
-                    $db->update('response_result_tb', array('calculated_score' => $calculatedScorePassStatus),
-                        "shipment_map_id = " . $result['map_id'] . " and sample_id = " . $result['sample_id']);
-                    if ($result['ref_is_excluded'] == 'no' || $result['ref_is_exempt'] == 'yes') {
-                        $maxShipmentScore += $result['ref_sample_score'];
-                    }
-                    array_push($samplePassStatuses, $calculatedScorePassStatus);
-                    $hasBlankResult = $hasBlankResult || !isset($result['res_mtb_detected']);
-                }
-                $maxTotalScore = $maxShipmentScore + Application_Service_EvaluationScoring::MAX_DOCUMENTATION_SCORE;
-                // if we are excluding this result, then let us not give pass/fail
-                $documentationScore = 0;
-                if ($shipment['is_excluded'] == 'yes') {
-                    $shipmentScore = 0;
-                    $failureReason = array();
-                    $shipmentResult[$counter]['shipment_score'] = $shipmentScore;
-                    $shipmentResult[$counter]['documentation_score'] = 0;
-                    $shipmentResult[$counter]['display_result'] = 'Excluded';
-                    $failureReason[] = array('warning' => 'Excluded from Evaluation');
-                    $finalResult = 3;
-                    $shipmentResult[$counter]['failure_reason'] = $failureReason = json_encode($failureReason);
-                } else {
-                    $shipment['is_excluded'] = 'no';
-                    // checking if total score and maximum scores are the same
-                    if ($hasBlankResult) {
-                        $failureReason[]['warning'] = "Could not determine score. Not enough responses found in the submission.";
-                        $scoreResult = 'Not Evaluated';
-                    } else {
-                        $attributes = json_decode($shipment['attributes'],true);
-                        $shipmentData['shipment_score'] = $shipmentScore;
-                        if(!isset($attributes['shipment_date'])) {
-                            $attributes['shipment_date'] = '';
-                        }
-                        if(!isset($attributes['expiry_date'])) {
-                            $attributes['expiry_date'] = '';
-                        }
-                        $documentationScore = $scoringService->calculateTbDocumentationScore($shipment['shipment_date'],
-                            $attributes['expiry_date'], $shipment['shipment_receipt_date'], $shipment['supervisor_approval'],
-                            $shipment['participant_supervisor'], $shipment['lastdate_response']);
-                        $scoreResult = ucfirst($scoringService->calculateSubmissionPassStatus(
-                            $shipmentScore, $documentationScore, $maxShipmentScore,
-                            $samplePassStatuses));
-                        if ($scoreResult == 'Fail') {
-                            $totalScore = $shipmentScore + $documentationScore;
-                            $failureReason[]['warning'] = "Participant did not meet the score criteria (Participant Score - <strong>$totalScore</strong> out of <strong>$maxTotalScore</strong>)";
-                        }
-                    }
-                    if ($scoreResult == 'Not Evaluated') {
-                        $finalResult = 4;
-                    }
-                    else if ($scoreResult == 'Fail') {
-                        $finalResult = 2;
-                    } else {
-                        $finalResult = 1;
-                    }
-                    $shipmentResult[$counter]['shipment_score'] = $shipmentScore;
-                    $shipmentResult[$counter]['max_score'] = $maxTotalScore;
-                    $fRes = $db->fetchCol($db->select()->from('r_results', array('result_name'))->where('result_id = ' . $finalResult));
-                    $shipmentResult[$counter]['display_result'] = $fRes[0];
-                    $shipmentResult[$counter]['failure_reason'] = $failureReason = json_encode($failureReason);
-                }
-                $db->update('shipment_participant_map', array(
-                    'shipment_score' => $shipmentScore,
-                    'documentation_score' => $documentationScore,
-                    'final_result' => $finalResult,
-                    'failure_reason' => $failureReason
-                ), "map_id = " . $shipment['map_id']);
-            } else {
-                $failureReason = array('warning' => "Response was submitted after the last response date.");
-                $db->update('shipment_participant_map',
-                    array('failure_reason' => json_encode($failureReason)),
-                    "map_id = " . $shipment['map_id']);
+                $failureReason[]['warning'] = "Response was submitted after the last response date.";
             }
+            $db->update('shipment_participant_map', array(
+                'shipment_score' => $shipmentScore,
+                'documentation_score' => $documentationScore,
+                'final_result' => $finalResult,
+                'failure_reason' => $failureReason
+            ), "map_id = " . $shipment['map_id']);
             $counter++;
         }
         $db->update('shipment', array('max_score' => $maxTotalScore), "shipment_id = " . $shipmentId);
