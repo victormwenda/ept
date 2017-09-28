@@ -75,3 +75,12 @@ td.center{
 input.numberInput {
 	text-align: right;
 }
+
+.dropdownTextContainer {
+    background-color: #fff;
+}
+
+.dropdownText {
+    color: #000;
+}
+

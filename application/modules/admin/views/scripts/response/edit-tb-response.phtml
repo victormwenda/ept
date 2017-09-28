@@ -437,7 +437,7 @@ foreach ($this->responseData['results'] as $result) {
                         <input type="hidden" id="instrumentSerial<?php echo $counter; ?>"
                                name="instrumentSerial[<?php echo $index; ?>]"
                                value="<?php echo $result['res_instrument_serial']; ?>" />
-                        <div id="instrumentDropDown<?php echo $counter; ?>" class="btn-group" style="display: block; border: solid 1px #ccc; width: 100%; height: 2.13em;">
+                        <div id="instrumentDropDown<?php echo $counter; ?>" class="btn-group dropdownTextContainer" style="display: block; border: solid 1px #ccc; width: 100%; height: 2.13em;">
                             <a class="btn dropdown-toggle" data-toggle="dropdown" href="#" style="width: 100%; padding-top: 3px;">
                                 <span class="dropdownText">
                                     <?php echo (isset($result['res_instrument_serial']) && $result['res_instrument_serial'] != "" ? $result['res_instrument_serial'] : "-- Select --") ?>
