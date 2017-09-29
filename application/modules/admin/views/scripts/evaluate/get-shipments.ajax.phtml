@@ -1,9 +1,8 @@
 <?php
-//Zend_Debug::dump($this->shipments);die;
-if($this->shipments == false && count($this->shipments) <= 0){
-	echo "<br/><br/><br/><h4 style='text-align:center;'>Unable fetch shipments. Please try again later or contact system admin for help</h4>";
-}else{
-	?>
+$adminSession = new Zend_Session_Namespace('administrators');
+if ($this->shipments == false && count($this->shipments) <= 0) {
+    echo "<br/><br/><br/><h4 style='text-align:center;'>Unable fetch shipments. Please try again later or contact system admin for help</h4>";
+} else { ?>
 	
     <div class="modal-dialog" style="width:100%;">
         <div class="modal-header">
@@ -40,13 +39,14 @@ if($this->shipments == false && count($this->shipments) <= 0){
 					<td style="text-align: center;"><?php echo ucfirst($shipment['shipment_status']) ?></td>
 					<td style="text-align: center;">
 					<?php
-                        if (isset($shipment["reported_count"]) && $shipment["reported_count"] > 0) {
-						    if ($shipment['scheme_type'] != 'vl') { ?>
+                        if ($adminSession->is_ptcc_coordinator == 0) {
+                            if (isset($shipment["reported_count"]) && $shipment["reported_count"] > 0) {
+						        if ($shipment['scheme_type'] != 'vl') { ?>
 						<a class="btn btn-success btn-xs" href="/admin/evaluate/shipment/sid/<?php echo base64_encode($shipment['shipment_id']); ?>">
                             <span><i class="icon-edit"></i> Evaluate</span>
                         </a>
 						<?php
-						    } else { ?>
+                                } else { ?>
 						<a class="btn btn-success btn-xs" href="/admin/evaluate/shipment/sid/<?php echo base64_encode($shipment['shipment_id']); ?>">
                             <span><i class="icon-edit"></i> Evaluate</span>
                         </a>
@@ -54,18 +54,19 @@ if($this->shipments == false && count($this->shipments) <= 0){
                             <span><i class="icon-edit"></i> VL Range</span>
                         </a>
 						<?php
-						    }
-							if ($nonResponse > 0) { ?>
+						        }
+							    if ($nonResponse > 0) { ?>
                         <a class="btn btn-warning btn-xs" href="javascript:void(0);" onclick="mailNonParticipants('<?php echo base64_encode($shipment['shipment_id']); ?>');">
                             <span><i class="icon-envelope"></i> Mail <?php echo $nonResponse ?> Not Responded Participants</span>
                         </a>
                         <?php
-						    }
-						} else { ?>
+						        }
+                            } else { ?>
                         <a class="btn btn-primary btn-xs disabled" href="javascript:void(0)">
                             <span><i class="icon-edit"></i> Evaluate</span>
                         </a>
                         <?php
+                            }
                         }
                         if ($nonResponse > 0 && $shipment['scheme_type'] == 'tb') { ?>
                         <a class="btn btn-success btn-xs" href="/admin/response/shipment/sid/<?php echo base64_encode($shipment['shipment_id']); ?>">

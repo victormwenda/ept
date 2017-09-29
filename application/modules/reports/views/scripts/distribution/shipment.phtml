@@ -1,4 +1,5 @@
 <?php
+$adminSession = new Zend_Session_Namespace('administrators');
 if (count($this->shipment) > 0) {
     if (isset($this->shipment[0]['status']) && $this->shipment[0]['status'] == 'finalized') {
         header('Location: /reports/distribution');
@@ -171,6 +172,7 @@ if (count($this->shipment) > 0) {
     <br/>
     <br/>
     <br/>
+    <?php if ($adminSession->is_ptcc_coordinator == 0) { ?>
     <div align="right" style="" class="col-lg-6">
         <a href="javascript:void(0)" class="btn btn-sm  btn-warning" style="margin-top:10px;clear:both !important;" onclick="generateSummaryReport('<?php echo base64_encode($this->shipment[0]['shipment_id']); ?>')">
             <i class="icon-ok"></i>&nbsp&nbsp Generate Summary Report for this Shipment
@@ -204,6 +206,7 @@ if (count($this->shipment) > 0) {
         <?php
         } ?>
     </div>
+    <?php } ?>
     <div align="left" style="" class="col-lg-6">
         <span id="summaryDiv" ></span>
     </div>

@@ -183,6 +183,7 @@
                             <?php } ?>
                         </ul>
                     </li>
+                    <?php if ($adminSession->is_ptcc_coordinator == 0) { ?>
                     <li  <?php echo (isset($this->layout()->pageName) && $this->layout()->pageName == 'manageMenu') ? "class='active dropdown'" : "class='dropdown'"; ?>>
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-beaker"></i>&nbsp;&nbsp;Manage <b class="caret"></b></a>
                         <ul class="dropdown-menu">
@@ -196,14 +197,13 @@
                                     Shipments
                                 </a>
                             </li>
-                            <?php if ($adminSession->is_ptcc_coordinator == 0) { ?>
                             <li class="divider"></li>
                             <li>
                                 <a href="javascript:void(0);">Packaging</a>
                             </li>
-                            <?php } ?>
                         </ul>
                     </li>
+                    <?php } ?>
                     <li  <?php echo (isset($this->layout()->pageName) && $this->layout()->pageName == 'analyze') ? "class='active dropdown'" : "class='dropdown'"; ?>>
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                             <i class="icon-search"></i>
@@ -212,19 +212,21 @@
                         <ul class="dropdown-menu">
                             <li>
                                 <a href="<?php echo $this->url(array('module'=>'admin','controller'=>'evaluate'),'default',true); ?>">
-                                    Evaluate Responses
+                                    <?php echo ($adminSession->is_ptcc_coordinator == 0 ? "Evaluate Responses" : "Enter Responses"); ?>
                                 </a>
                             </li>
                             <li>
                                 <a href="<?php echo $this->url(array('module'=>'reports','controller'=>'distribution'),'default',true); ?>">
-                                    Generate Reports
+                                    <?php echo ($adminSession->is_ptcc_coordinator == 0 ? "Generate Reports" : "Download Reports"); ?>
                                 </a>
                             </li>
+                            <?php if ($adminSession->is_ptcc_coordinator == 0) { ?>
                             <li>
                                 <a href="<?php echo $this->url(array('module'=>'reports','controller'=>'finalize'),'default',true); ?>">
                                     Finalize Reports
                                 </a>
                             </li>
+                            <?php } ?>
                             <li>
                                 <a href="<?php echo $this->url(array('module'=>'reports','controller'=>'finalize','action'=>'shipments'),'default',true); ?>">
                                     View Finalized Shipments
