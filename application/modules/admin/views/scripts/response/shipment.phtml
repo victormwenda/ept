@@ -4,6 +4,7 @@
     }
 </style>
 <?php
+$adminSession = new Zend_Session_Namespace('administrators');
 if (count($this->shipment) > 0) { ?>
 <div class="well" style="clear: both;">
     <a href="javascript:void(0);" onclick="$('#allShipmentList').fadeToggle()" class="btn btn-warning btn-xs pull-right" style="margin-top:-10px;">Show/Hide Shipment List</a>
@@ -40,29 +41,31 @@ if (count($this->shipment) > 0) { ?>
 				<td style="text-align: center;"><?php echo (isset($shipment['number_passed']) && $shipment['number_passed'] >= 0) ? $shipment['number_passed'] : 0; ?></td>
 				<td style="text-align: center;"><?php echo ucfirst($shipment['shipment_status']) ?></td>
                 <td style="text-align: center;">
-                    <?php
-                    if (isset($shipment['reported_count']) && $shipment['reported_count'] > 0) { ?>
+<?php
+                    if ($adminSession->is_ptcc_coordinator == 0) {
+                        if (isset($shipment['reported_count']) && $shipment['reported_count'] > 0) { ?>
                         <a class="btn btn-success btn-xs" href="/admin/evaluate/shipment/sid/<?php echo base64_encode($shipment['shipment_id']); ?>">
                             <span><i class="icon-edit"></i> Evaluate</span>
                         </a>
-                        <?php
-                        if ($nonResponse > 0) {?>
+<?php
+                            if ($nonResponse > 0) {?>
                             <a class="btn btn-warning btn-xs" href="javascript:void(0);" onclick="mailNonParticipants('<?php echo base64_encode($shipment['shipment_id']); ?>');">
                                 <span><i class="icon-envelope"></i> Mail <?php echo $nonResponse ?> Not Responded Participants</span>
                             </a>
-                            <?php
-                        }
-                    } else { ?>
+<?php
+                            }
+                        } else { ?>
                         <a class="btn btn-primary btn-xs disabled" href="javascript:void(0)">
                             <span><i class="icon-edit"></i> Evaluate</span>
                         </a>
-                        <?php
+<?php
+                        }
                     }
                     if ($nonResponse > 0 && $shipment['scheme_type'] == 'tb') { ?>
                         <a class="btn btn-success btn-xs" href="/admin/response/shipment/sid/<?php echo base64_encode($shipment['shipment_id']); ?>">
                             <span><i class="icon-edit"></i> Enter Response</span>
                         </a>
-                        <?php
+<?php
                     } ?>
                 </td>
 			</tr>
