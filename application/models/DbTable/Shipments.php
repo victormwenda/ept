@@ -448,6 +448,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
         if (isset($sLimit) && isset($sOffset)) {
             $sQuery = $sQuery->limit($sLimit, $sOffset);
         }
+
         $rResult = $this->getAdapter()->fetchAll($sQuery);
 
         /* Data set length after filtering */
@@ -499,7 +500,8 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
         $output = array(
             "iTotalRecords" => $iTotal,
             "iTotalDisplayRecords" => $iFilteredTotal,
-            "aaData" => array()
+            "aaData" => array(),
+            "message" => ""
         );
         if (isset($parameters["sEcho"])) {
             $output["sEcho"] = intval($parameters['sEcho']);
@@ -554,6 +556,9 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
             }
 
             $output['aaData'][] = $row;
+        }
+        if (count($output['aaData']) == 0) {
+            $output["message"] = "Could not get shipment using your login details. Are you logged in as the correct user?";
         }
 
         echo json_encode($output);
