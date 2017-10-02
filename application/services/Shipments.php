@@ -1251,7 +1251,8 @@ class Application_Service_Shipments {
                     'mtb_detected' => $existingResult['mtb_detected'],
                     'rif_resistance' => $existingResult['rif_resistance'],
                     'is_excluded' => $existingResult['is_excluded'],
-                    'is_exempt' => $existingResult['is_exempt']
+                    'is_exempt' => $existingResult['is_exempt'],
+                    'excluded_reason' => $existingResult['excluded_reason']
                 );
             }
             $dbAdapter->delete('reference_result_tb', 'shipment_id = ' . $params['shipmentId']);
@@ -1264,13 +1265,15 @@ class Application_Service_Shipments {
                     'mtb_detected' => $params['mtbDetected'][$i],
                     'rif_resistance' => $params['rifResistance'][$i],
                     'is_excluded' => $params['excluded'][$i] == 'yes_not_exempt' || $params['excluded'][$i] == 'yes_exempt' ? 'yes' : 'no',
-                    'is_exempt' => $params['excluded'][$i] == 'yes_exempt' ? 'yes' : 'no'
+                    'is_exempt' => $params['excluded'][$i] == 'yes_exempt' ? 'yes' : 'no',
+                    'excluded_reason' => $params['excludedReason'][$i]
                 );
                 if (!isset($existingSampleMap[$sampleId]) ||
                     $existingSampleMap[$sampleId]['mtb_detected'] != $newSampleMap[$sampleId]['mtb_detected'] ||
                     $existingSampleMap[$sampleId]['rif_resistance'] != $newSampleMap[$sampleId]['rif_resistance'] ||
                     $existingSampleMap[$sampleId]['is_excluded'] != $newSampleMap[$sampleId]['is_excluded'] ||
-                    $existingSampleMap[$sampleId]['is_exempt'] != $newSampleMap[$sampleId]['is_exempt']) {
+                    $existingSampleMap[$sampleId]['is_exempt'] != $newSampleMap[$sampleId]['is_exempt'] ||
+                    $existingSampleMap[$sampleId]['excluded_reason'] != $newSampleMap[$sampleId]['excluded_reason']) {
                     $rescoringNecessary = true;
                 }
                 $dbAdapter->insert('reference_result_tb', array(
@@ -1289,7 +1292,8 @@ class Application_Service_Shipments {
                         'mandatory' => 1,
                         'sample_score' => Application_Service_EvaluationScoring::SAMPLE_MAX_SCORE,
                         'is_excluded' => $newSampleMap[$sampleId]['is_excluded'],
-                        'is_exempt' => $newSampleMap[$sampleId]['is_exempt']
+                        'is_exempt' => $newSampleMap[$sampleId]['is_exempt'],
+                        'excluded_reason' => $newSampleMap[$sampleId]['excluded_reason']
                     ));
                 if ($newSampleMap[$sampleId]['is_excluded'] == 'no' ||
                     $newSampleMap[$sampleId]['is_exempt'] == 'yes') {

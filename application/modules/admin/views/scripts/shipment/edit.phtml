@@ -2160,7 +2160,8 @@ $dtFormat=  $vHelper->getDateFormat(); ?>
                             <td>
                                 <select name="excluded[]" class="isRequired form-control input-sm"
                                         title="Do you wish to exclude this sample from evaluation and scoring?"
-                                        placeholder="Do you wish to exclude this sample from evaluation and scoring?">
+                                        placeholder="Do you wish to exclude this sample from evaluation and scoring?"
+                                        onChange="changeExcluded(this, '<?php echo $counter; ?>')">
                                     <option value="yes_not_exempt" <?php echo ($reference['is_excluded'] == 'yes' && $reference['is_exempt'] == 'no' ? "selected='selected'" : ""); ?>>
                                         Yes, Exclude from Evaluation Entirely
                                     </option>
@@ -2171,6 +2172,16 @@ $dtFormat=  $vHelper->getDateFormat(); ?>
                                         No
                                     </option>
                                 </select>
+                            </td>
+                        </tr>
+                        <tr id="excludedReasonRow<?php echo $counter; ?>" style="display: <?php echo ($reference['is_excluded'] == 'yes' || $reference['is_exempt'] == 'yes') ? 'table-row' : 'none'?>;">
+                            <td colspan="2">
+                                <label for="excludedReason[]">Excluded Reason</label>
+                            </td>
+                            <td colspan="8">
+                                <input type="text" name="excludedReason[]" class="form-control input-sm"
+                                       title="Please enter the reason that this sample was excluded. This will appear on reports that are sent back out to participants"
+                                       placeholder="Reason for exclusion" value="<?php echo $reference['excluded_reason']; ?>" />
                             </td>
                         </tr>
                             <?php
@@ -2238,4 +2249,13 @@ $dtFormat=  $vHelper->getDateFormat(); ?>
     }
   }
 
+  function changeExcluded(excludedDropDown, rowNumber) {
+    var excludedReasonRow = $("#excludedReasonRow" + rowNumber);
+    if ($(excludedDropDown).val() === 'no') {
+      excludedReasonRow.css('display', 'none');
+      excludedReasonRow.find('intput').val('');
+    } else {
+      excludedReasonRow.css('display', 'table-row');
+    }
+  }
 </script>

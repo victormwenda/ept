@@ -1187,7 +1187,8 @@ class Application_Service_Evaluation {
                     'ref.shipment_id = spm.shipment_id AND ref.sample_id = res.sample_id', array(
                         'sample_label' => 'ref.sample_label',
                         'ref_is_excluded' => 'ref.is_excluded',
-                        'ref_is_exempt' => 'ref.is_exempt'
+                        'ref_is_exempt' => 'ref.is_exempt',
+                        'ref_excluded_reason' => 'ref.excluded_reason'
                     ))
                 ->where("spm.shipment_id = ?", $shipmentId)
                 ->where("substring(spm.evaluation_status,4,1) != '0'")
@@ -1527,7 +1528,8 @@ class Application_Service_Evaluation {
                     array(
                         'sample_id', 'sample_label', 'sample_score',
                         'ref_is_excluded' => 'ref.is_excluded',
-                        'ref_is_exempt' => 'ref.is_exempt'))
+                        'ref_is_exempt' => 'ref.is_exempt',
+                        'ref_excluded_reason' => 'ref.excluded_reason'))
                     ->join(array('spm' => 'shipment_participant_map'),
                         'spm.shipment_id = ref.shipment_id', array())
                     ->joinLeft(array('res' => 'response_result_tb'),
@@ -1585,6 +1587,7 @@ class Application_Service_Evaluation {
                         'consensus_rif_resistance' => $tbResultsConsensus[$tbResult['sample_id']]['rif_resistance'],
                         'ref_is_excluded' => $tbResult['ref_is_excluded'],
                         'ref_is_exempt' => $tbResult['ref_is_exempt'],
+                        'ref_excluded_reason' => $tbResult['ref_excluded_reason'],
                         'max_score' => $tbResult['sample_score'],
                         'score' => $sampleScore,
                         'score_status' => $sampleScoreStatus);

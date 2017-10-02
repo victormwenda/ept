@@ -634,9 +634,23 @@ if (sizeof($this->result['shipment']) > 0) {
                 $labRes .= '    </tr>';
                 $scoreTotal = 0;
                 $maxScoreTotal = 0;
+                $exclusionCount = 0;
                 foreach ($result['responseResult'] as $response) {
+                    if ($response['ref_is_excluded'] == 'yes' &&
+                        isset($response['ref_excluded_reason']) &&
+                        trim($response['ref_excluded_reason']) != "") {
+                        $exclusionCount++;
+                    }
                     $labRes .= '    <tr>';
-                    $labRes .= '	     <td style="background-color:#cccccc;width:100%;" colspan="4"><strong>Sample ID: '.$response['sample_label'].'</strong></td>';
+                    $labRes .= '	     <td style="background-color:#cccccc;width:100%;" colspan="4"><strong>Sample ID: '.$response['sample_label'];
+                    if ($response['ref_is_excluded'] == 'yes' &&
+                        isset($response['ref_excluded_reason']) &&
+                        trim($response['ref_excluded_reason']) != "") {
+                        for ($excludedReasonIndex = 0; $excludedReasonIndex < $exclusionCount; $excludedReasonIndex++) {
+                            $labRes .= '*';
+                        }
+                    }
+                    $labRes .= '</strong></td>';
                     $labRes .= '    </tr>';
                     $labRes .= '    <tr>';
                     $labRes .= '	     <td style="width:46%;">Expected Results</td>';
@@ -682,6 +696,21 @@ if (sizeof($this->result['shipment']) > 0) {
                 $labRes .= '	     <td style="width:22%;background-color:#B6DDE8;border-top: solid 10px #000000;border-bottom: solid 10px #000000;text-align:center;"><strong>'.($result['submission_score_status'] == 'fail' ? 'Unsatisfactory' : 'Satisfactory').'</strong></td>';
                 $labRes .= '	     <td style="width:10%;border-top: solid 10px #000000;"></td>';
                 $labRes .= '    </tr>';
+                foreach ($result['responseResult'] as $response) {
+                    if ($response['ref_is_excluded'] == 'yes' &&
+                        isset($response['ref_excluded_reason']) &&
+                        trim($response['ref_excluded_reason']) != "") {
+                        $labRes .= '    <tr>';
+                        $labRes .= '        <td colspan="4">';
+                        $labRes .= '            <strong>';
+                        for ($excludedReasonIndex = 0; $excludedReasonIndex < $exclusionCount; $excludedReasonIndex++) {
+                            $labRes .= '*';
+                        }
+                        $labRes .= '            </strong> ' . $response['ref_excluded_reason'];
+                        $labRes .= '        </td>';
+                        $labRes .= '    </tr>';
+                    }
+                }
                 $labRes .= '</table>';
                 if ((isset($result['eval_comment']) && $result['eval_comment'] !== '') ||
                     (isset($result['optional_eval_comment']) && $result['optional_eval_comment'] !== '') ||
