@@ -1595,13 +1595,18 @@ class Application_Service_Shipments {
     }
 
     public function getParticipantCountBasedOnShipment() {
-        $resultArray = array();
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
 
-        $sQuery = $db->select()->from(array('s' => 'shipment'), array('s.shipment_code', 's.scheme_type', 's.lastdate_response'))
-            ->join(array('spm' => 'shipment_participant_map'), 'spm.shipment_id=s.shipment_id', array('participantCount' => new Zend_Db_Expr("count(spm.participant_id)"), 'receivedCount' => new Zend_Db_Expr("SUM(spm.participant_id <> 0)")))
-            ->join(array('p' => 'participant'), 'spm.participant_id=p.participant_id', array())
-            ->where("s.status='shipped'")
+        $sQuery = $db->select()
+            ->from(array('s' => 'shipment'), array('s.shipment_code', 's.scheme_type', 's.lastdate_response'))
+            ->join(array('spm' => 'shipment_participant_map'),'spm.shipment_id = s.shipment_id',
+                array(
+                    'participantCount' => new Zend_Db_Expr("COUNT(spm.participant_id)"),
+                    'receivedCount' => new Zend_Db_Expr("SUM(spm.shipment_receipt_date IS NOT NULL)"),
+                    'respondedCount' => new Zend_Db_Expr("SUM(SUBSTR(spm.evaluation_status, 3, 1) = '1')")
+                ))
+            ->join(array('p' => 'participant'),'spm.participant_id = p.participant_id', array())
+            ->where("s.status = 'shipped'")
             ->where("s.shipment_date > DATE_SUB(now(), INTERVAL 24 MONTH)");
         $authNameSpace = new Zend_Session_Namespace('administrators');
         if ($authNameSpace->is_ptcc_coordinator) {
@@ -1609,8 +1614,7 @@ class Application_Service_Shipments {
         }
         $sQuery = $sQuery->group('s.shipment_id')
             ->order("s.shipment_id");
-        $resultArray = $db->fetchAll($sQuery);
-        return $resultArray;
+        return $db->fetchAll($sQuery);
     }
 
     public function removeShipmentParticipant($mapId) {
