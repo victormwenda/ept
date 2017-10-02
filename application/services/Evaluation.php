@@ -1227,23 +1227,28 @@ class Application_Service_Evaluation {
                 ->order('matches_reference_result DESC');
             $tbResultsConsensusMtbDetected = $db->fetchAll($consensusResultsQueryMtbDetected);
             foreach ($tbResultsConsensusMtbDetected as $tbResultsConsensusMtbDetectedItem) {
-                if (!isset($tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']])) {
-                    $tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']] = array(
-                        'mtb_detected' => $tbResultsConsensusMtbDetectedItem['mtb_detected'],
-                        'mtb_occurrences' => $tbResultsConsensusMtbDetectedItem['occurrences'],
-                        'mtb_matches_reference_result' => $tbResultsConsensusMtbDetectedItem['matches_reference_result'],
-                        'rif_resistance' => '',
-                        'rif_occurrences' => 0,
-                        'rif_matches_reference_result' => 0
-                    );
-                } else if ($tbResultsConsensusMtbDetectedItem['occurrences'] >
-                    $tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']]['mtb_occurrences'] ||
-                    ($tbResultsConsensusMtbDetectedItem['occurrences'] ==
-                     $tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']]['mtb_occurrences'] &&
-                     $tbResultsConsensusMtbDetectedItem['matches_reference_result'] == 1)) {
-                    $tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']]['mtb_detected'] = $tbResultsConsensusMtbDetectedItem['mtb_detected'];
-                    $tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']]['mtb_occurrences'] = $tbResultsConsensusMtbDetectedItem['occurrences'];
-                    $tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']]['mtb_matches_reference_result'] = $tbResultsConsensusMtbDetectedItem['matches_reference_result'];
+                if (isset($tbResultsConsensusMtbDetectedItem['mtb_detected']) &&
+                    !trim($tbResultsConsensusMtbDetectedItem['mtb_detected']) != "" &&
+                    isset($tbResultsConsensusMtbDetectedItem['occurrences']) &&
+                    $tbResultsConsensusMtbDetectedItem['occurrences'] > 0) {
+                    if (!isset($tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']])) {
+                        $tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']] = array(
+                            'mtb_detected' => $tbResultsConsensusMtbDetectedItem['mtb_detected'],
+                            'mtb_occurrences' => $tbResultsConsensusMtbDetectedItem['occurrences'],
+                            'mtb_matches_reference_result' => $tbResultsConsensusMtbDetectedItem['matches_reference_result'],
+                            'rif_resistance' => '',
+                            'rif_occurrences' => 0,
+                            'rif_matches_reference_result' => 0
+                        );
+                    } else if ($tbResultsConsensusMtbDetectedItem['occurrences'] >
+                        $tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']]['mtb_occurrences'] ||
+                        ($tbResultsConsensusMtbDetectedItem['occurrences'] ==
+                            $tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']]['mtb_occurrences'] &&
+                            $tbResultsConsensusMtbDetectedItem['matches_reference_result'] == 1)) {
+                        $tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']]['mtb_detected'] = $tbResultsConsensusMtbDetectedItem['mtb_detected'];
+                        $tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']]['mtb_occurrences'] = $tbResultsConsensusMtbDetectedItem['occurrences'];
+                        $tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']]['mtb_matches_reference_result'] = $tbResultsConsensusMtbDetectedItem['matches_reference_result'];
+                    }
                 }
             }
 
@@ -1266,23 +1271,28 @@ class Application_Service_Evaluation {
             $tbResultsConsensusRifDetected = $db->fetchAll($consensusResultsQueryRifDetected);
 
             foreach ($tbResultsConsensusRifDetected as $tbResultsConsensusRifDetectedItem) {
-                if (!isset($tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']])) {
-                    $tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']] = array(
-                        'mtb_detected' => '',
-                        'mtb_occurrences' => 0,
-                        'mtb_matches_reference_result' => 0,
-                        'rif_resistance' => $tbResultsConsensusRifDetectedItem['rif_resistance'],
-                        'rif_occurrences' => $tbResultsConsensusRifDetectedItem['occurrences'],
-                        'rif_matches_reference_result' => $tbResultsConsensusRifDetectedItem['matches_reference_result']
-                    );
-                } else if ($tbResultsConsensusRifDetectedItem['occurrences'] >
-                    $tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']]['rif_occurrences'] ||
-                    ($tbResultsConsensusRifDetectedItem['occurrences'] ==
-                        $tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']]['rif_occurrences'] &&
-                        $tbResultsConsensusRifDetectedItem['matches_reference_result'] == 1)) {
-                    $tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']]['rif_resistance'] = $tbResultsConsensusRifDetectedItem['rif_resistance'];
-                    $tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']]['rif_occurrences'] = $tbResultsConsensusRifDetectedItem['occurrences'];
-                    $tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']]['rif_matches_reference_result'] = $tbResultsConsensusRifDetectedItem['matches_reference_result'];
+                if (isset($tbResultsConsensusRifDetectedItem['rif_resistance']) &&
+                    !trim($tbResultsConsensusRifDetectedItem['rif_resistance']) != "" &&
+                    isset($tbResultsConsensusRifDetectedItem['occurrences']) &&
+                    $tbResultsConsensusRifDetectedItem['occurrences'] > 0) {
+                    if (!isset($tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']])) {
+                        $tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']] = array(
+                            'mtb_detected' => '',
+                            'mtb_occurrences' => 0,
+                            'mtb_matches_reference_result' => 0,
+                            'rif_resistance' => $tbResultsConsensusRifDetectedItem['rif_resistance'],
+                            'rif_occurrences' => $tbResultsConsensusRifDetectedItem['occurrences'],
+                            'rif_matches_reference_result' => $tbResultsConsensusRifDetectedItem['matches_reference_result']
+                        );
+                    } else if ($tbResultsConsensusRifDetectedItem['occurrences'] >
+                        $tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']]['rif_occurrences'] ||
+                        ($tbResultsConsensusRifDetectedItem['occurrences'] ==
+                            $tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']]['rif_occurrences'] &&
+                            $tbResultsConsensusRifDetectedItem['matches_reference_result'] == 1)) {
+                        $tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']]['rif_resistance'] = $tbResultsConsensusRifDetectedItem['rif_resistance'];
+                        $tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']]['rif_occurrences'] = $tbResultsConsensusRifDetectedItem['occurrences'];
+                        $tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']]['rif_matches_reference_result'] = $tbResultsConsensusRifDetectedItem['matches_reference_result'];
+                    }
                 }
             }
         }
@@ -1554,13 +1564,13 @@ class Application_Service_Evaluation {
                 $sampleStatuses = array();
                 foreach ($tbResults as $tbResult) {
                     $sampleScoreStatus = $scoringService->calculateTbSamplePassStatus(
-                            $tbResultsExpected[$tbResult['sample_id']]['mtb_detected'],
-                            $tbResult['mtb_detected'],
-                            $tbResultsExpected[$tbResult['sample_id']]['rif_resistance'],
-                            $tbResult['rif_resistance'],
-                            $tbResult['probe_d'], $tbResult['probe_c'], $tbResult['probe_e'], $tbResult['probe_b'],
-                            $tbResult['spc'], $tbResult['probe_a'], $tbResult['ref_is_excluded'],
-                            $tbResult['ref_is_exempt']);
+                        $tbResultsExpected[$tbResult['sample_id']]['mtb_detected'],
+                        $tbResult['mtb_detected'],
+                        $tbResultsExpected[$tbResult['sample_id']]['rif_resistance'],
+                        $tbResult['rif_resistance'],
+                        $tbResult['probe_d'], $tbResult['probe_c'], $tbResult['probe_e'], $tbResult['probe_b'],
+                        $tbResult['spc'], $tbResult['probe_a'], $tbResult['ref_is_excluded'],
+                        $tbResult['ref_is_exempt']);
                     array_push($sampleStatuses, $sampleScoreStatus);
                     $sampleScore = $scoringService->calculateTbSampleScore(
                         $sampleScoreStatus,
@@ -1568,6 +1578,18 @@ class Application_Service_Evaluation {
                     $shipmentScore += $sampleScore;
                     if ($tbResult['ref_is_excluded'] == 'no' || $tbResult['ref_is_exempt'] == 'yes') {
                         $maxShipmentScore += $tbResult['sample_score'];
+                    }
+                    $consensusTbMtbDetected = $tbResultsExpected[$tbResult['sample_id']]['mtb_detected'];
+                    $consensusTbRifResistance = $tbResultsExpected[$tbResult['sample_id']]['rif_resistance'];
+                    if (isset($tbResultsConsensus[$tbResult['sample_id']])) {
+                        if (isset($tbResultsConsensus[$tbResult['sample_id']]['mtb_detected']) &&
+                            trim($tbResultsConsensus[$tbResult['sample_id']]['mtb_detected']) != "") {
+                            $consensusTbMtbDetected = $tbResultsConsensus[$tbResult['sample_id']]['mtb_detected'];
+                        }
+                        if (isset($tbResultsConsensus[$tbResult['sample_id']]['rif_resistance']) &&
+                            trim($tbResultsConsensus[$tbResult['sample_id']]['rif_resistance']) != "") {
+                            $consensusTbRifResistance = $tbResultsConsensus[$tbResult['sample_id']]['rif_resistance'];
+                        }
                     }
                     $toReturn[$counter] = array(
                         'sample_id' => $tbResult['sample_id'],
@@ -1583,8 +1605,8 @@ class Application_Service_Evaluation {
                         'probe_a' => $tbResult['probe_a'],
                         'expected_mtb_detected' => $tbResultsExpected[$tbResult['sample_id']]['mtb_detected'],
                         'expected_rif_resistance' => $tbResultsExpected[$tbResult['sample_id']]['rif_resistance'],
-                        'consensus_mtb_detected' => $tbResultsConsensus[$tbResult['sample_id']]['mtb_detected'],
-                        'consensus_rif_resistance' => $tbResultsConsensus[$tbResult['sample_id']]['rif_resistance'],
+                        'consensus_mtb_detected' => $consensusTbMtbDetected,
+                        'consensus_rif_resistance' => $consensusTbRifResistance,
                         'ref_is_excluded' => $tbResult['ref_is_excluded'],
                         'ref_is_exempt' => $tbResult['ref_is_exempt'],
                         'ref_excluded_reason' => $tbResult['ref_excluded_reason'],
