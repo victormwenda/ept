@@ -48,7 +48,7 @@ try {
                             'res.instrument_last_calibrated_on', 'res.reagent_lot_id', 'res.cartridge_expiration_date', 'res.module_name',
                             'res.instrument_user', 'res.error_code', 'res.date_tested', 'res.mtb_detected', 'res.rif_resistance', 'res.probe_d',
                             'res.probe_c', 'res.probe_e', 'res.probe_b', 'res.spc', 'res.probe_a', 'res.calculated_score'))
-                        ->where("res.map_id = ?", $submission["map_id"]);
+                        ->where("res.shipment_map_id = ?", $submission["map_id"]);
                     $samplesToSend = $db->fetchAll($samplesQuery);
                     foreach ($samplesToSend as $sample) {
                         $participant["Samples"][] = array(

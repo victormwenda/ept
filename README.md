@@ -18,6 +18,7 @@ enter the following jobs
 ```
 */2 * * * * php -f /var/www/ept-2.4/cron/SendMobilePushNotifications.php
 */2 * * * * php -f /var/www/ept-2.4/cron/SendMailAlerts.php
+0 0 6 1/1 * ? * php -f /var/www/ept-2.4/cron/SendParticipationDataToGxAlert.php
 ```
 
 
