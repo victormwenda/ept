@@ -2539,14 +2539,18 @@ class Application_Service_Reports {
     }
 
     public function getShipmentsByScheme($schemeType, $startDate, $endDate) {
-        $resultArray = array();
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
-
-        $sQuery = $db->select()->from(array('s' => 'shipment'), array('s.shipment_id', 's.shipment_code', 's.scheme_type', 's.shipment_date',))
-                ->where("DATE(s.shipment_date) >= ?", $startDate)
-                ->where("DATE(s.shipment_date) <= ?", $endDate)
-                ->where("s.scheme_type = ?", $schemeType)
-                ->order("s.shipment_id");
+        $sQuery = $db->select()->from(array('s' => 'shipment'), array('s.shipment_id', 's.shipment_code', 's.scheme_type', 's.shipment_date',));
+        if (isset($startDate) && $startDate != "") {
+            $sQuery->where("DATE(s.shipment_date) >= ?", $startDate);
+        }
+        if (isset($endDate) && $endDate != "") {
+            $sQuery->where("DATE(s.shipment_date) <= ?", $endDate);
+        }
+        if (isset($schemeType) && $schemeType != "") {
+            $sQuery->where("s.scheme_type = ?", $schemeType);
+        }
+        $sQuery->order("s.shipment_id");
         $resultArray = $db->fetchAll($sQuery);
         return $resultArray;
     }
@@ -2554,12 +2558,18 @@ class Application_Service_Reports {
     public function getFinalisedShipmentsByScheme($schemeType, $startDate, $endDate) {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
 
-        $sQuery = $db->select()->from(array('s' => 'shipment'), array('s.shipment_id', 's.shipment_code', 's.scheme_type', 's.shipment_date',))
-            ->where("DATE(s.shipment_date) >= ?", $startDate)
-            ->where("DATE(s.shipment_date) <= ?", $endDate)
-            ->where("s.scheme_type = ?", $schemeType)
-            ->where("s.status = 'finalized'")
-            ->order("s.shipment_id");
+        $sQuery = $db->select()->from(array('s' => 'shipment'), array('s.shipment_id', 's.shipment_code', 's.scheme_type', 's.shipment_date',));
+        if (isset($startDate) && $startDate != "") {
+            $sQuery->where("DATE(s.shipment_date) >= ?", $startDate);
+        }
+        if (isset($endDate) && $endDate != "") {
+            $sQuery->where("DATE(s.shipment_date) <= ?", $endDate);
+        }
+        if (isset($schemeType) && $schemeType != "") {
+            $sQuery->where("s.scheme_type = ?", $schemeType);
+        }
+        $sQuery->where("s.status = 'finalized'");
+        $sQuery->order("s.shipment_id");
         $resultArray = $db->fetchAll($sQuery);
         return $resultArray;
     }
@@ -4620,4 +4630,326 @@ class Application_Service_Reports {
 		return $filename;
 
 	}
+
+	public function getTbAllSitesResultsReport($params) {
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+
+        $excel = new PHPExcel();
+
+        $borderStyle = array(
+            'font' => array(
+                'bold' => true,
+                'size'  => 12,
+            ),
+            'alignment' => array(
+                'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+            ),
+            'borders' => array(
+                'outline' => array(
+                    'style' => PHPExcel_Style_Border::BORDER_THIN,
+                ),
+            )
+        );
+        $query = $db->query("SELECT FlattenedEvaluationResults.`Country`, FlattenedEvaluationResults.`Site No.`, FlattenedEvaluationResults.`Site Name/Location`, FlattenedEvaluationResults.`PT-ID`,
+    FlattenedEvaluationResults.`Date PT Received`, FlattenedEvaluationResults.`Date PT Results Reported`,
+    
+    JSON_UNQUOTE(FlattenedEvaluationResults.attributes_json->\"$.mtb_rif_kit_lot_no\") AS `MTB/RIF Assay Kit Lot Number`,
+    STR_TO_DATE(JSON_UNQUOTE(FlattenedEvaluationResults.attributes_json->\"$.expiry_date\"), '%d-%b-%Y') AS `Expiry Date`,
+    
+    FlattenedEvaluationResults.`Date of last instrument calibration`, FlattenedEvaluationResults.`Participated`, FlattenedEvaluationResults.`Reason for No Submission`,
+    FlattenedEvaluationResults.`1-Date Tested`, FlattenedEvaluationResults.`1-MTB`, FlattenedEvaluationResults.`1-Rif`, FlattenedEvaluationResults.`1-Probe D`,
+    FlattenedEvaluationResults.`1-Probe C`, FlattenedEvaluationResults.`1-Probe E`, FlattenedEvaluationResults.`1-Probe B`, FlattenedEvaluationResults.`1-SPC`,
+    FlattenedEvaluationResults.`1-Probe A`,
+    FlattenedEvaluationResults.`2-Date Tested`, FlattenedEvaluationResults.`2-MTB`, FlattenedEvaluationResults.`2-Rif`, FlattenedEvaluationResults.`2-Probe D`,
+    FlattenedEvaluationResults.`2-Probe C`, FlattenedEvaluationResults.`2-Probe E`, FlattenedEvaluationResults.`2-Probe B`, FlattenedEvaluationResults.`2-SPC`,
+    FlattenedEvaluationResults.`2-Probe A`,
+    FlattenedEvaluationResults.`3-Date Tested`, FlattenedEvaluationResults.`3-MTB`, FlattenedEvaluationResults.`3-Rif`, FlattenedEvaluationResults.`3-Probe D`,
+    FlattenedEvaluationResults.`3-Probe C`, FlattenedEvaluationResults.`3-Probe E`, FlattenedEvaluationResults.`3-Probe B`, FlattenedEvaluationResults.`3-SPC`,
+    FlattenedEvaluationResults.`3-Probe A`,
+    FlattenedEvaluationResults.`4-Date Tested`, FlattenedEvaluationResults.`4-MTB`, FlattenedEvaluationResults.`4-Rif`, FlattenedEvaluationResults.`4-Probe D`,
+    FlattenedEvaluationResults.`4-Probe C`, FlattenedEvaluationResults.`4-Probe E`, FlattenedEvaluationResults.`4-Probe B`, FlattenedEvaluationResults.`4-SPC`,
+    FlattenedEvaluationResults.`4-Probe A`,
+    FlattenedEvaluationResults.`5-Date Tested`, FlattenedEvaluationResults.`5-MTB`, FlattenedEvaluationResults.`5-Rif`, FlattenedEvaluationResults.`5-Probe D`,
+    FlattenedEvaluationResults.`5-Probe C`, FlattenedEvaluationResults.`5-Probe E`, FlattenedEvaluationResults.`5-Probe B`, FlattenedEvaluationResults.`5-SPC`,
+    FlattenedEvaluationResults.`5-Probe A`,
+    
+    FlattenedEvaluationResults.`Comments`, FlattenedEvaluationResults.`Comments for reports`,
+    FlattenedEvaluationResults.`1-Score`, FlattenedEvaluationResults.`2-Score`, FlattenedEvaluationResults.`3-Score`, FlattenedEvaluationResults.`4-Score`,
+    FlattenedEvaluationResults.`5-Score`, 
+    
+    FlattenedEvaluationResults.`Fin Score`, FlattenedEvaluationResults.`Sat/Unsat`
+FROM (
+SELECT countries.iso_name AS `Country`,
+    participant.participant_id AS `Site No.`,
+    CONCAT(
+      COALESCE(participant.lab_name,
+               CONCAT(participant.first_name, ' ', participant.last_name),
+               participant.first_name),
+      COALESCE(CONCAT(' - ', CASE WHEN participant.state = '' THEN NULL ELSE participant.state END),
+               CONCAT(' - ', CASE WHEN participant.city = '' THEN NULL ELSE participant.city END), '')) AS `Site Name/Location`,
+    participant.unique_identifier AS `PT-ID`,
+    shipment_participant_map.shipment_receipt_date AS `Date PT Received`,
+    CAST(shipment_participant_map.shipment_test_report_date AS DATE) AS `Date PT Results Reported`,
+    CAST(attributes AS JSON) AS attributes_json,
+    GREATEST(MAX(instrument.instrument_last_calibrated_on),
+             response_result_tb_1.instrument_last_calibrated_on,
+             response_result_tb_2.instrument_last_calibrated_on,
+             response_result_tb_3.instrument_last_calibrated_on,
+             response_result_tb_4.instrument_last_calibrated_on,
+             response_result_tb_5.instrument_last_calibrated_on) AS `Date of last instrument calibration`,
+    CASE
+      WHEN shipment_participant_map.is_pt_test_not_performed = 'no' THEN 'Yes'
+      ELSE 'No'
+    END AS `Participated`,
+    IFNULL(shipment_participant_map.pt_test_not_performed_comments, response_not_tested_reason.not_tested_reason) AS `Reason for No Submission`,
+
+    response_result_tb_1.date_tested AS `1-Date Tested`,
+    CASE
+      WHEN response_result_tb_1.error_code = 'error' THEN 'Error'
+      WHEN IFNULL(response_result_tb_1.error_code, '') != '' THEN CONCAT('Error ', response_result_tb_1.error_code)
+      WHEN response_result_tb_1.mtb_detected = 'notDetected' THEN 'Not Detected'
+      WHEN response_result_tb_1.mtb_detected = 'noResult' THEN 'No Result'
+      WHEN response_result_tb_1.mtb_detected = 'veryLow' THEN 'Very Low'
+      WHEN response_result_tb_1.mtb_detected = 'na' THEN NULL
+      WHEN IFNULL(response_result_tb_1.mtb_detected, '') = '' THEN NULL
+      ELSE CONCAT(UPPER(SUBSTRING(response_result_tb_1.mtb_detected, 1, 1)), SUBSTRING(response_result_tb_1.mtb_detected, 2, 254))
+    END AS `1-MTB`,
+    CASE
+      WHEN response_result_tb_1.error_code = 'error' THEN 'Error'
+      WHEN IFNULL(response_result_tb_1.error_code, '') != '' THEN CONCAT('Error ', response_result_tb_1.error_code)
+      WHEN response_result_tb_1.rif_resistance = 'notDetected' THEN 'Not Detected'
+      WHEN response_result_tb_1.rif_resistance = 'noResult' THEN 'No Result'
+      WHEN response_result_tb_1.rif_resistance = 'veryLow' THEN 'Very Low'
+      WHEN response_result_tb_1.rif_resistance = 'na' THEN NULL
+      WHEN IFNULL(response_result_tb_1.rif_resistance, '') = '' THEN NULL
+      ELSE CONCAT(UPPER(SUBSTRING(response_result_tb_1.rif_resistance, 1, 1)), SUBSTRING(response_result_tb_1.rif_resistance, 2, 254))
+    END AS `1-Rif`,
+    response_result_tb_1.probe_d AS `1-Probe D`,
+    response_result_tb_1.probe_c AS `1-Probe C`,
+    response_result_tb_1.probe_e AS `1-Probe E`,
+    response_result_tb_1.probe_b AS `1-Probe B`,
+    response_result_tb_1.spc AS `1-SPC`,
+    response_result_tb_1.probe_a AS `1-Probe A`,
+
+    response_result_tb_2.date_tested AS `2-Date Tested`,
+    CASE
+      WHEN response_result_tb_2.error_code = 'error' THEN 'Error'
+      WHEN IFNULL(response_result_tb_2.error_code, '') != '' THEN CONCAT('Error ', response_result_tb_2.error_code)
+      WHEN response_result_tb_2.mtb_detected = 'notDetected' THEN 'Not Detected'
+      WHEN response_result_tb_2.mtb_detected = 'noResult' THEN 'No Result'
+      WHEN response_result_tb_2.mtb_detected = 'veryLow' THEN 'Very Low'
+      WHEN response_result_tb_2.mtb_detected = 'na' THEN NULL
+      WHEN IFNULL(response_result_tb_2.mtb_detected, '') = '' THEN NULL
+      ELSE CONCAT(UPPER(SUBSTRING(response_result_tb_2.mtb_detected, 1, 1)), SUBSTRING(response_result_tb_2.mtb_detected, 2, 254))
+    END AS `2-MTB`,
+    CASE
+      WHEN response_result_tb_2.error_code = 'error' THEN 'Error'
+      WHEN IFNULL(response_result_tb_2.error_code, '') != '' THEN CONCAT('Error ', response_result_tb_2.error_code)
+      WHEN response_result_tb_2.rif_resistance = 'notDetected' THEN 'Not Detected'
+      WHEN response_result_tb_2.rif_resistance = 'noResult' THEN 'No Result'
+      WHEN response_result_tb_2.rif_resistance = 'veryLow' THEN 'Very Low'
+      WHEN response_result_tb_2.rif_resistance = 'na' THEN NULL
+      WHEN IFNULL(response_result_tb_2.rif_resistance, '') = '' THEN NULL
+      ELSE CONCAT(UPPER(SUBSTRING(response_result_tb_2.rif_resistance, 1, 1)), SUBSTRING(response_result_tb_2.rif_resistance, 2, 254))
+    END AS `2-Rif`,
+    response_result_tb_2.probe_d AS `2-Probe D`,
+    response_result_tb_2.probe_c AS `2-Probe C`,
+    response_result_tb_2.probe_e AS `2-Probe E`,
+    response_result_tb_2.probe_b AS `2-Probe B`,
+    response_result_tb_2.spc AS `2-SPC`,
+    response_result_tb_2.probe_a AS `2-Probe A`,
+
+    response_result_tb_3.date_tested AS `3-Date Tested`,
+    CASE
+      WHEN response_result_tb_3.error_code = 'error' THEN 'Error'
+      WHEN IFNULL(response_result_tb_3.error_code, '') != '' THEN CONCAT('Error ', response_result_tb_3.error_code)
+      WHEN response_result_tb_3.mtb_detected = 'notDetected' THEN 'Not Detected'
+      WHEN response_result_tb_3.mtb_detected = 'noResult' THEN 'No Result'
+      WHEN response_result_tb_3.mtb_detected = 'veryLow' THEN 'Very Low'
+      WHEN response_result_tb_3.mtb_detected = 'na' THEN NULL
+      WHEN IFNULL(response_result_tb_3.mtb_detected, '') = '' THEN NULL
+      ELSE CONCAT(UPPER(SUBSTRING(response_result_tb_3.mtb_detected, 1, 1)), SUBSTRING(response_result_tb_3.mtb_detected, 2, 254))
+    END AS `3-MTB`,
+    CASE
+      WHEN response_result_tb_3.error_code = 'error' THEN 'Error'
+      WHEN IFNULL(response_result_tb_3.error_code, '') != '' THEN CONCAT('Error ', response_result_tb_3.error_code)
+      WHEN response_result_tb_3.rif_resistance = 'notDetected' THEN 'Not Detected'
+      WHEN response_result_tb_3.rif_resistance = 'noResult' THEN 'No Result'
+      WHEN response_result_tb_3.rif_resistance = 'veryLow' THEN 'Very Low'
+      WHEN response_result_tb_3.rif_resistance = 'na' THEN NULL
+      WHEN IFNULL(response_result_tb_3.rif_resistance, '') = '' THEN NULL
+      ELSE CONCAT(UPPER(SUBSTRING(response_result_tb_3.rif_resistance, 1, 1)), SUBSTRING(response_result_tb_3.rif_resistance, 2, 254))
+    END AS `3-Rif`,
+    response_result_tb_3.probe_d AS `3-Probe D`,
+    response_result_tb_3.probe_c AS `3-Probe C`,
+    response_result_tb_3.probe_e AS `3-Probe E`,
+    response_result_tb_3.probe_b AS `3-Probe B`,
+    response_result_tb_3.spc AS `3-SPC`,
+    response_result_tb_3.probe_a AS `3-Probe A`,
+
+    response_result_tb_4.date_tested AS `4-Date Tested`,
+    CASE
+      WHEN response_result_tb_4.error_code = 'error' THEN 'Error'
+      WHEN IFNULL(response_result_tb_4.error_code, '') != '' THEN CONCAT('Error ', response_result_tb_4.error_code)
+      WHEN response_result_tb_4.mtb_detected = 'notDetected' THEN 'Not Detected'
+      WHEN response_result_tb_4.mtb_detected = 'noResult' THEN 'No Result'
+      WHEN response_result_tb_4.mtb_detected = 'veryLow' THEN 'Very Low'
+      WHEN response_result_tb_4.mtb_detected = 'na' THEN NULL
+      WHEN IFNULL(response_result_tb_4.mtb_detected, '') = '' THEN NULL
+      ELSE CONCAT(UPPER(SUBSTRING(response_result_tb_4.mtb_detected, 1, 1)), SUBSTRING(response_result_tb_4.mtb_detected, 2, 254))
+    END AS `4-MTB`,
+    CASE
+      WHEN response_result_tb_4.error_code = 'error' THEN 'Error'
+      WHEN IFNULL(response_result_tb_4.error_code, '') != '' THEN CONCAT('Error ', response_result_tb_4.error_code)
+      WHEN response_result_tb_4.rif_resistance = 'notDetected' THEN 'Not Detected'
+      WHEN response_result_tb_4.rif_resistance = 'noResult' THEN 'No Result'
+      WHEN response_result_tb_4.rif_resistance = 'veryLow' THEN 'Very Low'
+      WHEN response_result_tb_4.rif_resistance = 'na' THEN NULL
+      WHEN IFNULL(response_result_tb_4.rif_resistance, '') = '' THEN NULL
+      ELSE CONCAT(UPPER(SUBSTRING(response_result_tb_4.rif_resistance, 1, 1)), SUBSTRING(response_result_tb_4.rif_resistance, 2, 254))
+    END AS `4-Rif`,
+    response_result_tb_4.probe_d AS `4-Probe D`,
+    response_result_tb_4.probe_c AS `4-Probe C`,
+    response_result_tb_4.probe_e AS `4-Probe E`,
+    response_result_tb_4.probe_b AS `4-Probe B`,
+    response_result_tb_4.spc AS `4-SPC`,
+    response_result_tb_4.probe_a AS `4-Probe A`,
+
+    response_result_tb_5.date_tested AS `5-Date Tested`,
+    CASE
+      WHEN response_result_tb_5.error_code = 'error' THEN 'Error'
+      WHEN IFNULL(response_result_tb_5.error_code, '') != '' THEN CONCAT('Error ', response_result_tb_5.error_code)
+      WHEN response_result_tb_5.mtb_detected = 'notDetected' THEN 'Not Detected'
+      WHEN response_result_tb_5.mtb_detected = 'noResult' THEN 'No Result'
+      WHEN response_result_tb_5.mtb_detected = 'veryLow' THEN 'Very Low'
+      WHEN response_result_tb_5.mtb_detected = 'na' THEN NULL
+      WHEN IFNULL(response_result_tb_5.mtb_detected, '') = '' THEN NULL
+      ELSE CONCAT(UPPER(SUBSTRING(response_result_tb_5.mtb_detected, 1, 1)), SUBSTRING(response_result_tb_5.mtb_detected, 2, 254))
+    END AS `5-MTB`,
+    CASE
+      WHEN response_result_tb_5.error_code = 'error' THEN 'Error'
+      WHEN IFNULL(response_result_tb_5.error_code, '') != '' THEN CONCAT('Error ', response_result_tb_5.error_code)
+      WHEN response_result_tb_5.rif_resistance = 'notDetected' THEN 'Not Detected'
+      WHEN response_result_tb_5.rif_resistance = 'noResult' THEN 'No Result'
+      WHEN response_result_tb_5.rif_resistance = 'veryLow' THEN 'Very Low'
+      WHEN response_result_tb_5.rif_resistance = 'na' THEN NULL
+      WHEN IFNULL(response_result_tb_5.rif_resistance, '') = '' THEN NULL
+      ELSE CONCAT(UPPER(SUBSTRING(response_result_tb_5.rif_resistance, 1, 1)), SUBSTRING(response_result_tb_5.rif_resistance, 2, 254))
+    END AS `5-Rif`,
+    response_result_tb_5.probe_d AS `5-Probe D`,
+    response_result_tb_5.probe_c AS `5-Probe C`,
+    response_result_tb_5.probe_e AS `5-Probe E`,
+    response_result_tb_5.probe_b AS `5-Probe B`,
+    response_result_tb_5.spc AS `5-SPC`,
+    response_result_tb_5.probe_a AS `5-Probe A`,
+    
+    TRIM(shipment_participant_map.user_comment) AS `Comments`,
+    TRIM(COALESCE(CASE WHEN r_evaluation_comments.`comment` = '' THEN NULL ELSE r_evaluation_comments.`comment` END, shipment_participant_map.optional_eval_comment)) AS `Comments for reports`,
+    
+    CASE
+      WHEN response_result_tb_1.calculated_score IN ('pass', 'concern', 'exempt') THEN 20
+      WHEN response_result_tb_1.calculated_score = 'partial' THEN 10
+      WHEN response_result_tb_1.calculated_score = 'noresult' THEN 5
+      WHEN response_result_tb_1.calculated_score IN ('fail', 'excluded') THEN 0
+      ELSE 0
+    END AS `1-Score`,
+    CASE
+      WHEN response_result_tb_2.calculated_score IN ('pass', 'concern', 'exempt') THEN 20
+      WHEN response_result_tb_2.calculated_score = 'partial' THEN 10
+      WHEN response_result_tb_2.calculated_score = 'noresult' THEN 5
+      WHEN response_result_tb_2.calculated_score IN ('fail', 'excluded') THEN 0
+      ELSE 0
+    END AS `2-Score`,
+    CASE
+      WHEN response_result_tb_3.calculated_score IN ('pass', 'concern', 'exempt') THEN 20
+      WHEN response_result_tb_3.calculated_score = 'partial' THEN 10
+      WHEN response_result_tb_3.calculated_score = 'noresult' THEN 5
+      WHEN response_result_tb_3.calculated_score IN ('fail', 'excluded') THEN 0
+      ELSE 0
+    END AS `3-Score`,
+    CASE
+      WHEN response_result_tb_4.calculated_score IN ('pass', 'concern', 'exempt') THEN 20
+      WHEN response_result_tb_4.calculated_score = 'partial' THEN 10
+      WHEN response_result_tb_4.calculated_score = 'noresult' THEN 5
+      WHEN response_result_tb_4.calculated_score IN ('fail', 'excluded') THEN 0
+      ELSE 0
+    END AS `4-Score`,
+    CASE
+      WHEN response_result_tb_5.calculated_score IN ('pass', 'concern', 'exempt') THEN 20
+      WHEN response_result_tb_5.calculated_score = 'partial' THEN 10
+      WHEN response_result_tb_5.calculated_score = 'noresult' THEN 5
+      WHEN response_result_tb_5.calculated_score IN ('fail', 'excluded') THEN 0
+      ELSE 0
+    END AS `5-Score`,
+    
+    IFNULL(shipment_participant_map.documentation_score, 0) + IFNULL(shipment_participant_map.shipment_score, 0) AS `Fin Score`,
+    CASE
+      WHEN r_results.result_name = 'Pass' THEN 'Satisfactory'
+      ELSE 'Unsatisfactory'
+    END AS `Sat/Unsat` 
+FROM shipment
+JOIN shipment_participant_map ON shipment_participant_map.shipment_id = shipment.shipment_id
+JOIN participant ON participant.participant_id = shipment_participant_map.participant_id
+JOIN countries ON countries.id = participant.country
+LEFT JOIN instrument ON instrument.participant_id = shipment_participant_map.participant_id
+LEFT JOIN response_not_tested_reason ON response_not_tested_reason.not_tested_reason_id = shipment_participant_map.not_tested_reason
+LEFT JOIN r_evaluation_comments ON r_evaluation_comments.comment_id = shipment_participant_map.evaluation_comment
+LEFT JOIN r_results ON r_results.result_id = shipment_participant_map.final_result
+LEFT JOIN response_result_tb AS response_result_tb_1 ON response_result_tb_1.shipment_map_id = shipment_participant_map.map_id AND response_result_tb_1.sample_id = '1'
+LEFT JOIN response_result_tb AS response_result_tb_2 ON response_result_tb_2.shipment_map_id = shipment_participant_map.map_id AND response_result_tb_2.sample_id = '2'
+LEFT JOIN response_result_tb AS response_result_tb_3 ON response_result_tb_3.shipment_map_id = shipment_participant_map.map_id AND response_result_tb_3.sample_id = '3'
+LEFT JOIN response_result_tb AS response_result_tb_4 ON response_result_tb_4.shipment_map_id = shipment_participant_map.map_id AND response_result_tb_4.sample_id = '4'
+LEFT JOIN response_result_tb AS response_result_tb_5 ON response_result_tb_5.shipment_map_id = shipment_participant_map.map_id AND response_result_tb_5.sample_id = '5'
+WHERE shipment.shipment_id = ?
+GROUP BY shipment_participant_map.map_id) AS FlattenedEvaluationResults;", array($params['shipmentId']));
+        $results = $query->fetchAll();
+
+        $firstSheet = new PHPExcel_Worksheet($excel, "All Sites' Results");
+        $excel->addSheet($firstSheet, 0);
+        $columnIndex = 0;
+        if (count($results) > 0 && count($results[0]) > 0) {
+            foreach($results[0] as $columnName => $value) {
+                $firstSheet->getCellByColumnAndRow($columnIndex, 1)->setValueExplicit(html_entity_decode($columnName, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $firstSheet->getStyleByColumnAndRow($columnIndex, 1)->applyFromArray($borderStyle);
+                $columnIndex++;
+            }
+        }
+
+        $firstSheet->getDefaultRowDimension()->setRowHeight(15);
+
+        $rowNumber = 1; // $row 0 is already the column headings
+
+        foreach($results as $result){
+            $rowNumber++;
+            $columnIndex = 0;
+            foreach($result as $columnName => $value) {
+                $firstSheet->getCellByColumnAndRow($columnIndex, $rowNumber)->setValueExplicit(html_entity_decode($value, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $columnIndex++;
+            }
+        }
+
+        foreach(range('A','Z') as $columnID) {
+            $firstSheet->getColumnDimension($columnID)
+                ->setAutoSize(true);
+        }
+
+        $excel->setActiveSheetIndex(0);
+
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $shipmentQuery = $db->select('shipment_code')
+            ->from('shipment')
+            ->where('shipment_id=?', $params['shipmentId']);
+        $shipmentResult = $db->fetchRow($shipmentQuery);
+        $writer = PHPExcel_IOFactory::createWriter($excel, 'Excel5');
+        if (!file_exists(UPLOAD_PATH  . DIRECTORY_SEPARATOR . "generated-reports")) {
+            mkdir(UPLOAD_PATH  . DIRECTORY_SEPARATOR . "generated-reports", 0777, true);
+        }
+        $filename = preg_replace(array('/\s/', '/\.[\.]+/', '/[^\w_\.\-]/'), array('_', '.', ''), $shipmentResult['shipment_code'])
+            . '-all-results' . '.xls';
+        $writer->save(UPLOAD_PATH  . DIRECTORY_SEPARATOR . "generated-reports" . DIRECTORY_SEPARATOR . $filename);
+
+        return array(
+          "report-name" => $filename
+        );
+    }
 }
