@@ -79,7 +79,7 @@ if (isset($this->responseData['shipment']["shipment_test_report_date"]) &&
                 <?php
                 foreach($this->otherUnenrolledParticipants as $otherUnenrolledParticipant) { ?>
                 <option value="<?php echo $otherUnenrolledParticipant['participant_id']; ?>"
-                    <?php echo($attributes['transferToParticipantId'] == $otherUnenrolledParticipant['participant_id'] ? 'selected="selected"':''); ?>>
+                    <?php echo(isset($attributes['transferToParticipantId']) && $attributes['transferToParticipantId'] == $otherUnenrolledParticipant['participant_id'] ? 'selected="selected"':''); ?>>
                     <?php echo $otherUnenrolledParticipant['participant_name']; ?>
                 </option>
                 <?php
