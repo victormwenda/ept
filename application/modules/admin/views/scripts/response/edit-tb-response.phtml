@@ -69,6 +69,24 @@ if (isset($this->responseData['shipment']["shipment_test_report_date"]) &&
                 value="<?php echo $this->responseData['shipment']['pt_test_not_performed_comments']; ?>" />
         </td>
     </tr>
+    <tr id="transferToParticipantRow" style="display: <?php echo ($this->responseData['shipment']['is_pt_test_not_performed'] == "no" || $this->responseData['shipment']['is_pt_test_not_performed'] == '' || $this->responseData['shipment']['is_pt_test_not_performed'] == null) ? "none" : "table-row"; ?>;">
+        <td style="width: 30%;">
+            <label for="transferToParticipant" class="fieldLabel">Transfer sample to:</label>
+        </td>
+        <td>
+            <select id="transferToParticipant" name="transferToParticipant" class="form-control" title="Transfer Sample To" style="width:60%;">
+                <option value="">--Select another Participant--</option>
+                <?php
+                foreach($this->otherUnenrolledParticipants as $otherUnenrolledParticipant) { ?>
+                <option value="<?php echo $otherUnenrolledParticipant['participant_id']; ?>"
+                    <?php echo($attributes['transferToParticipantId'] == $otherUnenrolledParticipant['participant_id'] ? 'selected="selected"':''); ?>>
+                    <?php echo $otherUnenrolledParticipant['participant_name']; ?>
+                </option>
+                <?php
+                } ?>
+            </select>
+        </td>
+    </tr>
 </table>
 <hr />
 <table class="table table-bordered table-striped" style="width:100%;margin:0 auto 10px auto;">
@@ -512,11 +530,13 @@ foreach ($this->responseData['results'] as $result) {
     $("input[name='ableToEnterResults']").on('click change', function(e) {
       if ($("input[name='ableToEnterResults']:checked").val() === "yes") {
         $("#ableToEnterResultsReasonsRow").hide();
+        $("#transferToParticipantRow").hide();
         $("#ableToEnterResultsOtherReasonRow").hide();
         $("#notTestedReason").val("");
         $("#notTestedOtherReason").val("");
       } else if ($("input[name='ableToEnterResults']:checked").val() === "no") {
         $("#ableToEnterResultsReasonsRow").show();
+        $("#transferToParticipantRow").show();
       }
     });
 

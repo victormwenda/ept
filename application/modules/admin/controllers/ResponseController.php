@@ -49,8 +49,8 @@ class Admin_ResponseController extends Zend_Controller_Action
         if ($this->getRequest()->isPost()) {
             $params = $this->getRequest()->getPost();
             $responseService = new Application_Service_Response();
-            $responseService->updateShipmentResults($params);
             $shipmentId = base64_encode($params['shipmentId']);
+            $responseService->updateShipmentResults($params);
             $alertMsg = new Zend_Session_Namespace('alertSpace');
             $alertMsg->message = "Shipment Results updated successfully";
             if (isset($params['whereToGo']) && $params['whereToGo'] != "") {
@@ -79,6 +79,10 @@ class Admin_ResponseController extends Zend_Controller_Action
                 $commonService = new Application_Service_Common();
                 $this->view->globalQcAccess = $commonService->getConfig('qc_access');
                 $this->view->allNotTestedReason = $schemeService->getNotTestedReasons($scheme);
+                if ($scheme == 'tb') {
+                    $attributes = json_decode($this->view->responseData['shipment']['attributes'], true);
+                    $this->view->otherUnenrolledParticipants = $responseService->getOtherUnenrolledParticipants($sid, $pid, $attributes['transferToParticipantId']);
+                }
             } else {
                 $this->_redirect("/admin/response/");
             }

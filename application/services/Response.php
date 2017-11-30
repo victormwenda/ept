@@ -225,10 +225,12 @@ class Application_Service_Response {
                 "count_errors_encountered_over_month" => $params['countErrorsEncounteredOverMonth'],
                 "error_codes_encountered_over_month" => $params['errorCodesEncounteredOverMonth']
             );
-            $attributes = json_encode($attributes);
+            if (isset($params['transferToParticipant']) && $params['transferToParticipant'] != "") {
+                $attributes["transferToParticipantId"] = $params['transferToParticipant'];
+            }
             $mapData = array(
                 "shipment_receipt_date" => Application_Service_Common::ParseDate($params['receiptDate']),
-                "attributes" => $attributes,
+                "attributes" => json_encode($attributes),
                 "supervisor_approval" => $params['supervisorApproval'],
                 "participant_supervisor" => $params['participantSupervisor'],
                 "user_comment" => $params['userComments'],
@@ -249,6 +251,95 @@ class Application_Service_Response {
                 } else if (isset($params["notTestedReason"]) && trim($params["notTestedReason"]) != "") {
                     $mapData['not_tested_reason'] = $params["notTestedReason"];
                     $mapData['pt_test_not_performed_comments'] = null;
+                }
+
+                if (isset($params['submitAction']) && $params['submitAction'] == 'submit') {
+                    if (isset($attributes["transferToParticipantId"]) && $attributes["transferToParticipantId"] != "") {
+                        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+                        $sql = $db->select()
+                            ->from(array('spm' => 'shipment_participant_map'))
+                            ->where("spm.shipment_id = ?", $params["shipmentId"])
+                            ->where("spm.participant_id = ?", $attributes["transferToParticipantId"]);
+                        $enrolledParticipant = $db->fetchRow($sql);
+                        if (!isset($enrolledParticipant) || !$enrolledParticipant) {
+                            $enrollmentData = array(
+                                'shipment_id' => $params['shipmentId'],
+                                'participant_id' => $attributes["transferToParticipantId"],
+                                'evaluation_status' => '19901190',
+                                'created_by_admin' => $authNameSpace->admin_id,
+                                "created_on_admin" => new Zend_Db_Expr('now()'));
+                            $db->insert('shipment_participant_map', $enrollmentData);
+
+                            $emailParticipantDetailsQuery = $db->select()->from(array('sp' => 'shipment_participant_map'),
+                                array(
+                                    'sp.participant_id',
+                                    'sp.shipment_id',
+                                    'sp.map_id',
+                                    'sp.new_shipment_mail_count'
+                                ))
+                                ->join(array('s' => 'shipment'), 's.shipment_id=sp.shipment_id', array('s.shipment_code', 's.shipment_code'))
+                                ->join(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id',
+                                    array('distribution_code', 'distribution_date'))
+                                ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id',
+                                    array(
+                                        'p.email',
+                                        'participantName' => new Zend_Db_Expr(
+                                            "GROUP_CONCAT(DISTINCT p.first_name,\" \",p.last_name ORDER BY p.first_name SEPARATOR ', ')"
+                                        )
+                                    ))
+                                ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('SCHEME' => 'sl.scheme_name'))
+                                ->joinLeft(array('pmm' => 'participant_manager_map'), 'pmm.participant_id = sp.participant_id', array())
+                                ->joinLeft(array('pnt' => 'push_notification_token'), 'pnt.dm_id = pmm.dm_id',
+                                    array('push_notification_token'))
+                                ->where("sp.shipment_id = ?", $params['shipmentId'])
+                                ->where("sp.participant_id = ?", $attributes["transferToParticipantId"])
+                                ->group("p.participant_id");
+                            $participantEmailDetailsList = $db->fetchAll($emailParticipantDetailsQuery);
+
+                            if (isset($participantEmailDetailsList) && count($participantEmailDetailsList) > 0) {
+                                foreach ($participantEmailDetailsList as $participantEmailDetails) {
+                                    if (isset($participantEmailDetails['email']) && $participantEmailDetails['email'] != '') {
+                                        $commonServices = new Application_Service_Common();
+                                        $general = new Pt_Commons_General();
+                                        $newShipmentMailContent = $commonServices->getEmailTemplate('new_shipment');
+
+                                        $surveyDate = $general->humanDateFormat($participantEmailDetails['distribution_date']);
+                                        $search = array('##NAME##', '##SHIPCODE##', '##SHIPTYPE##', '##SURVEYCODE##', '##SURVEYDATE##',);
+                                        $replace = array(
+                                            $participantEmailDetails['participantName'],
+                                            $participantEmailDetails['shipment_code'],
+                                            $participantEmailDetails['SCHEME'],
+                                            $participantEmailDetails['distribution_code'],
+                                            $surveyDate
+                                        );
+                                        $content = $newShipmentMailContent['mail_content'];
+                                        $message = str_replace($search, $replace, $content);
+                                        $subject = $newShipmentMailContent['mail_subject'];
+                                        $fromEmail = $newShipmentMailContent['mail_from'];
+                                        $fromFullName = $newShipmentMailContent['from_name'];
+                                        $toEmail = $participantEmailDetails['email'];
+                                        $cc = $newShipmentMailContent['mail_cc'];
+                                        $bcc = $newShipmentMailContent['mail_bcc'];
+                                        $commonServices->insertTempMail($toEmail, $cc, $bcc, $subject, $message, $fromEmail, $fromFullName);
+                                        $count = $participantEmailDetails['new_shipment_mail_count'] + 1;
+                                        $db->update('shipment_participant_map', array(
+                                            'last_new_shipment_mailed_on' => new Zend_Db_Expr('now()'),
+                                            'new_shipment_mail_count' => $count
+                                        ), 'map_id = ' . $participantEmailDetails['map_id']);
+                                    }
+                                    if (isset($participantEmailDetails['push_notification_token']) && $participantEmailDetails['push_notification_token'] != '') {
+                                        $tempPushNotificationsDb = new Application_Model_DbTable_TempPushNotification();
+                                        $tempPushNotificationsDb->insertTempPushNotificationDetails(
+                                            $participantEmailDetails['push_notification_token'],
+                                            'default', 'ePT ' . $participantEmailDetails['shipment_code'] . ' Transferred',
+                                            'ePT panel ' . $participantEmailDetails['shipment_code'] . ' has been transferred to ' . $participantEmailDetails['participantName'] . '. Did you receive it?',
+                                            '{"title": "ePT ' . $participantEmailDetails['shipment_code'] . ' Transferred", "body": "ePT panel ' . $participantEmailDetails['shipment_code'] . ' has been transferred to ' . $participantEmailDetails['participantName'] . '. Did you receive it?", "dismissText": "Close", "actionText": "Confirm", "shipmentId": ' . $participantEmailDetails['shipment_id'] . ', "participantId": ' . $participantEmailDetails['participant_id'] . ', "action": "receive_shipment"}');
+                                    }
+                                }
+                            }
+
+                        }
+                    }
                 }
             } else {
                 $mapData['is_pt_test_not_performed'] = "no";
@@ -363,5 +454,27 @@ class Application_Service_Response {
                 }
             }
         }
+    }
+
+    public function getOtherUnenrolledParticipants($shipmentId, $currentParticipantId, $transferredToParticipantId) {
+        $authNameSpace = new Zend_Session_Namespace('administrators');
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $sql = $db->select()
+            ->from(array('p' => 'participant'), array(
+                'participant_id' => 'p.participant_id',
+                'participant_name' => new Zend_Db_Expr("CONCAT(p.unique_identifier, ': ', COALESCE(p.lab_name, CONCAT(p.first_name, ' ', p.last_name), p.first_name), COALESCE(CONCAT(' - ', CASE WHEN p.state = '' THEN NULL ELSE p.state END), CONCAT(' - ', CASE WHEN p.city = '' THEN NULL ELSE p.city END), ''))")
+            ))
+            ->joinLeft(array('spm' => 'shipment_participant_map'), 'spm.participant_id = p.participant_id AND spm.shipment_id = '.$shipmentId, array())
+            ->where("p.participant_id <> ?", $currentParticipantId);
+        if (isset($transferredToParticipantId) && $transferredToParticipantId != "") {
+            $sql = $sql->where('spm.map_id IS NULL OR spm.participant_id = ?', $transferredToParticipantId);
+        } else {
+            $sql = $sql->where('spm.map_id IS NULL');
+        }
+        if (isset($authNameSpace) && $authNameSpace->is_ptcc_coordinator) {
+            $sql = $sql->where("p.country IN (".implode(",",$authNameSpace->countries).")");
+        }
+        $otherUnenrolledParticipants = $db->fetchAll($sql);
+        return $otherUnenrolledParticipants;
     }
 }
