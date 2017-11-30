@@ -130,6 +130,9 @@
         </form>
     </fieldset>
 </div>
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+
+</div>
 <script type="text/javascript" charset="utf-8">
     /* Table initialisation */
     var oTable = null;
@@ -335,7 +338,8 @@ if (isset($this->searchData) && $this->searchData != '') { ?>
     }
 
     function mailShipment(sid) {
-        if (window.confirm("Are you sure you want to send announcement mail to all participants ?")) {
+        layoutModal('/admin/shipment/edit-shipment-email/id/' + sid, '980', '550');
+        /*if (window.confirm("Are you sure you want to send announcement mail to all participants ?")) {
             $.post("<?php echo $this->url(array('module' => 'admin', 'controller' => 'shipment', 'action' => 'new-shipment-mail')); ?>", {sid: sid, format: "html"},
             function (data) {
                 if (data > 0) {
@@ -343,7 +347,7 @@ if (isset($this->searchData) && $this->searchData != '') { ?>
                 }
                 oTable.fnDraw();
             });
-        }
+        }*/
     }
 
     function generateShipmentCode() {
@@ -377,4 +381,8 @@ if (isset($this->searchData) && $this->searchData != '') { ?>
       }
       $('#shipmentCode').val(generatedCode);
     }
+
+    $('#myModal').on('hidden.bs.modal', function () {
+      $(this).removeData('bs.modal');
+    });
 </script>

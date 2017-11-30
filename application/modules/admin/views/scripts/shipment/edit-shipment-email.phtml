@@ -1,0 +1,58 @@
+<div>
+    <form id="editShipmentEmail" method="post"
+          action='<?php echo $this->url(array("module"=>"admin", "controller" => "shipment", "action" => "edit-shipment-email"), "default", true) ?>'>
+        <h4 class="modal-title">Email Participants</h4>
+        <div class="modal-body">
+            <input id="shipmentId" name="shipmentId" type="hidden" value="<?php echo $this->shipmentId ?>"/>
+            <table class="table table-bordered table-striped" style="width:100%;margin:0 auto 10px auto;">
+                <tr>
+                    <td style="width: 15%;">
+                        <label for="sendTo" class="fieldLabel">Send to:<span class='mandatory'>*</span></label>
+                    </td>
+                    <td>
+                        <select id="sendTo" name="sendTo" class="form-control" title="Who should this email go out to?">
+                            <option value="all">All Participants Enrolled in this Shipment</option>
+                            <option value="notSubmitted">Only Participants Who Have Not Submitted</option>
+                            <option value="submitted">Only Participants Who Have Submitted</option>
+                            <option value="saved">Only Participants Who Have Saved But Not Submitted</option>
+                            <option value="neither">Only Participants Who Have Neither Saved Nor Submitted</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="emailSubject" class="fieldLabel">Subject<span class='mandatory'>*</span></label>
+                    </td>
+                    <td>
+                        <input name="emailSubject" id="emailSubject" class="form-control isRequired" value="<?php echo $this->emailSubject;?>" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <label for="emailBody" class="fieldLabel">Body<span class='mandatory'>*</span></label>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <textarea name="emailBody" id="emailBody" class="form-control isRequired" style="height: 6.5em;"><?php echo $this->emailBody; ?></textarea>
+                    </td>
+                </tr>
+            </table>
+            <strong>Available Placeholders: </strong>
+            <span>##NAME##, ##SHIPCODE##, ##SHIPTYPE##, ##SURVEYCODE## and ##SURVEYDATE##</span>
+        </div>
+        <div class="modal-footer">
+            <input type="submit" class="btn btn-success" onclick="return validateNow();" value="Send" />
+            <button class="btn btn-danger" onclick="parent.closeLayoutModal();return false;">Cancel</button>
+        </div>
+    </form>
+    <script type="text/javascript">
+      function validateNow() {
+        var valid = deforayValidator.init({
+          formId: 'editShipmentEmail'
+        });
+        parent.closeLayoutModal();
+        return valid;
+      }
+    </script>
+</div>

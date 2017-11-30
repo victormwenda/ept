@@ -305,4 +305,21 @@ class Admin_ShipmentController extends Zend_Controller_Action {
             $this->view->result=$clientsServices->exportShipmentNotRespondedParticipantsDetails($params);
         }
     }
+
+    public function editShipmentEmailAction() {
+        $this->_helper->layout()->setLayout('adminmodal');
+        $params = $this->_getAllParams();
+        if ($this->getRequest()->isPost()) {
+            $shipmentService = new Application_Service_Shipments();
+            $shipmentService->sendEmailToParticipants($params);
+        } else {
+            $this->view->shipmentId = base64_decode($this->_getParam('id'));
+            $commonServices = new Application_Service_Common();
+            $newShipmentMailContent = $commonServices->getEmailTemplate('new_shipment');
+            $this->view->emailSubject = $newShipmentMailContent['mail_subject'];
+            $this->view->emailBody = str_replace('<p>', '',
+                str_replace('</p>', '',
+                    str_replace('</p><p>', "\n\n", $newShipmentMailContent['mail_content'])));
+        }
+    }
 }

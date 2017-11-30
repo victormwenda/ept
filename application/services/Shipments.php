@@ -1833,4 +1833,52 @@ class Application_Service_Shipments {
             error_log($e->getTraceAsString());
         }
     }
+
+    public function sendEmailToParticipants($params) {
+        $commonServices = new Application_Service_Common();
+        $general = new Pt_Commons_General();
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $sQuery = $db->select()->from(array('sp' => 'shipment_participant_map'), array('sp.participant_id','sp.map_id','sp.new_shipment_mail_count'))
+            ->join(array('s' => 'shipment'), 's.shipment_id=sp.shipment_id', array('s.shipment_code','s.shipment_code'))
+            ->join(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id', array('distribution_code', 'distribution_date'))
+            ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array('p.email','participantName' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT p.first_name,\" \",p.last_name ORDER BY p.first_name SEPARATOR ', ')")))
+            ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('SCHEME' => 'sl.scheme_name'))
+            ->where("sp.shipment_id = ?", $params["shipmentId"]);
+        if ($params["sendTo"] == "notSubmitted") {
+            $sQuery = $sQuery->where(new Zend_Db_Expr("substr(sp.evaluation_status, 2, 1) = '9'"));
+        }
+        if ($params["sendTo"] == "submitted") {
+            $sQuery = $sQuery->where(new Zend_Db_Expr("substr(sp.evaluation_status, 2, 1) = '1'"));
+        }
+        if ($params["sendTo"] == "saved") {
+            $sQuery = $sQuery->where("sp.shipment_receipt_date IS NOT NULL");
+        }
+        if ($params["sendTo"] == "neither") {
+            $sQuery = $sQuery->where("sp.shipment_receipt_date IS NULL");
+        }
+        $sQuery = $sQuery->group("p.participant_id");
+        $participantEmails = $db->fetchAll($sQuery);
+        $newShipmentMailContent = $commonServices->getEmailTemplate('new_shipment');
+        foreach($participantEmails as $participantDetails){
+            if ($participantDetails['email']!='') {
+                $surveyDate = $general->humanDateFormat($participantDetails['distribution_date']);
+                $search = array('##NAME##','##SHIPCODE##','##SHIPTYPE##','##SURVEYCODE##','##SURVEYDATE##',);
+                $replace = array($participantDetails['participantName'],$participantDetails['shipment_code'],$participantDetails['SCHEME'],$participantDetails['distribution_code'],$surveyDate);
+                $content = "<p>" . implode( "</p>\n\n<p>", preg_split( '/\n(?:\s*\n)+/', $params["emailBody"] ) ) . "</p>";;
+                $message = str_replace($search, $replace, $content);
+                $subject = $params["emailSubject"];
+                $fromEmail = $newShipmentMailContent['mail_from'];
+                $fromFullName = $newShipmentMailContent['from_name'];
+                $toEmail = $participantDetails['email'];
+                $cc = $newShipmentMailContent['mail_cc'];
+                $bcc = $newShipmentMailContent['mail_bcc'];
+                $commonServices->insertTempMail($toEmail,$cc,$bcc, $subject, $message, $fromEmail, $fromFullName);
+                $count = $participantDetails['new_shipment_mail_count']+1;
+                $db->update('shipment_participant_map', array(
+                    'last_new_shipment_mailed_on' => new Zend_Db_Expr('now()'),
+                    'new_shipment_mail_count' => $count
+                ), 'map_id = ' . $participantDetails['map_id']);
+            }
+        }
+    }
 }
