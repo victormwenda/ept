@@ -1059,23 +1059,29 @@ foreach ($this->allSamples as $sample) { ?>
   $(".oneDecimal").on("blur", function(el) {
     clearTimeout(timeOut);
 	timeOut = setTimeout(function() {
-	  var newVal = Number($(el.target).val()).toFixed(1);
-	  if ($.isNumeric(newVal)) {
-	    $(el.target).val(newVal);
-	  } else {
-	    $(el.target).val(0);
-	  }
+      var inputVal = $(el.target).val();
+      if (inputVal) {
+        var newVal = Number($(el.target).val()).toFixed(1);
+        if ($.isNumeric(newVal)) {
+          $(el.target).val(newVal);
+        } else {
+          $(el.target).val('');
+        }
+      }
 	}, 600);
   });
 
   $(".zeroDecimal").on("blur", function(el) {
     clearTimeout(timeOut);
     timeOut = setTimeout(function() {
-      var newVal = Number($(el.target).val()).toFixed(0);
-      if ($.isNumeric(newVal)) {
-        $(el.target).val(newVal);
-      } else {
-        $(el.target).val(0);
+      var inputVal = $(el.target).val();
+      if (inputVal) {
+        var newVal = Number(inputVal).toFixed(0);
+        if ($.isNumeric(newVal)) {
+          $(el.target).val(newVal);
+        } else {
+          $(el.target).val('');
+        }
       }
     },600);
   });
