@@ -92,13 +92,16 @@ $authNameSpace = new Zend_Session_Namespace('datamanagers');
                         <i class="icon icon-dashboard"></i> <span class=""><?php echo $authNameSpace->first_name." ".$authNameSpace->last_name; ?></span>
                       </a>
                     </li>
-                    <?php } else{ ?>
+                    <?php } else { ?>
                     <li>
                         <a href="<?php echo $this->url(array("controller"=>"contact-us","action"=>"index"),null,true) ?>"><i class="icon icon-group"></i> <span>Request for PT Enrollment</span></a>
-                      </li>
-                       <li>
+                    </li>
+                    <li>
                         <a href="<?php echo $this->url(array("controller"=>"auth","action"=>"login"),null,true) ?>"><i class="icon icon-lock"></i> <span>Participant Login</span></a>
-                      </li>
+                    </li>
+                    <li>
+                        <a href="<?php echo $this->url(array("module"=>"admin","controller"=>"index","action"=>"index"),null,true) ?>"><i class="icon icon-lock"></i> <span>PECC Login</span></a>
+                    </li>
                     <?php } ?>
                   </ul>
                     </div><!-- /.navbar-custom-menu -->
