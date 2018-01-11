@@ -1302,9 +1302,11 @@ class Application_Service_Evaluation {
 		$vlGraphResult = array();
         $scoringService = new Application_Service_EvaluationScoring();
         foreach ($shipmentResult as $res) {
-            $dmSql = $db->select()->from(array('pmm' => 'participant_manager_map'))
-                ->join(array('dm' => 'data_manager'), 'dm.dm_id=pmm.dm_id', array('institute'))
-                ->where("pmm.participant_id=" . $res['participant_id']);
+            $dmSql = $db->select()
+                ->from(array('pmm' => 'participant_manager_map'))
+                ->join(array('dm' => 'data_manager'), 'dm.dm_id = pmm.dm_id',
+                    array("institute" => "IFNULL(dm.institute, '')"))
+                ->where("pmm.participant_id = " . $res['participant_id']);
 
             $dmResult = $db->fetchAll($dmSql);
             if (isset($res['last_name']) && trim($res['last_name']) != "") {
@@ -1316,7 +1318,7 @@ class Application_Service_Evaluation {
                 if (count($mapRes) == 0) {
                     $mapRes[$dmRes['dm_id']] = $dmRes['institute'] . "#" . $dmRes['participant_id'] . "#" . $participantFileName;
                 } else if (array_key_exists($dmRes['dm_id'], $mapRes)) {
-                    $mapRes[$dmRes['dm_id']].="," . $dmRes['institute'] . "#" . $dmRes['participant_id'] . "#" . $participantFileName;
+                    $mapRes[$dmRes['dm_id']] .= "$" . $dmRes['institute'] . "#" . $dmRes['participant_id'] . "#" . $participantFileName;
                 } else {
                     $mapRes[$dmRes['dm_id']] = $dmRes['institute'] . "#" . $dmRes['participant_id'] . "#" . $participantFileName;
                 }

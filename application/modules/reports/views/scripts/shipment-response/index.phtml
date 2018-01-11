@@ -98,23 +98,22 @@ $hideSchemes = array('vl','tb');
                 });
             });
 	    
-	    function getShipmentCodes(schemeType){
-		console.log(schemeType);
-		if (schemeType == "") {
+	    function getShipmentCodes(schemeType) {
+		  if (schemeType == "") {
 			$("#shipmentId").html("<option value=''>-- Select Date Range and Scheme to populate this list --</option>");
 			return false;
-		}
-		if (startDate == "" || endDate=="") {
+		  }
+		  if (startDate == "" || endDate=="") {
 			alert('Please pick a date range to fetch shipment list');
 			$("#scheme").val("")
 			$('#dateRange').focus();
 			return false;
-		}
-		$.blockUI();
-		$.post("<?php echo $this->url(array('module' => 'reports', 'controller' => 'common', 'action' => 'get-shipments-by-scheme')); ?>", { schemeType: schemeType,startDate: startDate,endDate: endDate, format: "html" },
+		  }
+		  $.blockUI();
+		  $.post("<?php echo $this->url(array('module' => 'reports', 'controller' => 'common', 'action' => 'get-shipments-by-scheme')); ?>", { schemeType: schemeType,startDate: startDate,endDate: endDate, format: "html" },
 		    function (data) {
 		       $("#shipmentId").html(data);
-			$.unblockUI();
+		       $.unblockUI();
 		    });
 	    }
 	    

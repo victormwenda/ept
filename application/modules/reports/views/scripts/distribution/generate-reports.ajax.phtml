@@ -1,27 +1,23 @@
 <?php
-
 require_once('tcpdf/tcpdf.php');
 $schemeType = $this->result['shipment'][0]['scheme_type'];
 $pdfNew = new Zend_Pdf();
 $extractor = new Zend_Pdf_Resource_Extractor();
 $font = Zend_Pdf_Font::fontWithName(Zend_Pdf_Font::FONT_HELVETICA);
-$shipmentCode='';
-
+$shipmentCode = '';
 $dtsResults = array();
 foreach ($this->possibleDtsResults as $pr) {
     $dtsResults[$pr['id']] = ucfirst(strtolower($pr['response']));
 }
 
 if (sizeof($this->result['shipment']) > 0) {
-	if (!file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports') &&
-        !is_dir(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports')) {
-		mkdir(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports');
+    $reportsFolderPath = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports';
+    if (!file_exists($reportsFolderPath) && !is_dir($reportsFolderPath)) {
+        mkdir($reportsFolderPath);
     }
-
     class MYPDF extends TCPDF {
         public $scheme_name = '';
-
-        public function setSchemeName($header, $schemeName, $logo,$logoRight,$comingFrom,$schemeType) {
+        public function setSchemeName($header, $schemeName, $logo, $logoRight, $comingFrom, $schemeType) {
             $this->scheme_name = $schemeName;
             $this->header = $header;
             $this->logo = $logo;
@@ -114,12 +110,14 @@ if (sizeof($this->result['shipment']) > 0) {
     );
 
     foreach ($this->result['shipment'] as $result) {
+
         $fileSafeShipmentCode = str_replace(array_merge(
             array_map('chr', range(0, 31)),
-            array('<', '>', ':', '"', '/', '\\', '|', '?', '*')), '', $result['shipment_code']);
-        if (!file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports'. DIRECTORY_SEPARATOR.$fileSafeShipmentCode) ||
-            !is_dir(UPLOAD_PATH . DIRECTORY_SEPARATOR .'reports'. DIRECTORY_SEPARATOR.$fileSafeShipmentCode)) {
-            mkdir(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports'. DIRECTORY_SEPARATOR.$fileSafeShipmentCode);
+            array('<', '>', ':', '"', '/', '\\', '|', '?', '*')
+            ), '', $result['shipment_code']);
+        $shipmentFolderPath = $reportsFolderPath . DIRECTORY_SEPARATOR . $fileSafeShipmentCode;
+        if (!file_exists($shipmentFolderPath) || !is_dir($shipmentFolderPath)) {
+            mkdir($shipmentFolderPath);
         }
 
         // create new PDF document
@@ -212,66 +210,66 @@ if (sizeof($this->result['shipment']) > 0) {
 
         //Comment Details
         if ($schemeType != 'vl' && $schemeType != 'eid' && $schemeType != 'tb') {
-            $labInfo='<table cellpadding="2">';
-            $labInfo.='<tr>';
-            $labInfo.='	<td><strong>Participant Code</strong> <br>'.$result['unique_identifier'].'</td>';
-            $labInfo.='	<td><strong>Performing Participant</strong>  <br>'.$result['first_name']." ".$result['last_name'].'</td>';
-            $labInfo.='	<td><strong>PT Panel Name and Date</strong> <br>'.$result['distribution_code'].'('.$result['shipment_date'].')</td>';
-            $labInfo.='</tr>';
-            $labInfo.='<tr>';
-            $labInfo.='	<td><strong>Shipment Date</strong> <br>'.$result['shipment_date'].'</td>';
-            $labInfo.='	<td><strong>Shipment Code</strong> <br>'.$result['shipment_code'].'</td>';
-            $labInfo.='	<td><strong>Shipment Type</strong>  <br>'.$result['scheme_name']." ".$result['last_name'].'</td>';
-            $labInfo.='</tr>';
-            $labInfo.='<tr>';
-            $labInfo.='	<td><strong>Panel Receipt Date</strong> <br>'.$shipmentReceiptDate.'</td>';
-            $labInfo.='	<td><strong>Rehydration Date</strong> <br>'.$sampleRehydrationDate.'</td>';
-            $labInfo.='	<td><strong>Result Due Date</strong> <br>'.$result['lastdate_response'].'</td>';
-            $labInfo.='</tr>';
-            $labInfo.='<tr>';
-            $labInfo.='	<td><strong>Response Date</strong> <br>'.$responseDate.'</td>';
-            $labInfo.='	<td><strong>Shipment Test Date</strong> <br>'.$shipmentTestDate.'</td>';
-            $labInfo.='	<td>';
+            $labInfo = '<table cellpadding="2">';
+            $labInfo .= '<tr>';
+            $labInfo .= '	<td><strong>Participant Code</strong> <br>'.$result['unique_identifier'].'</td>';
+            $labInfo .= '	<td><strong>Performing Participant</strong>  <br>'.$result['first_name']." ".$result['last_name'].'</td>';
+            $labInfo .= '	<td><strong>PT Panel Name and Date</strong> <br>'.$result['distribution_code'].'('.$result['shipment_date'].')</td>';
+            $labInfo .= '</tr>';
+            $labInfo .= '<tr>';
+            $labInfo .= '	<td><strong>Shipment Date</strong> <br>'.$result['shipment_date'].'</td>';
+            $labInfo .= '	<td><strong>Shipment Code</strong> <br>'.$result['shipment_code'].'</td>';
+            $labInfo .= '	<td><strong>Shipment Type</strong>  <br>'.$result['scheme_name']." ".$result['last_name'].'</td>';
+            $labInfo .= '</tr>';
+            $labInfo .= '<tr>';
+            $labInfo .= '	<td><strong>Panel Receipt Date</strong> <br>'.$shipmentReceiptDate.'</td>';
+            $labInfo .= '	<td><strong>Rehydration Date</strong> <br>'.$sampleRehydrationDate.'</td>';
+            $labInfo .= '	<td><strong>Result Due Date</strong> <br>'.$result['lastdate_response'].'</td>';
+            $labInfo .= '</tr>';
+            $labInfo .= '<tr>';
+            $labInfo .= '	<td><strong>Response Date</strong> <br>'.$responseDate.'</td>';
+            $labInfo .= '	<td><strong>Shipment Test Date</strong> <br>'.$shipmentTestDate.'</td>';
+            $labInfo .= '	<td>';
             if (isset($attributes['algorithm'])) {
-                $labInfo.='	<strong>Algorithm</strong> <br>'.ucfirst($attributes['algorithm']);
+                $labInfo .= '	<strong>Algorithm</strong> <br>'.ucfirst($attributes['algorithm']);
             }
-            $labInfo.=' </td>';
-            $labInfo.='</tr>';
-            $labInfo.='<tr>';
-            $labInfo.='	<td>';
-            $labInfo.='	<strong>Supervisor Name</strong> <br>'.($result['participant_supervisor']);
-            $labInfo.=' </td>';
-            $labInfo.='	<td>';
+            $labInfo .= ' </td>';
+            $labInfo .= '</tr>';
+            $labInfo .= '<tr>';
+            $labInfo .= '	<td>';
+            $labInfo .= '	<strong>Supervisor Name</strong> <br>'.($result['participant_supervisor']);
+            $labInfo .= ' </td>';
+            $labInfo .= '	<td>';
             if (isset($this->haveCustom) && $this->haveCustom == 'yes') {
-                $labInfo.='	<strong>'.$this->customField1.'</strong> <br>'.$this->shipment['custom_field_1'];
+                $labInfo .= '	<strong>'.$this->customField1.'</strong> <br>'.$this->shipment['custom_field_1'];
             }
-            $labInfo.=' </td>';
-            $labInfo.='	<td>';
+            $labInfo .= ' </td>';
+            $labInfo .= '	<td>';
             if (isset($this->haveCustom) && $this->haveCustom == 'yes') {
-                $labInfo.='	<strong>'.$this->customField2.'</strong> <br>'.$this->shipment['custom_field_2'];
+                $labInfo .= '	<strong>'.$this->customField2.'</strong> <br>'.$this->shipment['custom_field_2'];
             }
-            $labInfo.=' </td>';
-            $labInfo.='</tr>';
-            $labInfo.='</table>';
+            $labInfo .= ' </td>';
+            $labInfo .= '</tr>';
+            $labInfo .= '</table>';
             $pdf->writeHTML($labInfo, true, false, true, false, '');
         } else if ($schemeType == 'eid') {
-            $labInfo='<table cellpadding="2">';
-            $labInfo.='<tr>';
-            $labInfo.='	<td><strong>PT Panel Name and Date</strong> <br>'.$result['distribution_code'].'('.$result['shipment_date'].')</td>';
-            $labInfo.='	<td><strong>PT Panel Received</strong> <br>'.$shipmentReceiptDate.'</td>';
-            $labInfo.='</tr>';
-            $labInfo.='<tr>';
-            $labInfo.='	<td><strong>Extraction Assay </strong> <br>'.$result['extractionAssayVal'].'</td>';
-            $labInfo.='	<td><strong>PT Panel Tested </strong> <br>'.$shipmentTestDate.'</td>';
-            $labInfo.='</tr>';
-            $labInfo.='<tr>';
-            $labInfo.='	<td><strong>Detection Assay </strong> <br>'.$result['detectionAssayVal'].'</td>';
-            $labInfo.='	<td><strong>Results Submitted Date</strong> <br>'.$responseDate.'</td>';
-            $labInfo.='</tr>';
-            $labInfo.='<tr>';
-            $labInfo.='	<td><strong>Lab Id</strong> <br>'.$result['unique_identifier'].'</td>';
-            $labInfo.='</tr>';
-            $labInfo.='</table>';
+            $labInfo = '<table cellpadding="2">';
+            $labInfo .= '<tr>';
+            $labInfo .= '	<td><strong>PT Panel Name and Date</strong> <br>'.$result['distribution_code'].'('.$result['shipment_date'].')</td>';
+            $labInfo .= '	<td><strong>PT Panel Received</strong> <br>'.$shipmentReceiptDate.'</td>';
+            $labInfo .= '</tr>';
+            $labInfo .= '<tr>';
+            $labInfo .= '	<td><strong>Extraction Assay </strong> <br>'.$result['extractionAssayVal'].'</td>';
+            $labInfo .= '	<td><strong>PT Panel Tested </strong> <br>'.$shipmentTestDate.'</td>';
+            $labInfo .= '</tr>';
+            $labInfo .= '<tr>';
+            $labInfo .= '	<td><strong>Detection Assay </strong> <br>'.$result['detectionAssayVal'].'</td>';
+            $labInfo .= '	<td><strong>Results Submitted Date</strong> <br>'.$responseDate.'</td>';
+            $labInfo .= '</tr>';
+            $labInfo .= '<tr>';
+            $labInfo .= '	<td><strong>Lab Id</strong> <br>'.$result['unique_identifier'].'</td>';
+            $labInfo .= '</tr>';
+            $labInfo .= '</table>';
             $pdf->writeHTML($labInfo, true, false, true, false, '');
         }  else if ($schemeType == 'tb') {
             $labInfo = '<h3 style="width:100%;text-align:center;">'.$result['shipment_code'].'</h3>';
@@ -386,27 +384,27 @@ if (sizeof($this->result['shipment']) > 0) {
             $labInfo .= '</table><br />';
             $pdf->writeHTML($labInfo, true, false, true, false, '');
         } else {
-            $labInfo='<table cellpadding="2">';
-            $labInfo.='<tr>';
-            $labInfo.='	<td><strong>PT Panel </strong> <br>'.$result['distribution_code'].'('.$result['shipment_date'].')</td>';
-            $labInfo.='	<td><strong>Date PT Panel Received</strong> <br>'.$shipmentReceiptDate.'</td>';
-            $labInfo.='</tr>';
-            $labInfo.='<tr>';
-            $labInfo.='	<td><strong>Your Lab Id</strong> <br>'.$result['unique_identifier'].'</td>';
-            $labInfo.='	<td><strong>Date PT Panel Tested</strong> <br>'.$shipmentTestDate.'</td>';
-            $labInfo.='</tr>';
-            $labInfo.='</table>';
+            $labInfo = '<table cellpadding="2">';
+            $labInfo .= '<tr>';
+            $labInfo .= '	<td><strong>PT Panel </strong> <br>'.$result['distribution_code'].'('.$result['shipment_date'].')</td>';
+            $labInfo .= '	<td><strong>Date PT Panel Received</strong> <br>'.$shipmentReceiptDate.'</td>';
+            $labInfo .= '</tr>';
+            $labInfo .= '<tr>';
+            $labInfo .= '	<td><strong>Your Lab Id</strong> <br>'.$result['unique_identifier'].'</td>';
+            $labInfo .= '	<td><strong>Date PT Panel Tested</strong> <br>'.$shipmentTestDate.'</td>';
+            $labInfo .= '</tr>';
+            $labInfo .= '</table>';
             $pdf->writeHTML($labInfo, true, false, true, false, '');
         }
 
         if (isset($result['responseResult']) && sizeof($result['responseResult']) > 0) {
             if ($schemeType != 'vl' && $schemeType != 'eid' && $schemeType != 'tb') {
                 $labRes = '<span style="font-weight: bold;font-size:13px;">Your laboratory test results : <br/></span><table border="1" style="font-size:13px;">';
-                $labRes .='<tr style="background-color:#dbe4ee;"><td></td><td style="text-align:center;font-weight:bold;">Test-1</td><td style="text-align:center;font-weight:bold;">Test-2</td><td style="text-align:center;font-weight:bold;">Test-3</td><td colspan="4" style="border:none;"></td></tr>';
-                $labRes .='<tr><td style="text-align:center;font-weight:bold;background-color:#dbe4ee;">Kit Name</td><td>'.$result['responseResult'][0]['testkit1'].'</td><td>'.$result['responseResult'][0]['testkit2'].'</td><td>'.$result['responseResult'][0]['testkit3'].'</td><td colspan="4"></td></tr>';
-                $labRes .='<tr><td style="text-align:center;font-weight:bold;background-color:#dbe4ee;">Lot No.</td><td>'.$result['responseResult'][0]['lot_no_1'].'</td><td>'.$result['responseResult'][0]['lot_no_2'].'</td><td>'.$result['responseResult'][0]['lot_no_3'].'</td><td colspan="4"></td></tr>';
-                $labRes .='<tr><td style="text-align:center;font-weight:bold;background-color:#dbe4ee;">Expiry Date</td><td>'.$this->dateFormat($result['responseResult'][0]['exp_date_1']).'</td><td>'.$this->dateFormat($result['responseResult'][0]['exp_date_2']).'</td><td>'.$this->dateFormat($result['responseResult'][0]['exp_date_3']).'</td><td colspan="4"></td></tr>';
-                $labRes .='<tr style="background-color:#dbe4ee;">
+                $labRes .= '<tr style="background-color:#dbe4ee;"><td></td><td style="text-align:center;font-weight:bold;">Test-1</td><td style="text-align:center;font-weight:bold;">Test-2</td><td style="text-align:center;font-weight:bold;">Test-3</td><td colspan="4" style="border:none;"></td></tr>';
+                $labRes .= '<tr><td style="text-align:center;font-weight:bold;background-color:#dbe4ee;">Kit Name</td><td>'.$result['responseResult'][0]['testkit1'].'</td><td>'.$result['responseResult'][0]['testkit2'].'</td><td>'.$result['responseResult'][0]['testkit3'].'</td><td colspan="4"></td></tr>';
+                $labRes .= '<tr><td style="text-align:center;font-weight:bold;background-color:#dbe4ee;">Lot No.</td><td>'.$result['responseResult'][0]['lot_no_1'].'</td><td>'.$result['responseResult'][0]['lot_no_2'].'</td><td>'.$result['responseResult'][0]['lot_no_3'].'</td><td colspan="4"></td></tr>';
+                $labRes .= '<tr><td style="text-align:center;font-weight:bold;background-color:#dbe4ee;">Expiry Date</td><td>'.$this->dateFormat($result['responseResult'][0]['exp_date_1']).'</td><td>'.$this->dateFormat($result['responseResult'][0]['exp_date_2']).'</td><td>'.$this->dateFormat($result['responseResult'][0]['exp_date_3']).'</td><td colspan="4"></td></tr>';
+                $labRes .= '<tr style="background-color:#dbe4ee;">
                                 <td style="text-align:center;font-weight:bold;">Specimen Panel ID </td>
                                 <td style="text-align:center;font-weight:bold;">Result-1</td>
                                 <td style="text-align:center;font-weight:bold;">Result-2</td>
@@ -459,7 +457,7 @@ if (sizeof($this->result['shipment']) > 0) {
                         $img = UPLOAD_PATH . '/../images/minus.jpg';
                         $score = "N.A.";
                     }
-                    $labRes.='<tr>
+                    $labRes .= '<tr>
                                   <td style="text-align:center;">'.$response['sample_label'].'</td>
                                   <td>'.(isset($response['test_result_1']) && $response['test_result_1'] !="" ? $dtsResults[$response['test_result_1']] : "").'</td>
                                   <td>'.(isset($response['test_result_2']) && $response['test_result_2'] !="" ? $dtsResults[$response['test_result_2']] : "").'</td>
@@ -470,7 +468,7 @@ if (sizeof($this->result['shipment']) > 0) {
                                   <td style="text-align:center;">'.$score.'</td>
                               </tr>';
                 }
-                $labRes.='</table>';
+                $labRes .= '</table>';
 
                 $pdf->SetLeftMargin(15);
                 $pdf->writeHTML($labRes, true, false, true, false, '');
@@ -488,7 +486,7 @@ if (sizeof($this->result['shipment']) > 0) {
                 $imgPass = UPLOAD_PATH . '/../images/check.jpg';
                 $imgFail = UPLOAD_PATH . '/../images/cross.jpg';
 
-                $docRes='<span style="font-weight:bold;font-size:13px;">Your documentation score :</span> <br/>
+                $docRes = '<span style="font-weight:bold;font-size:13px;">Your documentation score :</span> <br/>
                         <table border="1" style="font-size:13px;width:100%;">
                             <tr style="background-color:#dbe4ee;">
                                 <td style="text-align:center;font-weight:bold;width:75%">Documentation Item</td>
@@ -503,13 +501,14 @@ if (sizeof($this->result['shipment']) > 0) {
                     $img = $imgFail;
                 }
 
-                $docRes.='<tr>
-                              <td style="text-align:left;font-weight:bold;">Supervisor Approval</td>
-                              <td style="text-align:center;"><img style="width:11px;" src="'.$img.'" /></td>
-                              <td style="text-align:center;">'.$scoreDoc.'</td>
-                          </tr>';
+                $docRes .= '<tr>
+                                <td style="text-align:left;font-weight:bold;">Supervisor Approval</td>
+                                <td style="text-align:center;"><img style="width:11px;" src="'.$img.'" /></td>
+                                <td style="text-align:center;">'.$scoreDoc.'</td>
+                            </tr>';
 
-                if (isset($result['responseResult'][0]['shipment_receipt_date']) && trim($result['responseResult'][0]['shipment_receipt_date']) != "") {
+                if (isset($result['responseResult'][0]['shipment_receipt_date']) &&
+                    trim($result['responseResult'][0]['shipment_receipt_date']) != "") {
                     $scoreDoc =  $documentationScorePerItem;
                     $img = $imgPass;
                 } else {
@@ -517,11 +516,11 @@ if (sizeof($this->result['shipment']) > 0) {
                     $img = $imgFail;
                 }
 
-                $docRes.='<tr>
-                              <td style="text-align:left;font-weight:bold;">Panel/Shipment Receipt Date Specified</td>
-                              <td style="text-align:center;"><img style="width:11px;" src="'.$img.'" /></td>
-                              <td style="text-align:center;">'.$scoreDoc.'</td>
-                          </tr>';
+                $docRes .= '<tr>
+                                <td style="text-align:left;font-weight:bold;">Panel/Shipment Receipt Date Specified</td>
+                                <td style="text-align:center;"><img style="width:11px;" src="'.$img.'" /></td>
+                                <td style="text-align:center;">'.$scoreDoc.'</td>
+                            </tr>';
 
                 if (isset($attributes['sample_rehydration_date']) && trim($attributes['sample_rehydration_date']) != "") {
                     $scoreDoc =  $documentationScorePerItem;
@@ -532,14 +531,15 @@ if (sizeof($this->result['shipment']) > 0) {
                 }
 
 
-                $docRes.='<tr>
-                              <td style="text-align:left;font-weight:bold;">Reporting of the Sample Rehydration Date</td>
-                              <td style="text-align:center;"><img style="width:11px;" src="'.$img.'" /></td>
-                              <td style="text-align:center;">'.$scoreDoc.'</td>
-                          </tr>';
+                $docRes .= '<tr>
+                                <td style="text-align:left;font-weight:bold;">Reporting of the Sample Rehydration Date</td>
+                                <td style="text-align:center;"><img style="width:11px;" src="'.$img.'" /></td>
+                                <td style="text-align:center;">'.$scoreDoc.'</td>
+                            </tr>';
 
 
-                if (isset($result['responseResult'][0]['shipment_test_date']) && trim($result['responseResult'][0]['shipment_test_date']) != "") {
+                if (isset($result['responseResult'][0]['shipment_test_date']) &&
+                    trim($result['responseResult'][0]['shipment_test_date']) != "") {
                     $scoreDoc =  $documentationScorePerItem;
                     $img = $imgPass;
                 } else {
@@ -547,11 +547,11 @@ if (sizeof($this->result['shipment']) > 0) {
                     $img = $imgFail;
                 }
 
-                $docRes.='<tr>
-                              <td style="text-align:left;font-weight:bold;">Reporting of the Shipment Test Date</td>
-                              <td style="text-align:center;"><img style="width:11px;" src="'.$img.'" /></td>
-                              <td style="text-align:center;">'.$scoreDoc.'</td>
-                          </tr>';
+                $docRes .= '<tr>
+                                <td style="text-align:left;font-weight:bold;">Reporting of the Shipment Test Date</td>
+                                <td style="text-align:center;"><img style="width:11px;" src="'.$img.'" /></td>
+                                <td style="text-align:center;">'.$scoreDoc.'</td>
+                            </tr>';
 
                 $config = new Zend_Config_Ini(APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini", APPLICATION_ENV);
                 $sampleRehydrationDate = new DateTime($attributes['sample_rehydration_date']);
@@ -570,19 +570,22 @@ if (sizeof($this->result['shipment']) > 0) {
                     $img = $imgPass;
                 }
 
-                $docRes.='<tr>
-                              <td style="text-align:left;font-weight:bold;">Testing to be done within '.$rehydrateHours.' hours of rehydration.</td>
-                              <td style="text-align:center;"><img style="width:11px;" src="'.$img.'" /></td>
-                              <td style="text-align:center;">'.$scoreDoc.'</td>
-                          </tr>';
-                $docRes.='</table>';
+                $docRes .= '<tr>
+                                <td style="text-align:left;font-weight:bold;">Testing to be done within '.$rehydrateHours.' hours of rehydration.</td>
+                                <td style="text-align:center;"><img style="width:11px;" src="'.$img.'" /></td>
+                                <td style="text-align:center;">'.$scoreDoc.'</td>
+                            </tr>';
+                $docRes .= '</table>';
 
                 $pdf->writeHTML($docRes, true, false, true, false, '');
 
-                if (isset($result['responseResult'][0]['failure_reason']) && $result['responseResult'][0]['failure_reason'] != "" && $result['responseResult'][0]['failure_reason'] != "[]" && $result['responseResult'][0]['failure_reason'] != null) {
+                if (isset($result['responseResult'][0]['failure_reason']) &&
+                    $result['responseResult'][0]['failure_reason'] != "" &&
+                    $result['responseResult'][0]['failure_reason'] != "[]" &&
+                    $result['responseResult'][0]['failure_reason'] != null) {
                     $failRes = '<span style="font-weight:bold;font-size:13px;">Suggested Corrective actions for your response :</span> <br/>';
                     $failRes .= '<table border="1" style="font-size:13px;">';
-                    $failRes.= '<tr style="background-color:#dbe4ee;"><td style="text-align:center;font-weight:bold;">Failure Reasons (or) Warnings</td><td style="text-align:center;font-weight:bold;">Corrective Actions (if any)</td></tr>';
+                    $failRes .= '<tr style="background-color:#dbe4ee;"><td style="text-align:center;font-weight:bold;">Failure Reasons (or) Warnings</td><td style="text-align:center;font-weight:bold;">Corrective Actions (if any)</td></tr>';
                     $warnings = json_decode($result['responseResult'][0]['failure_reason'],true);
                     foreach ($warnings as $warning) {
                         $failRes.= '<tr>';
@@ -883,10 +886,8 @@ if (sizeof($this->result['shipment']) > 0) {
         $fileName = preg_replace('/[^A-Za-z0-9.]/', '-', $fileName);
         $fileName = str_replace(" ", "-", $fileName);
 
-        $fileSafeShipmentCode = str_replace(array_merge(
-            array_map('chr', range(0, 31)),
-            array('<', '>', ':', '"', '/', '\\', '|', '?', '*')), '', $result['shipment_code']);
-        $filePath = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports'. DIRECTORY_SEPARATOR .$fileSafeShipmentCode. DIRECTORY_SEPARATOR .$fileName;
+
+        $filePath = $shipmentFolderPath . DIRECTORY_SEPARATOR . $fileName;
         $created = $pdf->Output($filePath, "F");
 
         $loadpdf = Zend_Pdf::load($filePath);
@@ -899,23 +900,32 @@ if (sizeof($this->result['shipment']) > 0) {
         $j++;
     }
 
-    //$mergePdf = $shipmentCode."-bulk-participant-report.pdf";
-    $mergePdf = $shipmentCode."-".$this->bulkfileNameVal."-bulk-participant-report.pdf";
-    $mergeFilePath = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports'. DIRECTORY_SEPARATOR .$fileSafeShipmentCode. DIRECTORY_SEPARATOR .$mergePdf;
+    $mergePdf = $fileSafeShipmentCode . "-" . $this->bulkfileNameVal . "-bulk-participant-report.pdf";
+    $mergeFilePath = $shipmentFolderPath . DIRECTORY_SEPARATOR . $mergePdf;
     $pdfNew ->save($mergeFilePath);
 
     foreach ($this->result['dmResult'] as $key=>$dmRes) {
-        $pdfNew->pages=array();
-        $expRes=explode(",",$dmRes);
-        $resCount=count($expRes);
-        if ($resCount>0) {
+        $pdfNew->pages = array();
+        $expRes = explode("$",$dmRes);
+        $resCount = count($expRes);
+        if ($resCount > 0) {
             foreach ($expRes as $res) {
-                $expStrRes=explode("#",$res);
-                $dmFileName=$expStrRes[0].$key.".pdf";
-                $participantFileName=$expStrRes[2].".pdf";
+                $expStrRes = explode("#", $res);
+                $dmFileName = $key . "-dm.pdf";
+                $participantFileName = $key . "-participant.pdf";
+                if (count($expStrRes) > 0) {
+                    $dmFileName = $expStrRes[0] . $key . ".pdf";
+                }
+                if (count($expStrRes) > 2) {
+                    $participantFileName = $expStrRes[2].".pdf";
+                } else if (count($expStrRes) > 1) {
+                    $participantFileName = $expStrRes[1].".pdf";
+                } else if (count($expStrRes) > 0) {
+                    $participantFileName = $expStrRes[0].".pdf";
+                }
                 $participantFileName = preg_replace('/[^A-Za-z0-9.]/', '-', $participantFileName);
                 $participantFileName = str_replace(" ", "-", $participantFileName);
-                $filePath = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports'. DIRECTORY_SEPARATOR .$fileSafeShipmentCode. DIRECTORY_SEPARATOR .$participantFileName;
+                $filePath = $shipmentFolderPath . DIRECTORY_SEPARATOR . $participantFileName;
 
                 $loadpdf = Zend_Pdf::load($filePath);
                 foreach ($loadpdf->pages as $page) {
@@ -928,9 +938,9 @@ if (sizeof($this->result['shipment']) > 0) {
         $dmFileName = preg_replace('/[^A-Za-z0-9.]/', '-', $dmFileName);
         $dmFileName = str_replace(" ", "-", $dmFileName);
 
-        $mergePdf = $shipmentCode."-".$dmFileName;
-        $mergeFilePath = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports'. DIRECTORY_SEPARATOR .$fileSafeShipmentCode. DIRECTORY_SEPARATOR .$mergePdf;
-        $pdfNew ->save($mergeFilePath);
+        $mergePdf = $fileSafeShipmentCode . "-" . $dmFileName;
+        $mergeFilePath = $shipmentFolderPath . DIRECTORY_SEPARATOR . $mergePdf;
+        $pdfNew->save($mergeFilePath);
     }
 
     //============================================================+
