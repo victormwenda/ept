@@ -339,23 +339,26 @@ class Application_Model_DbTable_SystemAdmin extends Zend_Db_Table_Abstract {
                     'primary_email' => $params['primaryEmail'],
                     'secondary_email' => $params['secondaryEmail'],
                     'phone' => $params['phone'],
-                    'status' => $params['status'],
                     'updated_by' => $authNameSpace->admin_id,
                     'updated_on' => new Zend_Db_Expr('now()')
                 );
+                if (isset($params['status'])) {
+                    $data['status'] = $params['status'];
+                }
                 if (isset($params['password']) && $params['password'] !="") {
                     $data['password'] = $params['password'];
                     $data['force_password_reset']= 1;
                 }
                 $this->update($data,'admin_id = '.$adminId);
-
-                $where = $dbAdapter->quoteInto("admin_id = ?", $adminId);
-                $dbAdapter->delete('ptcc_country_map', $where);
-                foreach ($params['countryId'] as $countryId) {
-                    $dbAdapter->insert('ptcc_country_map', array(
-                        'admin_id' => $adminId,
-                        'country_id' => $countryId
-                    ));
+                if (isset($params['countryId'])) {
+                    $where = $dbAdapter->quoteInto("admin_id = ?", $adminId);
+                    $dbAdapter->delete('ptcc_country_map', $where);
+                    foreach ($params['countryId'] as $countryId) {
+                        $dbAdapter->insert('ptcc_country_map', array(
+                            'admin_id' => $adminId,
+                            'country_id' => $countryId
+                        ));
+                    }
                 }
             } else {
                 $data = array(

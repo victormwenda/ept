@@ -1,3 +1,6 @@
+<?php
+$authNameSpace = new Zend_Session_Namespace('administrators');
+?>
 <div class="well">
     <form name="editPtccProfileForm" id="editPtccProfileForm" method="post" action="<?php echo $this->url(array("module" => "admin", "controller" => "ptcc-profiles", "action" => "edit"),'default', true) ?>" class="form-horizontal bs-example" role="form" onsubmit="validateNow();return false;">
         <fieldset>
@@ -91,6 +94,9 @@
                            class="form-control isEmail" onblur="checkEmailId()" />
         		</div>
             </div>
+            <?php
+            if ($authNameSpace->is_ptcc_coordinator == 0 && $this->idParam != "me") {
+            ?>
             <div class="form-group">
                 <label class="col-lg-3 control-label">Status <span class="mandatory">*</span></label>
                 <div class="col-lg-5">
@@ -123,6 +129,8 @@
                     </select>
                 </div>
             </div>
+            <?php
+            } ?>
             <br>
             <div id="respond" style="margin: 0px auto 0px auto; text-align: center;" align="center">
                 <input name="submitbtn" class="btn btn-primary" type="submit" tabindex="7" value="Update"/>
