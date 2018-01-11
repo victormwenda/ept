@@ -114,9 +114,12 @@ if (sizeof($this->result['shipment']) > 0) {
     );
 
     foreach ($this->result['shipment'] as $result) {
-        if (!file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports'. DIRECTORY_SEPARATOR.$result['shipment_code']) &&
-            !is_dir(UPLOAD_PATH . DIRECTORY_SEPARATOR .'reports'. DIRECTORY_SEPARATOR.$result['shipment_code'])) {
-            mkdir(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports'. DIRECTORY_SEPARATOR.$result['shipment_code']);
+        $fileSafeShipmentCode = str_replace(array_merge(
+            array_map('chr', range(0, 31)),
+            array('<', '>', ':', '"', '/', '\\', '|', '?', '*')), '', $result['shipment_code']);
+        if (!file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports'. DIRECTORY_SEPARATOR.$fileSafeShipmentCode) ||
+            !is_dir(UPLOAD_PATH . DIRECTORY_SEPARATOR .'reports'. DIRECTORY_SEPARATOR.$fileSafeShipmentCode)) {
+            mkdir(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports'. DIRECTORY_SEPARATOR.$fileSafeShipmentCode);
         }
 
         // create new PDF document
@@ -879,7 +882,11 @@ if (sizeof($this->result['shipment']) > 0) {
         $fileName = $result['first_name'].$result['last_name']."-".$result['map_id'].".pdf";
         $fileName = preg_replace('/[^A-Za-z0-9.]/', '-', $fileName);
         $fileName = str_replace(" ", "-", $fileName);
-        $filePath = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports'. DIRECTORY_SEPARATOR .$result['shipment_code']. DIRECTORY_SEPARATOR .$fileName;
+
+        $fileSafeShipmentCode = str_replace(array_merge(
+            array_map('chr', range(0, 31)),
+            array('<', '>', ':', '"', '/', '\\', '|', '?', '*')), '', $result['shipment_code']);
+        $filePath = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports'. DIRECTORY_SEPARATOR .$fileSafeShipmentCode. DIRECTORY_SEPARATOR .$fileName;
         $created = $pdf->Output($filePath, "F");
 
         $loadpdf = Zend_Pdf::load($filePath);
@@ -888,13 +895,13 @@ if (sizeof($this->result['shipment']) > 0) {
             $pdfExtract = $extractor->clonePage($page);
             $pdfNew->pages[] = $pdfExtract;
         }
-        $shipmentCode=$result['shipment_code'];
+        $shipmentCode = $result['shipment_code'];
         $j++;
     }
 
     //$mergePdf = $shipmentCode."-bulk-participant-report.pdf";
     $mergePdf = $shipmentCode."-".$this->bulkfileNameVal."-bulk-participant-report.pdf";
-    $mergeFilePath = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports'. DIRECTORY_SEPARATOR .$shipmentCode. DIRECTORY_SEPARATOR .$mergePdf;
+    $mergeFilePath = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports'. DIRECTORY_SEPARATOR .$fileSafeShipmentCode. DIRECTORY_SEPARATOR .$mergePdf;
     $pdfNew ->save($mergeFilePath);
 
     foreach ($this->result['dmResult'] as $key=>$dmRes) {
@@ -908,7 +915,7 @@ if (sizeof($this->result['shipment']) > 0) {
                 $participantFileName=$expStrRes[2].".pdf";
                 $participantFileName = preg_replace('/[^A-Za-z0-9.]/', '-', $participantFileName);
                 $participantFileName = str_replace(" ", "-", $participantFileName);
-                $filePath = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports'. DIRECTORY_SEPARATOR .$shipmentCode. DIRECTORY_SEPARATOR .$participantFileName;
+                $filePath = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports'. DIRECTORY_SEPARATOR .$fileSafeShipmentCode. DIRECTORY_SEPARATOR .$participantFileName;
 
                 $loadpdf = Zend_Pdf::load($filePath);
                 foreach ($loadpdf->pages as $page) {
@@ -922,7 +929,7 @@ if (sizeof($this->result['shipment']) > 0) {
         $dmFileName = str_replace(" ", "-", $dmFileName);
 
         $mergePdf = $shipmentCode."-".$dmFileName;
-        $mergeFilePath = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports'. DIRECTORY_SEPARATOR .$shipmentCode. DIRECTORY_SEPARATOR .$mergePdf;
+        $mergeFilePath = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports'. DIRECTORY_SEPARATOR .$fileSafeShipmentCode. DIRECTORY_SEPARATOR .$mergePdf;
         $pdfNew ->save($mergeFilePath);
     }
 

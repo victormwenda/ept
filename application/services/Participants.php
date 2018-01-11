@@ -469,7 +469,11 @@ class Application_Service_Participants {
             }
 
             $writer = PHPExcel_IOFactory::createWriter($excel, 'Excel5');
-            $filename = $params['shipmentCode'].'-responded-participant-report-'.date('d-M-Y-H-i-s') . '.xls';
+            $fileSafeShipmentCode = str_replace(array_merge(
+                array_map('chr', range(0, 31)),
+                array('<', '>', ':', '"', '/', '\\', '|', '?', '*')
+            ), '', $params['shipmentCode']);
+            $filename = $fileSafeShipmentCode.'-responded-participant-report-'.date('d-M-Y-H-i-s') . '.xls';
             $writer->save(TEMP_UPLOAD_PATH . DIRECTORY_SEPARATOR . $filename);
             return $filename;
 		} catch (Exception $exc) {
@@ -588,7 +592,11 @@ class Application_Service_Participants {
             }
 
             $writer = PHPExcel_IOFactory::createWriter($excel, 'Excel5');
-            $filename = $params['shipmentCode'].'-not-responded-participant-report-' . date('d-M-Y-H-i-s') . '.xls';
+            $fileSafeShipmentCode = str_replace(array_merge(
+                array_map('chr', range(0, 31)),
+                array('<', '>', ':', '"', '/', '\\', '|', '?', '*')
+            ), '', $params['shipmentCode']);
+            $filename = $fileSafeShipmentCode.'-not-responded-participant-report-' . date('d-M-Y-H-i-s') . '.xls';
             $writer->save(TEMP_UPLOAD_PATH . DIRECTORY_SEPARATOR . $filename);
             return $filename;
 		} catch (Exception $exc) {

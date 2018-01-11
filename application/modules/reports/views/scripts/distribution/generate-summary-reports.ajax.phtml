@@ -2,16 +2,22 @@
 
 require_once('tcpdf/tcpdf.php');
 $config = new Zend_Config_Ini(APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini", APPLICATION_ENV);
+$fileSafeShipmentCode = str_replace(array_merge(
+        array_map('chr', range(0, 31)),
+        array('<', '>', ':', '"', '/', '\\', '|', '?', '*')
+        ), '', $this->result['shipment']['shipment_code']);
+$reportsFolderPath = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports';
+$shipmentFolderPath = $reportsFolderPath . DIRECTORY_SEPARATOR . $fileSafeShipmentCode;
 if ($this->result['shipment'] != "") {
     if ($this->result['shipment']['scheme_type'] != 'eid') {
         require_once('libchart/classes/libchart.php');
         $chart = new VerticalBarChart(700, 400);
     }
-    if (!file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports') && !is_dir(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports')) {
-        mkdir(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports');
+    if (!file_exists($reportsFolderPath) && !is_dir($reportsFolderPath)) {
+        mkdir($reportsFolderPath);
     }
-    if (!file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports' . DIRECTORY_SEPARATOR . $this->result['shipment']['shipment_code']) && !is_dir(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports' . DIRECTORY_SEPARATOR . $this->result['shipment']['shipment_code'])) {
-        mkdir(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports' . DIRECTORY_SEPARATOR . $this->result['shipment']['shipment_code']);
+    if (!file_exists($shipmentFolderPath) && !is_dir($shipmentFolderPath)) {
+        mkdir($shipmentFolderPath);
     }
 
     class MYPDF extends TCPDF {
@@ -27,15 +33,16 @@ if ($this->result['shipment'] != "") {
         //Page header
         public function Header() {
             if($this->schemeType != 'tb') {
+                $logoFolderPath = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'logo' . DIRECTORY_SEPARATOR;
                 if (trim($this->logo) != "") {
-                    if (file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'logo' . DIRECTORY_SEPARATOR . $this->logo)) {
-                        $image_file = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'logo' . DIRECTORY_SEPARATOR . $this->logo;
+                    if (file_exists($logoFolderPath . $this->logo)) {
+                        $image_file = $logoFolderPath . $this->logo;
                         $this->Image($image_file, 10, 10, 25, '', 'JPG', '', 'T', false, 300, '', false, false, 0, false, false, false);
                     }
                 }
                 if (trim($this->logoRight) != "") {
-                    if (file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'logo' . DIRECTORY_SEPARATOR . $this->logoRight)) {
-                        $image_file = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'logo' . DIRECTORY_SEPARATOR . $this->logoRight;
+                    if (file_exists($logoFolderPath . $this->logoRight)) {
+                        $image_file = $logoFolderPath . $this->logoRight;
                         $this->Image($image_file, 180, 10, 20, '', 'JPG', '', 'T', false, 300, '', false, false, 0, false, false, false);
                     }
                 }
@@ -549,7 +556,7 @@ if ($this->result['shipment'] != "") {
 
             $chart->getPlot()->setGraphCaptionRatio(0.5);
             $chart->setTitle("Comparison of test performance between participating laboratories");
-            $chart->render(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports' . DIRECTORY_SEPARATOR . $this->result['shipment']['shipment_code'] . DIRECTORY_SEPARATOR . "bar_chart.png");
+            $chart->render(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports' . DIRECTORY_SEPARATOR . $fileSafeShipmentCode . DIRECTORY_SEPARATOR . "bar_chart.png");
 
             // set font
             $pdf->SetFont('times', 'B', 12);
@@ -653,7 +660,7 @@ if ($this->result['shipment'] != "") {
                 //----------------Participant Corrective Action Overview  Ends----------------
                 $pdf->writeHTML($correctiveActionStuff, true, false, true, false, '');
             }
-            $image_file = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports' . DIRECTORY_SEPARATOR . $this->result['shipment']['shipment_code'] . DIRECTORY_SEPARATOR . 'bar_chart.png';
+            $image_file = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports' . DIRECTORY_SEPARATOR . $fileSafeShipmentCode . DIRECTORY_SEPARATOR . 'bar_chart.png';
             $y = $pdf->getY() + 5;
             $pdf->Image($image_file, 5, $pdf->getY(), '', '', '', '', '', false, 300);
             if (file_exists($image_file)) {
@@ -667,7 +674,7 @@ if ($this->result['shipment'] != "") {
                 foreach ($this->result['shipment']['pieChart'] as $piechart) {
                     $dataSet->addPoint(new Point($piechart['kit_name']." (N=".$piechart['count'].")", $piechart['count']));
                 }
-                $piechart = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports' . DIRECTORY_SEPARATOR . $this->result['shipment']['shipment_code'] . DIRECTORY_SEPARATOR . 'pieChart.png';
+                $piechart = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports' . DIRECTORY_SEPARATOR . $fileSafeShipmentCode . DIRECTORY_SEPARATOR . 'pieChart.png';
                 $chart->setDataSet($dataSet);
                 $chart->getPlot()->setGraphCaptionRatio(0.5);
                 $chart->setTitle("Test kits used for DTS-based PE survey " . $this->result['shipment']['distribution_code']);
@@ -700,7 +707,7 @@ if ($this->result['shipment'] != "") {
             if (trim($this->result['shipment']['dbsPieChart']['EIA']) != "") {
                 $dataSet->addPoint(new Point("EIA", $this->result['shipment']['dbsPieChart']['EIA']));
             }
-            $piechart = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports' . DIRECTORY_SEPARATOR . $this->result['shipment']['shipment_code'] . DIRECTORY_SEPARATOR . 'pieChart.png';
+            $piechart = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports' . DIRECTORY_SEPARATOR . $fileSafeShipmentCode . DIRECTORY_SEPARATOR . 'pieChart.png';
             $chart->setDataSet($dataSet);
 
             $chart->setTitle("HIV Testing Algorithms used for DBS-based PE survey " . $this->result['shipment']['distribution_code']);
@@ -742,8 +749,8 @@ if ($this->result['shipment'] != "") {
         }
     }
     //Close and output PDF document
-    $fileName = $this->result['shipment']['shipment_code']."-summary.pdf";
-    $filePath = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports' . DIRECTORY_SEPARATOR . $this->result['shipment']['shipment_code'] . DIRECTORY_SEPARATOR . $fileName;
+    $fileName = $fileSafeShipmentCode . "-summary.pdf";
+    $filePath = $shipmentFolderPath . DIRECTORY_SEPARATOR . $fileName;
     $pdf->Output($filePath, "F");
 
     //============================================================+

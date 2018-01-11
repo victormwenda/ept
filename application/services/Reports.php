@@ -187,9 +187,13 @@ class Application_Service_Reports {
         $shipmentDb = new Application_Model_DbTable_Shipments();
         foreach ($rResult as $aRow) {
             $download = ' No Download Available ';
+            $fileSafeShipmentCode = str_replace(array_merge(
+                array_map('chr', range(0, 31)),
+                array('<', '>', ':', '"', '/', '\\', '|', '?', '*')
+            ), '', $aRow['shipment_code']);
             if (isset($aRow['report_generated']) && $aRow['report_generated'] == 'yes') {
-                if (file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . "reports" . DIRECTORY_SEPARATOR . $aRow['shipment_code'] . DIRECTORY_SEPARATOR . $aRow['shipment_code']."-summary.pdf")) {
-                    $download = '<a href="/uploads/reports/' . $aRow['shipment_code'] . '/'.$aRow['shipment_code'].'-summary.pdf" class=\'btn btn-info btn-xs\'><i class=\'icon-download\'></i> Summary</a>';
+                if (file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . "reports" . DIRECTORY_SEPARATOR . $fileSafeShipmentCode . DIRECTORY_SEPARATOR . $fileSafeShipmentCode."-summary.pdf")) {
+                    $download = '<a href="/uploads/reports/' . $fileSafeShipmentCode . '/'.$fileSafeShipmentCode.'-summary.pdf" class=\'btn btn-info btn-xs\'><i class=\'icon-download\'></i> Summary</a>';
                 }
             }
             $shipmentResults = $shipmentDb->getPendingShipmentsByDistribution($aRow['distribution_id']);
@@ -1497,7 +1501,10 @@ class Application_Service_Reports {
 					}
 	
 					$currentRow++;
-					$shipmentCode = $aRow['shipment_code'];
+                    $fileSafeShipmentCode = str_replace(array_merge(
+                        array_map('chr', range(0, 31)),
+                        array('<', '>', ':', '"', '/', '\\', '|', '?', '*')
+                    ), '', $aRow['shipment_code']);
 				}
 			}
 	
@@ -1922,15 +1929,10 @@ class Application_Service_Reports {
 			}
 	
 			//----------- Second Sheet End----->
-	
-	
-	
-	
-	
 			$excel->setActiveSheetIndex(0);
 	
 			$writer = PHPExcel_IOFactory::createWriter($excel, 'Excel5');
-			$filename = $shipmentCode . '-' . date('d-M-Y-H-i-s') . '.xls';
+			$filename = $fileSafeShipmentCode . '-' . date('d-M-Y-H-i-s') . '.xls';
 			$writer->save(TEMP_UPLOAD_PATH . DIRECTORY_SEPARATOR . $filename);
 			return $filename;
 		
@@ -2359,7 +2361,11 @@ class Application_Service_Reports {
 			$excel->setActiveSheetIndex(0);
 	
 			$writer = PHPExcel_IOFactory::createWriter($excel, 'Excel5');
-			$filename = $result['shipment_code'] . '-' . date('d-M-Y-H-i-s') .rand(). '.xls';
+            $fileSafeShipmentCode = str_replace(array_merge(
+                array_map('chr', range(0, 31)),
+                array('<', '>', ':', '"', '/', '\\', '|', '?', '*')
+            ), '', $result['shipment_code']);
+			$filename = $fileSafeShipmentCode . '-' . date('d-M-Y-H-i-s') .rand(). '.xls';
 			$writer->save(TEMP_UPLOAD_PATH . DIRECTORY_SEPARATOR . $filename);
 			return $filename;
 		
@@ -2520,7 +2526,11 @@ class Application_Service_Reports {
 			$excel->setActiveSheetIndex(0);
 	
 			$writer = PHPExcel_IOFactory::createWriter($excel, 'Excel5');
-			$filename = $result['shipment_code'] . '-' . date('d-M-Y-H-i-s') .rand(). '.xls';
+            $fileSafeShipmentCode = str_replace(array_merge(
+                array_map('chr', range(0, 31)),
+                array('<', '>', ':', '"', '/', '\\', '|', '?', '*')
+            ), '', $result['shipment_code']);
+			$filename = $fileSafeShipmentCode . '-' . date('d-M-Y-H-i-s') .rand(). '.xls';
 			$writer->save(TEMP_UPLOAD_PATH . DIRECTORY_SEPARATOR . $filename);
 			return $filename;
 		
@@ -4944,8 +4954,11 @@ GROUP BY shipment_participant_map.map_id) AS FlattenedEvaluationResults;", array
         if (!file_exists(UPLOAD_PATH  . DIRECTORY_SEPARATOR . "generated-reports")) {
             mkdir(UPLOAD_PATH  . DIRECTORY_SEPARATOR . "generated-reports", 0777, true);
         }
-        $filename = preg_replace(array('/\s/', '/\.[\.]+/', '/[^\w_\.\-]/'), array('_', '.', ''), $shipmentResult['shipment_code'])
-            . '-all-results' . '.xls';
+        $fileSafeShipmentCode = str_replace(array_merge(
+            array_map('chr', range(0, 31)),
+            array('<', '>', ':', '"', '/', '\\', '|', '?', '*')
+        ), '', $shipmentResult['shipment_code']);
+        $filename = $fileSafeShipmentCode . '-all-results' . '.xls';
         $writer->save(UPLOAD_PATH  . DIRECTORY_SEPARATOR . "generated-reports" . DIRECTORY_SEPARATOR . $filename);
 
         return array(

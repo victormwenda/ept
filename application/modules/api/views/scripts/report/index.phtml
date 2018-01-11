@@ -8,7 +8,10 @@ if($this->result!=""){
     $fileName = preg_replace('/[^A-Za-z0-9.]/', '-', $fileName);
     $fileName = str_replace(" ", "-", $fileName);
 
-    $file = UPLOAD_PATH. DIRECTORY_SEPARATOR."reports". DIRECTORY_SEPARATOR.$this->result['shipment_code']. DIRECTORY_SEPARATOR.$fileName;
+    $fileSafeShipmentCode = str_replace(array_merge(
+        array_map('chr', range(0, 31)),
+        array('<', '>', ':', '"', '/', '\\', '|', '?', '*')), '', $this->result['shipment_code']);
+    $file = UPLOAD_PATH. DIRECTORY_SEPARATOR."reports". DIRECTORY_SEPARATOR.$fileSafeShipmentCode.DIRECTORY_SEPARATOR.$fileName;
 
     if (file_exists($file)) {
         echo "<h2 align='center' style='margin-top:100px;font-family:arial;'>Requested image will be downloaded shortly, After downloaded please close the window </h2>";

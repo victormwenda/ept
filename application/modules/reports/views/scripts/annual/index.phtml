@@ -32,7 +32,7 @@
 <div align="left" style="padding-top:3px;" class="col-lg-6">
         <span id="summaryDiv" >
             <?php
-            $dir=UPLOAD_PATH. DIRECTORY_SEPARATOR."annual-reports";
+            $dir = UPLOAD_PATH. DIRECTORY_SEPARATOR."annual-reports";
             $scanFileDir = scandir($dir);
             foreach($scanFileDir as $file){
                 if($file!="." && $file!=".."){

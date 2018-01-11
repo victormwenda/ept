@@ -221,8 +221,11 @@ if (count($this->shipment) > 0) {
       <?php
       }
       if ($shipment['report_generated'] == 'yes') {
-          if (file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . "reports" . DIRECTORY_SEPARATOR . $shipment['shipment_code'] . DIRECTORY_SEPARATOR . $shipment['shipment_code']."-summary.pdf")) { ?>
-      document.getElementById("summaryDiv").innerHTML = "<a href=\"<?php echo $this->baseUrl("uploads/reports/" . $shipment['shipment_code'] . "/".$shipment['shipment_code'] ."-summary.pdf"); ?>\" id='summaryReport' class='btn btn-success btn-sm' target='_blank' style='margin-top:10px;clear:both;float:left;'><i class='icon-file-text'></i> &nbsp Download  Summary Report</a></a>";
+          $fileSafeShipmentCode = str_replace(array_merge(
+              array_map('chr', range(0, 31)),
+              array('<', '>', ':', '"', '/', '\\', '|', '?', '*')), '', $shipment['shipment_code']);
+          if (file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . "reports" . DIRECTORY_SEPARATOR . $fileSafeShipmentCode . DIRECTORY_SEPARATOR . $fileSafeShipmentCode . "-summary.pdf")) { ?>
+      document.getElementById("summaryDiv").innerHTML = "<a href=\"<?php echo $this->baseUrl("uploads/reports/" . $fileSafeShipmentCode . "/". $fileSafeShipmentCode ."-summary.pdf"); ?>\" id='summaryReport' class='btn btn-success btn-sm' target='_blank' style='margin-top:10px;clear:both;float:left;'><i class='icon-file-text'></i> &nbsp Download  Summary Report</a></a>";
       <?php
           }
       } ?>
@@ -251,8 +254,12 @@ if (count($this->shipment) > 0) {
                   $start = $lastEnd + 1;
                   $lastEnd = $end;
               }
-              if (file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . "reports" . DIRECTORY_SEPARATOR . $shipment['shipment_code'] . DIRECTORY_SEPARATOR . $shipment['shipment_code']."-".$start."-".$end."-bulk-participant-report.pdf")) { ?>
-        $("#summaryDiv").append("&nbsp;&nbsp;<a href=\"<?php echo $this->baseUrl("uploads/reports/" . $shipment['shipment_code'] . "/".$shipment['shipment_code']."-".$start."-".$end."-bulk-participant-report.pdf"); ?>\" class='btn btn-info btn-sm' target='_BLANK' id=\"<?php echo $start."-".$end."-bulk-participant-report"; ?>\" style='margin-top:10px;clear:both;float:left;'><i class='icon-file-text'></i> Download <?php echo $start; ?> - <?php echo $end;?> Participants Report</a> ");
+
+              $fileSafeShipmentCode = str_replace(array_merge(
+                  array_map('chr', range(0, 31)),
+                  array('<', '>', ':', '"', '/', '\\', '|', '?', '*')), '', $shipment['shipment_code']);
+              if (file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . "reports" . DIRECTORY_SEPARATOR . $fileSafeShipmentCode . DIRECTORY_SEPARATOR . $fileSafeShipmentCode . "-".$start."-".$end."-bulk-participant-report.pdf")) { ?>
+        $("#summaryDiv").append("&nbsp;&nbsp;<a href=\"<?php echo $this->baseUrl("uploads/reports/" . $fileSafeShipmentCode . "/" . $fileSafeShipmentCode . "-" . $start . "-" . $end . "-bulk-participant-report.pdf"); ?>\" class='btn btn-info btn-sm' target='_BLANK' id=\"<?php echo $start."-".$end."-bulk-participant-report"; ?>\" style='margin-top:10px;clear:both;float:left;'><i class='icon-file-text'></i> Download <?php echo $start; ?> - <?php echo $end;?> Participants Report</a> ");
       <?php
               }
           }

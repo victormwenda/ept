@@ -1103,7 +1103,18 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
         foreach ($rResult as $aRow) {
             $row = array();
             $report = "";
-            $fileName = $aRow['shipment_code'] . "-" . $aRow['institute'] . $aRow['dm_id'] . ".pdf";
+            $fileSafeShipmentCode = str_replace(array_merge(
+                array_map('chr', range(0, 31)),
+                array('<', '>', ':', '"', '/', '\\', '|', '?', '*')
+            ), '', $aRow['shipment_code']);
+            $fileSafeInstitute = "";
+            if (isset($aRow['institute']) && $aRow['institute'] != "") {
+                $fileSafeInstitute = "-" . str_replace(array_merge(
+                    array_map('chr', range(0, 31)),
+                    array('<', '>', ':', '"', '/', '\\', '|', '?', '*')
+                ), '', $aRow['institute']);
+            }
+            $fileName = $fileSafeShipmentCode . $fileSafeInstitute . $aRow['dm_id'] . ".pdf";
             $fileName = preg_replace('/[^A-Za-z0-9.]/', '-', $fileName);
             $fileName = str_replace(" ", "-", $fileName);
 
@@ -1112,9 +1123,9 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
             $row[] = strtoupper($aRow['scheme_type']);
             $row[] = $aRow['shipment_code'];
 
-            $filePath = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports' . DIRECTORY_SEPARATOR . $aRow['shipment_code'] . DIRECTORY_SEPARATOR . $fileName;
+            $filePath = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports' . DIRECTORY_SEPARATOR . $fileSafeShipmentCode . DIRECTORY_SEPARATOR . $fileName;
             if (file_exists($filePath) && $aRow['status']=='finalized' ) {
-                $downloadFilePath = "/uploads" . DIRECTORY_SEPARATOR . 'reports' . DIRECTORY_SEPARATOR . $aRow['shipment_code'] . DIRECTORY_SEPARATOR . $fileName;
+                $downloadFilePath = "/uploads" . DIRECTORY_SEPARATOR . 'reports' . DIRECTORY_SEPARATOR . $fileSafeShipmentCode . DIRECTORY_SEPARATOR . $fileName;
                 $report = '<a href="' . $downloadFilePath . '"  style="text-decoration : underline;" target="_BLANK">Report</a>';
             }
             $row[] = $report;
@@ -1428,8 +1439,12 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
             $row[] = strtoupper($aRow['scheme_type']);
             $row[] = $aRow['shipment_code'];
             $row[] = $general->humanDateFormat($aRow['shipment_date']);
-            if (file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . "reports" . DIRECTORY_SEPARATOR . $aRow['shipment_code'] . DIRECTORY_SEPARATOR .$aRow['shipment_code']. "-summary.pdf") && $aRow['status']=='finalized') {
-                 $row[] = '<a href="/uploads/reports/' . $aRow['shipment_code']. '/'.$aRow['shipment_code'].'-summary.pdf"  style="text-decoration : none;" download target="_BLANK">Download Report</a>';
+            $fileSafeShipmentCode = str_replace(array_merge(
+                array_map('chr', range(0, 31)),
+                array('<', '>', ':', '"', '/', '\\', '|', '?', '*')
+            ), '', $aRow['shipment_code']);
+            if (file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . "reports" . DIRECTORY_SEPARATOR . $fileSafeShipmentCode . DIRECTORY_SEPARATOR .$fileSafeShipmentCode. "-summary.pdf") && $aRow['status']=='finalized') {
+                 $row[] = '<a href="/uploads/reports/' . $fileSafeShipmentCode. '/'.$fileSafeShipmentCode.'-summary.pdf"  style="text-decoration : none;" download target="_BLANK">Download Report</a>';
             } else {
                 $row[] = '';
             }

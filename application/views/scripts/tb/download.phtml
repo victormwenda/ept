@@ -278,10 +278,11 @@ class MYPDF extends TCPDF {
 		$labInfo.='</table>';
 	
 	$pdf->writeHTML($labInfo, true, false, true, false, '');
-	
-	$fileName=$this->shipment["shipment_code"].".pdf";
-	$fileName = preg_replace('/[^A-Za-z0-9.]/', '-', $fileName);
-	$fileName = str_replace(" ", "-", $fileName);
+
+    $fileSafeShipmentCode = str_replace(array_merge(
+        array_map('chr', range(0, 31)),
+        array('<', '>', ':', '"', '/', '\\', '|', '?', '*')), '', $this->shipment["shipment_code"]);
+	$fileName = $fileSafeShipmentCode . ".pdf";
 	$filePath = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports'. DIRECTORY_SEPARATOR .$fileName;
 	
 	$pdf->Output($fileName, 'I');
