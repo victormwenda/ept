@@ -69,6 +69,13 @@ class Application_Model_DbTable_ShipmentParticipantMap extends Zend_Db_Table_Abs
     }
 
     public function updateShipment($params, $shipmentMapId, $lastDate, $submitAction) {
+        // Log incorrect late submission
+        error_log(
+            "Application_Model_DbTable_ShipmentParticipantMap->updateShipment params: ".
+            json_encode($params)." lastDate: ".$lastDate." submitAction: ".$submitAction,
+            0
+        );
+
         $row = $this->fetchRow("map_id = " . $shipmentMapId);
         if ($row != "") {
             if (trim($row['created_on_user']) == "" || $row['created_on_user'] == NULL) {
