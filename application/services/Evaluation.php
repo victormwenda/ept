@@ -166,6 +166,7 @@ class Application_Service_Evaluation {
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type')
             ->joinLeft(array('rr' => 'r_results'), 'sp.final_result=rr.result_id')
             ->where("s.distribution_id = ?", $distributionId)
+            ->where("IFNULL(sp.is_pt_test_not_performed, 'no') = 'no'")
             ->group('s.shipment_id');
         return $db->fetchAll($sql);
     }
@@ -1844,6 +1845,7 @@ class Application_Service_Evaluation {
                         'reported_count' => new Zend_Db_Expr("COUNT(CASE substr(spm.evaluation_status,4,1) WHEN '1' THEN 1 WHEN '2' THEN 1 END)")))
                     ->joinLeft(array('res' => 'r_results'), 'res.result_id=spm.final_result', array('result_name'))
                     ->where("spm.shipment_id = ?", $shipmentId)
+                    ->where("IFNULL(spm.is_pt_test_not_performed, 'no') = 'no'")
                     ->group('spm.shipment_id');
 				$totParticipantsRes = $db->fetchRow($pQuery);
 				if ($totParticipantsRes!="") {
@@ -2111,6 +2113,7 @@ class Application_Service_Evaluation {
                     ->where("spm.shipment_id = ?", $shipmentId)
                     ->where("substring(spm.evaluation_status,4,1) != '0'")
                     ->where("spm.is_excluded = 'no'")
+                    ->where("IFNULL(spm.is_pt_test_not_performed, 'no') = 'no'")
                     ->group('ref.sample_label');
                 $tbReportSummary = $db->fetchAll($summaryQuery);
 
@@ -2139,6 +2142,7 @@ class Application_Service_Evaluation {
                         'ref.shipment_id = spm.shipment_id AND ref.sample_id = res.sample_id', array())
                     ->where("spm.shipment_id = ?", $shipmentId)
                     ->where("substring(spm.evaluation_status,4,1) != '0'")
+                    ->where("IFNULL(spm.is_pt_test_not_performed, 'no') = 'no'")
                     ->where("spm.is_excluded = 'no'")
                     ->group('res.sample_id')
                     ->group('res.mtb_detected')
@@ -2178,6 +2182,7 @@ class Application_Service_Evaluation {
                     ->where("spm.shipment_id = ?", $shipmentId)
                     ->where("substring(spm.evaluation_status,4,1) != '0'")
                     ->where("spm.is_excluded = 'no'")
+                    ->where("IFNULL(spm.is_pt_test_not_performed, 'no') = 'no'")
                     ->group('res.sample_id')
                     ->group('res.rif_resistance')
                     ->order('res.sample_id ASC')
@@ -2250,6 +2255,7 @@ class Application_Service_Evaluation {
                     ->where("s.shipment_id = ?", $shipmentId)
                     ->where("substring(sp.evaluation_status,4,1) != '0'")
                     ->where("sp.is_excluded = 'no'")
+                    ->where("IFNULL(sp.is_pt_test_not_performed, 'no') = 'no'")
                     ->order('country_name ASC')
                     ->order("first_name ASC");
 

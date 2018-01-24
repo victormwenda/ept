@@ -4708,7 +4708,7 @@ SELECT countries.iso_name AS `Country`,
              response_result_tb_4.instrument_last_calibrated_on,
              response_result_tb_5.instrument_last_calibrated_on) AS `Date of last instrument calibration`,
     CASE
-      WHEN shipment_participant_map.is_pt_test_not_performed = 'no' THEN 'Yes'
+      WHEN IFNULL(shipment_participant_map.is_pt_test_not_performed, 'no') = 'no' THEN 'Yes'
       ELSE 'No'
     END AS `Participated`,
     IFNULL(shipment_participant_map.pt_test_not_performed_comments, response_not_tested_reason.not_tested_reason) AS `Reason for No Submission`,
