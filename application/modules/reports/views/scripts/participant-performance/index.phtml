@@ -218,7 +218,7 @@ if ((isset($this->shipmentDetails['shipment_code']) && $this->shipmentDetails['s
             if (data == "" || data == null) {
                 alert('Unable to generate download');
             } else {
-                document.location.href = '/temporary/' + data;
+                document.location.href = '/uploads/' + data;
             }
         });
     }
@@ -235,7 +235,7 @@ if ((isset($this->shipmentDetails['shipment_code']) && $this->shipmentDetails['s
             if (data == "" || data == null) {
                 alert('Unable to generate download');
             } else {
-                $('#exportPdf').attr('href', '/temporary/' + data);
+                $('#exportPdf').attr('href', '/uploads/' + data);
                 $('#exportPdf').removeClass('hide');
             }
         });
@@ -331,7 +331,7 @@ if ((isset($this->shipmentDetails['shipment_code']) && $this->shipmentDetails['s
             if (data == "" || data == null) {
                 alert('Unable to generate download');
             } else {
-                document.location.href = '/temporary/' + data;
+                document.location.href = '/uploads/' + data;
             }
         });
     }

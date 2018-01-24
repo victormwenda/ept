@@ -16,10 +16,6 @@ defined('CRON_PATH')
 defined('UPLOAD_PATH')
     || define('UPLOAD_PATH', realpath(dirname(__FILE__) . '/../public/uploads'));
 
-// Define path to u directory
-defined('TEMP_UPLOAD_PATH')
-    || define('TEMP_UPLOAD_PATH', realpath(dirname(__FILE__) . '/../public/temporary')); 
- 
 // Ensure library/ is on include_path
 set_include_path(implode(PATH_SEPARATOR, array(
     realpath(APPLICATION_PATH . '/../library'),

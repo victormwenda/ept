@@ -230,15 +230,19 @@
 
     function exportRespondedShipment(){
         $.blockUI();
-        $.post("<?php echo $this->url(array('module' => 'admin', 'controller' => 'shipment', 'action' => 'export-shipment-responded-participants')); ?>",{shipmentCode:"<?php echo $this->shipment['shipment']['shipment_code']; ?>",shipmentDate:"<?php echo $this->dateFormat($this->shipment['shipment']['shipment_date']); ?>",format: "html"},
-            function(data) {
-            if (data == "" || data == null || data == undefined) {
-                alert('Unable to generate download');
-            } else {
-                document.location.href = '/temporary/' + data;
-            }
-            $.unblockUI();
-        });
+        $.post("<?php echo $this->url(array('module' => 'admin', 'controller' => 'shipment', 'action' => 'export-shipment-responded-participants')); ?>",
+          {
+            shipmentCode:"<?php echo $this->shipment['shipment']['shipment_code']; ?>",
+            shipmentDate:"<?php echo $this->dateFormat($this->shipment['shipment']['shipment_date']); ?>",
+            format: "html"
+          }, function(data) {
+               if (data == "" || data == null || data == undefined) {
+                 alert('Unable to generate download');
+               } else {
+                 document.location.href = '/uploads/' + data;
+               }
+               $.unblockUI();
+             });
     }
 
     function exportNotRespondedShipment() {
@@ -248,7 +252,7 @@
             if (data == "" || data == null || data == undefined) {
                 alert('Unable to generate download');
             } else {
-                document.location.href = '/temporary/' + data;
+                document.location.href = '/uploads/' + data;
             }
             $.unblockUI();
         });

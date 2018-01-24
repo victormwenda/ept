@@ -186,7 +186,7 @@ $hideSchemes = array('vl','tb');
                     if (data == "" || data == null) {
                         alert('Unable to generate download');
                     } else {
-                        document.location.href = '/temporary/' + data;
+                        document.location.href = '/uploads/' + data;
                     }
                 });
             }
@@ -204,7 +204,7 @@ $hideSchemes = array('vl','tb');
                     if (data == "" || data == null) {
                         alert('Unable to generate download');
                     } else {
-                        $('#exportPdf').attr('href', '/temporary/'+data);
+                        $('#exportPdf').attr('href', '/uploads/'+data);
                         $('#exportPdf').removeClass('hide');
                     }
                 });

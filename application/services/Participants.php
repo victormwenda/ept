@@ -474,7 +474,8 @@ class Application_Service_Participants {
                 array('<', '>', ':', '"', '/', '\\', '|', '?', '*')
             ), '', $params['shipmentCode']);
             $filename = $fileSafeShipmentCode.'-responded-participant-report-'.date('d-M-Y-H-i-s') . '.xls';
-            $writer->save(TEMP_UPLOAD_PATH . DIRECTORY_SEPARATOR . $filename);
+            error_log(UPLOAD_PATH . DIRECTORY_SEPARATOR . $filename, 0);
+            $writer->save(UPLOAD_PATH . DIRECTORY_SEPARATOR . $filename);
             return $filename;
 		} catch (Exception $exc) {
 				return "";
@@ -597,7 +598,7 @@ class Application_Service_Participants {
                 array('<', '>', ':', '"', '/', '\\', '|', '?', '*')
             ), '', $params['shipmentCode']);
             $filename = $fileSafeShipmentCode.'-not-responded-participant-report-' . date('d-M-Y-H-i-s') . '.xls';
-            $writer->save(TEMP_UPLOAD_PATH . DIRECTORY_SEPARATOR . $filename);
+            $writer->save(UPLOAD_PATH . DIRECTORY_SEPARATOR . $filename);
             return $filename;
 		} catch (Exception $exc) {
 				return "";

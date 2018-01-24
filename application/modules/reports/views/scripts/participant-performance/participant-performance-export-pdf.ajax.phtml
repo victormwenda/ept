@@ -153,7 +153,7 @@ $pdf->writeHTML($performanceOverview, true, false, true, false, '');
 
 // Close and output PDF document
 $fileName = "participants-performance-".date('d-M-Y-H-i-s').".pdf";
-$filePath = TEMP_UPLOAD_PATH . DIRECTORY_SEPARATOR.$fileName;
+$filePath = UPLOAD_PATH . DIRECTORY_SEPARATOR.$fileName;
 //$pdf->Output('example_003.pdf', 'I');
 $pdf->Output($filePath, "F");
 echo $fileName;

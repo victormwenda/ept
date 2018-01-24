@@ -1933,7 +1933,7 @@ class Application_Service_Reports {
 	
 			$writer = PHPExcel_IOFactory::createWriter($excel, 'Excel5');
 			$filename = $fileSafeShipmentCode . '-' . date('d-M-Y-H-i-s') . '.xls';
-			$writer->save(TEMP_UPLOAD_PATH . DIRECTORY_SEPARATOR . $filename);
+			$writer->save(UPLOAD_PATH . DIRECTORY_SEPARATOR . $filename);
 			return $filename;
 		
 
@@ -2366,7 +2366,7 @@ class Application_Service_Reports {
                 array('<', '>', ':', '"', '/', '\\', '|', '?', '*')
             ), '', $result['shipment_code']);
 			$filename = $fileSafeShipmentCode . '-' . date('d-M-Y-H-i-s') .rand(). '.xls';
-			$writer->save(TEMP_UPLOAD_PATH . DIRECTORY_SEPARATOR . $filename);
+			$writer->save(UPLOAD_PATH . DIRECTORY_SEPARATOR . $filename);
 			return $filename;
 		
 
@@ -2531,7 +2531,7 @@ class Application_Service_Reports {
                 array('<', '>', ':', '"', '/', '\\', '|', '?', '*')
             ), '', $result['shipment_code']);
 			$filename = $fileSafeShipmentCode . '-' . date('d-M-Y-H-i-s') .rand(). '.xls';
-			$writer->save(TEMP_UPLOAD_PATH . DIRECTORY_SEPARATOR . $filename);
+			$writer->save(UPLOAD_PATH . DIRECTORY_SEPARATOR . $filename);
 			return $filename;
 		
 
@@ -2894,13 +2894,13 @@ class Application_Service_Reports {
                 }
             }
 
-            if (!file_exists(TEMP_UPLOAD_PATH) && !is_dir(TEMP_UPLOAD_PATH)) {
-                mkdir(TEMP_UPLOAD_PATH);
+            if (!file_exists(UPLOAD_PATH) && !is_dir(UPLOAD_PATH)) {
+                mkdir(UPLOAD_PATH);
             }
 
             $writer = PHPExcel_IOFactory::createWriter($excel, 'Excel5');
             $filename = 'participant-performance-' . date('d-M-Y-H-i-s') . '.xls';
-            $writer->save(TEMP_UPLOAD_PATH . DIRECTORY_SEPARATOR . $filename);
+            $writer->save(UPLOAD_PATH . DIRECTORY_SEPARATOR . $filename);
             return $filename;
         } catch (Exception $exc) {
             return "";
@@ -3026,13 +3026,13 @@ class Application_Service_Reports {
                 }
             }
 
-            if (!file_exists(TEMP_UPLOAD_PATH) && !is_dir(TEMP_UPLOAD_PATH)) {
-                mkdir(TEMP_UPLOAD_PATH);
+            if (!file_exists(UPLOAD_PATH) && !is_dir(UPLOAD_PATH)) {
+                mkdir(UPLOAD_PATH);
             }
 
             $writer = PHPExcel_IOFactory::createWriter($excel, 'Excel5');
             $filename = 'corrective-actions-' . date('d-M-Y-H-i-s') . '.xls';
-            $writer->save(TEMP_UPLOAD_PATH . DIRECTORY_SEPARATOR . $filename);
+            $writer->save(UPLOAD_PATH . DIRECTORY_SEPARATOR . $filename);
             return $filename;
         } catch (Exception $exc) {
             return "";
@@ -3121,13 +3121,13 @@ class Application_Service_Reports {
                 }
             }
 
-            if (!file_exists(TEMP_UPLOAD_PATH) && !is_dir(TEMP_UPLOAD_PATH)) {
-                mkdir(TEMP_UPLOAD_PATH);
+            if (!file_exists(UPLOAD_PATH) && !is_dir(UPLOAD_PATH)) {
+                mkdir(UPLOAD_PATH);
             }
 
             $writer = PHPExcel_IOFactory::createWriter($excel, 'Excel5');
             $filename = 'shipment-response-' . date('d-M-Y-H-i-s') . '.xls';
-            $writer->save(TEMP_UPLOAD_PATH . DIRECTORY_SEPARATOR . $filename);
+            $writer->save(UPLOAD_PATH . DIRECTORY_SEPARATOR . $filename);
             return $filename;
         } catch (Exception $exc) {
             return "";
@@ -3816,13 +3816,13 @@ class Application_Service_Reports {
                 }
             }
 
-            if (!file_exists(TEMP_UPLOAD_PATH) && !is_dir(TEMP_UPLOAD_PATH)) {
-                mkdir(TEMP_UPLOAD_PATH);
+            if (!file_exists(UPLOAD_PATH) && !is_dir(UPLOAD_PATH)) {
+                mkdir(UPLOAD_PATH);
             }
 
             $writer = PHPExcel_IOFactory::createWriter($excel, 'Excel5');
             $filename = 'participant-performance-region-wise' . date('d-M-Y-H-i-s') . '.xls';
-            $writer->save(TEMP_UPLOAD_PATH . DIRECTORY_SEPARATOR . $filename);
+            $writer->save(UPLOAD_PATH . DIRECTORY_SEPARATOR . $filename);
             return $filename;
         } catch (Exception $exc) {
             return "";
