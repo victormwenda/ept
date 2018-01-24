@@ -4911,7 +4911,8 @@ LEFT JOIN response_result_tb AS response_result_tb_3 ON response_result_tb_3.shi
 LEFT JOIN response_result_tb AS response_result_tb_4 ON response_result_tb_4.shipment_map_id = shipment_participant_map.map_id AND response_result_tb_4.sample_id = '4'
 LEFT JOIN response_result_tb AS response_result_tb_5 ON response_result_tb_5.shipment_map_id = shipment_participant_map.map_id AND response_result_tb_5.sample_id = '5'
 WHERE shipment.shipment_id = ?
-GROUP BY shipment_participant_map.map_id) AS FlattenedEvaluationResults;", array($params['shipmentId']));
+GROUP BY shipment_participant_map.map_id) AS FlattenedEvaluationResults
+ORDER BY FlattenedEvaluationResults.`PT-ID` * 1 ASC;", array($params['shipmentId']));
         $results = $query->fetchAll();
 
         $firstSheet = new PHPExcel_Worksheet($excel, "All Sites' Results");
