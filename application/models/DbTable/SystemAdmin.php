@@ -9,7 +9,7 @@ class Application_Model_DbTable_SystemAdmin extends Zend_Db_Table_Abstract {
          * you want to insert a non-database field (for example a counter or static image)
          */
 
-        $aColumns = array('first_name', 'last_name', 'primary_email', 'phone');
+        $aColumns = array('a.first_name', 'a.last_name', 'a.primary_email', 'a.phone');
 
         /* Indexed column (used for fast and accurate table cardinality) */
         $sIndexColumn = $this->_primary;
@@ -86,13 +86,18 @@ class Application_Model_DbTable_SystemAdmin extends Zend_Db_Table_Abstract {
         } else {
             $sWhere .= " AND is_ptcc_coordinator = 0";
         }
+        $authNameSpace = new Zend_Session_Namespace('administrators');
+        if ($authNameSpace->is_ptcc_coordinator) {
+            $sWhere .= " AND pcm.country_id IN (".implode(",",$authNameSpace->countries).")";
+        }
 
         /*
          * SQL queries
          * Get data to display
          */
 
-        $sQuery = $this->getAdapter()->select()->from(array('a' => $this->_name));
+        $sQuery = $this->getAdapter()->select()->from(array('a' => $this->_name))
+            ->joinLeft(array('pcm' => 'ptcc_country_map'), 'a.admin_id=pcm.admin_id', array());
 	
         if (isset($sWhere) && $sWhere != "") {
             $sQuery = $sQuery->where($sWhere);
@@ -105,7 +110,6 @@ class Application_Model_DbTable_SystemAdmin extends Zend_Db_Table_Abstract {
         if (isset($sLimit) && isset($sOffset)) {
             $sQuery = $sQuery->limit($sLimit, $sOffset);
         }
-
         $rResult = $this->getAdapter()->fetchAll($sQuery);
 
         /* Data set length after filtering */
@@ -149,7 +153,7 @@ class Application_Model_DbTable_SystemAdmin extends Zend_Db_Table_Abstract {
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
          * you want to insert a non-database field (for example a counter or static image)
          */
-        $aColumns = array('first_name', 'last_name', 'primary_email', 'phone', 'iso_name');
+        $aColumns = array('pp.first_name', 'pp.last_name', 'pp.primary_email', 'pp.phone', 'co.iso_name');
 
         /* Indexed column (used for fast and accurate table cardinality) */
         $sIndexColumn = $this->_primary;
@@ -217,6 +221,13 @@ class Application_Model_DbTable_SystemAdmin extends Zend_Db_Table_Abstract {
                     $sWhere .= " AND " . $aColumns[$i] . " LIKE '%" . ($parameters['sSearch_' . $i]) . "%' ";
                 }
             }
+        }
+        $authNameSpace = new Zend_Session_Namespace('administrators');
+        if ($authNameSpace->is_ptcc_coordinator) {
+            if ($sWhere != "") {
+                $sWhere .= " AND";
+            }
+            $sWhere .= " pcm.country_id IN (".implode(",",$authNameSpace->countries).")";
         }
 
         if ($sWhere == "") {
@@ -303,7 +314,14 @@ class Application_Model_DbTable_SystemAdmin extends Zend_Db_Table_Abstract {
     }
     
     public function getSystemAdminDetails ($adminId) {
-        return $this->fetchRow($this->select()->where("admin_id = ? ",$adminId));
+        $sql = $this->getAdapter()->select()->from(array('a' => $this->_name));
+        $authNameSpace = new Zend_Session_Namespace('administrators');
+        if ($authNameSpace->is_ptcc_coordinator) {
+            $sql = $sql->joinLeft(array('pcm' => 'ptcc_country_map'), 'a.admin_id=pcm.admin_id', array())
+            ->where("pcm.country_id IN (".implode(",",$authNameSpace->countries).")");
+        }
+        $sql = $sql->where("a.admin_id = ? ",$adminId);
+        return $this->fetchRow($sql);
     }
     
     public function updateSystemAdmin ($params) {
@@ -395,8 +413,14 @@ class Application_Model_DbTable_SystemAdmin extends Zend_Db_Table_Abstract {
         $ptccProfile = null;
         $dbAdapter = $this->getAdapter();
         if ($adminId != null) {
-            $ptccProfile = $this->fetchRow($this->select()
-                ->where("admin_id = ? ", $adminId))
+            $sql = $this->select()->from(array('a' => $this->_name));
+            $authNameSpace = new Zend_Session_Namespace('administrators');
+            if ($authNameSpace->is_ptcc_coordinator) {
+                $sql = $sql->joinLeft(array('pcm' => 'ptcc_country_map'), 'a.admin_id=pcm.admin_id', array())
+                    ->where("pcm.country_id IN (".implode(",",$authNameSpace->countries).")");
+            }
+            $sql = $sql->where("a.admin_id = ? ", $adminId);
+            $ptccProfile = $this->fetchRow($sql)
                 ->toArray();
             $ptccProfile['countries'] = $dbAdapter->fetchAll($dbAdapter->select()
                 ->from(array('pcm' => 'ptcc_country_map'), array())
