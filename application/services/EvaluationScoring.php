@@ -18,6 +18,8 @@ class Application_Service_EvaluationScoring {
             if ($isExempt == 'yes') {
                 $calculatedScore = "exempt";
             }
+        } else if ($resMtbDetected == "noResult" || $resMtbDetected == "error") {
+            $calculatedScore = "noresult";
         } else if ($this->resMtbDetectedEqualsRefMtbDetected($resMtbDetected, $refMtbDetected)) {
             if ($resRifResistance == $refRifResistance) {
                 $calculatedScore = "pass";
@@ -35,8 +37,6 @@ class Application_Service_EvaluationScoring {
             } else if ($resRifResistance == "indeterminate") {
                 $calculatedScore = "partial";
             }
-        } else if ($resMtbDetected == "noResult") {
-            $calculatedScore = "noresult";
         }
         return $calculatedScore;
     }
