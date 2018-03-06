@@ -22,7 +22,7 @@ class Application_Service_EvaluationScoring {
             $resMtbDetected == "invalid") {
             $calculatedScore = "noresult";
         } else if ($this->resMtbDetectedEqualsRefMtbDetected($resMtbDetected, $refMtbDetected)) {
-            if ($resRifResistance == $refRifResistance) {
+            if ($this->resRifResistanceEqualsRefRifResistance($resRifResistance, $refRifResistance)) {
                 $calculatedScore = "pass";
                 $ctValues = array(
                     floatval($probeD),
@@ -48,6 +48,15 @@ class Application_Service_EvaluationScoring {
             return true;
         }
         return $refMtbDetected == $resMtbDetected;
+    }
+
+    private function resRifResistanceEqualsRefRifResistance ($refRifResistance, $resRifResistance) {
+        $rifResistanceNotApplicableValues = array("notDetected", "na");
+        if (in_array($refRifResistance, $rifResistanceNotApplicableValues) &&
+            in_array($resRifResistance, $rifResistanceNotApplicableValues)) {
+            return true;
+        }
+        return $refRifResistance == $resRifResistance;
     }
 
     public function calculateTbSampleScore($passStatus, $sampleScore) {
