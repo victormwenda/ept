@@ -18,7 +18,8 @@ class Application_Service_EvaluationScoring {
             if ($isExempt == 'yes') {
                 $calculatedScore = "exempt";
             }
-        } else if ($resMtbDetected == "noResult" || $resMtbDetected == "error") {
+        } else if ($resMtbDetected == "noResult" || $resMtbDetected == "error" ||
+            $resMtbDetected == "invalid") {
             $calculatedScore = "noresult";
         } else if ($this->resMtbDetectedEqualsRefMtbDetected($resMtbDetected, $refMtbDetected)) {
             if ($resRifResistance == $refRifResistance) {
