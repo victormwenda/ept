@@ -22,7 +22,7 @@ class Application_Service_EvaluationScoring {
             $resMtbDetected == "invalid") {
             $calculatedScore = "noresult";
         } else if ($this->resMtbDetectedEqualsRefMtbDetected($resMtbDetected, $refMtbDetected)) {
-            if ($this->resRifResistanceEqualsRefRifResistance($resRifResistance, $refRifResistance)) {
+            if ($this->resRifResistanceEqualsRefRifResistance($resMtbDetected, $resRifResistance, $refRifResistance)) {
                 $calculatedScore = "pass";
                 $ctValues = array(
                     floatval($probeD),
@@ -32,7 +32,7 @@ class Application_Service_EvaluationScoring {
                     floatval($spc),
                     floatval($probeA)
                 );
-                if(max($ctValues) > self::CONCERN_CT_MAX_VALUE) {
+                if (max($ctValues) > self::CONCERN_CT_MAX_VALUE) {
                     $calculatedScore = "concern";
                 }
             } else if ($resRifResistance == "indeterminate") {
@@ -50,11 +50,13 @@ class Application_Service_EvaluationScoring {
         return $refMtbDetected == $resMtbDetected;
     }
 
-    private function resRifResistanceEqualsRefRifResistance ($refRifResistance, $resRifResistance) {
-        $rifResistanceNotApplicableValues = array("notDetected", "na");
-        if (in_array($refRifResistance, $rifResistanceNotApplicableValues) &&
-            in_array($resRifResistance, $rifResistanceNotApplicableValues)) {
-            return true;
+    private function resRifResistanceEqualsRefRifResistance ($resMtbDetected, $refRifResistance, $resRifResistance) {
+        if ($resMtbDetected == "notDetected") {
+            $rifResistanceNotApplicableValues = array("notDetected", "na");
+            if (in_array($refRifResistance, $rifResistanceNotApplicableValues) &&
+                in_array($resRifResistance, $rifResistanceNotApplicableValues)) {
+                return true;
+            }
         }
         return $refRifResistance == $resRifResistance;
     }
