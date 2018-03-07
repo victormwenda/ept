@@ -1552,6 +1552,8 @@ class Application_Service_Evaluation {
                             'mtb_detected',
                             'rif_resistance',
                             'error_code',
+                            'date_tested',
+                            'cartridge_expiration_date',
                             'probe_d',
                             'probe_c',
                             'probe_e',
@@ -1567,6 +1569,7 @@ class Application_Service_Evaluation {
                 $shipmentScore = 0;
                 $maxShipmentScore = 0;
                 $sampleStatuses = array();
+                $expiredCartridgeUsed = null;
                 foreach ($tbResults as $tbResult) {
                     $sampleScoreStatus = $scoringService->calculateTbSamplePassStatus(
                         $tbResultsExpected[$tbResult['sample_id']]['mtb_detected'],
@@ -1595,6 +1598,9 @@ class Application_Service_Evaluation {
                             trim($tbResultsConsensus[$tbResult['sample_id']]['rif_resistance']) != "") {
                             $consensusTbRifResistance = $tbResultsConsensus[$tbResult['sample_id']]['rif_resistance'];
                         }
+                    }
+                    if ($tbResult['cartridge_expiration_date'] < $tbResult['date_tested']) {
+                        $expiredCartridgeUsed = $tbResult['cartridge_expiration_date'];
                     }
                     $toReturn[$counter] = array(
                         'sample_id' => $tbResult['sample_id'],
@@ -1643,6 +1649,7 @@ class Application_Service_Evaluation {
                 $shipmentResult[$i]['optional_eval_comment'] = $res['optional_eval_comment'];
                 $shipmentResult[$i]['corrective_actions'] = isset($attributes['corrective_actions']) ? $attributes['corrective_actions'] : array();
                 $shipmentResult[$i]['responseResult'] = $toReturn;
+                $shipmentResult[$i]['expired_cartridge_used'] = $expiredCartridgeUsed;
             }
             $i++;
             $db->update('shipment_participant_map', array('report_generated' => 'yes'), "map_id=" . $res['map_id']);

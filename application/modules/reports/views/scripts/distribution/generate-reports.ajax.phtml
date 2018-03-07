@@ -753,13 +753,18 @@ if (sizeof($this->result['shipment']) > 0) {
                 if ((isset($result['eval_comment']) && $result['eval_comment'] !== '') ||
                     (isset($result['optional_eval_comment']) && $result['optional_eval_comment'] !== '') ||
                     (isset($result['shipment_comment']) && $result['shipment_comment'] !== '') ||
-                    $discrepantResultInSubmission) {
+                    $discrepantResultInSubmission || isset($result['expired_cartridge_used'])) {
                     $labRes .= '<br /><br />';
                     $labRes .= '<table cellpadding="2" style="width:100%;font-size:8pt;">';
                     $labRes .= '    <tr style="background-color:#777777;color:#ffffff;">';
                     $labRes .= '	     <td style="text-align:center;border-top:solid 10px #000000;border-bottom:solid 10px #000000;"><strong>Comments</strong></td>';
                     $labRes .= '    </tr>';
                     if ($discrepantResultInSubmission) {
+                        $labRes .= '    <tr>';
+                        $labRes .= '	     <td>Xpert MTB/RIF kit expired '.Pt_Commons_General::dbDateToString($result['expired_cartridge_used']).'.  Use of expired reagents could lead to incorrect reporting of clinical results.</td>';
+                        $labRes .= '    </tr>';
+                    }
+                    if ($result['expired_cartridge_used']) {
                         $labRes .= '    <tr>';
                         $labRes .= '	     <td>Red highlighted results represent discrepancies between actual and expected results.</td>';
                         $labRes .= '    </tr>';
