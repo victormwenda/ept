@@ -2257,7 +2257,7 @@ class Application_Service_Evaluation {
                     ->where("sp.is_excluded = 'no'")
                     ->where("IFNULL(sp.is_pt_test_not_performed, 'no') = 'no'")
                     ->order('country_name ASC')
-                    ->order("first_name ASC");
+                    ->order("p.unique_identifier ASC");
 
                 $tbReportParticipants = $db->fetchAll($participantsSql);
             }

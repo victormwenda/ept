@@ -64,7 +64,7 @@ class Application_Service_Participants {
 				  ->joinLeft(array('sl'=>'scheme_list'),'sl.scheme_id=s.scheme_type')
 				  ->where("pmm.dm_id= ?",$dmId)
 				  ->group(array("sp.participant_id","s.scheme_type"))
-				  ->order("p.first_name");
+				  ->order("p.unique_identifier");
 	    return $db->fetchAll($sql);
 	}
 
@@ -77,7 +77,7 @@ class Application_Service_Participants {
             ->from(array('p' => 'participant'))
             ->where("participant_id NOT IN ?", $subSql)
             ->where("p.status = 'active'")
-            ->order('first_name');
+            ->order('unique_identifier');
         $authNameSpace = new Zend_Session_Namespace('administrators');
         if($authNameSpace->is_ptcc_coordinator) {
             $sql = $sql->where("p.country IS NULL OR p.country IN (" . implode(",", $authNameSpace->countries) . ")");
@@ -94,7 +94,7 @@ class Application_Service_Participants {
             ->join(array('c' => 'countries'), 'p.country = c.id', array('iso_name'))
             ->where("participant_id NOT IN ?", $subSql)
             ->where("p.status = 'active'")
-            ->order(array('c.iso_name', 'p.first_name'));
+            ->order(array('c.iso_name', 'p.unique_identifier'));
         $authNameSpace = new Zend_Session_Namespace('administrators');
         if($authNameSpace->is_ptcc_coordinator) {
             $sql = $sql->where("p.country IS NULL OR p.country IN (" . implode(",", $authNameSpace->countries) . ")");
@@ -121,7 +121,7 @@ class Application_Service_Participants {
 		$sql = $db->select()->from(array('e' => 'enrollments'), array())
 			->join(array('p' => 'participant'), "p.participant_id = e.participant_id")
             ->where("scheme_id = ?", $scheme)->where("p.status = 'active'")
-            ->order('first_name');
+            ->order('unique_identifier');
         $authNameSpace = new Zend_Session_Namespace('administrators');
         if($authNameSpace->is_ptcc_coordinator) {
             $sql = $sql->where("p.country IS NULL OR p.country IN (" . implode(",", $authNameSpace->countries) . ")");
@@ -135,7 +135,7 @@ class Application_Service_Participants {
             ->join(array('p' => 'participant'), "p.participant_id = e.participant_id")
             ->join(array('c' => 'countries'), 'p.country = c.id', array('iso_name'))
             ->where("scheme_id = ?", $scheme)->where("p.status = 'active'")
-            ->order('first_name');
+            ->order('unique_identifier');
         $authNameSpace = new Zend_Session_Namespace('administrators');
         if($authNameSpace->is_ptcc_coordinator) {
             $sql = $sql->where("p.country IS NULL OR p.country IN (" . implode(",", $authNameSpace->countries) . ")");
@@ -165,7 +165,7 @@ class Application_Service_Participants {
 			->join(array('s' => 'shipment'), 'spm.shipment_id = s.shipment_id', array())
 			->where("s.shipment_id = ?", $shipmentId)
 			->where("p.status = 'active'")
-			->order('p.first_name');
+			->order('p.unique_identifier');
         $authNameSpace = new Zend_Session_Namespace('administrators');
         if ($authNameSpace->is_ptcc_coordinator) {
             $sql = $sql->where("p.country IS NULL OR p.country IN (".implode(",",$authNameSpace->countries).")");
@@ -182,7 +182,7 @@ class Application_Service_Participants {
             ->join(array('c' => 'countries'), 'p.country = c.id', array('iso_name'))
             ->where("s.shipment_id = ?", $shipmentId)
             ->where("p.status = 'active'")
-            ->order(array('c.iso_name', 'p.first_name'));
+            ->order(array('c.iso_name', 'p.unique_identifier'));
         $authNameSpace = new Zend_Session_Namespace('administrators');
         if ($authNameSpace->is_ptcc_coordinator) {
             $sql = $sql->where("p.country IS NULL OR p.country IN (".implode(",",$authNameSpace->countries).")");
@@ -210,7 +210,7 @@ class Application_Service_Participants {
 				       ->joinLeft(array('e'=>'enrollments'),'e.participant_id=p.participant_id',array())
 				       ->joinLeft(array('sl'=>'scheme_list'),'sl.scheme_id=e.scheme_id',array('scheme_id'))					   
 				       ->where("p.participant_id = ?", $pid)
-				       ->order('p.first_name');
+				       ->order('p.unique_identifier');
 
 		return $db->fetchCol($sql);
 	}
@@ -226,7 +226,7 @@ class Application_Service_Participants {
 		$sql = $db->select()
             ->from(array('p'=>'participant'))
             ->where("participant_id NOT IN ?", $subSql)
-			->order('p.first_name');
+			->order('p.unique_identifier');
         $authNameSpace = new Zend_Session_Namespace('administrators');
         if ($authNameSpace->is_ptcc_coordinator) {
             $sql = $sql->where("p.country IS NULL OR p.country IN (".implode(",",$authNameSpace->countries).")");
@@ -246,7 +246,7 @@ class Application_Service_Participants {
             ->from(array('p' => 'participant'))
             ->join(array('c' => 'countries'), 'p.country = c.id', array('iso_name'))
             ->where("participant_id NOT IN ?", $subSql)
-            ->order(array('c.iso_name', 'p.first_name'));
+            ->order(array('c.iso_name', 'p.unique_identifier'));
         $authNameSpace = new Zend_Session_Namespace('administrators');
         if ($authNameSpace->is_ptcc_coordinator) {
             $sql = $sql->where("p.country IS NULL OR p.country IN (".implode(",",$authNameSpace->countries).")");
@@ -304,7 +304,7 @@ class Application_Service_Participants {
             ->group('p.region')
             ->where("p.region IS NOT NULL")
             ->where("p.region != ''")
-            ->order("p.region");
+            ->order(array("p.region", "p.unique_identifier"));
         $authNameSpace = new Zend_Session_Namespace('administrators');
         if($authNameSpace->is_ptcc_coordinator) {
             $sql = $sql->where("p.country IS NULL OR p.country IN (".implode(",",$authNameSpace->countries).")");
@@ -319,7 +319,7 @@ class Application_Service_Participants {
 				  ->joinLeft(array('pmm'=>'participant_manager_map'),'p.participant_id=pmm.participant_id')
 				  ->where("pmm.dm_id= ?",$dmId)
 				  ->group(array("p.participant_id"))
-				  ->order("p.first_name");
+				  ->order("p.unique_identifier");
 	    return $db->fetchAll($sql);
 	}
 

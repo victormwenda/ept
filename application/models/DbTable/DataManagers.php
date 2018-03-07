@@ -33,7 +33,7 @@ class Application_Model_DbTable_DataManagers extends Zend_Db_Table_Abstract {
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
          * you want to insert a non-database field (for example a counter or static image)
          */
-        $aColumns = array('u.institute','u.first_name','u.last_name', 'u.mobile', 'u.primary_email', 'u.secondary_email','p.first_name', 'u.status');
+        $aColumns = array('p.unique_identifier', 'u.institute','u.first_name','u.last_name', 'u.mobile', 'u.primary_email', 'u.secondary_email','p.first_name', 'u.status');
 
         /* Indexed column (used for fast and accurate table cardinality) */
         $sIndexColumn = "dm_id";
@@ -110,7 +110,12 @@ class Application_Model_DbTable_DataManagers extends Zend_Db_Table_Abstract {
          */
         $sQuery = $this->getAdapter()->select()->from(array('u' => $this->_name))
 				    ->joinLeft(array('pmm'=>'participant_manager_map'),'pmm.dm_id=u.dm_id',array())
-				    ->joinLeft(array('p'=>'participant'),'p.participant_id = pmm.participant_id',array('participantCount' => new Zend_Db_Expr("SUM(IF(p.participant_id!='',1,0))"),'p.participant_id'))
+				    ->joinLeft(array('p'=>'participant'),'p.participant_id = pmm.participant_id',
+                        array(
+                            'participantCount' => new Zend_Db_Expr("SUM(IF(p.participant_id!='',1,0))"),
+                            'pt_ids' => new Zend_Db_Expr("GROUP_CONCAT(p.unique_identifier, ',')"),
+                            'p.participant_id')
+                    )
 				    ->group('u.dm_id');
 
         $authNameSpace = new Zend_Session_Namespace('administrators');
@@ -155,7 +160,7 @@ class Application_Model_DbTable_DataManagers extends Zend_Db_Table_Abstract {
         
         foreach ($rResult as $aRow) {
             $row = array();
-            $row[] = $aRow['institute'];
+            $row[] = rtrim($aRow['pt_ids'],',');
             $row[] = $aRow['first_name']; 
             $row[] = $aRow['last_name']; 
             $row[] = $aRow['mobile'];
@@ -242,7 +247,7 @@ class Application_Model_DbTable_DataManagers extends Zend_Db_Table_Abstract {
         if($active){
             $sql = $sql->where("u.status='active'");
         }
-        $sql = $sql->order("u.first_name");
+        $sql = $sql->order("p.unique_identifier");
         return $db->fetchAll($sql);
     }
 	
