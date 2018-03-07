@@ -668,6 +668,7 @@ if (sizeof($this->result['shipment']) > 0) {
                 $maxScoreTotal = 0;
                 $exclusionCount = 0;
                 $discrepantResultInSubmission = false;
+                $noResultOrError2127InSubmission = false;
                 foreach ($result['responseResult'] as $response) {
                     if ($response['ref_is_excluded'] == 'yes' &&
                         isset($response['ref_excluded_reason']) &&
@@ -710,6 +711,10 @@ if (sizeof($this->result['shipment']) > 0) {
                     } else {
                         $discrepantResultInSubmission = true;
                         $labRes .= '    <tr style="color: #ff0000;">';
+                    }
+                    if ($tbResultValueMapping[$response['mtb_detected']] == "No Result" ||
+                        $response['error_code'] == "2127") {
+                        $noResultOrError2127InSubmission = true;
                     }
                     $labRes .= '	     <td style="width:46%;"><strong>'.$result['first_name']." ".$result['last_name'].'</strong></td>';
                     if ($response['mtb_detected'] == 'error') {
@@ -761,12 +766,17 @@ if (sizeof($this->result['shipment']) > 0) {
                     $labRes .= '    </tr>';
                     if ($discrepantResultInSubmission) {
                         $labRes .= '    <tr>';
-                        $labRes .= '	     <td>Xpert MTB/RIF kit expired '.Pt_Commons_General::dbDateToString($result['expired_cartridge_used']).'.  Use of expired reagents could lead to incorrect reporting of clinical results.</td>';
+                        $labRes .= '	     <td>Red highlighted results represent discrepancies between actual and expected results.</td>';
                         $labRes .= '    </tr>';
                     }
                     if ($result['expired_cartridge_used']) {
                         $labRes .= '    <tr>';
-                        $labRes .= '	     <td>Red highlighted results represent discrepancies between actual and expected results.</td>';
+                        $labRes .= '	     <td>Xpert MTB/RIF kit expired '.Pt_Commons_General::dbDateToString($result['expired_cartridge_used']).'.  Use of expired reagents could lead to incorrect reporting of clinical results.</td>';
+                        $labRes .= '    </tr>';
+                    }
+                    if ($noResultOrError2127InSubmission) {
+                        $labRes .= '    <tr>';
+                        $labRes .= '	     <td>Check computer software GeneXpert Dx to ensure software is not freezing during testing.  Check uninterrupted power supply (UPS) to ensure it is capable of sustaining power to GeneXpert for a minimum of 2 hours should an electrical power outage occur.  If UPS is unable to sustain GeneXpert instrument for 2 hours request sufficient UPS that will provide power to GeneXpert instrument for no less than 2 hours to enable current run completion in the event of a power outage.</td>';
                         $labRes .= '    </tr>';
                     }
                     if (isset($result['eval_comment']) && $result['eval_comment'] !== '') {
