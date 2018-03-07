@@ -3276,7 +3276,8 @@ class Application_Service_Reports {
             ->join(array('p' => 'participant'), 'spm.participant_id=p.participant_id',
                 array('unique_identifier', 'first_name', 'region'))
             ->join(array('c' => 'countries'), 'p.country=c.id', array('iso_name'))
-            ->where('spm.shipment_id = '.$parameters['shipmentId']);
+            ->where('spm.shipment_id = '.$parameters['shipmentId'])
+            ->order("p.unique_identifier");
 
         if (isset($sWhere) && $sWhere != "") {
             $sQuery = $sQuery->where($sWhere);
