@@ -91,6 +91,21 @@ if (sizeof($this->result['shipment']) > 0) {
             // Generated at....
             $this->Cell(0, 10, "  Report generated at :".date("d-M-Y H:i:s").$finalizeReport, 0, false, 'R', 0, '', 0, false, 'T', 'M');
         }
+
+        public function writeHTMLTogether($html, $ln=true, $fill=false, $reseth=false, $cell=false, $align='') {
+            $cp =  $this->getPage();
+            $this->startTransaction();
+
+            $this->writeHTML($html, $ln, $fill, $reseth, $cell, $align);
+
+            if ($this->getPage() > $cp) {
+                $this->rollbackTransaction(true);//true is very important
+                $this->AddPage();
+                $this->writeHTML($html, $ln, $fill, $reseth, $cell, $align);
+            } else {
+                $this->commitTransaction();
+            }
+        }
     }
 
     $totalPages = count($this->result['shipment']);
@@ -111,8 +126,17 @@ if (sizeof($this->result['shipment']) > 0) {
         '' => ''
     );
 
-    foreach ($this->result['shipment'] as $result) {
+    $attestation = '<div>';
+    $attestation .= '    <h5>ATTESTATION</h5>';
+    $attestation .= '    <p style="width:100%;font-size:10pt;">We the undersigned, recognizing that some special handling may be required due to the nature of Performance Evaluation (PE) materials, have as closely as is practical, performed the analyses on these specimens in the same manner as regular patient specimens.  We confirm that results were not shared, nor PE specimens referred or tested, outside of our facility.</p>';
+    $attestation .= '    <p style="width:100%;font-size:10pt;">Laboratory Manager (or Designee) _______________________________ Date:________________________</p>';
+    $attestation .= '    <p style="width:100%;font-size:10pt;">Testing Personnel ____________________________________________ Date:________________________</p>';
+    $attestation .= '    <p style="width:100%;font-size:10pt;">';
+    $attestation .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+    $attestation .= '____________________________________________ Date:________________________</p>';
+    $attestation .= '</div>';
 
+    foreach ($this->result['shipment'] as $result) {
         $fileSafeShipmentCode = str_replace(array_merge(
             array_map('chr', range(0, 31)),
             array('<', '>', ':', '"', '/', '\\', '|', '?', '*')
@@ -874,6 +898,8 @@ if (sizeof($this->result['shipment']) > 0) {
                 $html = '<p>Thank you for participating in the ' . ($result['scheme_name']) . ' Proficiency Testing Program.</p>';
             }
             $pdf->writeHTML($html, true, false, true, false, '');
+        } else {
+            $pdf->writeHTMLTogether($attestation, true, false, true, false, '');
         }
 
         if (ob_get_contents()) {
