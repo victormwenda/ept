@@ -166,7 +166,7 @@ if (count($this->shipment) > 0) { ?>
                     <i class="icon-plus"></i>
                 </a>
             </td>
-			<td style="vertical-align:middle;"><?php echo $shipment['first_name'] . " " .$shipment['last_name']. "(".$shipment['unique_identifier'].")" ?></td>
+			<td style="vertical-align:middle;"><?php echo $shipment['unique_identifier'] . " - " . $shipment['first_name'] . " " .$shipment['last_name'] ?></td>
             <?php if($shipment['scheme_type'] != 'tb') { ?>
             <td style="text-align:center;vertical-align:middle;"><?php echo $shipment['shipment_score'] ?></td>
             <td style="text-align:center;vertical-align:middle;"><?php echo $shipment['documentation_score'] ?></td>

@@ -189,12 +189,13 @@ class Application_Service_Evaluation {
     public function getShipmentToEvaluate($shipmentId, $reEvaluate = false) {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sql = $db->select()->from(array('s' => 'shipment'), array('s.shipment_id', 's.shipment_code', 's.scheme_type', 's.shipment_date', 's.lastdate_response', 's.distribution_id', 's.number_of_samples', 's.max_score', 's.shipment_comment', 's.created_by_admin', 's.created_on_admin', 's.updated_by_admin', 's.updated_on_admin', 'shipment_status' => 's.status'))
-                ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id')
-                ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id')
-                ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type')
-                ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id')
-                ->where("s.shipment_id = ?", $shipmentId)
-                ->where("substring(sp.evaluation_status,4,1) != '0'");
+            ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id')
+            ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id')
+            ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type')
+            ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id')
+            ->where("s.shipment_id = ?", $shipmentId)
+            ->where("substring(sp.evaluation_status,4,1) != '0'")
+            ->order("p.unique_identifier");
         $shipmentResult = $db->fetchAll($sql);
 
         $schemeService = new Application_Service_Schemes();
