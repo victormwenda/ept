@@ -42,7 +42,7 @@ class Application_Service_EvaluationScoring {
         return $calculatedScore;
     }
 
-    private function resMtbDetectedEqualsRefMtbDetected ($refMtbDetected, $resMtbDetected) {
+    public function resMtbDetectedEqualsRefMtbDetected ($refMtbDetected, $resMtbDetected) {
         $mtbDetectedValues = array("detected", "high", "medium", "low", "veryLow");
         if (in_array($refMtbDetected, $mtbDetectedValues) && in_array($resMtbDetected, $mtbDetectedValues)) {
             return true;
@@ -50,7 +50,7 @@ class Application_Service_EvaluationScoring {
         return $refMtbDetected == $resMtbDetected;
     }
 
-    private function resRifResistanceEqualsRefRifResistance ($resMtbDetected, $refRifResistance, $resRifResistance) {
+    public function resRifResistanceEqualsRefRifResistance ($resMtbDetected, $refRifResistance, $resRifResistance) {
         if ($resMtbDetected == "notDetected") {
             $rifResistanceNotApplicableValues = array("notDetected", "na");
             if (in_array($refRifResistance, $rifResistanceNotApplicableValues) &&

@@ -667,6 +667,7 @@ if (sizeof($this->result['shipment']) > 0) {
                 $scoreTotal = 0;
                 $maxScoreTotal = 0;
                 $exclusionCount = 0;
+                $discrepantResultInSubmission = false;
                 foreach ($result['responseResult'] as $response) {
                     if ($response['ref_is_excluded'] == 'yes' &&
                         isset($response['ref_excluded_reason']) &&
@@ -704,7 +705,12 @@ if (sizeof($this->result['shipment']) > 0) {
                     }
                     $labRes .= '</td>';
                     $labRes .= '    </tr>';
-                    $labRes .= '    <tr>';
+                    if ($response["result_matches_reference"]) {
+                        $labRes .= '    <tr>';
+                    } else {
+                        $discrepantResultInSubmission = true;
+                        $labRes .= '    <tr style="color: #ff0000;">';
+                    }
                     $labRes .= '	     <td style="width:46%;"><strong>'.$result['first_name']." ".$result['last_name'].'</strong></td>';
                     if ($response['mtb_detected'] == 'error') {
                         $labRes .= '	     <td style="width:22%;text-align:center;"><strong>Error: '.$response['error_code'].'</strong></td>';
@@ -746,12 +752,18 @@ if (sizeof($this->result['shipment']) > 0) {
                 $labRes .= '</table>';
                 if ((isset($result['eval_comment']) && $result['eval_comment'] !== '') ||
                     (isset($result['optional_eval_comment']) && $result['optional_eval_comment'] !== '') ||
-                    (isset($result['shipment_comment']) && $result['shipment_comment'] !== '')) {
+                    (isset($result['shipment_comment']) && $result['shipment_comment'] !== '') ||
+                    $discrepantResultInSubmission) {
                     $labRes .= '<br /><br />';
                     $labRes .= '<table cellpadding="2" style="width:100%;font-size:8pt;">';
                     $labRes .= '    <tr style="background-color:#777777;color:#ffffff;">';
                     $labRes .= '	     <td style="text-align:center;border-top:solid 10px #000000;border-bottom:solid 10px #000000;"><strong>Comments</strong></td>';
                     $labRes .= '    </tr>';
+                    if ($discrepantResultInSubmission) {
+                        $labRes .= '    <tr>';
+                        $labRes .= '	     <td>Red highlighted results represent discrepancies between actual and expected results.</td>';
+                        $labRes .= '    </tr>';
+                    }
                     if (isset($result['eval_comment']) && $result['eval_comment'] !== '') {
                         $labRes .= '    <tr>';
                         $labRes .= '	     <td>'.$result['eval_comment'].'</td>';
