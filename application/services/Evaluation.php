@@ -1150,7 +1150,8 @@ class Application_Service_Evaluation {
                 'sp.evaluation_comment',
                 'sp.documentation_score',
                 'sp.supervisor_approval',
-                'sp.participant_supervisor'))
+                'sp.participant_supervisor',
+                'sp.qc_done'))
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('sl.scheme_id', 'sl.scheme_name'))
             ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array(
                 'p.unique_identifier',
@@ -1553,7 +1554,11 @@ class Application_Service_Evaluation {
                             'rif_resistance',
                             'error_code',
                             'date_tested',
+                            'years_since_last_calibrated' =>
+                                new Zend_Db_Expr("YEAR(COALESCE(res.date_tested, spm.shipment_test_date, spm.shipment_test_report_date)) - YEAR(COALESCE(res.instrument_last_calibrated_on, res.instrument_installed_on, CAST('1990-01-01' AS DATE))) - ((DATE_FORMAT(COALESCE(res.date_tested, spm.shipment_test_date, spm.shipment_test_report_date), '%m%d') < DATE_FORMAT(COALESCE(res.instrument_last_calibrated_on, res.instrument_installed_on, CAST('1990-01-01' AS DATE)), '%m%d')))"),
                             'cartridge_expiration_date',
+                            'instrument_installed_on',
+                            'instrument_last_calibrated_on',
                             'probe_d',
                             'probe_c',
                             'probe_e',
@@ -1570,6 +1575,7 @@ class Application_Service_Evaluation {
                 $maxShipmentScore = 0;
                 $sampleStatuses = array();
                 $cartridgeExpiredOn = null;
+                $instrumentRequiresCalibration = false;
                 foreach ($tbResults as $tbResult) {
                     $sampleScoreStatus = $scoringService->calculateTbSamplePassStatus(
                         $tbResultsExpected[$tbResult['sample_id']]['mtb_detected'],
@@ -1601,6 +1607,12 @@ class Application_Service_Evaluation {
                     }
                     if ($tbResult['cartridge_expiration_date'] < $tbResult['date_tested']) {
                         $cartridgeExpiredOn = $tbResult['cartridge_expiration_date'];
+                    }
+                    if (!isset($tbResult['instrument_last_calibrated_on']) &&
+                        !isset($tbResult['instrument_installed_on']) ||
+                        (isset($tbResult['years_since_last_calibrated']) &&
+                            $tbResult['years_since_last_calibrated'] > 0)) {
+                        $instrumentRequiresCalibration = true;
                     }
                     $toReturn[$counter] = array(
                         'sample_id' => $tbResult['sample_id'],
@@ -1650,6 +1662,7 @@ class Application_Service_Evaluation {
                 $shipmentResult[$i]['corrective_actions'] = isset($attributes['corrective_actions']) ? $attributes['corrective_actions'] : array();
                 $shipmentResult[$i]['responseResult'] = $toReturn;
                 $shipmentResult[$i]['cartridge_expired_on'] = $cartridgeExpiredOn;
+                $shipmentResult[$i]['instrument_requires_calibration'] = $instrumentRequiresCalibration;
             }
             $i++;
             $db->update('shipment_participant_map', array('report_generated' => 'yes'), "map_id=" . $res['map_id']);

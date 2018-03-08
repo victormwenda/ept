@@ -755,62 +755,89 @@ if (sizeof($this->result['shipment']) > 0) {
                     }
                 }
                 $labRes .= '</table>';
+                $pdf->writeHTML($labRes, true, false, true, false, '');
+                $commentsSection = null;
                 if ((isset($result['eval_comment']) && $result['eval_comment'] !== '') ||
                     (isset($result['optional_eval_comment']) && $result['optional_eval_comment'] !== '') ||
                     (isset($result['shipment_comment']) && $result['shipment_comment'] !== '') ||
-                    $discrepantResultInSubmission || isset($result['cartridge_expired_on'])) {
-                    $labRes .= '<br /><br />';
-                    $labRes .= '<table cellpadding="2" style="width:100%;font-size:8pt;">';
-                    $labRes .= '    <tr style="background-color:#777777;color:#ffffff;">';
-                    $labRes .= '	     <td style="text-align:center;border-top:solid 10px #000000;border-bottom:solid 10px #000000;"><strong>Comments</strong></td>';
-                    $labRes .= '    </tr>';
-                    if ($discrepantResultInSubmission) {
-                        $labRes .= '    <tr>';
-                        $labRes .= '	     <td>Red highlighted results represent discrepancies between actual and expected results.</td>';
-                        $labRes .= '    </tr>';
-                    }
-                    if ($result['cartridge_expired_on']) {
-                        $labRes .= '    <tr>';
-                        $labRes .= '	     <td>Xpert MTB/RIF kit expired '.Pt_Commons_General::dbDateToString($result['cartridge_expired_on']).'.  Use of expired reagents could lead to incorrect reporting of clinical results.</td>';
-                        $labRes .= '    </tr>';
-                    }
-                    if ($noResultOrError2127InSubmission) {
-                        $labRes .= '    <tr>';
-                        $labRes .= '	     <td>Check computer software GeneXpert Dx to ensure software is not freezing during testing.  Check uninterrupted power supply (UPS) to ensure it is capable of sustaining power to GeneXpert for a minimum of 2 hours should an electrical power outage occur.  If UPS is unable to sustain GeneXpert instrument for 2 hours request sufficient UPS that will provide power to GeneXpert instrument for no less than 2 hours to enable current run completion in the event of a power outage.</td>';
-                        $labRes .= '    </tr>';
-                    }
+                    $discrepantResultInSubmission || isset($result['cartridge_expired_on']) ||
+                    $noResultOrError2127InSubmission ||
+                    (isset($result['instrument_requires_calibration']) && $result['instrument_requires_calibration']) ||
+                    !isset($result['supervisor_approval']) || $result['supervisor_approval'] == 'no' ||
+                    !isset($result['qc_done']) || $result['qc_done'] == 'no') {
+                    $commentsSection = '<br />';
+                    $commentsSection .= '<table cellpadding="2" style="width:100%;font-size:8pt;">';
+                    $commentsSection .= '    <tr style="background-color:#777777;color:#ffffff;">';
+                    $commentsSection .= '	     <td style="text-align:center;border-top:solid 10px #000000;border-bottom:solid 10px #000000;"><strong>Comments</strong></td>';
+                    $commentsSection .= '    </tr>';
+                    $allComments = array();
                     if (isset($result['eval_comment']) && $result['eval_comment'] !== '') {
-                        $labRes .= '    <tr>';
-                        $labRes .= '	     <td>'.$result['eval_comment'].'</td>';
-                        $labRes .= '    </tr>';
+                        array_push($allComments, $result['eval_comment']);
                     }
                     if (isset($result['optional_eval_comment']) && $result['optional_eval_comment'] !== '') {
-                        $labRes .= '    <tr>';
-                        $labRes .= '	     <td>'.$result['optional_eval_comment'].'</td>';
-                        $labRes .= '    </tr>';
+                        array_push($allComments, $result['optional_eval_comment']);
                     }
                     if (isset($result['shipment_comment']) && $result['shipment_comment'] !== '') {
-                        $labRes .= '    <tr>';
-                        $labRes .= '	     <td>'.$result['shipment_comment'].'</td>';
-                        $labRes .= '    </tr>';
+                        array_push($allComments, $result['shipment_comment']);
                     }
-                    $labRes .= '</table>';
+                    if ($discrepantResultInSubmission) {
+                        array_push($allComments, 'Red highlighted results represent discrepancies between actual and expected results.');
+                    }
+                    if ($result['cartridge_expired_on']) {
+                        array_push($allComments, 'Xpert MTB/RIF kit expired '.Pt_Commons_General::dbDateToString($result['cartridge_expired_on']).'.  Use of expired reagents could lead to incorrect reporting of clinical results.');
+                    }
+                    if ($noResultOrError2127InSubmission) {
+                        array_push($allComments, 'Check computer software GeneXpert Dx to ensure software is not freezing during testing.  Check uninterrupted power supply (UPS) to ensure it is capable of sustaining power to GeneXpert for a minimum of 2 hours should an electrical power outage occur.  If UPS is unable to sustain GeneXpert instrument for 2 hours request sufficient UPS that will provide power to GeneXpert instrument for no less than 2 hours to enable current run completion in the event of a power outage.');
+                    }
+                    if ($result['instrument_requires_calibration']) {
+                        array_push($allComments, 'Calibration is an important maintenance procedure to ensure GeneXpert instruments are functioning properly and yielding accurate results. Instrument calibration should take place each year or after every 2,000 runs on each instrument module (whichever comes first). Entered data suggest your GeneXpert Instrument is due for calibration. Request an XpertCheck module calibration kit and perform calibration as instructed. Details on how to perform GeneXpert Instrument calibration can be found at <a href="http://www.stoptb.org/wg/gli/TrainingPackage_Xpert_MTB_RIF.asp">http://www.stoptb.org/wg/gli/TrainingPackage_Xpert_MTB_RIF.asp</a> module 10 MAINTENANCE.');
+                    }
+                    if (!isset($result['qc_done']) || $result['qc_done'] == 'no') {
+                        array_push($allComments, 'Entered data suggest monthly maintenance needs to be performed.  Proper and timely monthly maintenance helps to ensure the longevity and accuracy of the GeneXpert Instrument. Details on how to perform GeneXpert Instrument monthly maintenance can be found at <a href="http://www.stoptb.org/wg/gli/TrainingPackage_Xpert_MTB_RIF.asp">http://www.stoptb.org/wg/gli/TrainingPackage_Xpert_MTB_RIF.asp</a> module 10 MAINTENANCE.');
+                    }
+                    if (!isset($result['supervisor_approval']) || $result['supervisor_approval'] == 'no') {
+                        array_push($allComments, 'Entered data suggest submitted results were not cross checked by a supervisor or designee.  Supervisory report review is an important step in quality assurance of laboratory testing results and must be incorporated into the workflow of all laboratories to ensure accuracy of all reported results.');
+                    }
+                    if (count($allComments) > 0) {
+                        $commentsSection .= '    <tr>';
+                        $commentsSection .= '	     <td>';
+                        if (count($allComments) > 1) {
+                            $commentsSection .= '	         <ul>';
+                        }
+                        foreach ($allComments as $comment) {
+                            if (count($allComments) > 1) {
+                                $commentsSection .= '	             <li>';
+                            }
+                            $commentsSection .= $comment;
+                            if (count($allComments) > 1) {
+                                $commentsSection .= '	             </li>';
+                            }
+                        }
+                        if (count($allComments) > 1) {
+                            $commentsSection .= '             </ul>';
+                        }
+                        $commentsSection .= '        </td>';
+                        $commentsSection .= '    </tr>';
+                    }
+                    $commentsSection .= '</table>';
+                    $pdf->writeHTMLTogether($commentsSection, true, false, true, false, '');
                 }
+                $correctiveActionsSection = null;
                 if (isset($result['corrective_actions']) && count($result['corrective_actions'])  > 0) {
-                    $labRes .= '<br />';
-                    $labRes .= '<table cellspacing="1" cellpadding="2" style="width:100%;font-size:8pt;">';
-                    $labRes .= '    <tr style="background-color:#777777;color:#ffffff;">';
-                    $labRes .= '	     <td style="text-align:center;border-top:solid 10px #000000;border-bottom:solid 10px #000000;" colspan="2"><strong>Corrective Actions Checklist</strong></td>';
-                    $labRes .= '    </tr>';
+                    $correctiveActionsSection = '<br />';
+                    $correctiveActionsSection .= '<table cellspacing="1" cellpadding="2" style="width:100%;font-size:8pt;">';
+                    $correctiveActionsSection .= '    <tr style="background-color:#777777;color:#ffffff;">';
+                    $correctiveActionsSection .= '	     <td style="text-align:center;border-top:solid 10px #000000;border-bottom:solid 10px #000000;" colspan="2"><strong>Corrective Actions Checklist</strong></td>';
+                    $correctiveActionsSection .= '    </tr>';
                     foreach ($result['corrective_actions'] as $correctiveAction) {
-                        $labRes .= '    <tr>';
-                        $labRes .= '	     <td style="border:solid 10px #000000;width:17px;"></td>';
-                        $labRes .= '	     <td>'.$correctiveAction.'</td>';
-                        $labRes .= '    </tr>';
+                        $correctiveActionsSection .= '    <tr>';
+                        $correctiveActionsSection .= '	     <td style="border:solid 10px #000000;width:17px;"></td>';
+                        $correctiveActionsSection .= '	     <td>'.$correctiveAction.'</td>';
+                        $correctiveActionsSection .= '    </tr>';
                     }
-                    $labRes .= '</table>';
+                    $correctiveActionsSection .= '</table>';
+                    $pdf->writeHTMLTogether($correctiveActionsSection, true, false, true, false, '');
                 }
-                $pdf->writeHTML($labRes, true, false, true, false, '');
             } else {
                 //Vl report
                 $labRes='<h5>'.$result['responseResult'][0]['vl_assay'];
