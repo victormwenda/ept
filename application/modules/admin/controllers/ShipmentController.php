@@ -314,8 +314,13 @@ class Admin_ShipmentController extends Zend_Controller_Action {
             $shipmentService->sendEmailToParticipants($params);
         } else {
             $this->view->shipmentId = base64_decode($this->_getParam('id'));
+            if ($this->_hasParam('mail_purpose')) {
+                $this->view->mail_purpose = $this->_getParam('mail_purpose');
+            } else {
+                $this->view->mail_purpose = 'new_shipment';
+            }
             $commonServices = new Application_Service_Common();
-            $newShipmentMailContent = $commonServices->getEmailTemplate('new_shipment');
+            $newShipmentMailContent = $commonServices->getEmailTemplate($this->view->mail_purpose);
             $this->view->emailSubject = $newShipmentMailContent['mail_subject'];
             $this->view->emailBody = str_replace('<p>', '',
                 str_replace('</p>', '',

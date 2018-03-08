@@ -1,6 +1,5 @@
 <div>
-    <form id="editShipmentEmail" method="post"
-          action='<?php echo $this->url(array("module"=>"admin", "controller" => "shipment", "action" => "edit-shipment-email"), "default", true) ?>'>
+    <form id="editShipmentEmail">
         <h4 class="modal-title">Email Participants</h4>
         <div class="modal-body">
             <input id="shipmentId" name="shipmentId" type="hidden" value="<?php echo $this->shipmentId ?>"/>
@@ -12,7 +11,9 @@
                     <td>
                         <select id="sendTo" name="sendTo" class="form-control" title="Who should this email go out to?">
                             <option value="all">All Participants Enrolled in this Shipment</option>
-                            <option value="notSubmitted">Only Participants Who Have Not Submitted</option>
+                            <option value="notSubmitted"
+                                <?php echo $this->mail_purpose == 'not_participated' ? 'selected="selected"' : '' ?>
+                            >Only Participants Who Have Not Submitted</option>
                             <option value="submitted">Only Participants Who Have Submitted</option>
                             <option value="saved">Only Participants Who Have Saved But Not Submitted</option>
                             <option value="neither">Only Participants Who Have Neither Saved Nor Submitted</option>
@@ -42,7 +43,7 @@
             <span>##NAME##, ##SHIPCODE##, ##SHIPTYPE##, ##SURVEYCODE## and ##SURVEYDATE##</span>
         </div>
         <div class="modal-footer">
-            <input type="submit" class="btn btn-success" onclick="return validateNow();" value="Send" />
+            <button class="btn btn-success" onclick="validateNow();return false;">Send</button>
             <button class="btn btn-danger" onclick="parent.closeLayoutModal();return false;">Cancel</button>
         </div>
     </form>
@@ -51,8 +52,17 @@
         var valid = deforayValidator.init({
           formId: 'editShipmentEmail'
         });
-        parent.closeLayoutModal();
-        return valid;
+        if (valid) {
+          $.ajax({
+            url: '<?php echo $this->url(array("module"=>"admin", "controller" => "shipment", "action" => "edit-shipment-email"), "default", true) ?>',
+            type: 'POST',
+            data: $("#editShipmentEmail").serialize(),
+            success: function() {
+              console.log(arguments);
+              parent.closeLayoutModal();
+            }
+          });
+        }
       }
     </script>
 </div>

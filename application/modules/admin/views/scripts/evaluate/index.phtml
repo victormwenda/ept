@@ -24,6 +24,9 @@
 
 <div id="shipments" style="clear:both;margin-top:30px;"></div>
 
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+
+</div>
 <script type="text/javascript" charset="utf-8">
 
     $('#myModal').on('hidden.bs.modal', function () {
@@ -78,7 +81,6 @@
 
     });
 
-
     function getShipments(did) {
         $.blockUI();
         //oTable.fnStandingRedraw();
@@ -100,17 +102,9 @@
             $.unblockUI();
         });
     }
-    function mailNonParticipants(sid) {
-        if (window.confirm("Are you sure you to send email reminder to participants not yet responded ?")) {
-            $.post("<?php echo $this->url(array('module' => 'admin', 'controller' => 'shipment', 'action' => 'not-participated-mail')); ?>", {sid: sid, format: "html"},
-            function (data) {
-                if (data > 0) {
-                    alert("Mail Sent successfully");
-                }
-                oTable.fnDraw();
-            });
-        }
 
+    function mailNonParticipants(sid) {
+      layoutModal('/admin/shipment/edit-shipment-email/id/' + sid + '/mail_purpose/not_participated/', '980', '550');
     }
     
     function closeVlModal(sId,sampleId,vlAssay,mLowLimit,mHighLimit) {
