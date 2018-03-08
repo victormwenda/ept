@@ -1569,7 +1569,7 @@ class Application_Service_Evaluation {
                 $shipmentScore = 0;
                 $maxShipmentScore = 0;
                 $sampleStatuses = array();
-                $expiredCartridgeUsed = null;
+                $cartridgeExpiredOn = null;
                 foreach ($tbResults as $tbResult) {
                     $sampleScoreStatus = $scoringService->calculateTbSamplePassStatus(
                         $tbResultsExpected[$tbResult['sample_id']]['mtb_detected'],
@@ -1600,7 +1600,7 @@ class Application_Service_Evaluation {
                         }
                     }
                     if ($tbResult['cartridge_expiration_date'] < $tbResult['date_tested']) {
-                        $expiredCartridgeUsed = $tbResult['cartridge_expiration_date'];
+                        $cartridgeExpiredOn = $tbResult['cartridge_expiration_date'];
                     }
                     $toReturn[$counter] = array(
                         'sample_id' => $tbResult['sample_id'],
@@ -1649,7 +1649,7 @@ class Application_Service_Evaluation {
                 $shipmentResult[$i]['optional_eval_comment'] = $res['optional_eval_comment'];
                 $shipmentResult[$i]['corrective_actions'] = isset($attributes['corrective_actions']) ? $attributes['corrective_actions'] : array();
                 $shipmentResult[$i]['responseResult'] = $toReturn;
-                $shipmentResult[$i]['expired_cartridge_used'] = $expiredCartridgeUsed;
+                $shipmentResult[$i]['cartridge_expired_on'] = $cartridgeExpiredOn;
             }
             $i++;
             $db->update('shipment_participant_map', array('report_generated' => 'yes'), "map_id=" . $res['map_id']);
