@@ -12,7 +12,9 @@ class TbController extends Zend_Controller_Action
         
     	if ($this->getRequest()->isPost()) {
     	    $data = $this->getRequest()->getPost();
-            $shipmentService->updateTbResults($data);
+            if ($shipmentService->updateTbResults($data)) {
+                $shipmentService->sendShipmentSavedEmailToParticipantsAndPECC($data['participantId'], $data['shipmentId']);
+            }
             $this->_redirect("/participant/dashboard");
         } else {
             $sID= $this->getRequest()->getParam('sid');

@@ -616,6 +616,7 @@ class Application_Service_Shipments {
         } else {
             $shipmentParticipantDb->updateShipmentValues($data, $params['smid']);
         }
+        return true;
     }
 
     public function updateTbResults($params) {
@@ -707,11 +708,13 @@ class Application_Service_Shipments {
                 }
             }
             $db->commit();
+            return true;
         } catch (Exception $e) {
             $db->rollBack();
             error_log($e->getMessage());
             error_log($e->getTraceAsString());
         }
+        return false;
     }
 
     public function updateVlResults($params) {
@@ -1580,7 +1583,6 @@ class Application_Service_Shipments {
     }
 
     public function getParticipantCountBasedOnScheme() {
-        $resultArray = array();
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
 
         $sQuery = $db->select()->from(array('s' => 'shipment'), array())
@@ -1751,7 +1753,6 @@ class Application_Service_Shipments {
                 $content = $notParticipatedMailContent['mail_content'];
                 $message = str_replace($search, $replace, $content);
                 $subject = $notParticipatedMailContent['mail_subject'];
-                $message = $message;
                 $fromEmail =$notParticipatedMailContent['mail_from'];
                 $fromFullName = $notParticipatedMailContent['from_name'];
                 $toEmail =$participantDetails['email'];
@@ -1878,6 +1879,137 @@ class Application_Service_Shipments {
                     'last_new_shipment_mailed_on' => new Zend_Db_Expr('now()'),
                     'new_shipment_mail_count' => $count
                 ), 'map_id = ' . $participantDetails['map_id']);
+            }
+        }
+    }
+
+    public function sendShipmentSavedEmailToParticipantsAndPECC($pid, $sid) {
+        $commonServices = new Application_Service_Common();
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $resultsSql = $db->select()
+            ->from(array('spm' => 'shipment_participant_map'), array(
+                'participant_id' => 'spm.participant_id',
+                'submission_status' => new Zend_Db_Expr("CASE WHEN SUBSTR(spm.evaluation_status, 3, 1) = '9' THEN 'Saved' ELSE 'Submitted' END"),
+                'is_pt_test_not_performed' => 'spm.is_pt_test_not_performed'
+            ))
+            ->join(array('ref' => 'reference_result_tb'), 'ref.shipment_id = spm.shipment_id', array('ref.sample_label'))
+            ->join(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id AND res.sample_id = ref.sample_id', array(
+                'mtb_detected' => new Zend_Db_Expr(
+                    "CASE
+                                WHEN res.error_code = 'error' THEN 'Error'
+                                WHEN IFNULL(res.error_code, '') != '' THEN CONCAT('Error ', res.error_code)
+                                WHEN res.mtb_detected = 'notDetected' THEN 'MTB Not Detected '
+                                WHEN res.mtb_detected = 'noResult' THEN 'No Result'
+                                WHEN res.mtb_detected = 'veryLow' THEN 'MTB Very Low '
+                                WHEN res.mtb_detected = 'na' THEN 'N/A'
+                                WHEN IFNULL(res.mtb_detected, '') = '' THEN ''
+                                ELSE CONCAT('MTB ', UPPER(SUBSTRING(res.mtb_detected, 1, 1)), SUBSTRING(res.mtb_detected, 2, 254), ' ')
+                              END"),
+                'rif_resistance' => new Zend_Db_Expr(
+                    "CASE
+                                WHEN res.error_code = 'error'
+                                  OR IFNULL(res.error_code, '') != ''
+                                  OR res.mtb_detected IN ('notDetected', 'noResult', 'na')
+                                  OR IFNULL(res.mtb_detected, '') = ''
+                                  OR IFNULL(res.rif_resistance, '') = ''
+                                  OR res.rif_resistance = 'na'
+                                  THEN ''
+                                WHEN res.rif_resistance = 'notDetected' THEN 'RIF Resistance Not Detected'
+                                WHEN res.rif_resistance = 'veryLow' THEN 'RIF Resistance Very Low'
+                                ELSE CONCAT('RIF Resistance ', UPPER(SUBSTRING(res.rif_resistance, 1, 1)), SUBSTRING(res.rif_resistance, 2, 254))
+                              END"),
+                'date_tested' => 'res.date_tested'))
+            ->join(array('p' => 'participant'), 'p.participant_id = spm.participant_id', array(
+                'country_id' => 'p.country',
+                'pt_id' => 'p.unique_identifier',
+                'participant_name' => new Zend_Db_Expr("COALESCE(p.lab_name, CONCAT(p.first_name, IFNULL(p.last_name, '')))")
+            ))
+            ->join(array('s' => 'shipment'), 's.shipment_id = spm.shipment_id', array('s.shipment_code'))
+            ->joinLeft(array('rntr' => 'response_not_tested_reason'), 'rntr.not_tested_reason_id = spm.not_tested_reason', array('rntr.not_tested_reason'))
+            ->where("spm.shipment_id = ?", $sid)
+            ->where("spm.participant_id = ?", $pid)
+            ->order('res.sample_id ASC');
+        $resultsSaved = $db->fetchAll($resultsSql);
+        if(count($resultsSaved) > 0) {
+
+            $recipientsSql = $db->select()
+                ->from(array('spm' => 'shipment_participant_map'), array())
+                ->join(array('p' => 'participant'), 'p.participant_id = spm.participant_id', array(
+                    'participant_name' => new Zend_Db_Expr("COALESCE(p.lab_name, CONCAT(p.first_name, IFNULL(p.last_name, '')))"),
+                    'participant_email' => 'p.email'
+                ))
+                ->join(array('pmm' => 'participant_manager_map'),'pmm.participant_id = p.participant_id', array())
+                ->join(array('dm' => 'data_manager'),'dm.dm_id = pmm.dm_id', array(
+                    'data_manager_email' => 'dm.primary_email'
+                ))
+                ->joinLeft(array('pcm' => 'ptcc_country_map'), 'pcm.country_id = p.country', array())
+                ->joinLeft(array('admin' => 'system_admin'), 'admin.admin_id = pcm.admin_id', array(
+                    'pecc_name' => new Zend_Db_Expr("CONCAT(IFNULL(CONCAT(admin.first_name, ' '), ''), IFNULL(admin.last_name, ''))"),
+                    'pecc_email' => 'admin.primary_email'
+                ))
+                ->where("spm.shipment_id = ?", $sid)
+                ->where("spm.participant_id = ?", $pid);
+            $recipients = $db->fetchAll($recipientsSql);
+            $recipientAddresses = array();
+            foreach($recipients as $recipient) {
+                if (isset($recipient["participant_email"]) &&
+                    $recipient["participant_email"] != "" &&
+                    !array_key_exists($recipient["participant_email"], $recipientAddresses)) {
+                    $recipientAddresses = array_merge(
+                        $recipientAddresses,
+                        array(
+                            $recipient["participant_email"] => $recipient["participant_name"]
+                        )
+                    );
+                }
+                if (isset($recipient["data_manager_email"]) &&
+                    $recipient["data_manager_email"] != "" &&
+                    !array_key_exists($recipient["data_manager_email"], $recipientAddresses)) {
+                    $recipientAddresses = array_merge(
+                        $recipientAddresses,
+                        array(
+                            $recipient["data_manager_email"] => $recipient["participant_name"]
+                        )
+                    );
+                }
+                if (isset($recipient["pecc_email"]) &&
+                    $recipient["pecc_email"] != "" &&
+                    !array_key_exists($recipient["pecc_email"], $recipientAddresses)) {
+                    $recipientAddresses = array_merge(
+                        $recipientAddresses,
+                        array(
+                            $recipient["pecc_email"] => $recipient["pecc_name"]
+                        )
+                    );
+                }
+            }
+            foreach($recipientAddresses as $emailAddress => $name) {
+                $participantConfirmationEmailBody = "<p>Dear ".$name.= ",</p>".
+                        "<p>This is a confirmation that we have received the following results on the ePT platform from ".$resultsSaved[0]["participant_name"]." (".$resultsSaved[0]["pt_id"].") for panel ".$resultsSaved[0]["shipment_code"]."</p>";
+                if ($resultsSaved[0]["submission_status"] == "Saved") {
+                    $participantConfirmationEmailBody .= "<p><strong><span style=\"color: red;\">IMPORTANT:</span> While the following data has been saved on the system, it will not be evaluated until someone actually submits these results. When the results are ready to be submitted, please ensure that the 'Submit' button at the bottom of the form is clicked.</strong></p>";
+                }
+                if (isset($resultsSaved[0]["is_pt_test_not_performed"]) && $resultsSaved[0]["is_pt_test_not_performed"] == "yes") {
+                    $participantConfirmationEmailBody .= "<p>Participant was unable to test the performance evaluation panel";
+                    if (isset($resultsSaved[0]["not_tested_reason"]) && $resultsSaved[0]["not_tested_reason"] != "") {
+                        $participantConfirmationEmailBody .= "due to ".$resultsSaved[0]["not_tested_reason"];
+                    }
+                    $participantConfirmationEmailBody .= "</p>";
+                } else {
+                    $participantConfirmationEmailBody .= "<table>";
+                    $participantConfirmationEmailBody .= "<tr><td><strong>Sample</strong></td><td><strong>Date Tested</strong></td><td><strong>Result</strong></td></tr>";
+                    foreach ($resultsSaved as $resultSaved) {
+                        if ($resultSaved["mtb_detected"] != "" || $resultSaved["rif_resistance"] != "") {
+                            $participantConfirmationEmailBody .= "<tr><td>" . $resultSaved["sample_label"] . "</td><td>" .
+                                (isset($resultSaved["date_tested"]) ?
+                                    Pt_Commons_General::dbDateToString($resultSaved["date_tested"]) :
+                                    "") . "</td><td>" .
+                                $resultSaved["mtb_detected"] . $resultSaved["rif_resistance"] . "</td></tr>";
+                        }
+                    }
+                    $participantConfirmationEmailBody .= "</table>";
+                }
+                $commonServices->insertTempMail($emailAddress,'','', "Receipt of ePT results for ".$resultsSaved[0]["shipment_code"]." from ".$resultsSaved[0]["participant_name"]." (".$resultsSaved[0]["pt_id"].")", $participantConfirmationEmailBody, "tbeptmanager@gmail.com", "ePT");
             }
         }
     }

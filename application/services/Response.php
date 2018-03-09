@@ -453,7 +453,9 @@ class Application_Service_Response {
                     $instrumentsDb->upsertInstrument($params['participantId'], $instrumentDetails);
                 }
             }
+            return true;
         }
+        return false;
     }
 
     public function getOtherUnenrolledParticipants($shipmentId, $currentParticipantId, $transferredToParticipantId) {
