@@ -706,11 +706,11 @@ if (sizeof($this->result['shipment']) > 0) {
                     }
                     $labRes .= '</td>';
                     $labRes .= '    </tr>';
-                    if ($response["result_matches_reference"]) {
-                        $labRes .= '    <tr>';
-                    } else {
+                    if ($response["discrepant_result"]) {
                         $discrepantResultInSubmission = true;
                         $labRes .= '    <tr style="color: #ff0000;">';
+                    } else {
+                        $labRes .= '    <tr>';
                     }
                     if ($tbResultValueMapping[$response['mtb_detected']] == "No Result" ||
                         $response['error_code'] == "2127") {

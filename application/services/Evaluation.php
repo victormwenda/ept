@@ -1618,11 +1618,9 @@ class Application_Service_Evaluation {
                         'sample_id' => $tbResult['sample_id'],
                         'sample_label' => $tbResult['sample_label'],
                         'mtb_detected' => $tbResult['mtb_detected'],
-                        'result_matches_reference' => $scoringService
-                            ->resMtbDetectedEqualsRefMtbDetected($tbResultsExpected[$tbResult['sample_id']]['mtb_detected'],
-                                $tbResult['mtb_detected']) && $scoringService
-                                ->resRifResistanceEqualsRefRifResistance($tbResult['mtb_detected'],
-                                    $tbResultsExpected[$tbResult['sample_id']]['rif_resistance'], $tbResult['rif_resistance']),
+                        'discrepant_result' => $tbResult['ref_is_exempt'] != 'yes' &&
+                            $tbResult['ref_is_excluded'] != 'yes' &&
+                            $sampleScore == 0,
                         'rif_resistance' => $tbResult['rif_resistance'],
                         'error_code' => $tbResult['error_code'],
                         'probe_d' => $tbResult['probe_d'],
