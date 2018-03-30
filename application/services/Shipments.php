@@ -384,7 +384,6 @@ class Application_Service_Shipments {
             $dtsResponseDb = new Application_Model_DbTable_ResponseDts();
             $dtsResponseDb->removeShipmentResults($mapId);
         } catch (Exception $e) {
-            return($e->getMessage());
             return "Unable to delete. Please try again later or contact system admin for help";
         }
     }
@@ -447,7 +446,47 @@ class Application_Service_Shipments {
             return($e->getMessage());
             return "Unable to delete. Please try again later or contact system admin for help";
         }
-    }	
+    }
+
+    public function removeDtsTbResults($mapId) {
+        try {
+            $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
+            $authNameSpace = new Zend_Session_Namespace('datamanagers');
+            $data = array(
+                "shipment_receipt_date" => null,
+                "shipment_test_date" => null,
+                "attributes" => null,
+                "shipment_test_report_date" => null,
+                "supervisor_approval" => '',
+                "participant_supervisor" => '',
+                "user_comment" => '',
+                "final_result" => '0',
+                "updated_on_user" => new Zend_Db_Expr('now()'),
+                "updated_by_user" => $authNameSpace->dm_id,
+                "qc_date" => null,
+                "qc_done_by" => null,
+                "qc_created_on" => null,
+                "mode_id" => null,
+                "not_tested_reason" => null,
+                "optional_eval_comment" => null,
+                "evaluation_comment" => '0',
+                "failure_reason" => '0',
+                "pt_support_comments" => '',
+                "pt_test_not_performed_comments" => null,
+                "is_pt_test_not_performed" => null,
+                "shipment_score" => null,
+                "documentation_score" => null,
+
+            );
+            $noOfRowsAffected = $shipmentParticipantDb->removeShipmentMapDetails($data, $mapId);
+
+            $responseDb = new Application_Model_DbTable_ResponseTb();
+            $responseDb->delete("shipment_map_id=$mapId");
+        } catch (Exception $e) {
+            return($e->getMessage());
+            return "Unable to delete. Please try again later or contact system admin for help";
+        }
+    }
 
     public function updateDbsResults($params) {
         if (!$this->isShipmentEditable($params['shipmentId'], $params['participantId'])) {

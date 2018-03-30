@@ -187,7 +187,9 @@ class Admin_EvaluateController extends Zend_Controller_Action {
 					$this->view->result = $shipmentService->removeDtsEidResults($mapId);
 				} else if ($schemeType == 'vl') {
 					$this->view->result = $shipmentService->removeDtsVlResults($mapId);
-				} else {
+				} else if ($schemeType == 'tb') {
+                    $this->view->result = $shipmentService->removeDtsTbResults($mapId);
+                } else {
 					$this->view->result = "Failed to delete";
 				}
             }
