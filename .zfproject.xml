@@ -593,6 +593,9 @@
           <apisDirectory enabled="false"/>
           <configsDirectory enabled="false"/>
           <controllersDirectory>
+            <controllerFile controllerName="Shipment">
+              <actionMethod actionName="generateForms"/>
+            </controllerFile>
             <controllerFile controllerName="Shipments">
               <actionMethod actionName="index"/>
               <actionMethod actionName="responseChart"/>

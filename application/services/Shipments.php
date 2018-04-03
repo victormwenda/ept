@@ -178,7 +178,11 @@ class Application_Service_Shipments {
             if (!$authNameSpace->is_ptcc_coordinator) {
                 $delete = '&nbsp;<a class="btn btn-primary btn-xs" href="javascript:void(0);" onclick="removeShipment(\'' . base64_encode($aRow['shipment_id']) . '\', \'' . $aRow['shipment_id'] . '\')"><span><i class="icon-remove"></i> Delete</span></a>';
             }
-            $row[] = $edit . $shipped . $enrolled . $delete . $announcementMail . $manageResponses;
+            $generateForms = '';
+            if (!$authNameSpace->is_ptcc_coordinator) {
+                $generateForms = '&nbsp;<a class="btn btn-success btn-xs" target="blank" href="/reports/shipment/generate-forms/sid/' . base64_encode($aRow['shipment_id']) . '"><span><i class="icon-file"></i> Generate Forms</span></a>';
+            }
+            $row[] = $edit . $shipped . $enrolled . $delete . $announcementMail . $manageResponses . $generateForms;
             $output['aaData'][] = $row;
         }
 
