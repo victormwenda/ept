@@ -1226,6 +1226,64 @@ class Application_Service_Shipments {
         return $returnArray;
     }
 
+    public function getDetailsForSubmissionForms($sid) {
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $shipmentData = $db->fetchRow(
+            $db->select()
+                ->from(array('s' => 'shipment'), array('s.shipment_code', 's.lastdate_response'))
+                ->where("s.shipment_id = ?", $sid)
+        );
+        $participantData = $db->fetchAll(
+            $db->select()
+                ->from(array('spm' => 'shipment_participant_map'), array())
+                ->join(array('p' => 'participant'), 'p.participant_id = spm.participant_id',
+                    array(
+                        "country" => "p.country",
+                        "participant_name" => new Zend_Db_Expr("COALESCE(p.lab_name, CONCAT(p.first_name, ' ', p.last_name), p.first_name)"),
+                        "pt_id" => "p.unique_identifier"
+                    ))
+                ->joinLeft(array('pmm' => 'participant_manager_map'), 'pmm.participant_id = spm.participant_id', array())
+                ->joinLeft(array('dm' => 'data_manager'), 'dm.dm_id = pmm.dm_id', array(
+                    "username" => "dm.primary_email",
+                    "dm.password"
+                ))
+                ->where("spm.shipment_id = ?", $sid)
+                ->order("p.unique_identifier ASC")
+        );
+
+        $sampleData = $db->fetchAll(
+            $db->select()
+                ->from(array('ref' => 'reference_result_tb'), array('ref.sample_id', 'ref.sample_label'))
+                ->where("ref.shipment_id = ?", $sid)
+                ->order("ref.sample_id ASC")
+        );
+
+        $countryData = $db->fetchAll(
+            $db->select()
+                ->from(array('c' => 'countries'), array(
+                    "c.id",
+                    "country_name" => "c.iso_name"
+                ))
+                ->joinLeft('ptcc_country_map', 'ptcc_country_map.country_id = c.id', array())
+                ->joinLeft(array('admin' => 'system_admin'), 'admin.admin_id = ptcc_country_map.country_id', array(
+                    "pecc_details" => new Zend_Db_Expr("GROUP_CONCAT(CONCAT(COALESCE(CONCAT(admin.first_name,' ',admin.last_name),admin.first_name,admin.last_name),IFNULL(CONCAT(' (',admin.primary_email, ')'),'')))")
+                ))
+                ->group('c.id')
+                ->order("c.id ASC")
+        );
+        $countryMap = array();
+        foreach ($countryData as $countryRecord) {
+            $countryMap[$countryRecord['id']] = $countryRecord;
+        }
+
+        return array(
+            "shipment" => $shipmentData,
+            "country" => $countryMap,
+            "participant" => $participantData,
+            "sample" => $sampleData
+        );
+    }
+
     public function updateShipment($params) {
         $dbAdapter = Zend_Db_Table_Abstract::getDefaultAdapter();
         $shipmentRow = $dbAdapter->fetchRow($dbAdapter->select()
