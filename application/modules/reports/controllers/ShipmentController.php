@@ -22,7 +22,6 @@ class Reports_ShipmentController extends Zend_Controller_Action {
             $templateData = $shipmentService->getDetailsForSubmissionForms($shipmentId);
             $shipmentCode = $templateData['shipment']['shipment_code'];
             $submissionForm = new SubmissionForm();
-            $submissionForm->SetMargins(0, 0, 0, false);
             $pageWidth = 296.92599647222;
             $pageHeight = 209.97333686111;
             $mediumFontName = "helvetica";
@@ -106,7 +105,8 @@ class Reports_ShipmentController extends Zend_Controller_Action {
                         $submissionForm->_tplIdx = $submissionForm->importPage($i);
                         $submissionForm->AddPage();
                         if ($i == 2 && isset($templateData["country"][$participant["country"]]["pecc_details"]) &&
-                            $templateData["country"][$participant["country"]]["pecc_details"] != "") {
+                            $templateData["country"][$participant["country"]]["pecc_details"] != "" &&
+                            $templateData["country"][$participant["country"]]["pecc_details"] != ",") {
                             $submissionForm->SetFont(
                                 $smallFontName,
                                 'N',
@@ -115,18 +115,20 @@ class Reports_ShipmentController extends Zend_Controller_Action {
                                 'default',
                                 true
                             );
+                            $peccDetailsString = "If you are experiencing challenges testing the panel or submitting results please contact ";
                             $submissionForm->SetXY(36, 170.9);
-                            $submissionForm->Write(0, "If you are experiencing challenges testing the panel or submitting results please contact");
                             $peccDetails = array_unique(explode(",", $templateData["country"][$participant["country"]]["pecc_details"]));
                             for ($ii = 0; $ii < count($peccDetails); $ii++) {
-                                $peccDetailsString = "";
-                                if ($ii > 0 && $ii == count($peccDetails) - 1) {
-                                    $peccDetailsString .= "or ";
+                                if ($ii > 0) {
+                                    if ($ii == count($peccDetails) - 1) {
+                                        $peccDetailsString .= " or ";
+                                    } else {
+                                        $peccDetailsString .= ", ";
+                                    }
                                 }
                                 $peccDetailsString .= $peccDetails[$ii];
-                                $submissionForm->SetXY(160, 170.9 + ($ii * 10));
-                                $submissionForm->Write(0, $peccDetailsString);
                             }
+                            $submissionForm->writeHTML("<p>" . $peccDetailsString . "</p>", false, false, false, true);
                         }
                     }
                 }
