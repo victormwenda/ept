@@ -1271,6 +1271,7 @@ class Application_Service_Shipments {
                 ->joinLeft(array('admin' => 'system_admin'), 'admin.admin_id = ptcc_country_map.admin_id', array(
                     "pecc_details" => new Zend_Db_Expr("GROUP_CONCAT(CONCAT(COALESCE(CONCAT(admin.first_name,' ',admin.last_name),admin.first_name,admin.last_name),IFNULL(CONCAT(' (',admin.primary_email, ')'),'')))")
                 ))
+                ->where('admin.include_as_pecc_in_reports', 1)
                 ->group('c.id')
                 ->order("c.id ASC")
         );

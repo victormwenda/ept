@@ -37,12 +37,19 @@
         formId: 'generateForms'
       });
       if (valid) {
+        $.blockUI();
         $.ajax({
           url: '<?php echo $this->url(array("module"=>"reports", "controller" => "shipment", "action" => "generate-forms"), "default", true) ?>',
           type: 'POST',
           data: $("#generateForms").serialize(),
           success: function(data) {
+            $.unblockUI();
             parent.window.location = '<?php echo $this->url(array("module" => "uploads", "controller" => "reports", "action" => ""), "default", true) ?>/'  + JSON.parse(data).fileName;
+            parent.closeLayoutModal();
+          },
+          error: function(error) {
+            $.unblockUI();
+            alert(error.message || "An error occurred when trying to generate submission forms.");
             parent.closeLayoutModal();
           }
         });
