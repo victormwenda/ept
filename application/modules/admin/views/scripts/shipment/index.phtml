@@ -341,6 +341,10 @@ if (isset($this->searchData) && $this->searchData != '') { ?>
         layoutModal('/admin/shipment/edit-shipment-email/id/' + sid + '/mail_purpose/new_shipment/', '980', '550');
     }
 
+    function generateForms(sid) {
+      layoutModal('/reports/shipment/generate-forms/sid/' + sid, '980', '550');
+    }
+
     function generateShipmentCode() {
       var distributionShipments = {
         <?php

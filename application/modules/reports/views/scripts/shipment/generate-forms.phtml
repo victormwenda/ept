@@ -1,0 +1,52 @@
+<div>
+    <form id="generateForms">
+        <h4 class="modal-title">Generate Forms</h4>
+        <div class="modal-body">
+            <input id="shipmentId" name="shipmentId" type="hidden" value="<?php echo $this->shipmentId ?>"/>
+            <table class="table table-bordered table-striped" style="width:100%;margin:0 auto 10px auto;">
+                <tr>
+                    <th>Country</th>
+                    <th>Submission Due Date</th>
+                </tr>
+                <?php
+                foreach($this->shipmentCountries as $shipmentCountry) {
+                ?>
+                <tr>
+                    <td>
+                        <label for='submissionDueDate_<?php echo $shipmentCountry["country_id"]; ?>' class="fieldLabel">
+                            <?php echo $shipmentCountry["country_name"]; ?>
+                        </label>
+                    </td>
+                    <td>
+                        <input name='submissionDueDate_<?php echo $shipmentCountry["country_id"]; ?>' id='submissionDueDate_<?php echo $shipmentCountry["country_id"]; ?>' class="form-control" value='<?php echo $shipmentCountry["due_date"]; ?>' />
+                    </td>
+                </tr>
+                <?php
+                }
+                ?>
+            </table>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-success" onclick="validateNow();return false;">Download Forms</button>
+            <button class="btn btn-danger" onclick="parent.closeLayoutModal();return false;">Cancel</button>
+        </div>
+    </form>
+    <script type="text/javascript">
+    function validateNow() {
+      var valid = deforayValidator.init({
+        formId: 'generateForms'
+      });
+      if (valid) {
+        $.ajax({
+          url: '<?php echo $this->url(array("module"=>"reports", "controller" => "shipment", "action" => "generate-forms"), "default", true) ?>',
+          type: 'POST',
+          data: $("#generateForms").serialize(),
+          success: function(data) {
+            parent.window.location = '<?php echo $this->url(array("module" => "uploads", "controller" => "reports", "action" => ""), "default", true) ?>/'  + JSON.parse(data).fileName;
+            parent.closeLayoutModal();
+          }
+        });
+      }
+    }
+    </script>
+</div>

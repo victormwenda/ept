@@ -180,7 +180,7 @@ class Application_Service_Shipments {
             }
             $generateForms = '';
             if (!$authNameSpace->is_ptcc_coordinator) {
-                $generateForms = '&nbsp;<a class="btn btn-success btn-xs" target="blank" href="/reports/shipment/generate-forms/sid/' . base64_encode($aRow['shipment_id']) . '"><span><i class="icon-file"></i> Generate Forms</span></a>';
+                $generateForms = '&nbsp;<a class="btn btn-success btn-xs" href="javascript:void(0);" onclick="generateForms(\'' . base64_encode($aRow['shipment_id']) . '\')"><span><i class="icon-file"></i> Generate Forms</span></a>';
             }
             $row[] = $edit . $shipped . $enrolled . $delete . $announcementMail . $manageResponses . $generateForms;
             $output['aaData'][] = $row;
@@ -1236,6 +1236,7 @@ class Application_Service_Shipments {
         $participantData = $db->fetchAll(
             $db->select()
                 ->from(array('spm' => 'shipment_participant_map'), array())
+                ->join(array('s' => 'shipment'), 's.shipment_id = spm.shipment_id', array())
                 ->join(array('p' => 'participant'), 'p.participant_id = spm.participant_id',
                     array(
                         "country" => "p.country",
@@ -1247,6 +1248,7 @@ class Application_Service_Shipments {
                     "username" => "dm.primary_email",
                     "dm.password"
                 ))
+                ->joinLeft(array('csm' => 'country_shipment_map'), 'csm.country_id = p.country AND csm.shipment_id = spm.shipment_id', array('due_date' => new Zend_Db_Expr('IFNULL(csm.due_date_text, CAST(s.lastdate_response AS CHAR))')))
                 ->where("spm.shipment_id = ?", $sid)
                 ->group('p.participant_id')
                 ->order("p.unique_identifier ASC")
@@ -1830,6 +1832,68 @@ class Application_Service_Shipments {
             }
         }
         return $return;
+    }
+
+    public function getShipmentCountries($sid) {
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $sQuery = $db->select()->from(array('s' => 'shipment'), array('s.shipment_id'))
+            ->join(array('spm' => 'shipment_participant_map'), 'spm.shipment_id = s.shipment_id', array())
+            ->join(array('p' => 'participant'), 'p.participant_id = spm.participant_id', array())
+            ->join(array('c' => 'countries'), 'c.id = p.country', array('country_id' => 'c.id', 'country_name' => 'c.iso_name'))
+            ->joinLeft(
+                array('csm' => 'country_shipment_map'),
+                'csm.country_id = c.id AND csm.shipment_id = s.shipment_id',
+                array('due_date' => new Zend_Db_Expr('IFNULL(csm.due_date_text, CAST(s.lastdate_response AS CHAR))'))
+            )
+            ->where("s.shipment_id = ?", $sid)
+            ->group("c.id")
+            ->order('c.iso_name ASC');
+        return $db->fetchAll($sQuery);
+    }
+
+    public function updateShipmentCountry($sid, $countryId, $dueDateText) {
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $sQuery = $db->select()
+            ->from(array('s' => 'shipment'), array(
+                's.shipment_id',
+                'lastdate_response' => new Zend_Db_Expr('CAST(s.lastdate_response AS CHAR)')
+            ))
+            ->join(array('spm' => 'shipment_participant_map'), 'spm.shipment_id = s.shipment_id', array())
+            ->join(array('p' => 'participant'), 'p.participant_id = spm.participant_id', array())
+            ->join(array('c' => 'countries'), 'c.id = p.country', array('country_id' => 'c.id', 'country_name' => 'c.iso_name'))
+            ->joinLeft(
+                array('csm' => 'country_shipment_map'),
+                'csm.country_id = c.id AND csm.shipment_id = s.shipment_id',
+                array('due_date' => new Zend_Db_Expr('IFNULL(csm.due_date_text, CAST(s.lastdate_response AS CHAR))'))
+            )
+            ->where("s.shipment_id = ?", $sid)
+            ->where("p.country = ?", $countryId)
+            ->group("c.id");
+        $existingDetails  = $db->fetchRow($sQuery);
+        if ($existingDetails) {
+            if (!isset($dueDateText) || $dueDateText == "" || $dueDateText == $existingDetails["lastdate_response"]) {
+                $db->delete('country_shipment_map', 'shipment_id = ' . $sid . ' AND country_id = ' . $countryId);
+            } else if ($dueDateText != $existingDetails["due_date"]) {
+
+                if ($existingDetails["lastdate_response"] != $existingDetails["due_date"]) {
+                    $db->update('country_shipment_map',
+                        array(
+                            'due_date_text' => $dueDateText
+                        ),
+                        'shipment_id = ' . $sid . ' AND country_id = ' . $countryId
+                    );
+                } else {
+                    $db->insert('country_shipment_map',
+                        array(
+                            'shipment_id' => $sid,
+                            'country_id' => $countryId,
+                            'due_date_text' => $dueDateText
+                        )
+                    );
+                }
+            }
+
+        }
     }
 
     public function getShipmentNotParticipated($sid) {

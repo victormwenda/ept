@@ -474,7 +474,6 @@ class Application_Service_Participants {
                 array('<', '>', ':', '"', '/', '\\', '|', '?', '*')
             ), '', $params['shipmentCode']);
             $filename = $fileSafeShipmentCode.'-responded-participant-report-'.date('d-M-Y-H-i-s') . '.xls';
-            error_log(UPLOAD_PATH . DIRECTORY_SEPARATOR . $filename, 0);
             $writer->save(UPLOAD_PATH . DIRECTORY_SEPARATOR . $filename);
             return $filename;
 		} catch (Exception $exc) {
