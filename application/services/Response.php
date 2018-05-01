@@ -254,17 +254,23 @@ class Application_Service_Response {
                 }
 
                 if (isset($params['submitAction']) && $params['submitAction'] == 'submit') {
-                    if (isset($attributes["transferToParticipantId"]) && $attributes["transferToParticipantId"] != "") {
+                    $transferToParticipantId = "";
+                    if (isset($attributes)) {
+                        if (isset($attributes['transferToParticipantId'])) {
+                            $transferToParticipantId = $attributes['transferToParticipantId'];
+                        }
+                    }
+                    if ($transferToParticipantId != "") {
                         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
                         $sql = $db->select()
                             ->from(array('spm' => 'shipment_participant_map'))
                             ->where("spm.shipment_id = ?", $params["shipmentId"])
-                            ->where("spm.participant_id = ?", $attributes["transferToParticipantId"]);
+                            ->where("spm.participant_id = ?", $transferToParticipantId);
                         $enrolledParticipant = $db->fetchRow($sql);
                         if (!isset($enrolledParticipant) || !$enrolledParticipant) {
                             $enrollmentData = array(
                                 'shipment_id' => $params['shipmentId'],
-                                'participant_id' => $attributes["transferToParticipantId"],
+                                'participant_id' => $transferToParticipantId,
                                 'evaluation_status' => '19901190',
                                 'created_by_admin' => $authNameSpace->admin_id,
                                 "created_on_admin" => new Zend_Db_Expr('now()'));
@@ -292,7 +298,7 @@ class Application_Service_Response {
                                 ->joinLeft(array('pnt' => 'push_notification_token'), 'pnt.dm_id = pmm.dm_id',
                                     array('push_notification_token'))
                                 ->where("sp.shipment_id = ?", $params['shipmentId'])
-                                ->where("sp.participant_id = ?", $attributes["transferToParticipantId"])
+                                ->where("sp.participant_id = ?", $transferToParticipantId)
                                 ->group("p.participant_id");
                             $participantEmailDetailsList = $db->fetchAll($emailParticipantDetailsQuery);
 

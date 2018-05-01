@@ -84,10 +84,15 @@ class Admin_ResponseController extends Zend_Controller_Action
                 $this->view->allNotTestedReason = $schemeService->getNotTestedReasons($scheme);
                 if ($scheme == 'tb') {
                     $attributes = json_decode($this->view->responseData['shipment']['attributes'], true);
+                    $transferToParticipantId = null;
+                    if (isset($attributes)) {
+                        if (isset($attributes['transferToParticipantId'])) {
+                            $transferToParticipantId = $attributes['transferToParticipantId'];
+                        }
+                    }
                     $this->view->otherUnenrolledParticipants =
                         $responseService->getOtherUnenrolledParticipants(
-                            $sid, $pid,
-                            isset($attributes['transferToParticipantId']) ? $attributes['transferToParticipantId'] : null);
+                            $sid, $pid, $transferToParticipantId);
                 }
             } else {
                 $this->_redirect("/admin/response/");

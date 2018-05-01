@@ -77,9 +77,16 @@ if (isset($this->responseData['shipment']["shipment_test_report_date"]) &&
             <select id="transferToParticipant" name="transferToParticipant" class="form-control" title="Transfer Sample To" style="width:60%;">
                 <option value="">--Select another Participant--</option>
                 <?php
-                foreach($this->otherUnenrolledParticipants as $otherUnenrolledParticipant) { ?>
+                foreach($this->otherUnenrolledParticipants as $otherUnenrolledParticipant) {
+                    $transferToParticipantId = null;
+                    if (isset($attributes)) {
+                        if (isset($attributes['transferToParticipantId'])) {
+                            $transferToParticipantId = $attributes['transferToParticipantId'];
+                        }
+                    }
+                ?>
                 <option value="<?php echo $otherUnenrolledParticipant['participant_id']; ?>"
-                    <?php echo(isset($attributes['transferToParticipantId']) && $attributes['transferToParticipantId'] == $otherUnenrolledParticipant['participant_id'] ? 'selected="selected"':''); ?>>
+                    <?php echo($transferToParticipantId == $otherUnenrolledParticipant['participant_id'] ? 'selected="selected"':''); ?>>
                     <?php echo $otherUnenrolledParticipant['participant_name']; ?>
                 </option>
                 <?php
