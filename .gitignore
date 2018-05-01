@@ -2,6 +2,7 @@
 .idea/
 .settings/
 nbproject/
+live_web_logs/
 
 #Generated Files
 application/cache

@@ -148,7 +148,6 @@ class Reports_ShipmentController extends Zend_Controller_Action {
                 $fileName = preg_replace('/[^A-Za-z0-9.]/', '-', $shipmentCode) . '_submission_forms.pdf';
                 $filePath = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports'. DIRECTORY_SEPARATOR .$fileName;
                 $submissionForm->Output($filePath, 'F');
-                error_log($filePath, 0);
                 echo json_encode(array("fileName" => $fileName));
             }
         } else if ($this->_hasParam('sid')) {

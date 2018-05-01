@@ -131,10 +131,14 @@ if (count($this->shipment) > 0) { ?>
 			if (isset($warnings) && count($warnings) > 0) {
 			    $shipment['failure_reason'] = "<table class='table table-bordered table-striped table-compressed'>";
 				$shipment['failure_reason'] .= "<tr><th>Failure Reasons (or) Warnings</th><th>Corrective Actions (if any)</th></tr>";
-				foreach ($warnings as $warning) {
-				    $shipment['failure_reason'] .= 	"<tr><td>".(isset($warning['warning']) ? $warning['warning'] : "")."</td><td>".(isset($warning['correctiveAction']) ? $warning['correctiveAction'] : "")."</td></tr>";
-				}
-				$shipment['failure_reason'] .=  "</table>";;
+				if (is_array($warnings)) {
+					foreach ($warnings as $warning) {
+						$shipment['failure_reason'] .= 	"<tr><td>".(isset($warning['warning']) ? $warning['warning'] : "")."</td><td>".(isset($warning['correctiveAction']) ? $warning['correctiveAction'] : "")."</td></tr>";
+					}
+			    } else if (isset($warnings)) {
+					$shipment['failure_reason'] .= 	"<tr><td>".(isset($warnings['warning']) ? $warnings['warning'] : "")."</td><td>".(isset($warnings['correctiveAction']) ? $warnings['correctiveAction'] : "")."</td></tr>";
+			    }
+			    $shipment['failure_reason'] .=  "</table>";;
             } else {
 			    $shipment['failure_reason'] = "  No Warnings or Corrective Actions  ";
 			}
