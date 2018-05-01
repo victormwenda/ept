@@ -13,12 +13,18 @@ class AuthController extends Zend_Controller_Action
     public function loginAction() {
     	if ($this->getRequest()->isPost()) {
             $params = $this->getRequest()->getPost();
-            $params['username'] = trim($params['username']);
-            $params['password'] = trim($params['password']);
+            $username = "";
+            if (isset($params['username'])) {
+                $username = trim($params['username']);
+            }
+            $password = "";
+            if (isset($params['password'])) {
+                $password = trim($params['password']);
+            }
     		$db = Zend_Db_Table_Abstract::getDefaultAdapter();
     		$adapter = new Zend_Auth_Adapter_DbTable($db, "data_manager", "primary_email", "password");
-    		$adapter->setIdentity($params['username']);
-    		$adapter->setCredential($params['password']);
+    		$adapter->setIdentity($username);
+    		$adapter->setCredential($password);
             $select = $adapter->getDbSelect();
             $select->where('status = "active"');
 			
@@ -30,7 +36,7 @@ class AuthController extends Zend_Controller_Action
                 Zend_Session::rememberMe(60 * 60 * 5); // asking the session to be active for 5 hours
                 $rs = $adapter->getResultRowObject();
                 $authNameSpace = new Zend_Session_Namespace('datamanagers');
-                $authNameSpace->UserID = $params['username'];
+                $authNameSpace->UserID = $username;
                 $authNameSpace->dm_id = $rs->dm_id;
                 $authNameSpace->first_name = $rs->first_name;
                 $authNameSpace->last_name = $rs->last_name;
