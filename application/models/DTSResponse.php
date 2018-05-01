@@ -32,7 +32,7 @@ class Application_Model_DTSResponse {
 			$rec = $dtsResponseDb->getDTSResponse($shipId,$participantId);
 			$noOfSamples = count($rec);
 			$stmt = $db->prepare("call SHIPMENT_UPDATE_DTS(?,?,?,?,?,?,?,?,?,?)");
-			$stmt->execute(array($participantId, $shipId, $evaStatus,$receiptDate,$testDate,$rehydrationDate,$supervisorApproval,$participantSupervisor,$userCommnets,$userId));
+			// $stmt->execute(array($participantId, $shipId, $evaStatus,$receiptDate,$testDate,$rehydrationDate,$supervisorApproval,$participantSupervisor,$userCommnets,$userId));
 			//Now Save Shipment Results
 	        for ($i=1; $i<= $noOfSamples;$i++) {
                 $DTSSampleID = $data[$i . '_hdSampleId'];

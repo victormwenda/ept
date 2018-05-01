@@ -19,7 +19,7 @@ class TbController extends Zend_Controller_Action
         } else {
             $sID= $this->getRequest()->getParam('sid');
             $pID= $this->getRequest()->getParam('pid');
-            $eID =$this->getRequest()->getParam('eid');
+            // $eID =$this->getRequest()->getParam('eid');
         
             $participantService = new Application_Service_Participants();
             $this->view->participant = $participantService->getParticipantDetails($pID);
@@ -33,7 +33,7 @@ class TbController extends Zend_Controller_Action
             $this->view->shipment = $shipment;
             $this->view->shipId = $sID;
             $this->view->participantId = $pID;
-            $this->view->eID = $eID;
+            $this->view->eID = $shipment['evaluation_status'];
     
             $this->view->isEditable = $shipmentService->isShipmentEditable($sID,$pID);
 	    
