@@ -19,7 +19,6 @@ class Reports_ShipmentController extends Zend_Controller_Action {
             $params = $this->getRequest()->getPost();
             $shipmentId = $params["shipmentId"];
             $shipmentService = new Application_Service_Shipments();
-            //TODO: Update due dates here
             foreach (array_keys($params) as $paramKey) {
                 if (strpos($paramKey, 'submissionDueDate_') === 0) {
                     $countryId = substr($paramKey, 18);
