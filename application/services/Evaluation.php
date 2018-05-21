@@ -1180,12 +1180,10 @@ class Application_Service_Evaluation {
                     array('mtb_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow') THEN 1 ELSE 0 END)",
                         'mtb_not_detected' => "SUM(CASE WHEN `res`.`mtb_detected` = 'notDetected' THEN 1 ELSE 0 END)",
                         'mtb_uninterpretable' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('noResult', 'invalid', 'error') THEN 1 ELSE 0 END)",
-                        'mtb_result_not_reported' => "SUM(CASE WHEN `res`.`mtb_detected` = '' OR `ref`.`mtb_detected` IS NULL THEN 1 ELSE 0 END)",
                         'rif_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('high', 'medium', 'low', 'veryLow') AND `res`.`rif_resistance` = 'detected' THEN 1 ELSE 0 END)",
                         'rif_not_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow') AND `res`.`rif_resistance` = 'notDetected' THEN 1 ELSE 0 END)",
                         'rif_indeterminate' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow', 'notDetected') AND `res`.`rif_resistance` IN ('indeterminate', 'na') THEN 1 ELSE 0 END)",
                         'rif_uninterpretable' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('noResult', 'invalid', 'error') OR `res`.`mtb_detected` = '' OR `ref`.`mtb_detected` IS NULL OR `res`.`rif_resistance` = '' OR `res`.`rif_resistance` IS NULL THEN 1 ELSE 0 END)",
-                        'rif_result_not_reported' => "SUM(CASE WHEN `res`.`mtb_detected` NOT IN ('noResult', 'invalid', 'error') AND `res`.`mtb_detected` <> '' AND `ref`.`mtb_detected` IS NOT NULL AND (`res`.`rif_resistance` = '' OR `res`.`rif_resistance` IS NULL) THEN 1 ELSE 0 END)",
                         'no_of_responses' => 'COUNT(*)'))
                 ->join(array('ref' => 'reference_result_tb'),
                     'ref.shipment_id = spm.shipment_id AND ref.sample_id = res.sample_id', array(
@@ -2122,12 +2120,10 @@ class Application_Service_Evaluation {
                         array('mtb_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow') THEN 1 ELSE 0 END)",
                             'mtb_not_detected' => "SUM(CASE WHEN `res`.`mtb_detected` = 'notDetected' THEN 1 ELSE 0 END)",
                             'mtb_uninterpretable' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('noResult', 'invalid', 'error') THEN 1 ELSE 0 END)",
-                            'mtb_result_not_reported' => "SUM(CASE WHEN `res`.`mtb_detected` = '' OR `ref`.`mtb_detected` IS NULL THEN 1 ELSE 0 END)",
                             'rif_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow') AND `res`.`rif_resistance` = 'detected' THEN 1 ELSE 0 END)",
                             'rif_not_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow') AND `res`.`rif_resistance` = 'notDetected' THEN 1 ELSE 0 END)",
                             'rif_indeterminate' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow', 'notDetected') AND `res`.`rif_resistance` IN ('indeterminate', 'na') THEN 1 ELSE 0 END)",
                             'rif_uninterpretable' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('noResult', 'invalid', 'error') OR `res`.`mtb_detected` = '' OR `ref`.`mtb_detected` IS NULL OR `res`.`rif_resistance` = '' OR `res`.`rif_resistance` IS NULL THEN 1 ELSE 0 END)",
-                            'rif_result_not_reported' => "SUM(CASE WHEN `res`.`mtb_detected` NOT IN ('noResult', 'invalid', 'error') AND `res`.`mtb_detected` <> '' AND `ref`.`mtb_detected` IS NOT NULL AND (`res`.`rif_resistance` = '' OR `res`.`rif_resistance` IS NULL) THEN 1 ELSE 0 END)",
                             'no_of_responses' => 'COUNT(*)'))
                     ->join(array('ref' => 'reference_result_tb'),
                         'ref.shipment_id = spm.shipment_id AND ref.sample_id = res.sample_id', array(

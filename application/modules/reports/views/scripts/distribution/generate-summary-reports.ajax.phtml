@@ -445,12 +445,6 @@ if ($this->result['shipment'] != "") {
         }
         $labInfo .= '    </tr>';
         $labInfo .= '    <tr>';
-        $labInfo .= '	     <td style="width:40%;">Sites not reporting TB detection result (%)</td>';
-        foreach ($this->result['tbReportSummary'] as $sampleSummary) {
-            $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;">'.$sampleSummary['mtb_result_not_reported'].' ('.round(($sampleSummary['mtb_result_not_reported'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
-        }
-        $labInfo .= '    </tr>';
-        $labInfo .= '    <tr>';
         $labInfo .= '	     <td style="background-color:#cccccc;width:100%;" colspan="'.(count($this->result['tbReportSummary']) + 1).'"><strong>RIF Detection</strong></td>';
         $labInfo .= '    </tr>';
         $labInfo .= '    <tr>';
@@ -475,12 +469,6 @@ if ($this->result['shipment'] != "") {
         $labInfo .= '	     <td style="width:40%;">Sites reporting uninterpretable Rif result*(%)</td>';
         foreach ($this->result['tbReportSummary'] as $sampleSummary) {
             $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;">'.$sampleSummary['rif_uninterpretable'].' ('.round(($sampleSummary['rif_uninterpretable'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
-        }
-        $labInfo .= '    </tr>';
-        $labInfo .= '    <tr>';
-        $labInfo .= '	     <td style="width:40%;border-bottom:solid 10px #000000;">Sites not reporting Rif detection result (%)</td>';
-        foreach ($this->result['tbReportSummary'] as $sampleSummary) {
-            $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;border-bottom:solid 10px #000000;">'.$sampleSummary['rif_result_not_reported'].' ('.round(($sampleSummary['rif_result_not_reported'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
         }
         $labInfo .= '    </tr>';
         $labInfo .= '    <tr>';
