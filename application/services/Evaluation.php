@@ -1151,7 +1151,9 @@ class Application_Service_Evaluation {
                 'sp.documentation_score',
                 'sp.supervisor_approval',
                 'sp.participant_supervisor',
-                'sp.qc_done'))
+                'sp.qc_done',
+                'sp.is_pt_test_not_performed',
+                'sp.pt_test_not_performed_comments'))
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('sl.scheme_id', 'sl.scheme_name'))
             ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array(
                 'p.unique_identifier',
@@ -1162,6 +1164,7 @@ class Application_Service_Evaluation {
             ->joinLeft(array('res' => 'r_results'), 'res.result_id=sp.final_result', array('result_name'))
             ->joinLeft(array('ec' => 'r_evaluation_comments'), 'ec.comment_id=sp.evaluation_comment', array(
                 'evaluationComments' => 'comment'))
+            ->joinLeft(array('rntr' => 'response_not_tested_reason'), 'rntr.not_tested_reason_id = sp.not_tested_reason', array('rntr.not_tested_reason'))
             ->where("s.shipment_id = ?", $shipmentId)
             ->where("substring(sp.evaluation_status,4,1) != '0'")
             ->where("sp.is_excluded = 'no'")
@@ -1661,6 +1664,18 @@ class Application_Service_Evaluation {
                 $shipmentResult[$i]['responseResult'] = $toReturn;
                 $shipmentResult[$i]['cartridge_expired_on'] = $cartridgeExpiredOn;
                 $shipmentResult[$i]['instrument_requires_calibration'] = $instrumentRequiresCalibration;
+                if (isset($res['is_pt_test_not_performed']) && $res['is_pt_test_not_performed'] == 'yes') {
+                    $ptNotTestedComment = null;
+                    if (isset($res['not_tested_reason']) && $res['not_tested_reason'] != '') {
+                        $ptNotTestedComment = $res['not_tested_reason'];
+                    } else if (isset($res['pt_test_not_performed_comments']) && $res['pt_test_not_performed_comments'] != '') {
+                        $ptNotTestedComment = $res['pt_test_not_performed_comments'];
+                    }
+                    $shipmentResult[$i]['ptNotTestedComment'] = 'Xpert testing site was unable to participate in '.$shipmentResult[0]['shipment_code'];
+                    if (isset($ptNotTestedComment)) {
+                        $shipmentResult[$i]['ptNotTestedComment'] .= 'due to the following reason(s):'.$ptNotTestedComment.'.';
+                    }
+                }
             }
             $i++;
             $db->update('shipment_participant_map', array('report_generated' => 'yes'), "map_id=" . $res['map_id']);
