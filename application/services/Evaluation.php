@@ -1164,7 +1164,8 @@ class Application_Service_Evaluation {
                 'evaluationComments' => 'comment'))
             ->where("s.shipment_id = ?", $shipmentId)
             ->where("substring(sp.evaluation_status,4,1) != '0'")
-            ->where("sp.is_excluded = 'no'");
+            ->where("sp.is_excluded = 'no'")
+            ->order('p.unique_identifier ASC');
         if (isset($sLimit) && isset($sOffset)) {
             $sql = $sql->limit($sLimit, $sOffset);
 		}
@@ -1564,7 +1565,8 @@ class Application_Service_Evaluation {
                             'spc',
                             'probe_a'))
                     ->where('ref.shipment_id = ? ', $shipmentId)
-                    ->where('spm.participant_id = ?', $res['participant_id']);
+                    ->where('spm.participant_id = ?', $res['participant_id'])
+                    ->order('res.sample_id ASC');
                 $tbResults = $db->fetchAll($sql);
 
                 $counter = 0;
