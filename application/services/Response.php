@@ -154,7 +154,8 @@ class Application_Service_Response {
         if(isset($authNameSpace) && $authNameSpace->is_ptcc_coordinator) {
             $sql = $sql->where("p.country IN (".implode(",",$authNameSpace->countries).")");
         }
-        $sql = $sql->group('s.shipment_id');
+        $sql = $sql->group('s.shipment_id')
+                   ->order("p.unique_identifier");
         return $db->fetchAll($sql);
     }
     
@@ -189,6 +190,7 @@ class Application_Service_Response {
         if(isset($authNameSpace) && $authNameSpace->is_ptcc_coordinator) {
             $sql = $sql->where("p.country IN (".implode(",",$authNameSpace->countries).")");
         }
+        $sql = $sql->order("p.unique_identifier");
         $shipmentResult = $db->fetchAll($sql);
         return $shipmentResult;
     }
