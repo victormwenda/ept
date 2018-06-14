@@ -1185,7 +1185,7 @@ class Application_Service_Evaluation {
                         'mtb_not_detected' => "SUM(CASE WHEN `res`.`mtb_detected` = 'notDetected' THEN 1 ELSE 0 END)",
                         'mtb_uninterpretable' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('noResult', 'invalid', 'error') THEN 1 ELSE 0 END)",
                         'rif_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow') AND `res`.`rif_resistance` = 'detected' THEN 1 ELSE 0 END)",
-                        'rif_not_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow') AND `res`.`rif_resistance` IN ('notDetected', 'na') THEN 1 ELSE 0 END)",
+                        'rif_not_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('notDetected', 'detected', 'high', 'medium', 'low', 'veryLow') AND `res`.`rif_resistance` IN ('notDetected', 'na') THEN 1 ELSE 0 END)",
                         'rif_indeterminate' => "SUM(CASE WHEN `res`.`rif_resistance` = 'indeterminate' THEN 1 ELSE 0 END)",
                         'rif_uninterpretable' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('noResult', 'invalid', 'error') OR `res`.`mtb_detected` = '' OR `ref`.`mtb_detected` IS NULL OR `res`.`rif_resistance` = '' OR `res`.`rif_resistance` IS NULL THEN 1 ELSE 0 END)",
                         'no_of_responses' => 'COUNT(*)'))
@@ -2138,7 +2138,7 @@ class Application_Service_Evaluation {
                             'mtb_not_detected' => "SUM(CASE WHEN `res`.`mtb_detected` = 'notDetected' THEN 1 ELSE 0 END)",
                             'mtb_uninterpretable' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('noResult', 'invalid', 'error') THEN 1 ELSE 0 END)",
                             'rif_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow') AND `res`.`rif_resistance` = 'detected' THEN 1 ELSE 0 END)",
-                            'rif_not_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow') AND `res`.`rif_resistance` IN ('notDetected', 'na') THEN 1 ELSE 0 END)",
+                            'rif_not_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('notDetected', 'detected', 'high', 'medium', 'low', 'veryLow') AND `res`.`rif_resistance` IN ('notDetected', 'na') THEN 1 ELSE 0 END)",
                             'rif_indeterminate' => "SUM(CASE WHEN `res`.`rif_resistance` = 'indeterminate' THEN 1 ELSE 0 END)",
                             'rif_uninterpretable' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('noResult', 'invalid', 'error') OR `res`.`mtb_detected` = '' OR `ref`.`mtb_detected` IS NULL OR `res`.`rif_resistance` = '' OR `res`.`rif_resistance` IS NULL THEN 1 ELSE 0 END)",
                             'no_of_responses' => 'COUNT(*)'))
