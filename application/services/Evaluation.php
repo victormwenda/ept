@@ -102,9 +102,9 @@ class Application_Service_Evaluation {
         if (isset($sLimit) && isset($sOffset)) {
             $sQuery = $sQuery->limit($sLimit, $sOffset);
         }
-		
+
 		$sQuery = $dbAdapter->select()->from(array('temp' => $sQuery))->where("not_finalized_count>0");
-		
+
         //die($sQuery);
 
         $rResult = $dbAdapter->fetchAll($sQuery);
@@ -170,7 +170,7 @@ class Application_Service_Evaluation {
             ->group('s.shipment_id');
         return $db->fetchAll($sql);
     }
-    
+
     public function getResponseCount($shipmentId,$distributionId) {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sql = $db->select()->from(array('s' => 'shipment'),array(''))
@@ -528,7 +528,7 @@ class Application_Service_Evaluation {
                 ->where("sp.shipment_id = ?", $shipmentId)
                 ->where("substring(sp.evaluation_status,4,1) != '0'")
                 ->group('sp.map_id');
-        
+
         $shipmentOverall = $db->fetchAll($sql);
 
         $noOfParticipants = count($shipmentOverall);
@@ -1042,7 +1042,7 @@ class Application_Service_Evaluation {
 		if($params['isExcluded'] == 'yes'){
 			$updateArray['final_result'] = 3;
 		}
-		
+
         $db->update('shipment_participant_map', $updateArray, "map_id = " . $params['smid']);
     }
 
@@ -1199,6 +1199,7 @@ class Application_Service_Evaluation {
                 ->where("spm.shipment_id = ?", $shipmentId)
                 ->where("substring(spm.evaluation_status,4,1) != '0'")
                 ->where("spm.is_excluded = 'no'")
+                ->where("IFNULL(spm.is_pt_test_not_performed, 'no') = 'no'")
                 ->group('ref.sample_label');
             $tbReportSummary = $db->fetchAll($summaryQuery);
 
@@ -1476,7 +1477,7 @@ class Application_Service_Evaluation {
 					->joinLeft(array('res' => 'response_result_vl'),
                         'res.shipment_map_id = sp.map_id and res.sample_id = ref.sample_id', array('reported_viral_load'))
 					->where('sp.shipment_id = ? ', $shipmentId);
-				
+
 				$cResult=$db->fetchAll($cQuery);
 				$labResult = array();
 				foreach ($cResult as $val) {
@@ -1836,7 +1837,7 @@ class Application_Service_Evaluation {
                     $shipmentResult['summaryResult'][count($shipmentResult['summaryResult']) - 1]['correctCount'] = $db->fetchAll($tQuery);
 
                     $kitNameRes = $db->fetchAll($db->select()->from('r_testkitname_dts')->where("scheme_type='dts'"));
-					
+
                     $rQuery = $db->select()->from(array('spm' => 'shipment_participant_map'), array(
                         'spm.map_id', 'spm.shipment_id'))
                         ->join(array('resdts' => 'response_result_dts'), 'resdts.shipment_map_id=spm.map_id', array(
@@ -1932,7 +1933,7 @@ class Application_Service_Evaluation {
 				}
 
 				$shipmentResult['correctRes'] = $correctResult;
-				
+
 				$extAssayResult = array();
 				foreach ($sQueryRes as $sVal) {
 					$valAttributes = json_decode($sVal['attributes'], true);
@@ -2021,12 +2022,12 @@ class Application_Service_Evaluation {
                     ->where("spm.shipment_test_report_date IS NOT NULL")
                     ->where("spm.shipment_test_report_date!=''")
                     ->group('spm.map_id');
-				
+
                 $sQueryRes = $db->fetchAll($sQuery);
 				if (count($sQueryRes) > 0) {
 					$shipmentResult['summaryResult'][] = $sQueryRes;
 				}
-				
+
 				$query = $db->select()->from(array('refvl' => 'reference_result_vl'),array('refvl.sample_score'))
                     ->where('refvl.control!=1')
 					->where('refvl.shipment_id = ? ',$shipmentId);
@@ -2037,7 +2038,7 @@ class Application_Service_Evaluation {
 				$refVlQuery=$db->select()->from(array('ref' => 'reference_vl_calculation'),array('ref.vl_assay'))
                     ->where('ref.shipment_id = ? ',$shipmentId)
 					->group('vl_assay');
-				
+
 				$vlQuery = $db->select()->from(array('vl' => 'r_vl_assay'),array('vl.id','vl.name','vl.short_name'))
                     ->where("vl.id NOT IN ($refVlQuery)");
 				$pendingResult = $db->fetchAll($vlQuery);
@@ -2052,9 +2053,9 @@ class Application_Service_Evaluation {
                             'res.shipment_map_id = sp.map_id and res.sample_id = ref.sample_id', array('reported_viral_load'))
 						->where('ref.control!=1')
 						->where('sp.shipment_id = ? ', $shipmentId);
-					
+
 					$cResult=$db->fetchAll($cQuery);
-					
+
 					foreach ($cResult as $val) {
 						$valAttributes = json_decode($val['attributes'], true);
 						if ($pendingRow['id'] == $valAttributes['vl_assay']) {
@@ -2097,11 +2098,11 @@ class Application_Service_Evaluation {
                             'res.shipment_map_id = sp.map_id and res.sample_id = ref.sample_id', array('reported_viral_load'))
 						->where('ref.control!=1')
 						->where('sp.shipment_id = ? ', $shipmentId);
-					
+
 					$cResult=$db->fetchAll($cQuery);
 					$labResult = array();
 					$otherAssayName = array();
-					
+
 					foreach ($cResult as $val) {
 						$valAttributes = json_decode($val['attributes'], true);
 						if ($vlAssayRow['id'] == $valAttributes['vl_assay']) {
@@ -2120,7 +2121,7 @@ class Application_Service_Evaluation {
 							}
 						}
 					}
-					
+
 					if (count($vlCalRes) > 0) {
 						$vlCalculation[$vlAssayRow['id']] = $vlCalRes;
 						$vlCalculation[$vlAssayRow['id']]['vlAssay'] = $vlAssayRow['name'];
@@ -2330,7 +2331,7 @@ class Application_Service_Evaluation {
 
         return $dbAdapter->fetchRow($sQuery);
     }
-	
+
 	public function evaluateDtsViralLoad($shipmentResult,$shipmentId,$reEvaluate) {
 		$counter = 0;
 		$maxScore = 0;
@@ -2673,10 +2674,10 @@ class Application_Service_Evaluation {
 			}
 
 			$testedOn = new Zend_Date($results[0]['shipment_test_date'], Zend_Date::ISO_8601);
-			
+
 			// Getting the Test Date string to show in Corrective Actions and other sentences
 			$testDate = $testedOn->toString('dd-MMM-YYYY');
-			
+
 			// Getting test kit expiry dates as reported
 			$expDate1 = "";
             $expDate1 = Application_Service_Common::ParseDateISO8601($results[0]['exp_date_1']);
@@ -2686,7 +2687,7 @@ class Application_Service_Evaluation {
 			// Getting Test Kit Names
 			$testKitDb = new Application_Model_DbTable_TestkitnameDts();
 			$testKit1 = "";
-			
+
 			$testKitName = $testKitDb->getTestKitNameById($results[0]['test_kit_name_1']);
 			if (isset($testKitName[0])) {
 				$testKit1 = $testKitName[0];
@@ -2729,13 +2730,13 @@ class Application_Service_Evaluation {
 					$correctiveActionList[] = 6;
 					$shipment['is_excluded'] = 'yes';
 				}
-				
+
 				if (isset($recommendedTestkits[1]) && count($recommendedTestkits[1]) > 0) {
 					if (!in_array($results[0]['test_kit_name_1'],$recommendedTestkits[1])) {
 						$tk1RecommendedUsed = false;
 						$failureReason[] = array(
 						    'warning' => "For Test 1, testing is not performed with country approved test kit.",
-							'correctiveAction' => $correctiveActions[17]);							
+							'correctiveAction' => $correctiveActions[17]);
 					} else {
 						$tk1RecommendedUsed = true;
 					}
@@ -2763,13 +2764,13 @@ class Application_Service_Evaluation {
 					$correctiveActionList[] = 6;
 					$shipment['is_excluded'] = 'yes';
 				}
-				
+
 				if (isset($recommendedTestkits[2]) && count($recommendedTestkits[2]) > 0) {
 					if (!in_array($results[0]['test_kit_name_2'], $recommendedTestkits[2])) {
 						$tk2RecommendedUsed = false;
 						$failureReason[] = array(
 						    'warning' => "For Test 2, testing is not performed with country approved test kit.",
-							'correctiveAction' => $correctiveActions[17]);							
+							'correctiveAction' => $correctiveActions[17]);
 					} else {
 						$tk2RecommendedUsed = true;
 					}
@@ -2797,13 +2798,13 @@ class Application_Service_Evaluation {
 					$correctiveActionList[] = 6;
 					$shipment['is_excluded'] = 'yes';
 				}
-				
+
 				if (isset($recommendedTestkits[3]) && count($recommendedTestkits[3]) > 0) {
 					if (!in_array($results[0]['test_kit_name_3'],$recommendedTestkits[3])) {
 						$tk3RecommendedUsed = false;
 						$failureReason[] = array(
 						    'warning' => "For Test 3, testing is not performed with country approved test kit.",
-							'correctiveAction' => $correctiveActions[17]);							
+							'correctiveAction' => $correctiveActions[17]);
 					} else {
 						$tk3RecommendedUsed = true;
 					}
@@ -2846,7 +2847,7 @@ class Application_Service_Evaluation {
 			}
 
 			// checking if all LOT details were entered
-			// T.3 Ensure test kit lot number is reported for all performed tests. 
+			// T.3 Ensure test kit lot number is reported for all performed tests.
 			if ($testKit1 != "" &&
                 (!isset($results[0]['lot_no_1']) || $results[0]['lot_no_1'] == "" || $results[0]['lot_no_1'] == null)) {
 				if (isset($result['test_result_1']) && $result['test_result_1'] != "" && $result['test_result_1'] != null) {
@@ -3004,7 +3005,7 @@ class Application_Service_Evaluation {
 							$correctiveActionList[] = 2;
 						}
 					}
-					
+
 					if ($testKit2 != "") {
 						if (!isset($result['test_result_2']) || $result['test_result_2'] == "") {
 							$controlTesKitFail = 'Fail';
@@ -3045,7 +3046,7 @@ class Application_Service_Evaluation {
 								$correctResponse = true;
 							} else {
 								$correctResponse = false;
-								// $totalScore remains the same	
+								// $totalScore remains the same
 							}
 						} else {
 							if ($result['sample_score'] > 0) {
@@ -3060,7 +3061,7 @@ class Application_Service_Evaluation {
 						$correctResponse = false;
 					}
 				}
-				
+
 				$maxScore += $result['sample_score'];
 				if (isset($result['test_result_1']) && $result['test_result_1'] != "" && $result['test_result_1'] != null) {
 					//T.1 Ensure test kit name is reported for all performed tests.
@@ -3119,7 +3120,7 @@ class Application_Service_Evaluation {
 						$correctResponse = false;
 					}
 				}
-				
+
 				if (!$correctResponse || $algoResult == 'Fail' || $mandatoryResult == 'Fail' ||
                     $result['reference_result'] != $result['reported_result']) {
 					$db->update('response_result_dts', array('calculated_score' => "Fail"),
@@ -3129,7 +3130,7 @@ class Application_Service_Evaluation {
                         "shipment_map_id = " . $result['map_id'] . " and sample_id = " . $result['sample_id']);
 				}
 			}
-			
+
 			$configuredDocScore = ((isset($config->evaluation->dts->documentationScore) &&
                 $config->evaluation->dts->documentationScore != "" &&
                 $config->evaluation->dts->documentationScore != null) ? $config->evaluation->dts->documentationScore : 0);
@@ -3153,7 +3154,7 @@ class Application_Service_Evaluation {
 					'correctiveAction' => $correctiveActions[16]);
 				$correctiveActionList[] = 16;
 			}
-			
+
 			//D.3
 			if (isset($attributes['sample_rehydration_date']) && trim($attributes['sample_rehydration_date']) != "") {
 				$documentationScore += $documentationScorePerItem;
@@ -3177,7 +3178,7 @@ class Application_Service_Evaluation {
 			$sampleRehydrationDate = new DateTime($attributes['sample_rehydration_date']);
 			$testedOnDate = new DateTime($results[0]['shipment_test_date']);
 			$interval = $sampleRehydrationDate->diff($testedOnDate);
-			
+
 			$sampleRehydrateDays = $config->evaluation->dts->sampleRehydrateDays;
 			$rehydrateHours = $sampleRehydrateDays*24;
 
@@ -3189,7 +3190,7 @@ class Application_Service_Evaluation {
 			} else {
 				$documentationScore += $documentationScorePerItem;
 			}
-			
+
 			//D.8
 			if (isset($result['supervisor_approval']) && strtolower($result['supervisor_approval']) == 'yes' &&
                 trim($result['participant_supervisor']) != "") {
@@ -3212,7 +3213,7 @@ class Application_Service_Evaluation {
 				$scoreResult = 'Pass';
 			}
 
-			// if we are excluding this result, then let us not give pass/fail				
+			// if we are excluding this result, then let us not give pass/fail
 			if ($shipment['is_excluded'] == 'yes') {
 				$shipmentResult[$counter]['shipment_score'] = $responseScore = 0;
 				$shipmentResult[$counter]['documentation_score'] = 0;
@@ -3262,9 +3263,9 @@ class Application_Service_Evaluation {
 			}
 			$counter++;
 		}
-		
+
 		if (count($scoreHolder) > 0) {
-			$averageScore = round(array_sum($scoreHolder)/count($scoreHolder),2);	
+			$averageScore = round(array_sum($scoreHolder)/count($scoreHolder),2);
 		} else {
 			$averageScore = 0 ;
 		}
