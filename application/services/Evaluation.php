@@ -1674,7 +1674,7 @@ class Application_Service_Evaluation {
                     }
                     $shipmentResult[$i]['ptNotTestedComment'] = 'Xpert testing site was unable to participate in '.$shipmentResult[0]['shipment_code'];
                     if (isset($ptNotTestedComment)) {
-                        $shipmentResult[$i]['ptNotTestedComment'] .= 'due to the following reason(s):'.$ptNotTestedComment.'.';
+                        $shipmentResult[$i]['ptNotTestedComment'] .= ' due to the following reason(s): '.$ptNotTestedComment.'.';
                     }
                 }
             }
