@@ -8,12 +8,37 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
         $sampleIds = $params['sampleId'];
         $authNameSpace = new Zend_Session_Namespace('datamanagers');
         $dataManagerId = $authNameSpace->dm_id;
+
+        $headerInstrumentSerials = $params['headerInstrumentSerial'];
+        $instrumentDetails = array();
+        foreach ($headerInstrumentSerials as $key => $headerInstrumentSerial) {
+            if (isset($headerInstrumentSerial) &&
+                $headerInstrumentSerial != "") {
+                $instrumentDetails[$headerInstrumentSerial] = array(
+                    'instrument_installed_on' => $params['headerInstrumentInstalledOn'][$key],
+                    'instrument_last_calibrated_on' => $params['headerInstrumentLastCalibratedOn'][$key]
+                );
+            }
+        }
         foreach ($sampleIds as $key => $sampleId) {
             $res = $this->fetchRow("shipment_map_id = " . $params['smid'] . " and sample_id = " . $sampleId);
 
             $dateTested = Application_Service_Common::ParseDate($params['dateTested'][$key]);
-            $instrumentInstalledOn = Application_Service_Common::ParseDate($params['instrumentInstalledOn'][$key]);
-            $instrumentLastCalibratedOn = Application_Service_Common::ParseDate($params['instrumentLastCalibratedOn'][$key]);
+            $instrumentInstalledOn = null;
+            $instrumentLastCalibratedOn = null;
+            if (isset($params['instrumentSerial'][$key]) &&
+                isset($instrumentDetails[$params['instrumentSerial'][$key]])) {
+                if (isset($instrumentDetails[$params['instrumentSerial'][$key]]['instrument_installed_on'])) {
+                    $instrumentInstalledOn = Application_Service_Common::ParseDate(
+                        $instrumentDetails[$params['instrumentSerial'][$key]]['instrument_installed_on']
+                    );
+                }
+                if (isset($instrumentDetails[$params['instrumentSerial'][$key]]['instrument_last_calibrated_on'])) {
+                    $instrumentLastCalibratedOn = Application_Service_Common::ParseDate(
+                        $instrumentDetails[$params['instrumentSerial'][$key]]['instrument_last_calibrated_on']
+                    );
+                }
+            }
             $cartridgeExpirationDate = Application_Service_Common::ParseDate($params['expiryDate']);
             if ($res == null || count($res) == 0) {
                 $this->insert(array(

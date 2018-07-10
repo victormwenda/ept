@@ -245,7 +245,7 @@ class Application_Service_Shipments {
                 "extraction_assay_lot_no" => $params['extractionAssayLotNo'],
                 "detection_assay_lot_no" => $params['detectionAssayLotNo'],
 		        "uploaded_file" => $params['uploadedFilePath']);
-			
+
             $attributes = json_encode($attributes);
             $data = array(
                 "shipment_receipt_date" => Application_Service_Common::ParseDate($params['receiptDate']),
@@ -258,7 +258,7 @@ class Application_Service_Shipments {
                 "updated_by_user" => $authNameSpace->dm_id,
                 "updated_on_user" => new Zend_Db_Expr('now()')
             );
-            
+
             if (isset($params['testReceiptDate']) && trim($params['testReceiptDate'])!= '') {
                 $data['shipment_test_report_date'] = Application_Service_Common::ParseDate($params['testReceiptDate']);
             } else {
@@ -307,8 +307,8 @@ class Application_Service_Shipments {
             $attributes["sample_rehydration_date"] = Application_Service_Common::ParseDate($params['sampleRehydrationDate']);
             $attributes["algorithm"] = $params['algorithm'];
             $attributes = json_encode($attributes);
-			
-			
+
+
             $data = array(
                 "shipment_receipt_date" => Application_Service_Common::ParseDate($params['receiptDate']),
                 "shipment_test_date" => Application_Service_Common::ParseDate($params['testDate']),
@@ -320,7 +320,7 @@ class Application_Service_Shipments {
                 "mode_id" => $params['modeOfReceipt'],
                 "updated_on_user" => new Zend_Db_Expr('now()')
             );
-	    
+
             if (isset($params['testReceiptDate']) && trim($params['testReceiptDate'])!= '') {
                 $data['shipment_test_report_date'] = Application_Service_Common::ParseDate($params['testReceiptDate']);
             } else {
@@ -384,14 +384,14 @@ class Application_Service_Shipments {
                 "mode_id" => ''
             );
             $noOfRowsAffected = $shipmentParticipantDb->removeShipmentMapDetails($data, $mapId);
-            
+
             $dtsResponseDb = new Application_Model_DbTable_ResponseDts();
             $dtsResponseDb->removeShipmentResults($mapId);
         } catch (Exception $e) {
             return "Unable to delete. Please try again later or contact system admin for help";
         }
     }
-	
+
     public function removeDtsEidResults($mapId) {
         try {
             $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
@@ -413,7 +413,7 @@ class Application_Service_Shipments {
                 "mode_id" => ''
             );
             $noOfRowsAffected = $shipmentParticipantDb->removeShipmentMapDetails($data, $mapId);
-            
+
             $responseDb = new Application_Model_DbTable_ResponseEid();
             $responseDb->delete("shipment_map_id=$mapId");
         } catch (Exception $e) {
@@ -421,7 +421,7 @@ class Application_Service_Shipments {
             return "Unable to delete. Please try again later or contact system admin for help";
         }
     }
-	
+
     public function removeDtsVlResults($mapId) {
         try {
             $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
@@ -443,7 +443,7 @@ class Application_Service_Shipments {
                 "mode_id" => ''
             );
             $noOfRowsAffected = $shipmentParticipantDb->removeShipmentMapDetails($data, $mapId);
-            
+
             $responseDb = new Application_Model_DbTable_ResponseVl();
             $responseDb->delete("shipment_map_id=$mapId");
         } catch (Exception $e) {
@@ -738,18 +738,6 @@ class Application_Service_Shipments {
                     $instrumentsDb->upsertInstrument($params['participantId'], $headerInstrumentDetails);
                 }
             }
-            $sampleIds = $params['sampleId'];
-            foreach ($sampleIds as $key => $sampleId) {
-                if (isset($params['instrumentSerial'][$key]) &&
-                    $params['instrumentSerial'][$key] != "") {
-                    $instrumentDetails = array(
-                        'instrument_serial' => $params['instrumentSerial'][$key],
-                        'instrument_installed_on' => $params['instrumentInstalledOn'][$key],
-                        'instrument_last_calibrated_on' => $params['instrumentLastCalibratedOn'][$key]
-                    );
-                    $instrumentsDb->upsertInstrument($params['participantId'], $instrumentDetails);
-                }
-            }
             $db->commit();
             return true;
         } catch (Exception $e) {
@@ -784,7 +772,7 @@ class Application_Service_Shipments {
                 "specimen_volume" => $params['specimenVolume'],
 				"uploaded_file" => $params['uploadedFilePath']
 			);
-			
+
             if (isset($params['otherAssay']) && $params['otherAssay'] != "") {
                 $attributes['other_assay'] = $params['otherAssay'];
             }
@@ -1152,7 +1140,7 @@ class Application_Service_Shipments {
 		if ($authNameSpace->view_only_access=='yes') {
 			return false;
 		}
-		
+
 		$spMap = new Application_Model_DbTable_ShipmentParticipantMap();
         return $spMap->isShipmentEditable($shipmentId, $participantId);
     }
@@ -1171,9 +1159,9 @@ class Application_Service_Shipments {
         $eia = '';
         $wb = '';
         $rhiv = '';
-		
+
 		$returnArray = array();
-		
+
         if ($shipment['scheme_type'] == 'dts') {
             $reference = $db->fetchAll($db->select()->from(array('s' => 'shipment'))
                 ->join(array('ref' => 'reference_result_dts'), 'ref.shipment_id=s.shipment_id')
@@ -1208,7 +1196,7 @@ class Application_Service_Shipments {
                 ->join(array('ref' => 'reference_result_vl'), 'ref.shipment_id=s.shipment_id')
                 ->where("s.shipment_id = ?", $sid));
             $possibleResults = "";
-			
+
 			$returnArray['vlReferenceMethods'] = $db->fetchAll($db->select()->from('reference_vl_methods')->where("shipment_id = ?", $sid));
         } else if ($shipment['scheme_type'] == 'tb') {
             $reference = $db->fetchAll($db->select()->from(array('s' => 'shipment'))
@@ -1218,7 +1206,7 @@ class Application_Service_Shipments {
         } else {
             return false;
         }
-		
+
 		$returnArray['shipment'] = $shipment;
 		$returnArray['reference'] = $reference;
 		$returnArray['possibleResults'] = $possibleResults;
@@ -1331,7 +1319,7 @@ class Application_Service_Shipments {
                     'sample_score' => 1
                     )
                 );
-				
+
 				if (isset($params['vlRef'][$i + 1]['assay'])) {
 					$assaySize = count($params['vlRef'][$i + 1]['assay']);;
 					for ($e = 0; $e < $assaySize; $e++) {
@@ -1613,7 +1601,7 @@ class Application_Service_Shipments {
                 }
             }
         }
-		
+
         $dbAdapter->update('shipment', array(
             'number_of_samples' => $size - $controlCount,
             'number_of_controls' => $controlCount,
@@ -1657,7 +1645,7 @@ class Application_Service_Shipments {
         $shipmentDb = new Application_Model_DbTable_Shipments();
         return $shipmentDb->getShipmentAllDetails($parameters);
     }
-    
+
     public function getindividualReport($parameters) {
         $shipmentDb = new Application_Model_DbTable_Shipments();
         return $shipmentDb->getindividualReportDetails($parameters);
@@ -1790,7 +1778,7 @@ class Application_Service_Shipments {
         }
         return $code;
     }
-    
+
     public function getShipmentReport($parameters) {
         $shipmentDb = new Application_Model_DbTable_Shipments();
         return $shipmentDb->getShipmentReportDetails($parameters);
@@ -1954,17 +1942,17 @@ class Application_Service_Shipments {
         $shipmentDb = new Application_Model_DbTable_Shipments();
         return $shipmentDb->getAllShipmentFormDetails($parameters);
     }
-	
+
 	public function getAllFinalizedShipments($parameters){
 		$shipmentDb = new Application_Model_DbTable_Shipments();
 		return $shipmentDb->fetchAllFinalizedShipments($parameters);
 	}
-	
+
 	public function responseSwitch($shipmentId,$switchStatus){
 		$shipmentDb = new Application_Model_DbTable_Shipments();
 		return $shipmentDb->responseSwitch($shipmentId,$switchStatus);
 	}
-	
+
 	public function getFinalizedShipmentInReports($distributionId) {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sql = $db->select()->from(array('s' => 'shipment',
@@ -1980,7 +1968,7 @@ class Application_Service_Shipments {
 			->where("s.status='finalized'")
             ->where("s.distribution_id = ?", $distributionId)
             ->group('s.shipment_id');
-        
+
         return $db->fetchAll($sql);
     }
 

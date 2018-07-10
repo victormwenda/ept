@@ -452,8 +452,6 @@ foreach ($this->responseData['results'] as $result) {
                 </tr>
                 <tr>
                     <th colspan="3" style="vertical-align: bottom;">Instrument Serial</th>
-                    <th colspan="2" style="vertical-align: bottom;">Installed</th>
-                    <th colspan="2" style="vertical-align: bottom;">Last Calibrated</th>
                     <th style="vertical-align: bottom;">Module Number</th>
                     <th colspan="3" style="vertical-align: bottom;">Instrument User</th>
                 </tr>
@@ -484,20 +482,6 @@ foreach ($this->responseData['results'] as $result) {
                             </ul>
                         </div>
                     </th>
-                    <td colspan="2" style="vertical-align: top;background-color: transparent;">
-                        <input type="text" id="instrumentInstalledOn<?php echo $counter; ?>"
-                               class="form-control datepicker input-sm" readonly="readonly"
-                               name="instrumentInstalledOn[<?php echo $index; ?>]"
-                               value="<?php echo $this->dateFormat($result['res_instrument_installed_on']); ?>"
-                               title="Please enter the instrument installation date for <?php echo $result['sample_label']; ?>" />
-                    </td>
-                    <td colspan="2" style="vertical-align: top;background-color: transparent;">
-                        <input type="text" id="instrumentLastCalibratedOn<?php echo $counter; ?>"
-                               class="form-control datepicker input-sm" readonly="readonly"
-                               name="instrumentLastCalibratedOn[<?php echo $index; ?>]"
-                               value="<?php echo $this->dateFormat($result['res_instrument_last_calibrated_on']); ?>"
-                               title="Please enter the date that the instrument was last calibrated for <?php echo $result['sample_label']; ?>" />
-                    </td>
                     <th style="vertical-align: top;white-space: nowrap;background-color: transparent;">
                         <input type="text" name="moduleName[<?php echo $index; ?>]" class="form-control input-sm"
                                value="<?php echo $result['res_module_name']; ?>"
@@ -563,8 +547,6 @@ foreach ($this->responseData['results'] as $result) {
 
   function changeInstrument(details) {
     $("#" + details.serialTextFieldId).val(details.serial);
-    $("#" + details.installedOnTextFieldId).val(details.installedOn);
-    $("#" + details.lastCalibratedOnTextFieldId).val(details.lastCalibratedOn);
     $("#" + details.dropDownId + " a span.dropdownText").text(details.serial);
     return false;
   }
@@ -695,7 +677,7 @@ foreach ($this->responseData['results'] as $result) {
       var sampleNumber = $(instrumentUl).parent().attr('id').replace('instrumentDropDown', '');
       instrumentIndices.reverse().forEach(function (instrumentIndex) {
         $(instrumentUl).prepend('<li class="instrument-list-item">\
-  <a href="" onClick="return changeInstrument({serial: \'' + instrumentsMap[instrumentIndex].serial + '\', installedOn: \'' + instrumentsMap[instrumentIndex].installed + '\', lastCalibratedOn: \'' + instrumentsMap[instrumentIndex].calibrated + '\', dropDownId: \'instrumentDropDown' + sampleNumber + '\', serialTextFieldId: \'instrumentSerial' + sampleNumber + '\', installedOnTextFieldId: \'instrumentInstalledOn' + sampleNumber + '\', lastCalibratedOnTextFieldId: \'instrumentLastCalibratedOn' + sampleNumber + '\'})">\
+  <a href="" onClick="return changeInstrument({serial: \'' + instrumentsMap[instrumentIndex].serial + '\', dropDownId: \'instrumentDropDown' + sampleNumber + '\', serialTextFieldId: \'instrumentSerial' + sampleNumber + '\'})">\
     ' + instrumentsMap[instrumentIndex].serial + '\
   </a>\
 </li>');

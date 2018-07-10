@@ -41,7 +41,7 @@ if (isset($this->shipment["shipment_test_report_date"]) &&
 <input type="hidden" id ="shipmentId" name="shipmentId" value="<?php echo $this->shipId;?>" />
 <input type="hidden" id ="participantId" name="participantId" value="<?php echo $this->participantId;?>" />
 <input type="hidden" id ="evId" name="evId" value="<?php echo $this->eID;?>" />
-<?php $count =0;  
+<?php $count =0;
 foreach ($this->allSamples as $sample) {
     $count++;  ?>
 <input type="hidden" id ="<?php echo $count . "_hdSampleId"; ?>" name="<?php echo $count . "_hdSampleId"; ?>"
@@ -483,9 +483,6 @@ foreach($this->allNotTestedReason as $reason) { ?>
                     <tr>
                         <th rowspan="2" style="vertical-align: middle;">Instrument/Cartridge Details</th>
                         <th style="vertical-align: bottom;">Serial Number</th>
-                        <th style="vertical-align: bottom;">Installed</th>
-                        <th style="vertical-align: bottom;"></th>
-                        <th style="vertical-align: bottom;">Last Calibrated</th>
                         <th colspan="2" style="vertical-align: bottom;">Module Number</th>
                         <th colspan="4" style="vertical-align: bottom;">Instrument User</th>
                     </tr>
@@ -516,21 +513,6 @@ foreach($this->allNotTestedReason as $reason) { ?>
                                 </ul>
                             </div>
                         </th>
-                        <td style="background-color: transparent;">
-                            <input type="text" id="instrumentInstalledOn<?php echo $count; ?>"
-                                   class="form-control datepicker input-sm" readonly="readonly"
-                                   name="instrumentInstalledOn[<?php echo $index; ?>]"
-                                   value="<?php echo $this->dateFormat($sample['res_instrument_installed_on']); ?>"
-                                   title="Please enter the instrument installation date for <?php echo $sample['sample_label']; ?>" />
-                        </td>
-                        <td></td>
-                        <td style="background-color: transparent;">
-                            <input type="text" id="instrumentLastCalibratedOn<?php echo $count; ?>"
-                                   class="form-control datepicker input-sm" readonly="readonly"
-                                   name="instrumentLastCalibratedOn[<?php echo $index; ?>]"
-                                   value="<?php echo $this->dateFormat($sample['res_instrument_last_calibrated_on']); ?>"
-                                   title="Please enter the date that the instrument was last calibrated for <?php echo $sample['sample_label']; ?>" />
-                        </td>
                         <th colspan="2" style="white-space: nowrap;background-color: transparent;">
                             <input type="text" name="moduleName[<?php echo $index; ?>]"
                                    class="form-control input-sm" value="<?php echo $sample['res_module_name']; ?>"
@@ -594,7 +576,7 @@ foreach($this->allNotTestedReason as $reason) { ?>
 </div>
 <?php } ?>
 </div>
-<?php 
+<?php
 $genderHelper = $this->getHelper('DateFormat');
 $dtFormat = $genderHelper->getDateFormat();
 ?>
@@ -1133,8 +1115,6 @@ foreach ($this->allSamples as $sample) { ?>
 
   function changeInstrument(details) {
     $("#" + details.serialTextFieldId).val(details.serial);
-    $("#" + details.installedOnTextFieldId).val(details.installedOn);
-    $("#" + details.lastCalibratedOnTextFieldId).val(details.lastCalibratedOn);
     $("#" + details.dropDownId + " a span.dropdownText").text(details.serial);
     return false;
   }

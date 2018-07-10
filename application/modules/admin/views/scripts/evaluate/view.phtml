@@ -25,7 +25,7 @@ $reportDate = explode(" ", $this->evaluateData['shipment']['shipment_test_report
 <input type="hidden" name="shipmentId" id="shipmentId" value="<?php echo $this->evaluateData['shipment']['shipment_id']; ?>" />
 <input type="hidden" name="participantId" id="participantId" value="<?php echo $this->evaluateData['shipment']['participant_id']; ?>" />
 <input type="hidden" name="smid" id="smid" value="<?php echo $this->evaluateData['shipment']['map_id']; ?>" />
-<input type="hidden" name="scheme" id="scheme" value="<?php echo $this->scheme; ?>" />  
+<input type="hidden" name="scheme" id="scheme" value="<?php echo $this->scheme; ?>" />
 <?php
 if ($this->scheme == 'eid') {
     $attributes = json_decode($this->evaluateData['shipment']['attributes'], true); ?>
@@ -58,7 +58,7 @@ if ($this->scheme == 'eid') {
                         break;
                     }
                 }
-                ?>			
+                ?>
             </td>
             <th>Detection Assay</th>
             <td>
@@ -69,25 +69,25 @@ if ($this->scheme == 'eid') {
                         break;
                     }
                 }
-                ?>			
+                ?>
             </td>
         </tr>
 		<tr>
-			<td><label>Extraction Assay Lot No.</label></td> 
+			<td><label>Extraction Assay Lot No.</label></td>
 			<td>
 				<?php  echo ($attributes['extraction_assay_lot_no']); ?>
 			</td>
-			<td><label>Detection Assay Lot No.</label></td> 
+			<td><label>Detection Assay Lot No.</label></td>
 			<td>
 				<?php  echo ($attributes['detection_assay_lot_no']); ?>
 			</td>
 		</tr>
 		<tr>
-			<td><label>Extraction Assay Expiry Date</label></td> 
+			<td><label>Extraction Assay Expiry Date</label></td>
 			<td>
 				<?php  echo  $this->dateFormat($attributes['extraction_assay_expiry_date']); ?>
 			</td>
-			<td><label>Detection Assay Expiry Date</label></td> 
+			<td><label>Detection Assay Expiry Date</label></td>
 			<td>
 				<?php  echo  $this->dateFormat($attributes['detection_assay_expiry_date']); ?>
 			</td>
@@ -95,7 +95,7 @@ if ($this->scheme == 'eid') {
 		<tr>
 			 <th>Supervisor Review</th>
 			<td>
-                <?php echo ($this->evaluateData['shipment']['supervisor_approval']); ?>				
+                <?php echo ($this->evaluateData['shipment']['supervisor_approval']); ?>
 			</td>
 			<th>Supervisor Name</th>
 			<td>
@@ -285,7 +285,7 @@ if ($this->scheme == 'eid') {
             <td style="vertical-align: middle;"><?php echo $this->dateFormat($this->evaluateData['results'][0]["exp_date_3"]); ?></td>
 
         </tr>
-        <thead> 
+        <thead>
             <tr align="CENTER" class="dark" >
                 <th></th>
                 <th style="text-align: center">Result-1</th>
@@ -338,7 +338,7 @@ if ($this->scheme == 'eid') {
             <td colspan="7" style="text-align: center;">
                 <strong>Samples</strong>
             </td>
-        </tr>	
+        </tr>
     <?php
     $total = 0;
     $count = 1;
@@ -418,7 +418,7 @@ if ($this->scheme == 'eid') {
         <?php
         if(isset($attributes['other_assay']) && ($attributes['other_assay'] != "")) {
         ?>
-		<td class=""><label>Other Assay Name</label></td> 
+		<td class=""><label>Other Assay Name</label></td>
 		<td class="">
             <?php echo (isset($attributes['other_assay']) && ($attributes['other_assay'] != "")) ? $attributes['other_assay'] : ""; ?>
 		</td>
@@ -895,8 +895,6 @@ if ($this->scheme == 'eid') {
                     </tr>
                     <tr>
                         <th colspan="2" style="vertical-align: bottom;">Serial Number</th>
-                        <th style="vertical-align: bottom;">Installed</th>
-                        <th style="vertical-align: bottom;">Last Calibrated</th>
                         <th style="vertical-align: bottom;">Module Number</th>
                         <th colspan="2" style="vertical-align: bottom;">Instrument User</th>
                         <th colspan="2" style="vertical-align: bottom;">Cartridge Expires</th>
@@ -906,12 +904,6 @@ if ($this->scheme == 'eid') {
                         <th colspan="2" style="white-space: nowrap;background-color: transparent;">
                             <?php echo $result['res_instrument_serial']; ?>
                         </th>
-                        <td style="background-color: transparent;">
-                            <?php echo $this->dateFormat($result['res_instrument_installed_on']); ?>
-                        </td>
-                        <td style="background-color: transparent;">
-                            <?php echo $this->dateFormat($result['res_instrument_last_calibrated_on']); ?>
-                        </td>
                         <th style="white-space: nowrap;background-color: transparent;">
                             <?php echo $result['res_module_name']; ?>
                         </th>
@@ -970,7 +962,7 @@ if (isset($this->evaluateData['evalComments'])) {
                 echo " No Warnings or Corrective Actions ";
             }
             ?>
-		</td>		
+		</td>
     </tr>
     <tr>
         <td style="width:25%;vertical-align: middle">Evaluation Comment</td>

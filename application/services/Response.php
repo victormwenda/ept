@@ -158,7 +158,7 @@ class Application_Service_Response {
                    ->order("p.unique_identifier");
         return $db->fetchAll($sql);
     }
-    
+
     public function getResponseCount($shipmentId,$distributionId) {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sql = $db->select()->from(array('s' => 'shipment'),array(''))
@@ -384,6 +384,7 @@ class Application_Service_Response {
 
             $instrumentsDb = new Application_Model_DbTable_Instruments();
             $headerInstrumentSerials = $params['headerInstrumentSerial'];
+            $instrumentDetails = array();
             foreach ($headerInstrumentSerials as $key => $headerInstrumentSerial) {
                 if (isset($headerInstrumentSerial) &&
                     $headerInstrumentSerial != "") {
@@ -393,6 +394,10 @@ class Application_Service_Response {
                         'instrument_last_calibrated_on' => $params['headerInstrumentLastCalibratedOn'][$key]
                     );
                     $instrumentsDb->upsertInstrument($params['participantId'], $headerInstrumentDetails);
+                    $instrumentDetails[$headerInstrumentSerial] = array(
+                        'instrument_installed_on' => $params['headerInstrumentInstalledOn'][$key],
+                        'instrument_last_calibrated_on' => $params['headerInstrumentLastCalibratedOn'][$key]
+                    );
                 }
             }
             for ($i = 0; $i < $size; $i++) {
@@ -401,8 +406,21 @@ class Application_Service_Response {
                     ->where("shipment_map_id = " . $params['smid'] . " and sample_id = " . $params['sampleId'][$i]);
                 $res = $db->fetchRow($sql);
                 $dateTested = Application_Service_Common::ParseDate($params['dateTested'][$i]);
-                $instrumentInstalledOn = Application_Service_Common::ParseDate($params['instrumentInstalledOn'][$i]);
-                $instrumentLastCalibratedOn = Application_Service_Common::ParseDate($params['instrumentLastCalibratedOn'][$i]);
+                $instrumentInstalledOn = null;
+                $instrumentLastCalibratedOn = null;
+                if (isset($params['instrumentSerial'][$i]) &&
+                    isset($instrumentDetails[$params['instrumentSerial'][$i]])) {
+                    if (isset($instrumentDetails[$params['instrumentSerial'][$i]]['instrument_installed_on'])) {
+                        $instrumentInstalledOn = Application_Service_Common::ParseDate(
+                            $instrumentDetails[$params['instrumentSerial'][$i]]['instrument_installed_on']
+                        );
+                    }
+                    if (isset($instrumentDetails[$params['instrumentSerial'][$i]]['instrument_last_calibrated_on'])) {
+                        $instrumentLastCalibratedOn = Application_Service_Common::ParseDate(
+                            $instrumentDetails[$params['instrumentSerial'][$i]]['instrument_last_calibrated_on']
+                        );
+                    }
+                }
                 $cartridgeExpirationDate = Application_Service_Common::ParseDate($params['expiryDate']);
                 if ($res == null || count($res) == 0) {
                     $db->insert('response_result_tb', array(
@@ -450,15 +468,6 @@ class Application_Service_Response {
                         'updated_by' => $admin,
                         'updated_on' => new Zend_Db_Expr('now()')
                     ), "shipment_map_id = " . $params['smid'] . " and sample_id = " . $params['sampleId'][$i]);
-                }
-                if (isset($params['instrumentSerial'][$i]) &&
-                    $params['instrumentSerial'][$i] != "") {
-                    $instrumentDetails = array(
-                        'instrument_serial' => $params['instrumentSerial'][$i],
-                        'instrument_installed_on' => $instrumentInstalledOn,
-                        'instrument_last_calibrated_on' => $instrumentLastCalibratedOn
-                    );
-                    $instrumentsDb->upsertInstrument($params['participantId'], $instrumentDetails);
                 }
             }
             return true;

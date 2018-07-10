@@ -938,6 +938,7 @@ class Application_Service_Evaluation {
 
                 $instrumentsDb = new Application_Model_DbTable_Instruments();
                 $headerInstrumentSerials = $params['headerInstrumentSerial'];
+                $instrumentDetails = array();
                 foreach ($headerInstrumentSerials as $key => $headerInstrumentSerial) {
                     if (isset($headerInstrumentSerial) &&
                         $headerInstrumentSerial != "") {
@@ -947,6 +948,10 @@ class Application_Service_Evaluation {
                             'instrument_last_calibrated_on' => $params['headerInstrumentLastCalibratedOn'][$key]
                         );
                         $instrumentsDb->upsertInstrument($params['participantId'], $headerInstrumentDetails);
+                        $instrumentDetails[$headerInstrumentSerial] = array(
+                            'instrument_installed_on' => $params['headerInstrumentInstalledOn'][$key],
+                            'instrument_last_calibrated_on' => $params['headerInstrumentLastCalibratedOn'][$key]
+                        );
                     }
                 }
                 $scoringService = new Application_Service_EvaluationScoring();
@@ -961,8 +966,21 @@ class Application_Service_Evaluation {
                         $params['dateTested'][$i] == "") {
                         $dateTested = null;
                     }
-                    $instrumentInstalledOn = Application_Service_Common::ParseDate($params['instrumentInstalledOn'][$i]);
-                    $instrumentLastCalibratedOn = Application_Service_Common::ParseDate($params['instrumentLastCalibratedOn'][$i]);
+                    $instrumentInstalledOn = null;
+                    $instrumentLastCalibratedOn = null;
+                    if (isset($params['instrumentSerial'][$i]) &&
+                        isset($instrumentDetails[$params['instrumentSerial'][$i]])) {
+                        if (isset($instrumentDetails[$params['instrumentSerial'][$i]]['instrument_installed_on'])) {
+                            $instrumentInstalledOn = Application_Service_Common::ParseDate(
+                                $instrumentDetails[$params['instrumentSerial'][$i]]['instrument_installed_on']
+                            );
+                        }
+                        if (isset($instrumentDetails[$params['instrumentSerial'][$i]]['instrument_last_calibrated_on'])) {
+                            $instrumentLastCalibratedOn = Application_Service_Common::ParseDate(
+                                $instrumentDetails[$params['instrumentSerial'][$i]]['instrument_last_calibrated_on']
+                            );
+                        }
+                    }
                     $cartridgeExpirationDate = Application_Service_Common::ParseDate($params['expiryDate']);
 
                     $db = Zend_Db_Table_Abstract::getDefaultAdapter();
@@ -1000,16 +1018,6 @@ class Application_Service_Evaluation {
                         'updated_by' => $admin,
                         'updated_on' => new Zend_Db_Expr('now()')
                     ), "shipment_map_id = " . $params['smid'] . " and sample_id = " . $params['sampleId'][$i]);
-
-                    if (isset($params['instrumentSerial'][$i]) &&
-                        $params['instrumentSerial'][$i] != "") {
-                        $instrumentDetails = array(
-                            'instrument_serial' => $params['instrumentSerial'][$i],
-                            'instrument_installed_on' => $params['instrumentInstalledOn'][$i],
-                            'instrument_last_calibrated_on' => $params['instrumentLastCalibratedOn'][$i]
-                        );
-                        $instrumentsDb->upsertInstrument($params['participantId'], $instrumentDetails);
-                    }
                 }
                 if (isset($shipmentTestDate)) {
                     $mapData['shipment_test_date'] = $shipmentTestDate;
