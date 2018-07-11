@@ -125,7 +125,7 @@ class Reports_ShipmentController extends Zend_Controller_Action {
                                     true
                                 );
                                 $peccDetailsString = "If you are experiencing challenges testing the panel or submitting results please contact ";
-                                $submissionForm->SetXY(36, 170.9);
+                                $submissionForm->SetXY(28, 170.9);
                                 $peccDetails = array_unique(explode(",", $templateData["country"][$participant["country"]]["pecc_details"]));
                                 for ($ii = 0; $ii < count($peccDetails); $ii++) {
                                     if ($ii > 0) {
@@ -137,7 +137,7 @@ class Reports_ShipmentController extends Zend_Controller_Action {
                                     }
                                     $peccDetailsString .= $peccDetails[$ii];
                                 }
-                                $submissionForm->writeHTML("<p>" . $peccDetailsString . "</p>", false, false, false, true);
+                                $submissionForm->Write(0, $peccDetailsString);
                             }
                         }
                     }
