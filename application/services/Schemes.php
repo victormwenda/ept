@@ -21,7 +21,7 @@ class Application_Service_Schemes {
         $stmt = $db->fetchAll($sql);
         return $stmt;
     }
-    
+
     public function getRecommededDtsTestkit($testKit = null) {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sql = $db->select()->from(array('dts_recommended_testkits'));
@@ -37,7 +37,7 @@ class Application_Service_Schemes {
         }
         return $retval;
     }
-    
+
     public function setRecommededDtsTestkit($recommended) {
 
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
@@ -60,7 +60,7 @@ class Application_Service_Schemes {
         foreach ($res as $row) {
             $response[$row['id']] = $row['name'];
         }
-        return $response;    
+        return $response;
     }
 
     public function getEidDetectionAssay() {
@@ -148,14 +148,14 @@ class Application_Service_Schemes {
                 ->where('sp.participant_id = ? ', $pId);
         return $db->fetchAll($sql);
     }
-    
+
     public function getDtsReferenceData($shipmentId){
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sql = $db->select()->from(array('reference_result_dts'))
                 ->where('shipment_id = ? ', $shipmentId);
         return $db->fetchAll($sql);
     }
-    
+
     public function getVlReferenceData($shipmentId){
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sql = $db->select()->from(array('reference_result_vl'))
@@ -176,7 +176,7 @@ class Application_Service_Schemes {
                 ->where('shipment_id = ? ', $shipmentId);
         return $db->fetchAll($sql);
     }
-    
+
     public function getDbsSamples($sId, $pId) {
 
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
@@ -284,8 +284,6 @@ class Application_Service_Schemes {
                     'res_rif_resistance' => 'res.rif_resistance',
                     'res_error_code' => 'res.error_code',
                     'res_instrument_serial' => 'res.instrument_serial',
-                    'res_instrument_installed_on' => 'res.instrument_installed_on',
-                    'res_instrument_last_calibrated_on' => 'res.instrument_last_calibrated_on',
                     'res_module_name' => 'res.module_name',
                     'res_instrument_user' => 'res.instrument_user',
                     'res_cartridge_expiration_date' => 'res.cartridge_expiration_date',
@@ -298,6 +296,12 @@ class Application_Service_Schemes {
                     'res_probe_a' => 'res.probe_a',
                     'responseDate' => 'res.created_on'
                 ))
+            ->joinLeft('instrument',
+                'instrument.participant_id = sp.participant_id and instrument.instrument_serial = res.instrument_serial', array(
+                    'res_instrument_installed_on' =>
+                        new Zend_Db_Expr("COALESCE(res.instrument_installed_on, instrument.instrument_installed_on)"),
+                    'res_instrument_last_calibrated_on' =>
+                        new Zend_Db_Expr("COALESCE(res.instrument_last_calibrated_on, instrument.instrument_last_calibrated_on)")))
             ->where('sp.shipment_id = ? ', $sId)
             ->where('sp.participant_id = ? ', $pId);
         return $db->fetchAll($sql);
@@ -328,8 +332,6 @@ class Application_Service_Schemes {
                     'res_rif_resistance' => 'res.rif_resistance',
                     'res_error_code' => 'res.error_code',
                     'res_instrument_serial' => 'res.instrument_serial',
-                    'res_instrument_installed_on' => 'res.instrument_installed_on',
-                    'res_instrument_last_calibrated_on' => 'res.instrument_last_calibrated_on',
                     'res_module_name' => 'res.module_name',
                     'res_instrument_user' => 'res.instrument_user',
                     'res_cartridge_expiration_date' => 'res.cartridge_expiration_date',
@@ -342,6 +344,12 @@ class Application_Service_Schemes {
                     'res_probe_a' => 'res.probe_a',
                     'responseDate' => 'res.created_on'
                 ))
+            ->joinLeft('instrument',
+                'instrument.participant_id = sp.participant_id and instrument.instrument_serial = res.instrument_serial', array(
+                    'res_instrument_installed_on' =>
+                        new Zend_Db_Expr("COALESCE(res.instrument_installed_on, instrument.instrument_installed_on)"),
+                    'res_instrument_last_calibrated_on' =>
+                        new Zend_Db_Expr("COALESCE(res.instrument_last_calibrated_on, instrument.instrument_last_calibrated_on)")))
             ->where('sp.shipment_id = ? ', $shipmentId)
             ->where('sp.participant_id = ? ', $participantId)
             ->where('ref.sample_id = ? ', $sampleId);
@@ -362,11 +370,11 @@ class Application_Service_Schemes {
         foreach ($res as $row) {
             $response[$row['vl_assay']][$row['sample_id']]['sample_id'] = $row['sample_id'];
             $response[$row['vl_assay']][$row['sample_id']]['vl_assay'] = $row['vl_assay'];
-            
+
             if(isset($row['use_range']) && $row['use_range'] != ""){
                 if($row['use_range'] == 'manual'){
                     $response[$row['vl_assay']][$row['sample_id']]['q1'] = $row['manual_q1'];
-                    $response[$row['vl_assay']][$row['sample_id']]['q3'] = $row['manual_q3'];                    
+                    $response[$row['vl_assay']][$row['sample_id']]['q3'] = $row['manual_q3'];
                     $response[$row['vl_assay']][$row['sample_id']]['quartile_low'] = $row['manual_quartile_low'];
                     $response[$row['vl_assay']][$row['sample_id']]['quartile_high'] = $row['manual_quartile_high'];
                     $response[$row['vl_assay']][$row['sample_id']]['low'] = $row['manual_low_limit'];
@@ -377,7 +385,7 @@ class Application_Service_Schemes {
                     $response[$row['vl_assay']][$row['sample_id']]['sample_label'] = $row['sample_label'];
                 }else{
                     $response[$row['vl_assay']][$row['sample_id']]['q1'] = $row['q1'];
-                    $response[$row['vl_assay']][$row['sample_id']]['q3'] = $row['q3'];                    
+                    $response[$row['vl_assay']][$row['sample_id']]['q3'] = $row['q3'];
                     $response[$row['vl_assay']][$row['sample_id']]['quartile_low'] = $row['quartile_low'];
                     $response[$row['vl_assay']][$row['sample_id']]['quartile_high'] = $row['quartile_high'];
                     $response[$row['vl_assay']][$row['sample_id']]['low'] = $row['low_limit'];
@@ -391,7 +399,7 @@ class Application_Service_Schemes {
                     $response[$row['vl_assay']][$row['sample_id']]['q1'] = $row['q1'];
                     $response[$row['vl_assay']][$row['sample_id']]['q3'] = $row['q3'];
                     $response[$row['vl_assay']][$row['sample_id']]['quartile_low'] = $row['quartile_low'];
-                    $response[$row['vl_assay']][$row['sample_id']]['quartile_high'] = $row['quartile_high'];                
+                    $response[$row['vl_assay']][$row['sample_id']]['quartile_high'] = $row['quartile_high'];
                     $response[$row['vl_assay']][$row['sample_id']]['low'] = $row['low_limit'];
                     $response[$row['vl_assay']][$row['sample_id']]['high'] = $row['high_limit'];
                     $response[$row['vl_assay']][$row['sample_id']]['mean'] = $row['mean'];
@@ -409,19 +417,19 @@ class Application_Service_Schemes {
                             ->join(array('ref'=>'reference_result_vl'),'rvc.sample_id = ref.sample_id AND ref.shipment_id='.$sId,array('sample_label'))
                             ->join(array('a'=>'r_vl_assay'),'a.id = rvc.vl_assay',array('assay_name' => 'name'))
                             ->where('rvc.shipment_id = ?', $sId);
-        
+
         if($sampleId != null){
             $sql = $sql->where('rvc.sample_id = ?', $sampleId);
         }
-        
+
         //die($sql);
         $res = $db->fetchAll($sql);
-        
-        
+
+
         $response = array();
-        
+
         foreach ($res as $row) {
-            
+
             //$response[$row['vl_assay']][$row['sample_id']]['sample_label'] = $row['sample_label'];
             //$response[$row['vl_assay']][$row['sample_id']]['sample_id'] = $row['sample_id'];
             //$response[$row['vl_assay']][$row['sample_id']]['vl_assay'] = $row['vl_assay'];
@@ -431,7 +439,7 @@ class Application_Service_Schemes {
             //$response[$row['vl_assay']][$row['sample_id']]['manual_low_limit'] = $row['manual_low_limit'];
             //$response[$row['vl_assay']][$row['sample_id']]['manual_high_limit'] = $row['manual_high_limit'];
             //$response[$row['vl_assay']][$row['sample_id']]['use_range'] = $row['use_range'];
-            
+
             $response[$row['sample_id']][$row['vl_assay']]['shipment_id'] = $row['shipment_id'];
             $response[$row['sample_id']][$row['vl_assay']]['sample_label'] = $row['sample_label'];
             $response[$row['sample_id']][$row['vl_assay']]['sample_id'] = $row['sample_id'];
@@ -443,18 +451,18 @@ class Application_Service_Schemes {
             $response[$row['sample_id']][$row['vl_assay']]['sd'] = $row['sd'];
             $response[$row['sample_id']][$row['vl_assay']]['manual_low_limit'] = $row['manual_low_limit'];
             $response[$row['sample_id']][$row['vl_assay']]['manual_high_limit'] = $row['manual_high_limit'];
-            $response[$row['sample_id']][$row['vl_assay']]['use_range'] = $row['use_range'];            
-            
+            $response[$row['sample_id']][$row['vl_assay']]['use_range'] = $row['use_range'];
+
             if(!isset($response['updated_on'])){
-                $response['updated_on'] = $row['updated_on'];    
+                $response['updated_on'] = $row['updated_on'];
             }
             if(!isset($response['calculated_on'])){
-                $response['calculated_on'] = $row['calculated_on'];    
-            }        
+                $response['calculated_on'] = $row['calculated_on'];
+            }
         }
         return $response;
     }
-    
+
     public function updateVlInformation($params){
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         foreach($params['sampleId'] as $assayId => $samples){
@@ -518,13 +526,13 @@ class Application_Service_Schemes {
                     }
                     $avg = $this->getAverage($newArray);
                     $sd = $this->getStdDeviation($newArray);
-                    
+
                     if($avg == 0){
-                        $cv = 0;    
+                        $cv = 0;
                     }else{
-                        $cv = $sd / $avg;    
+                        $cv = $sd / $avg;
                     }
-                    
+
                     $finalLow = $avg - (3 * $sd);
                     $finalHigh = $avg + (3 * $sd);
 
@@ -543,7 +551,7 @@ class Application_Service_Schemes {
                         'high_limit' => $finalHigh,
                         "calculated_on" => new Zend_Db_Expr('now()')
                     );
-                    
+
                     if(isset($rvcRow['manual_low_limit']) && $rvcRow['manual_low_limit'] != ""){
                         $data['manual_low_limit'] = $rvcRow['manual_low_limit'];
                     }
@@ -677,7 +685,7 @@ class Application_Service_Schemes {
         $testkitsDb = new Application_Model_DbTable_TestkitnameDts();
         return $testkitsDb->getDtsTestkitDetails($testkitId);
     }
-    
+
     public function getVlManualValue($shipmentId,$sampleId,$vlAssay){
         if(trim($shipmentId)!="" && trim($sampleId)!="" && trim($vlAssay)!=""){
             $db = Zend_Db_Table_Abstract::getDefaultAdapter();
@@ -690,7 +698,7 @@ class Application_Service_Schemes {
             return $db->fetchRow($sql);
         }
     }
-    
+
     public function updateVlManualValue($params) {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $db->beginTransaction();

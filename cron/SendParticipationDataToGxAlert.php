@@ -44,10 +44,18 @@ try {
                     );
 
                     $samplesQuery = $db->select()
-                        ->from(array('res' => 'response_result_tb'), array('res.sample_id', 'res.instrument_serial', 'res.instrument_installed_on',
-                            'res.instrument_last_calibrated_on', 'res.reagent_lot_id', 'res.cartridge_expiration_date', 'res.module_name',
-                            'res.instrument_user', 'res.error_code', 'res.date_tested', 'res.mtb_detected', 'res.rif_resistance', 'res.probe_d',
-                            'res.probe_c', 'res.probe_e', 'res.probe_b', 'res.spc', 'res.probe_a', 'res.calculated_score'))
+                        ->from(array('res' => 'response_result_tb'), array('res.sample_id', 'res.instrument_serial', 'res.reagent_lot_id',
+                            'res.cartridge_expiration_date', 'res.module_name', 'res.instrument_user', 'res.error_code', 'res.date_tested',
+                            'res.mtb_detected', 'res.rif_resistance', 'res.probe_d', 'res.probe_c', 'res.probe_e', 'res.probe_b', 'res.spc',
+                            'res.probe_a', 'res.calculated_score'))
+                        ->join(array('spm' => 'shipment_participant_map'),
+                            'spm.map_id = res.shipment_map_id', array())
+                        ->joinLeft('instrument',
+                            'instrument.participant_id = spm.participant_id and instrument.instrument_serial = res.instrument_serial', array(
+                                'instrument_installed_on' =>
+                                    new Zend_Db_Expr("COALESCE(res.instrument_installed_on, instrument.instrument_installed_on)"),
+                                'instrument_last_calibrated_on' =>
+                                    new Zend_Db_Expr("COALESCE(res.instrument_last_calibrated_on, instrument.instrument_last_calibrated_on)")))
                         ->where("res.shipment_map_id = ?", $submission["map_id"]);
                     $samplesToSend = $db->fetchAll($samplesQuery);
                     foreach ($samplesToSend as $sample) {
