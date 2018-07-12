@@ -1700,14 +1700,14 @@ class Application_Service_Shipments {
                     'respondedCount' => new Zend_Db_Expr("SUM(SUBSTR(spm.evaluation_status, 3, 1) = '1')")
                 ))
             ->join(array('p' => 'participant'),'spm.participant_id = p.participant_id', array())
-            ->where("s.status = 'shipped'")
+            ->where("s.status IN ('shipped', 'evaluated')")
             ->where("s.shipment_date > DATE_SUB(now(), INTERVAL 24 MONTH)");
         $authNameSpace = new Zend_Session_Namespace('administrators');
         if ($authNameSpace->is_ptcc_coordinator) {
             $sQuery = $sQuery->where("p.country IN (".implode(",", $authNameSpace->countries).")");
         }
         $sQuery = $sQuery->group('s.shipment_id')
-            ->order("s.shipment_id");
+            ->order("s.shipment_id DESC");
         return $db->fetchAll($sQuery);
     }
 
