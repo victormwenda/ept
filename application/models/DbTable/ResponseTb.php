@@ -4,7 +4,7 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
     protected $_name = 'response_result_tb';
     protected $_primary = array('shipment_map_id', 'sample_id');
 
-    public function updateResults($params) {
+    public function updateResults($params, $submitted) {
         $sampleIds = $params['sampleId'];
         $authNameSpace = new Zend_Session_Namespace('datamanagers');
         $dataManagerId = $authNameSpace->dm_id;
@@ -20,74 +20,78 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
                 );
             }
         }
-        foreach ($sampleIds as $key => $sampleId) {
-            $res = $this->fetchRow("shipment_map_id = " . $params['smid'] . " and sample_id = " . $sampleId);
+        if ($params['ableToEnterResults'] == "no" && $submitted) {
+            $this->delete("shipment_map_id = " . $params['smid']);
+        } else {
+            foreach ($sampleIds as $key => $sampleId) {
+                $res = $this->fetchRow("shipment_map_id = " . $params['smid'] . " and sample_id = " . $sampleId);
 
-            $dateTested = Application_Service_Common::ParseDate($params['dateTested'][$key]);
-            $instrumentInstalledOn = null;
-            $instrumentLastCalibratedOn = null;
-            if (isset($params['instrumentSerial'][$key]) &&
-                isset($instrumentDetails[$params['instrumentSerial'][$key]])) {
-                if (isset($instrumentDetails[$params['instrumentSerial'][$key]]['instrument_installed_on'])) {
-                    $instrumentInstalledOn = Application_Service_Common::ParseDate(
-                        $instrumentDetails[$params['instrumentSerial'][$key]]['instrument_installed_on']
-                    );
+                $dateTested = Application_Service_Common::ParseDate($params['dateTested'][$key]);
+                $instrumentInstalledOn = null;
+                $instrumentLastCalibratedOn = null;
+                if (isset($params['instrumentSerial'][$key]) &&
+                    isset($instrumentDetails[$params['instrumentSerial'][$key]])) {
+                    if (isset($instrumentDetails[$params['instrumentSerial'][$key]]['instrument_installed_on'])) {
+                        $instrumentInstalledOn = Application_Service_Common::ParseDate(
+                            $instrumentDetails[$params['instrumentSerial'][$key]]['instrument_installed_on']
+                        );
+                    }
+                    if (isset($instrumentDetails[$params['instrumentSerial'][$key]]['instrument_last_calibrated_on'])) {
+                        $instrumentLastCalibratedOn = Application_Service_Common::ParseDate(
+                            $instrumentDetails[$params['instrumentSerial'][$key]]['instrument_last_calibrated_on']
+                        );
+                    }
                 }
-                if (isset($instrumentDetails[$params['instrumentSerial'][$key]]['instrument_last_calibrated_on'])) {
-                    $instrumentLastCalibratedOn = Application_Service_Common::ParseDate(
-                        $instrumentDetails[$params['instrumentSerial'][$key]]['instrument_last_calibrated_on']
-                    );
+                $cartridgeExpirationDate = Application_Service_Common::ParseDate($params['expiryDate']);
+                if ($res == null || count($res) == 0) {
+                    $this->insert(array(
+                        'shipment_map_id' => $params['smid'],
+                        'sample_id' => $sampleId,
+                        'date_tested' => $dateTested,
+                        'mtb_detected' => $params['mtbDetected'][$key],
+                        'rif_resistance' => $params['rifResistance'][$key],
+                        'probe_d' => $params['probeD'][$key],
+                        'probe_c' => $params['probeC'][$key],
+                        'probe_e' => $params['probeE'][$key],
+                        'probe_b' => $params['probeB'][$key],
+                        'spc' => $params['spc'][$key],
+                        'probe_a' => $params['probeA'][$key],
+                        'instrument_serial' => $params['instrumentSerial'][$key],
+                        'instrument_installed_on' => $instrumentInstalledOn,
+                        'instrument_last_calibrated_on' => $instrumentLastCalibratedOn,
+                        'module_name' => $params['moduleName'][$key],
+                        'instrument_user' => $params['instrumentUser'][$key],
+                        'cartridge_expiration_date' => $cartridgeExpirationDate,
+                        'reagent_lot_id' => $params['mtbRifKitLotNo'],
+                        'error_code' => $params['errorCode'][$key],
+                        'created_by' => $dataManagerId,
+                        'created_on' => new Zend_Db_Expr('now()')
+                    ));
+                } else {
+                    $this->update(array(
+                        'shipment_map_id' => $params['smid'],
+                        'sample_id' => $sampleId,
+                        'date_tested' => $dateTested,
+                        'mtb_detected' => $params['mtbDetected'][$key],
+                        'rif_resistance' => $params['rifResistance'][$key],
+                        'probe_d' => $params['probeD'][$key],
+                        'probe_c' => $params['probeC'][$key],
+                        'probe_e' => $params['probeE'][$key],
+                        'probe_b' => $params['probeB'][$key],
+                        'spc' => $params['spc'][$key],
+                        'probe_a' => $params['probeA'][$key],
+                        'instrument_serial' => $params['instrumentSerial'][$key],
+                        'instrument_installed_on' => $instrumentInstalledOn,
+                        'instrument_last_calibrated_on' => $instrumentLastCalibratedOn,
+                        'module_name' => $params['moduleName'][$key],
+                        'instrument_user' => $params['instrumentUser'][$key],
+                        'cartridge_expiration_date' => $cartridgeExpirationDate,
+                        'reagent_lot_id' => $params['mtbRifKitLotNo'],
+                        'error_code' => $params['errorCode'][$key],
+                        'updated_by' => $dataManagerId,
+                        'updated_on' => new Zend_Db_Expr('now()')
+                    ), "shipment_map_id = " . $params['smid'] . " and sample_id = " . $sampleId);
                 }
-            }
-            $cartridgeExpirationDate = Application_Service_Common::ParseDate($params['expiryDate']);
-            if ($res == null || count($res) == 0) {
-                $this->insert(array(
-                    'shipment_map_id' => $params['smid'],
-                    'sample_id' => $sampleId,
-                    'date_tested' => $dateTested,
-                    'mtb_detected' => $params['mtbDetected'][$key],
-                    'rif_resistance' => $params['rifResistance'][$key],
-                    'probe_d' => $params['probeD'][$key],
-                    'probe_c' => $params['probeC'][$key],
-                    'probe_e' => $params['probeE'][$key],
-                    'probe_b' => $params['probeB'][$key],
-                    'spc' => $params['spc'][$key],
-                    'probe_a' => $params['probeA'][$key],
-                    'instrument_serial' => $params['instrumentSerial'][$key],
-                    'instrument_installed_on' => $instrumentInstalledOn,
-                    'instrument_last_calibrated_on' => $instrumentLastCalibratedOn,
-                    'module_name' => $params['moduleName'][$key],
-                    'instrument_user' => $params['instrumentUser'][$key],
-                    'cartridge_expiration_date' => $cartridgeExpirationDate,
-                    'reagent_lot_id' => $params['mtbRifKitLotNo'],
-                    'error_code' => $params['errorCode'][$key],
-                    'created_by' => $dataManagerId,
-                    'created_on' => new Zend_Db_Expr('now()')
-                ));
-            } else {
-                $this->update(array(
-                    'shipment_map_id' => $params['smid'],
-                    'sample_id' => $sampleId,
-                    'date_tested' => $dateTested,
-                    'mtb_detected' => $params['mtbDetected'][$key],
-                    'rif_resistance' => $params['rifResistance'][$key],
-                    'probe_d' => $params['probeD'][$key],
-                    'probe_c' => $params['probeC'][$key],
-                    'probe_e' => $params['probeE'][$key],
-                    'probe_b' => $params['probeB'][$key],
-                    'spc' => $params['spc'][$key],
-                    'probe_a' => $params['probeA'][$key],
-                    'instrument_serial' => $params['instrumentSerial'][$key],
-                    'instrument_installed_on' => $instrumentInstalledOn,
-                    'instrument_last_calibrated_on' => $instrumentLastCalibratedOn,
-                    'module_name' => $params['moduleName'][$key],
-                    'instrument_user' => $params['instrumentUser'][$key],
-                    'cartridge_expiration_date' => $cartridgeExpirationDate,
-                    'reagent_lot_id' => $params['mtbRifKitLotNo'],
-                    'error_code' => $params['errorCode'][$key],
-                    'updated_by' => $dataManagerId,
-                    'updated_on' => new Zend_Db_Expr('now()')
-                ), "shipment_map_id = " . $params['smid'] . " and sample_id = " . $sampleId);
             }
         }
     }

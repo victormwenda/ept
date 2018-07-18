@@ -723,7 +723,12 @@ class Application_Service_Shipments {
             $shipmentParticipantDb->updateShipment($data, $params['smid'], $params['hdLastDate'], $params['submitAction']);
 
             $tbResponseDb = new Application_Model_DbTable_ResponseTb();
-            $tbResponseDb->updateResults($params);
+            $shipmentMap = $db->fetchRow($db->select()->from(array('spm' => 'shipment_participant_map'))
+                ->where("spm.map_id = ?", $params['smid']));
+            $evaluationStatus = $shipmentMap['evaluation_status'];
+            $submitted = $evaluationStatus[2] == '1' ||
+                (isset($params['submitAction']) && $params['submitAction'] == 'submit');
+            $tbResponseDb->updateResults($params, $submitted);
 
             $instrumentsDb = new Application_Model_DbTable_Instruments();
             $headerInstrumentSerials = $params['headerInstrumentSerial'];
