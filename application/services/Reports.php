@@ -420,8 +420,8 @@ class Application_Service_Reports {
                             ->joinLeft(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id', array('distribution_code', 'distribution_date'))
                             ->group('p.region')->where("p.region IS NOT NULL")->where("p.region != ''")->group('s.shipment_id')/* ->where("p.status = 'active'") */;
         } else if (isset($parameters['reportType']) && $parameters['reportType'] == "enrolled-programs") {
-			
-			
+
+
 			$sQuery = $dbAdapter->select()->from(array('p' => 'participant'), array())
 			->joinLeft(array('pe' => 'participant_enrolled_programs_map'), 'pe.participant_id=p.participant_id', array())
                             ->joinLeft(array('rep' => 'r_enrolled_programs'), 'rep.r_epid=pe.ep_id', array('rep.enrolled_programs'))
@@ -430,8 +430,8 @@ class Application_Service_Reports {
                             ->joinLeft(array('sl' => 'scheme_list'), 's.scheme_type=sl.scheme_id', array('scheme_name'))
                             ->joinLeft(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id', array('distribution_code', 'distribution_date'))
                              ->group('rep.r_epid')->group('s.shipment_id')/* ->where("p.status = 'active'") */;
-			
-            
+
+
         }
 //        else{
 //          $sQuery = $dbAdapter->select()->from(array('s' => 'shipment'))
@@ -1001,7 +1001,7 @@ class Application_Service_Reports {
                     ->group('tn.TestKitName_ID');
         }else{
             $sQuery = $sQuery->joinLeft(array('tn' => 'r_testkitname_dts'), 'tn.TestKitName_ID=res.test_kit_name_1 or tn.TestKitName_ID=res.test_kit_name_2 or tn.TestKitName_ID=res.test_kit_name_3', array('TestKit_Name', 'TestKitName_ID'))
-                    ->group('tn.TestKitName_ID');			
+                    ->group('tn.TestKitName_ID');
 		}
         if (isset($params['reportType']) && $params['reportType'] == "network") {
             if (isset($params['networkValue']) && $params['networkValue'] != "") {
@@ -1164,7 +1164,7 @@ class Application_Service_Reports {
                     ->group('tn.TestKitName_ID');
         }else{
             $sQuery = $sQuery->joinLeft(array('tn' => 'r_testkitname_dts'), 'tn.TestKitName_ID=res.test_kit_name_1 or tn.TestKitName_ID=res.test_kit_name_2 or tn.TestKitName_ID=res.test_kit_name_3', array('TestKit_Name', 'TestKitName_ID'))
-                    ->group('tn.TestKitName_ID');			
+                    ->group('tn.TestKitName_ID');
 		}
         if (isset($parameters['reportType']) && $parameters['reportType'] == "network") {
             if (isset($parameters['networkValue']) && $parameters['networkValue'] != "") {
@@ -1307,14 +1307,14 @@ class Application_Service_Reports {
 
 	public function generateDtsRapidHivExcelReport($shipmentId){
 			$db = Zend_Db_Table_Abstract::getDefaultAdapter();
-	
+
 			$excel = new PHPExcel();
 			//$sheet = $excel->getActiveSheet();
-	
-	
+
+
 			$cacheMethod = PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp;
 			$cacheSettings = array('memoryCacheSize' => '80MB');
-	
+
 			$styleArray = array(
 				'font' => array(
 					'bold' => true,
@@ -1329,7 +1329,7 @@ class Application_Service_Reports {
 					),
 				)
 			);
-	
+
 			$borderStyle = array(
 				'alignment' => array(
 					'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
@@ -1340,13 +1340,13 @@ class Application_Service_Reports {
 					),
 				)
 			);
-	
+
 			$query = $db->select()->from('shipment', array('shipment_id', 'shipment_code', 'scheme_type', 'number_of_samples'))
 					->where("shipment_id = ?", $shipmentId);
 			$result = $db->fetchRow($query);
-	
+
 			if ($result['scheme_type'] == 'dts') {
-	
+
 				$refQuery = $db->select()->from(array('refRes' => 'reference_result_dts'), array('refRes.sample_label', 'sample_id', 'refRes.sample_score'))
 						->joinLeft(array('r' => 'r_possibleresult'), 'r.id=refRes.reference_result', array('referenceResult' => 'r.response'))
 						->where("refRes.shipment_id = ?", $shipmentId);
@@ -1362,7 +1362,7 @@ class Application_Service_Reports {
 					}
 				}
 			}
-	
+
 			$firstSheet = new PHPExcel_Worksheet($excel, 'Instructions');
 			$excel->addSheet($firstSheet, 0);
 			$firstSheet->setTitle('Instructions');
@@ -1371,7 +1371,7 @@ class Application_Service_Reports {
 			$firstSheetHeading = array('Tab Name', 'Description');
 			$firstSheetColNo = 0;
 			$firstSheetRow = 1;
-	
+
 			$firstSheetStyle = array(
 				'alignment' => array(
 				//'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
@@ -1382,7 +1382,7 @@ class Application_Service_Reports {
 					),
 				)
 			);
-	
+
 			foreach ($firstSheetHeading as $value) {
 				$firstSheet->getCellByColumnAndRow($firstSheetColNo, $firstSheetRow)->setValueExplicit(html_entity_decode($value, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 				$firstSheet->getStyleByColumnAndRow($firstSheetColNo, $firstSheetRow)->getFont()->setBold(true);
@@ -1390,56 +1390,56 @@ class Application_Service_Reports {
 				$firstSheet->getStyle($cellName . $firstSheetRow)->applyFromArray($firstSheetStyle);
 				$firstSheetColNo++;
 			}
-	
+
 			$firstSheet->getCellByColumnAndRow(0, 2)->setValueExplicit(html_entity_decode("Participant List", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 			$firstSheet->getCellByColumnAndRow(1, 2)->setValueExplicit(html_entity_decode("Includes dropdown lists for the following: region, department, position, RT, ELISA, received logbook", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-	
+
 			$firstSheet->getDefaultRowDimension()->setRowHeight(10);
 			$firstSheet->getColumnDimensionByColumn(0)->setWidth(20);
 			$firstSheet->getDefaultRowDimension(1)->setRowHeight(70);
 			$firstSheet->getColumnDimensionByColumn(1)->setWidth(100);
-	
+
 			$firstSheet->getCellByColumnAndRow(0, 3)->setValueExplicit(html_entity_decode("Results Reported", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 			$firstSheet->getCellByColumnAndRow(1, 3)->setValueExplicit(html_entity_decode("This tab should include no commentary from NPHRL or GHSS staff.  All fields should only reflect results or comments reported on the results form.  If no report was submitted, highlight site data cells in red.  Explanation of missing results should only be comments that the site made, not PT staff.  All dates should be formatted as DD/MM/YY.  Dropdown menu legend is as followed: negative (NEG), positive (POS), invalid (INV), indeterminate (IND), not entered or reported (NE), not tested (NT) and should be used according to the way the site reported it.", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-	
+
 			$firstSheet->getCellByColumnAndRow(0, 4)->setValueExplicit(html_entity_decode("Panel Score", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 			$firstSheet->getCellByColumnAndRow(1, 4)->setValueExplicit(html_entity_decode("This tab is automatically populated.  Panel score calculated 6/6.  If a panel member must be omitted from the calculation (ie, loss of sample, etc) you must revise the equation manually by changing the number 6 to 5,4,etc. accordingly. Example seen for Akai House Clinic.", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-	
+
 			$firstSheet->getCellByColumnAndRow(0, 5)->setValueExplicit(html_entity_decode("Documentation Score", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 			$firstSheet->getCellByColumnAndRow(1, 5)->setValueExplicit(html_entity_decode("The points breakdown for this tab are listed in the row above the sites for each column.  Data should be entered in manually by PT staff.  A site scores 1.5/3 if they used the wrong test kits got a 100% panel score.", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-	
+
 			$firstSheet->getCellByColumnAndRow(0, 6)->setValueExplicit(html_entity_decode("Total Score", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 			$firstSheet->getCellByColumnAndRow(1, 6)->setValueExplicit(html_entity_decode("Columns C-F are populated automatically.  Columns G, H and I must be selected from the dropdown menu for each site based on the criteria listed in the 'Decision Tree' tab.", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-	
+
 			$firstSheet->getCellByColumnAndRow(0, 7)->setValueExplicit(html_entity_decode("Follow-up Calls", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 			$firstSheet->getCellByColumnAndRow(1, 7)->setValueExplicit(html_entity_decode("Final comments or outcomes should be updated continuously with receipt dates included.", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-	
+
 			$firstSheet->getCellByColumnAndRow(0, 8)->setValueExplicit(html_entity_decode("Dropdown Lists", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 			$firstSheet->getCellByColumnAndRow(1, 8)->setValueExplicit(html_entity_decode("This tab contains all of the dropdown lists included in the rest of the database, any modifications should be performed with caution.", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-	
+
 			$firstSheet->getCellByColumnAndRow(0, 9)->setValueExplicit(html_entity_decode("Decision Tree", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 			$firstSheet->getCellByColumnAndRow(1, 9)->setValueExplicit(html_entity_decode("Lists all of the appropriate corrective actions and scoring critieria.", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-	
+
 			$firstSheet->getCellByColumnAndRow(0, 10)->setValueExplicit(html_entity_decode("Feedback Report", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 			$firstSheet->getCellByColumnAndRow(1, 10)->setValueExplicit(html_entity_decode("This tab is populated automatically and used to export data into the Feedback Reports generated in MS Word.", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-	
+
 			$firstSheet->getCellByColumnAndRow(0, 11)->setValueExplicit(html_entity_decode("Comments", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 			$firstSheet->getCellByColumnAndRow(1, 11)->setValueExplicit(html_entity_decode("This tab lists all of the more detailed comments that will be given to the sites during site visits and phone calls.", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-	
-	
+
+
 			for ($counter = 1; $counter <= 11; $counter++) {
 				$firstSheet->getStyleByColumnAndRow(1, $counter)->getAlignment()->setWrapText(true);
 				$firstSheet->getStyle("A$counter")->applyFromArray($firstSheetStyle);
 				$firstSheet->getStyle("B$counter")->applyFromArray($firstSheetStyle);
 			}
 			//<------------ Participant List Details Start -----
-	
+
 			$headings = array('Facility Code', 'Facility Name', 'Region', 'Current Department', 'Site Type', 'Address', 'Facility Telephone', 'Email', 'Enroll Date');
-	
+
 			$sheet = new PHPExcel_Worksheet($excel, 'Participant List');
 			$excel->addSheet($sheet, 1);
 			$sheet->setTitle('Participant List');
-	
+
 			$sql = $db->select()->from(array('s' => 'shipment'), array('s.shipment_id', 's.shipment_code', 's.number_of_samples'))
 					->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array('sp.map_id', 'sp.participant_id', 'sp.attributes', 'sp.shipment_test_date', 'sp.shipment_receipt_date', 'sp.shipment_test_report_date', 'sp.supervisor_approval','sp.participant_supervisor', 'sp.shipment_score', 'sp.documentation_score', 'sp.user_comment'))
 					->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array('p.unique_identifier', 'p.institute_name', 'p.department_name', 'p.region', 'p.first_name', 'p.last_name', 'p.address', 'p.city', 'p.mobile', 'p.email', 'p.status'))
@@ -1459,7 +1459,7 @@ class Application_Service_Reports {
 			//$sheet->getStyleByColumnAndRow(0,1)->getFont()->setBold(true);
 			$sheet->getDefaultColumnDimension()->setWidth(24);
 			$sheet->getDefaultRowDimension()->setRowHeight(18);
-	
+
 			foreach ($headings as $field => $value) {
 				$sheet->getCellByColumnAndRow($colNo, $currentRow)->setValueExplicit(html_entity_decode($value, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 				$sheet->getStyleByColumnAndRow($colNo, $currentRow)->getFont()->setBold(true);
@@ -1467,7 +1467,7 @@ class Application_Service_Reports {
 				$sheet->getStyle($cellName . $currentRow)->applyFromArray($borderStyle);
 				$colNo++;
 			}
-	
+
 			if (isset($shipmentResult) && count($shipmentResult) > 0) {
 				$currentRow+=1;
 				foreach ($shipmentResult as $key => $aRow) {
@@ -1483,8 +1483,8 @@ class Application_Service_Reports {
 								->where("rrdts.shipment_map_id = ?", $aRow['map_id']);
 						$shipmentResult[$key]['response'] = $db->fetchAll($resQuery);
 					}
-	
-	
+
+
 					$sheet->getCellByColumnAndRow(0, $currentRow)->setValueExplicit(ucwords($aRow['unique_identifier']), PHPExcel_Cell_DataType::TYPE_STRING);
 					$sheet->getCellByColumnAndRow(1, $currentRow)->setValueExplicit($aRow['first_name'] . $aRow['last_name'], PHPExcel_Cell_DataType::TYPE_STRING);
 					$sheet->getCellByColumnAndRow(2, $currentRow)->setValueExplicit($aRow['region'], PHPExcel_Cell_DataType::TYPE_STRING);
@@ -1494,12 +1494,12 @@ class Application_Service_Reports {
 					$sheet->getCellByColumnAndRow(6, $currentRow)->setValueExplicit($aRow['mobile'], PHPExcel_Cell_DataType::TYPE_STRING);
 					$sheet->getCellByColumnAndRow(7, $currentRow)->setValueExplicit($aRow['email'], PHPExcel_Cell_DataType::TYPE_STRING);
 					$sheet->getCellByColumnAndRow(8, $currentRow)->setValueExplicit($aRow['enrolled_on'], PHPExcel_Cell_DataType::TYPE_STRING);
-	
+
 					for ($i = 0; $i <= 8; $i++) {
 						$cellName = $sheet->getCellByColumnAndRow($i, $currentRow)->getColumn();
 						$sheet->getStyle($cellName . $currentRow)->applyFromArray($borderStyle);
 					}
-	
+
 					$currentRow++;
                     $fileSafeShipmentCode = str_replace(array_merge(
                         array_map('chr', range(0, 31)),
@@ -1507,11 +1507,11 @@ class Application_Service_Reports {
                     ), '', $aRow['shipment_code']);
 				}
 			}
-	
+
 			//------------- Participant List Details End ------>
 			//<-------- Second sheet start
 			$reportHeadings = array('Facility Code', 'Facility Name', 'Point of Contact', 'Region', 'Shipment Receipt Date', 'Sample Rehydration Date', 'Testing Date', 'Test#1 Name', 'Kit Lot #', 'Exp Date');
-	
+
 			if ($result['scheme_type'] == 'dts') {
 				$reportHeadings = $this->addSampleNameInArray($shipmentId, $reportHeadings);
 				array_push($reportHeadings, 'Test#2 Name', 'Kit Lot #', 'Exp Date');
@@ -1521,41 +1521,41 @@ class Application_Service_Reports {
 				$reportHeadings = $this->addSampleNameInArray($shipmentId, $reportHeadings);
 				array_push($reportHeadings, 'Comments');
 			}
-	
+
 			$sheet = new PHPExcel_Worksheet($excel, 'Results Reported');
 			$excel->addSheet($sheet, 2);
 			$sheet->setTitle('Results Reported');
 			$sheet->getDefaultColumnDimension()->setWidth(24);
 			$sheet->getDefaultRowDimension()->setRowHeight(18);
-	
-	
+
+
 			$colNo = 0;
 			$currentRow = 2;
 			$n = count($reportHeadings);
 			$finalResColoumn = $n - ($result['number_of_samples'] + 1);
 			$c = 1;
 			$endMergeCell = ($finalResColoumn + $result['number_of_samples']) - 1;
-	
+
 			$firstCellName = $sheet->getCellByColumnAndRow($finalResColoumn, 1)->getColumn();
 			$secondCellName = $sheet->getCellByColumnAndRow($endMergeCell, 1)->getColumn();
 			$sheet->mergeCells($firstCellName . "1:" . $secondCellName . "1");
 			$sheet->getStyle($firstCellName . "1")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB('#00FF00');
 			$sheet->getStyle($firstCellName . "1")->applyFromArray($borderStyle);
 			$sheet->getStyle($secondCellName . "1")->applyFromArray($borderStyle);
-	
+
 			foreach ($reportHeadings as $field => $value) {
-	
+
 				$sheet->getCellByColumnAndRow($colNo, $currentRow)->setValueExplicit(html_entity_decode($value, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 				$sheet->getStyleByColumnAndRow($colNo, $currentRow)->getFont()->setBold(true);
 				$cellName = $sheet->getCellByColumnAndRow($colNo, $currentRow)->getColumn();
 				$sheet->getStyle($cellName . $currentRow)->applyFromArray($borderStyle);
-	
+
 				$cellName = $sheet->getCellByColumnAndRow($colNo, 3)->getColumn();
 				$sheet->getStyle($cellName . "3")->applyFromArray($borderStyle);
-	
+
 				if ($colNo >= $finalResColoumn) {
 					if ($c <= $result['number_of_samples']) {
-	
+
 						$sheet->getCellByColumnAndRow($colNo, 1)->setValueExplicit(html_entity_decode("Final Results", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 						$cellName = $sheet->getCellByColumnAndRow($colNo, $currentRow)->getColumn();
 						$sheet->getStyle($cellName . $currentRow)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB('#00FF00');
@@ -1566,19 +1566,19 @@ class Application_Service_Reports {
 				}
 				$sheet->getStyle($cellName . '3')->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB('FFA0A0A0');
 				$sheet->getStyle($cellName . '3')->getFont()->getColor()->setARGB('FFFFFF00');
-	
+
 				$colNo++;
 			}
-	
+
 			$sheet->getStyle("A2")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB('FFFFFF00');
 			$sheet->getStyle("B2")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB('FFFFFF00');
 			$sheet->getStyle("C2")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB('FFFFFF00');
 			$sheet->getStyle("D2")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB('FFFFFF00');
-	
+
 			//$sheet->getStyle("D2")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB('#A7A7A7');
 			//$sheet->getStyle("E2")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB('#A7A7A7');
 			//$sheet->getStyle("F2")->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB('#A7A7A7');
-	
+
 			$cellName = $sheet->getCellByColumnAndRow($n, 3)->getColumn();
 			//$sheet->getStyle('A3:'.$cellName.'3')->getFill()->setFillType(\PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB('#969696');
 			//$sheet->getStyle('A3:'.$cellName.'3')->applyFromArray($borderStyle);
@@ -1600,32 +1600,32 @@ class Application_Service_Reports {
 				$sheetThree->getStyleByColumnAndRow($sheetThreeColNo, $sheetThreeRow)->getFont()->setBold(true);
 				$cellName = $sheetThree->getCellByColumnAndRow($sheetThreeColNo, $sheetThreeRow)->getColumn();
 				$sheetThree->getStyle($cellName . $sheetThreeRow)->applyFromArray($borderStyle);
-	
+
 				if ($sheetThreeHK > 1 && $sheetThreeHK <= $sheetThreeColor) {
 					$cellName = $sheetThree->getCellByColumnAndRow($sheetThreeColNo, $sheetThreeRow)->getColumn();
 					$sheetThree->getStyle($cellName . $sheetThreeRow)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB('#00FF00');
 				}
-	
+
 				$sheetThreeColNo++;
 			}
 			//---------- Sheet Three heading ------->
 			//<-------- Document Score Sheet Heading (Sheet Four)-------
-	
+
 			if ($result['scheme_type'] == 'dts') {
 				$file = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini";
 				$config = new Zend_Config_Ini($file, APPLICATION_ENV);
 				$documentationScorePerItem = ($config->evaluation->dts->documentationScore / 5);
 			}
-	
+
 			$docScoreSheet = new PHPExcel_Worksheet($excel, 'Documentation Score');
 			$excel->addSheet($docScoreSheet, 4);
 			$docScoreSheet->setTitle('Documentation Score');
 			$docScoreSheet->getDefaultColumnDimension()->setWidth(20);
 			//$docScoreSheet->getDefaultRowDimension()->setRowHeight(20);
 			$docScoreSheet->getDefaultRowDimension('G')->setRowHeight(25);
-	
+
 			$docScoreHeadings = array('Facility Code', 'Facility Name', 'Supervisor signature', 'Panel Receipt Date' ,'Rehydration Date', 'Tested Date', 'Rehydration Test In Specified Time', 'Documentation Score %');
-	
+
 			$docScoreSheetCol = 0;
 			$docScoreRow = 1;
 			$docScoreHeadingsCount = count($docScoreHeadings);
@@ -1643,9 +1643,9 @@ class Application_Service_Reports {
 			$docScoreSheet->getStyleByColumnAndRow(1, $docScoreRow)->getFont()->setBold(true);
 			$cellName = $secondRowcellName->getColumn();
 			$docScoreSheet->getStyle($cellName . $docScoreRow)->applyFromArray($borderStyle);
-	
+
 			for ($r = 2; $r <= 7; $r++) {
-	
+
 				$secondRowcellName = $docScoreSheet->getCellByColumnAndRow($r, $docScoreRow);
 				if ($r != 7) {
 					$secondRowcellName->setValueExplicit(html_entity_decode($documentationScorePerItem, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
@@ -1654,18 +1654,18 @@ class Application_Service_Reports {
 				$cellName = $secondRowcellName->getColumn();
 				$docScoreSheet->getStyle($cellName . $docScoreRow)->applyFromArray($borderStyle);
 			}
-	
+
 			//---------- Document Score Sheet Heading (Sheet Four)------->
 			//<-------- Total Score Sheet Heading (Sheet Four)-------
-	
-	
+
+
 			$totalScoreSheet = new PHPExcel_Worksheet($excel, 'Total Score');
 			$excel->addSheet($totalScoreSheet, 5);
 			$totalScoreSheet->setTitle('Total Score');
 			$totalScoreSheet->getDefaultColumnDimension()->setWidth(20);
 			$totalScoreSheet->getDefaultRowDimension(1)->setRowHeight(30);
 			$totalScoreHeadings = array('Facility Code', 'Facility Name', 'No.of Panels Correct(N=' . $result['number_of_samples'] . ')', 'Panel Score(100% Conv.)', 'Panel Score(90% Conv.)', 'Documentation Score(100% Conv.)', 'Documentation Score(10% Conv.)', 'Total Score', 'Overall Performance', 'Comments', 'Comments2', 'Comments3', 'Corrective Action');
-	
+
 			$totScoreSheetCol = 0;
 			$totScoreRow = 1;
 			$totScoreHeadingsCount = count($totalScoreHeadings);
@@ -1677,17 +1677,17 @@ class Application_Service_Reports {
 				$totalScoreSheet->getStyleByColumnAndRow($totScoreSheetCol, $totScoreRow)->getAlignment()->setWrapText(true);
 				$totScoreSheetCol++;
 			}
-	
+
 			//---------- Document Score Sheet Heading (Sheet Four)------->
-	
+
 			$ktr = 9;
-			$kitId = 7; //Test Kit coloumn count 
+			$kitId = 7; //Test Kit coloumn count
 			if (isset($refResult) && count($refResult) > 0) {
 				foreach ($refResult as $keyv => $row) {
 					$keyv = $keyv + 1;
 					$ktr = $ktr + $keyv;
 					if (count($row['kitReference']) > 0) {
-	
+
 						if ($keyv == 1) {
 							//In Excel Third row added the Test kit name1,kit lot,exp date
 							if (trim($row['kitReference'][0]['expiry_date']) != "") {
@@ -1696,7 +1696,7 @@ class Application_Service_Reports {
 							$sheet->getCellByColumnAndRow($kitId++, 3)->setValueExplicit($row['kitReference'][0]['testKitName'], PHPExcel_Cell_DataType::TYPE_STRING);
 							$sheet->getCellByColumnAndRow($kitId++, 3)->setValueExplicit($row['kitReference'][0]['lot_no'], PHPExcel_Cell_DataType::TYPE_STRING);
 							$sheet->getCellByColumnAndRow($kitId++, 3)->setValueExplicit($row['kitReference'][0]['expiry_date'], PHPExcel_Cell_DataType::TYPE_STRING);
-	
+
 							$kitId = $kitId + $aRow['number_of_samples'];
 							if (isset($row['kitReference'][1]['referenceKitResult'])) {
 								//In Excel Third row added the Test kit name2,kit lot,exp date
@@ -1718,10 +1718,10 @@ class Application_Service_Reports {
 								$sheet->getCellByColumnAndRow($kitId++, 3)->setValueExplicit($row['kitReference'][2]['expiry_date'], PHPExcel_Cell_DataType::TYPE_STRING);
 							}
 						}
-	
+
 						$sheet->getCellByColumnAndRow($ktr, 3)->setValueExplicit($row['kitReference'][0]['referenceKitResult'], PHPExcel_Cell_DataType::TYPE_STRING);
 						$ktr = ($aRow['number_of_samples'] - $keyv) + $ktr + 3;
-	
+
 						if (isset($row['kitReference'][1]['referenceKitResult'])) {
 							$ktr = $ktr + $keyv;
 							$sheet->getCellByColumnAndRow($ktr, 3)->setValueExplicit($row['kitReference'][1]['referenceKitResult'], PHPExcel_Cell_DataType::TYPE_STRING);
@@ -1735,13 +1735,13 @@ class Application_Service_Reports {
 					$ktr = 9;
 				}
 			}
-	
+
 			$currentRow = 4;
 			$sheetThreeRow = 2;
 			$docScoreRow = 3;
 			$totScoreRow = 2;
 			if (isset($shipmentResult) && count($shipmentResult) > 0) {
-	
+
 				foreach ($shipmentResult as $aRow) {
 					$r = 0;
 					$k = 0;
@@ -1751,7 +1751,7 @@ class Application_Service_Reports {
 					$docScoreCol = 0;
 					$totScoreCol = 0;
 					$countCorrectResult = 0;
-	
+
 					$colCellObj = $sheet->getCellByColumnAndRow($r++, $currentRow);
 					$colCellObj->setValueExplicit(ucwords($aRow['unique_identifier']), PHPExcel_Cell_DataType::TYPE_STRING);
 					$cellName = $colCellObj->getColumn();
@@ -1768,57 +1768,57 @@ class Application_Service_Reports {
                         $sampleRehydrationDate = Application_Service_Common::ParseDateISO8601($attributes['sample_rehydration_date']);
                         $rehydrationDate = Application_Service_Common::ParseDateExcel($attributes["sample_rehydration_date"]);
 					}
-	
+
 					$sheet->getCellByColumnAndRow($r++, $currentRow)->setValueExplicit($aRow['shipment_receipt_date'], PHPExcel_Cell_DataType::TYPE_STRING);
 					$sheet->getCellByColumnAndRow($r++, $currentRow)->setValueExplicit($rehydrationDate, PHPExcel_Cell_DataType::TYPE_STRING);
 					$sheet->getCellByColumnAndRow($r++, $currentRow)->setValueExplicit($shipmentTestDate, PHPExcel_Cell_DataType::TYPE_STRING);
-	
-	
-	
+
+
+
 					$sheetThree->getCellByColumnAndRow($sheetThreeCol++, $sheetThreeRow)->setValueExplicit(ucwords($aRow['unique_identifier']), PHPExcel_Cell_DataType::TYPE_STRING);
 					$sheetThree->getCellByColumnAndRow($sheetThreeCol++, $sheetThreeRow)->setValueExplicit($aRow['first_name'] . $aRow['last_name'], PHPExcel_Cell_DataType::TYPE_STRING);
-	
+
 					//<-------------Document score sheet------------
-	
+
 					$docScoreSheet->getCellByColumnAndRow($docScoreCol++, $docScoreRow)->setValueExplicit(ucwords($aRow['unique_identifier']), PHPExcel_Cell_DataType::TYPE_STRING);
 					$docScoreSheet->getCellByColumnAndRow($docScoreCol++, $docScoreRow)->setValueExplicit($aRow['first_name'] . $aRow['last_name'], PHPExcel_Cell_DataType::TYPE_STRING);
-	
+
 					if (isset($shipmentReceiptDate) && trim($shipmentReceiptDate) != "") {
 						$docScoreSheet->getCellByColumnAndRow($docScoreCol++, $docScoreRow)->setValueExplicit($documentationScorePerItem, PHPExcel_Cell_DataType::TYPE_STRING);
 					} else {
 						$docScoreSheet->getCellByColumnAndRow($docScoreCol++, $docScoreRow)->setValueExplicit(0, PHPExcel_Cell_DataType::TYPE_STRING);
 					}
-	
+
 					if (isset($aRow['supervisor_approval']) && strtolower($aRow['supervisor_approval']) == 'yes' && isset($aRow['participant_supervisor']) && trim($aRow['participant_supervisor']) != "") {
 						$docScoreSheet->getCellByColumnAndRow($docScoreCol++, $docScoreRow)->setValueExplicit($documentationScorePerItem, PHPExcel_Cell_DataType::TYPE_STRING);
 					} else {
 						$docScoreSheet->getCellByColumnAndRow($docScoreCol++, $docScoreRow)->setValueExplicit(0, PHPExcel_Cell_DataType::TYPE_STRING);
 					}
-	
+
 					if (isset($rehydrationDate) && trim($rehydrationDate) != "") {
 						$docScoreSheet->getCellByColumnAndRow($docScoreCol++, $docScoreRow)->setValueExplicit($documentationScorePerItem, PHPExcel_Cell_DataType::TYPE_STRING);
 					} else {
 						$docScoreSheet->getCellByColumnAndRow($docScoreCol++, $docScoreRow)->setValueExplicit(0, PHPExcel_Cell_DataType::TYPE_STRING);
 					}
-	
+
 					if ($shipmentTestDate != "") {
 						$docScoreSheet->getCellByColumnAndRow($docScoreCol++, $docScoreRow)->setValueExplicit($documentationScorePerItem, PHPExcel_Cell_DataType::TYPE_STRING);
 					} else {
 						$docScoreSheet->getCellByColumnAndRow($docScoreCol++, $docScoreRow)->setValueExplicit(0, PHPExcel_Cell_DataType::TYPE_STRING);
 					}
-	
+
 					if (isset($sampleRehydrationDate) && $shipmentTestDate != "") {
 						$config = new Zend_Config_Ini(APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini", APPLICATION_ENV);
 						$sampleRehydrationDate = new DateTime($attributes['sample_rehydration_date']);
 						$testedOnDate = new DateTime($aRow['shipment_test_date']);
 						$interval = $sampleRehydrationDate->diff($testedOnDate);
-						
+
 						// Testing should be done within 24*($config->evaluation->dts->sampleRehydrateDays) hours of rehydration.
 						$sampleRehydrateDays = $config->evaluation->dts->sampleRehydrateDays;
 						$rehydrateHours = $sampleRehydrateDays*24;
-			
+
 						if ($interval->days > $sampleRehydrateDays) {
-						
+
 							$docScoreSheet->getCellByColumnAndRow($docScoreCol++, $docScoreRow)->setValueExplicit(0, PHPExcel_Cell_DataType::TYPE_STRING);
 						} else {
 							$docScoreSheet->getCellByColumnAndRow($docScoreCol++, $docScoreRow)->setValueExplicit($documentationScorePerItem, PHPExcel_Cell_DataType::TYPE_STRING);
@@ -1826,20 +1826,20 @@ class Application_Service_Reports {
 					} else {
 						$docScoreSheet->getCellByColumnAndRow($docScoreCol++, $docScoreRow)->setValueExplicit(0, PHPExcel_Cell_DataType::TYPE_STRING);
 					}
-	
+
 					$documentScore = (($aRow['documentation_score'] / $config->evaluation->dts->documentationScore) * 100);
 					$docScoreSheet->getCellByColumnAndRow($docScoreCol++, $docScoreRow)->setValueExplicit($documentScore, PHPExcel_Cell_DataType::TYPE_STRING);
-	
+
 					//-------------Document score sheet------------>
 					//<------------ Total score sheet ------------
-	
+
 					$totalScoreSheet->getCellByColumnAndRow($totScoreCol++, $totScoreRow)->setValueExplicit(ucwords($aRow['unique_identifier']), PHPExcel_Cell_DataType::TYPE_STRING);
 					$totalScoreSheet->getCellByColumnAndRow($totScoreCol++, $totScoreRow)->setValueExplicit($aRow['first_name'] . $aRow['last_name'], PHPExcel_Cell_DataType::TYPE_STRING);
-	
+
 					//------------ Total score sheet ------------>
 					//Zend_Debug::dump($aRow['response']);
 					if (count($aRow['response']) > 0) {
-	
+
 						if (isset($aRow['response'][0]['exp_date_1']) && trim($aRow['response'][0]['exp_date_1']) != "") {
 							$aRow['response'][0]['exp_date_1'] = Application_Service_Common::ParseDateExcel($aRow['response'][0]['exp_date_1']);
 						}
@@ -1849,11 +1849,11 @@ class Application_Service_Reports {
 						if (isset($aRow['response'][0]['exp_date_3']) && trim($aRow['response'][0]['exp_date_3']) != "") {
 							$aRow['response'][0]['exp_date_3'] = Application_Service_Common::ParseDateExcel($aRow['response'][0]['exp_date_3']);
 						}
-	
+
 						$sheet->getCellByColumnAndRow($r++, $currentRow)->setValueExplicit($aRow['response'][0]['testKitName1'], PHPExcel_Cell_DataType::TYPE_STRING);
 						$sheet->getCellByColumnAndRow($r++, $currentRow)->setValueExplicit($aRow['response'][0]['lot_no_1'], PHPExcel_Cell_DataType::TYPE_STRING);
 						$sheet->getCellByColumnAndRow($r++, $currentRow)->setValueExplicit($aRow['response'][0]['exp_date_1'], PHPExcel_Cell_DataType::TYPE_STRING);
-	
+
 						for ($k = 0; $k < $aRow['number_of_samples']; $k++) {
 							//$row[] = $aRow[$k]['testResult1'];
 							$sheet->getCellByColumnAndRow($r++, $currentRow)->setValueExplicit($aRow['response'][$k]['testResult1'], PHPExcel_Cell_DataType::TYPE_STRING);
@@ -1861,7 +1861,7 @@ class Application_Service_Reports {
 						$sheet->getCellByColumnAndRow($r++, $currentRow)->setValueExplicit($aRow['response'][0]['testKitName2'], PHPExcel_Cell_DataType::TYPE_STRING);
 						$sheet->getCellByColumnAndRow($r++, $currentRow)->setValueExplicit($aRow['response'][0]['lot_no_2'], PHPExcel_Cell_DataType::TYPE_STRING);
 						$sheet->getCellByColumnAndRow($r++, $currentRow)->setValueExplicit($aRow['response'][0]['exp_date_2'], PHPExcel_Cell_DataType::TYPE_STRING);
-	
+
 						for ($k = 0; $k < $aRow['number_of_samples']; $k++) {
 							//$row[] = $aRow[$k]['testResult2'];
 							$sheet->getCellByColumnAndRow($r++, $currentRow)->setValueExplicit($aRow['response'][$k]['testResult2'], PHPExcel_Cell_DataType::TYPE_STRING);
@@ -1869,85 +1869,85 @@ class Application_Service_Reports {
 						$sheet->getCellByColumnAndRow($r++, $currentRow)->setValueExplicit($aRow['response'][0]['testKitName3'], PHPExcel_Cell_DataType::TYPE_STRING);
 						$sheet->getCellByColumnAndRow($r++, $currentRow)->setValueExplicit($aRow['response'][0]['lot_no_3'], PHPExcel_Cell_DataType::TYPE_STRING);
 						$sheet->getCellByColumnAndRow($r++, $currentRow)->setValueExplicit($aRow['response'][0]['exp_date_3'], PHPExcel_Cell_DataType::TYPE_STRING);
-	
+
 						for ($k = 0; $k < $aRow['number_of_samples']; $k++) {
 							//$row[] = $aRow[$k]['testResult3'];
 							$sheet->getCellByColumnAndRow($r++, $currentRow)->setValueExplicit($aRow['response'][$k]['testResult3'], PHPExcel_Cell_DataType::TYPE_STRING);
 						}
-	
+
 						for ($k = 0; $k < $aRow['number_of_samples']; $k++) {
 							//$row[] = $aRow[$k]['finalResult'];
 							$sheet->getCellByColumnAndRow($r++, $currentRow)->setValueExplicit($aRow['response'][$k]['finalResult'], PHPExcel_Cell_DataType::TYPE_STRING);
-	
+
 							$sheetThree->getCellByColumnAndRow($sheetThreeCol++, $sheetThreeRow)->setValueExplicit($aRow['response'][$k]['finalResult'], PHPExcel_Cell_DataType::TYPE_STRING);
 							if (isset($aRow['response'][$k]['calculated_score']) && $aRow['response'][$k]['calculated_score'] == 'Pass' && $aRow['response'][$k]['sample_id'] == $refResult[$k]['sample_id']) {
 								$countCorrectResult++;
 							}
 						}
 						$sheet->getCellByColumnAndRow($r++, $currentRow)->setValueExplicit($aRow['user_comment'], PHPExcel_Cell_DataType::TYPE_STRING);
-	
+
 						$sheetThree->getCellByColumnAndRow($sheetThreeCol++, $sheetThreeRow)->setValueExplicit($countCorrectResult, PHPExcel_Cell_DataType::TYPE_STRING);
-	
+
 						$totPer = round((($countCorrectResult / $aRow['number_of_samples']) * 100), 2);
 						$sheetThree->getCellByColumnAndRow($sheetThreeCol++, $sheetThreeRow)->setValueExplicit($totPer, PHPExcel_Cell_DataType::TYPE_STRING);
-	
+
 						$totalScoreSheet->getCellByColumnAndRow($totScoreCol++, $totScoreRow)->setValueExplicit($countCorrectResult, PHPExcel_Cell_DataType::TYPE_STRING);
 						$totalScoreSheet->getCellByColumnAndRow($totScoreCol++, $totScoreRow)->setValueExplicit($totPer, PHPExcel_Cell_DataType::TYPE_STRING);
-	
+
 						$totalScoreSheet->getCellByColumnAndRow($totScoreCol++, $totScoreRow)->setValueExplicit(($totPer * 0.9), PHPExcel_Cell_DataType::TYPE_STRING);
 					}
 					$totalScoreSheet->getCellByColumnAndRow($totScoreCol++, $totScoreRow)->setValueExplicit($documentScore, PHPExcel_Cell_DataType::TYPE_STRING);
 					$totalScoreSheet->getCellByColumnAndRow($totScoreCol++, $totScoreRow)->setValueExplicit($aRow['documentation_score'], PHPExcel_Cell_DataType::TYPE_STRING);
 					$totalScoreSheet->getCellByColumnAndRow($totScoreCol++, $totScoreRow)->setValueExplicit(($aRow['shipment_score'] + $aRow['documentation_score']), PHPExcel_Cell_DataType::TYPE_STRING);
-	
+
 					for ($i = 0; $i < $panelScoreHeadingCount; $i++) {
 						$cellName = $sheetThree->getCellByColumnAndRow($i, $sheetThreeRow)->getColumn();
 						$sheetThree->getStyle($cellName . $sheetThreeRow)->applyFromArray($borderStyle);
 					}
-	
+
 					for ($i = 0; $i < $n; $i++) {
 						$cellName = $sheet->getCellByColumnAndRow($i, $currentRow)->getColumn();
 						$sheet->getStyle($cellName . $currentRow)->applyFromArray($borderStyle);
 					}
-	
+
 					for ($i = 0; $i < $docScoreHeadingsCount; $i++) {
 						$cellName = $docScoreSheet->getCellByColumnAndRow($i, $docScoreRow)->getColumn();
 						$docScoreSheet->getStyle($cellName . $docScoreRow)->applyFromArray($borderStyle);
 					}
-	
+
 					for ($i = 0; $i < $totScoreHeadingsCount; $i++) {
 						$cellName = $totalScoreSheet->getCellByColumnAndRow($i, $totScoreRow)->getColumn();
 						$totalScoreSheet->getStyle($cellName . $totScoreRow)->applyFromArray($borderStyle);
 					}
-	
+
 					$currentRow++;
-	
+
 					$sheetThreeRow++;
 					$docScoreRow++;
 					$totScoreRow++;
 				}
 			}
-	
+
 			//----------- Second Sheet End----->
 			$excel->setActiveSheetIndex(0);
-	
+
 			$writer = PHPExcel_IOFactory::createWriter($excel, 'Excel5');
 			$filename = $fileSafeShipmentCode . '-' . date('d-M-Y-H-i-s') . '.xls';
 			$writer->save(UPLOAD_PATH . DIRECTORY_SEPARATOR . $filename);
 			return $filename;
-		
+
 
 	}
 
 	public function generateDtsViralLoadExcelReport($shipmentId){
-		
+
 			$db = Zend_Db_Table_Abstract::getDefaultAdapter();
-	
+
 			$excel = new PHPExcel();
-	
+
 			$cacheMethod = PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp;
 			$cacheSettings = array('memoryCacheSize' => '180MB');
-	
+
 			$styleArray = array(
 				'font' => array(
 					'bold' => true,
@@ -1962,7 +1962,7 @@ class Application_Service_Reports {
 					),
 				)
 			);
-			
+
 			$boldStyleArray = array(
 				'font' => array(
 					'bold' => true,
@@ -1972,7 +1972,7 @@ class Application_Service_Reports {
 					'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER,
 				)
 			);
-			
+
 			$borderStyle = array(
 				'font' => array(
 					'bold' => true,
@@ -1997,28 +1997,28 @@ class Application_Service_Reports {
 					),
 				)
 			);
-			
-	
+
+
 			$query = $db->select()->from('shipment')
 					->where("shipment_id = ?", $shipmentId);
 			$result = $db->fetchRow($query);
-	
-			
+
+
 			$refQuery = $db->select()->from(array('refRes' => 'reference_result_vl'))->where("refRes.shipment_id = ?", $shipmentId)->where("refRes.control!=1");
 			$refResult = $db->fetchAll($refQuery);
-			
+
 			$colNamesArray = array();
 			$colNamesArray[] = "Lab ID";
 
 			$firstSheet = new PHPExcel_Worksheet($excel, 'Overall Results');
 			$excel->addSheet($firstSheet, 0);
-			
+
 			$firstSheet->getCellByColumnAndRow(0, 1)->setValueExplicit(html_entity_decode("Lab ID", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 
 			$firstSheet->getStyleByColumnAndRow(0, 1)->applyFromArray($borderStyle);
-			
+
 			$firstSheet->getDefaultRowDimension()->setRowHeight(15);
-			
+
 			$colNameCount = 1;
 			foreach($refResult as $refRow){
 				$colNamesArray[] = $refRow['sample_label'];
@@ -2028,85 +2028,85 @@ class Application_Service_Reports {
 			}
 			$firstSheet->getStyleByColumnAndRow($colNameCount, 1)->applyFromArray($borderStyle);
 			$firstSheet->getCellByColumnAndRow($colNameCount++, 1)->setValueExplicit(html_entity_decode("Date Received", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-			
+
 			$colNamesArray[] = "Date Received";
 			$firstSheet->getStyleByColumnAndRow($colNameCount, 1)->applyFromArray($borderStyle);
 			$firstSheet->getCellByColumnAndRow($colNameCount++, 1)->setValueExplicit(html_entity_decode("Date Tested", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-			
+
 			$colNamesArray[] = "Date Tested";
-			
-			
+
+
 			$firstSheet->getStyleByColumnAndRow($colNameCount, 1)->applyFromArray($borderStyle);
 			$firstSheet->getCellByColumnAndRow($colNameCount++, 1)->setValueExplicit(html_entity_decode("Assay", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 			$colNamesArray[] = "Assay";
-			
+
 			$firstSheet->getStyleByColumnAndRow($colNameCount, 1)->applyFromArray($borderStyle);
-			$firstSheet->getCellByColumnAndRow($colNameCount++, 1)->setValueExplicit(html_entity_decode("Department Name", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);			
+			$firstSheet->getCellByColumnAndRow($colNameCount++, 1)->setValueExplicit(html_entity_decode("Department Name", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 			$colNamesArray[] = "Department Name";
 			$firstSheet->getStyleByColumnAndRow($colNameCount, 1)->applyFromArray($borderStyle);
-			$firstSheet->getCellByColumnAndRow($colNameCount++, 1)->setValueExplicit(html_entity_decode("Region", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);			
+			$firstSheet->getCellByColumnAndRow($colNameCount++, 1)->setValueExplicit(html_entity_decode("Region", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 			$colNamesArray[] = "Region";
 			$firstSheet->getStyleByColumnAndRow($colNameCount, 1)->applyFromArray($borderStyle);
-			$firstSheet->getCellByColumnAndRow($colNameCount++, 1)->setValueExplicit(html_entity_decode("Site Type", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);			
+			$firstSheet->getCellByColumnAndRow($colNameCount++, 1)->setValueExplicit(html_entity_decode("Site Type", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 			$colNamesArray[] = "Site Type";
 			$firstSheet->getStyleByColumnAndRow($colNameCount, 1)->applyFromArray($borderStyle);
-			$firstSheet->getCellByColumnAndRow($colNameCount++, 1)->setValueExplicit(html_entity_decode("Assay Expiration Date", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);			
+			$firstSheet->getCellByColumnAndRow($colNameCount++, 1)->setValueExplicit(html_entity_decode("Assay Expiration Date", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 			$colNamesArray[] = "Assay Expiration Date";
 			$firstSheet->getStyleByColumnAndRow($colNameCount, 1)->applyFromArray($borderStyle);
-			$firstSheet->getCellByColumnAndRow($colNameCount++, 1)->setValueExplicit(html_entity_decode("Assay Lot Number", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);			
+			$firstSheet->getCellByColumnAndRow($colNameCount++, 1)->setValueExplicit(html_entity_decode("Assay Lot Number", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 			$colNamesArray[] = "Assay Lot Number";
 			$firstSheet->getStyleByColumnAndRow($colNameCount, 1)->applyFromArray($borderStyle);
-			$firstSheet->getCellByColumnAndRow($colNameCount++, 1)->setValueExplicit(html_entity_decode("Specimen Volume", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);			
+			$firstSheet->getCellByColumnAndRow($colNameCount++, 1)->setValueExplicit(html_entity_decode("Specimen Volume", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 			$colNamesArray[] = "Specimen Volume";
 			$firstSheet->getStyleByColumnAndRow($colNameCount, 1)->applyFromArray($borderStyle);
 			$firstSheet->getCellByColumnAndRow($colNameCount++, 1)->setValueExplicit(html_entity_decode("Supervisor Name", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-			
+
 			$colNamesArray[] = "Supervisor Name";
 			$firstSheet->getStyleByColumnAndRow($colNameCount, 1)->applyFromArray($borderStyle);
-			$firstSheet->getCellByColumnAndRow($colNameCount++, 1)->setValueExplicit(html_entity_decode("Participant Comment", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);			
+			$firstSheet->getCellByColumnAndRow($colNameCount++, 1)->setValueExplicit(html_entity_decode("Participant Comment", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 			$colNamesArray[] = "Participant Comments";
-			
+
 			$firstSheet->setTitle('OVERALL');
-			
+
 						$queryOverAll = $db->select()->from(array('s'=>'shipment'))
 								->joinLeft(array('spm' => 'shipment_participant_map'),"spm.shipment_id = s.shipment_id")
 								->joinLeft(array('p' => 'participant'),"p.participant_id = spm.participant_id")
 								->joinLeft(array('st'=>'r_site_type'),"st.r_stid=p.site_type")
 								->where("s.shipment_id = ?", $shipmentId);
 			$resultOverAll = $db->fetchAll($queryOverAll);
-			
+
 			$row = 1; // $row 0 is already the column headings
-			
+
 			$schemeService = new Application_Service_Schemes();
 			$assayList = $schemeService->getVlAssay();
-			
+
 			$assayWiseData = array();
-			
+
 			foreach($resultOverAll as $rowOverAll){
 				$row++;
-				
+
 				$queryResponse = $db->select()->from(array('res' => 'response_result_vl'))
 								->where("res.shipment_map_id = ?", $rowOverAll['map_id']);
 				$resultResponse = $db->fetchAll($queryResponse);
-				
+
 				$attributes = json_decode($rowOverAll['attributes'], true);
-				
+
 				if(isset($attributes['other_assay']) && $attributes['other_assay'] != ""){
 					$assayName = "Other - ".$attributes['other_assay'];
 				}else{
-					$assayName = (array_key_exists ($attributes['vl_assay'] , $assayList )) ? $assayList[$attributes['vl_assay']] : "";	
+					$assayName = (array_key_exists ($attributes['vl_assay'] , $assayList )) ? $assayList[$attributes['vl_assay']] : "";
 				}
-				
+
 				$assayExpirationDate = "";
 				if(isset($attributes['assay_expiration_date']) && $attributes['assay_expiration_date'] != ""){
 					$assayExpirationDate = Application_Service_Common::ParseDateHumanFormat($attributes['assay_expiration_date']);
 				}
-				
+
 				$assayLotNumber = "";
 				if(isset($attributes['assay_lot_number']) && $attributes['assay_lot_number'] != ""){
 					$assayLotNumber = ($attributes['assay_lot_number']);
 				}
-				
+
 				$specimenVolume = "";
 				if(isset($attributes['specimen_volume']) && $attributes['specimen_volume'] != ""){
 					$specimenVolume = ($attributes['specimen_volume']);
@@ -2115,10 +2115,10 @@ class Application_Service_Reports {
 				if($attributes['vl_assay'] > 0){
 					$assayWiseData[$attributes['vl_assay']][$rowOverAll['unique_identifier']][] = $rowOverAll['unique_identifier'];
 				}
-				
-				
+
+
 				$firstSheet->getCellByColumnAndRow(0, $row)->setValueExplicit(html_entity_decode($rowOverAll['unique_identifier'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-				
+
 				$col = 1;
 				foreach($resultResponse as $responseRow){
 					$firstSheet->getCellByColumnAndRow($col++, $row)->setValueExplicit(html_entity_decode($responseRow['reported_viral_load'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
@@ -2127,19 +2127,19 @@ class Application_Service_Reports {
 						$assayWiseData[$attributes['vl_assay']][$rowOverAll['unique_identifier']][] = $responseRow['reported_viral_load'];
 					}
 				}
-				
+
 				$receiptDate = Application_Service_Common::ParseDateHumanFormat($rowOverAll['shipment_receipt_date']);
 				$testDate = Application_Service_Common::ParseDateHumanFormat($rowOverAll['shipment_test_date']);
-				$firstSheet->getCellByColumnAndRow($col++, $row)->setValueExplicit(html_entity_decode($receiptDate, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);	
-				$firstSheet->getCellByColumnAndRow($col++, $row)->setValueExplicit(html_entity_decode($testDate, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);	
-				
+				$firstSheet->getCellByColumnAndRow($col++, $row)->setValueExplicit(html_entity_decode($receiptDate, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+				$firstSheet->getCellByColumnAndRow($col++, $row)->setValueExplicit(html_entity_decode($testDate, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+
 				// we are also building the data required for other Assay Sheets
 				if($attributes['vl_assay'] > 0){
 					$assayWiseData[$attributes['vl_assay']][$rowOverAll['unique_identifier']][] = $receiptDate;
 					$assayWiseData[$attributes['vl_assay']][$rowOverAll['unique_identifier']][] = $testDate;
 				}
-				
-				
+
+
 				$firstSheet->getCellByColumnAndRow($col++, $row)->setValueExplicit(html_entity_decode($assayName, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 				$firstSheet->getCellByColumnAndRow($col++, $row)->setValueExplicit(html_entity_decode($rowOverAll['department_name'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 				$firstSheet->getCellByColumnAndRow($col++, $row)->setValueExplicit(html_entity_decode($rowOverAll['region'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
@@ -2148,8 +2148,8 @@ class Application_Service_Reports {
 				$firstSheet->getCellByColumnAndRow($col++, $row)->setValueExplicit(html_entity_decode($assayLotNumber, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 				$firstSheet->getCellByColumnAndRow($col++, $row)->setValueExplicit(html_entity_decode($specimenVolume, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 				$firstSheet->getCellByColumnAndRow($col++, $row)->setValueExplicit(html_entity_decode($rowOverAll['participant_supervisor'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-				$firstSheet->getCellByColumnAndRow($col++, $row)->setValueExplicit(html_entity_decode($rowOverAll['user_comment'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);		
-				
+				$firstSheet->getCellByColumnAndRow($col++, $row)->setValueExplicit(html_entity_decode($rowOverAll['user_comment'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+
 				$assayWiseData[$attributes['vl_assay']][$rowOverAll['unique_identifier']][] = $assayName;
 				$assayWiseData[$attributes['vl_assay']][$rowOverAll['unique_identifier']][] = $rowOverAll['department_name'];
 				$assayWiseData[$attributes['vl_assay']][$rowOverAll['unique_identifier']][] = $rowOverAll['region'];
@@ -2159,31 +2159,31 @@ class Application_Service_Reports {
 				$assayWiseData[$attributes['vl_assay']][$rowOverAll['unique_identifier']][] = $specimenVolume;
 				$assayWiseData[$attributes['vl_assay']][$rowOverAll['unique_identifier']][] = $rowOverAll['participant_supervisor'];
 				$assayWiseData[$attributes['vl_assay']][$rowOverAll['unique_identifier']][] = $rowOverAll['user_comment'];
-				
+
 			}
-			
-			
+
+
 			foreach(range('A','Z') as $columnID) {
 				$firstSheet->getColumnDimension($columnID)
 					->setAutoSize(true);
 			}
 			//Zend_Debug::dump($assayWiseData);die;
-			
+
 			$db = Zend_Db_Table_Abstract::getDefaultAdapter();
 			$assayRes = $db->fetchAll($db->select()->from('r_vl_assay'));
-			
+
 			$countOfVlAssaySheet = 1;
 			foreach($assayRes as $assayRow){
 				$newsheet = new PHPExcel_Worksheet($excel, '');
 				$excel->addSheet($newsheet, $countOfVlAssaySheet);
-				
+
 				$newsheet->getDefaultRowDimension()->setRowHeight(15);
-				
-			
+
+
 				foreach(range('A','Z') as $columnID) {
 					$newsheet->getColumnDimension($columnID)->setAutoSize(true);
 				}
-				
+
 				$i = 0;
 				$startAt = 28;
 				foreach($colNamesArray as $colName){
@@ -2211,7 +2211,7 @@ class Application_Service_Reports {
 				    $newsheet->getCellByColumnAndRow(0, 10)->setValueExplicit(html_entity_decode('CV', ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 				    $newsheet->getCellByColumnAndRow(0, 11)->setValueExplicit(html_entity_decode('Low Limit', ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 				    $newsheet->getCellByColumnAndRow(0, 12)->setValueExplicit(html_entity_decode('High Limit', ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-				    
+
 				    $newsheet->getStyleByColumnAndRow(0, 1)->applyFromArray($boldStyleArray);
 				    $newsheet->getStyleByColumnAndRow(0, 2)->applyFromArray($styleArray);
 				    $newsheet->getStyleByColumnAndRow(0, 3)->applyFromArray($styleArray);
@@ -2224,7 +2224,7 @@ class Application_Service_Reports {
 				    $newsheet->getStyleByColumnAndRow(0, 10)->applyFromArray($styleArray);
 				    $newsheet->getStyleByColumnAndRow(0, 11)->applyFromArray($styleArray);
 				    $newsheet->getStyleByColumnAndRow(0, 12)->applyFromArray($styleArray);
-				    
+
 				    $k = 1;
 				    $manual = array();
 				    foreach($refVlCalci as $calculation){
@@ -2239,7 +2239,7 @@ class Application_Service_Reports {
 					$newsheet->getCellByColumnAndRow($k, 10)->setValueExplicit(html_entity_decode(round($calculation['cv'],4), ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 					$newsheet->getCellByColumnAndRow($k, 11)->setValueExplicit(html_entity_decode(round($calculation['low_limit'],4), ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 					$newsheet->getCellByColumnAndRow($k, 12)->setValueExplicit(html_entity_decode(round($calculation['high_limit'],4), ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-					
+
 					$newsheet->getStyleByColumnAndRow($k, 2)->applyFromArray($vlBorderStyle);
 					$newsheet->getStyleByColumnAndRow($k, 3)->applyFromArray($vlBorderStyle);
 					$newsheet->getStyleByColumnAndRow($k, 4)->applyFromArray($vlBorderStyle);
@@ -2294,7 +2294,7 @@ class Application_Service_Reports {
 					$newsheet->getCellByColumnAndRow(0, 24)->setValueExplicit(html_entity_decode('Manual CV', ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 					$newsheet->getCellByColumnAndRow(0, 25)->setValueExplicit(html_entity_decode('Manual Low Limit', ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 					$newsheet->getCellByColumnAndRow(0, 26)->setValueExplicit(html_entity_decode('Manual High Limit', ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-					
+
 					$newsheet->getStyleByColumnAndRow(0, 15)->applyFromArray($boldStyleArray);
 					$newsheet->getStyleByColumnAndRow(0, 16)->applyFromArray($styleArray);
 					$newsheet->getStyleByColumnAndRow(0, 17)->applyFromArray($styleArray);
@@ -2320,7 +2320,7 @@ class Application_Service_Reports {
 					    $newsheet->getCellByColumnAndRow($k, 24)->setValueExplicit(html_entity_decode(round($calculation['manual_cv'],4), ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 					    $newsheet->getCellByColumnAndRow($k, 25)->setValueExplicit(html_entity_decode(round($calculation['manual_low_limit'],4), ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 					    $newsheet->getCellByColumnAndRow($k, 26)->setValueExplicit(html_entity_decode(round($calculation['manual_high_limit'],4), ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-						
+
 					    $newsheet->getStyleByColumnAndRow($k, 16)->applyFromArray($vlBorderStyle);
 					    $newsheet->getStyleByColumnAndRow($k, 17)->applyFromArray($vlBorderStyle);
 					    $newsheet->getStyleByColumnAndRow($k, 18)->applyFromArray($vlBorderStyle);
@@ -2332,13 +2332,13 @@ class Application_Service_Reports {
 					    $newsheet->getStyleByColumnAndRow($k, 24)->applyFromArray($vlBorderStyle);
 					    $newsheet->getStyleByColumnAndRow($k, 25)->applyFromArray($vlBorderStyle);
 					    $newsheet->getStyleByColumnAndRow($k, 26)->applyFromArray($vlBorderStyle);
-					    
+
 					    $k++;
 					}
 				    }
 				}
 				//
-				
+
 				$assayData = isset($assayWiseData[$assayRow['id']]) ? $assayWiseData[$assayRow['id']] : array();
 				//var_dump($assayData);die;
 				$newsheet->setTitle(strtoupper($assayRow['short_name']));
@@ -2352,14 +2352,14 @@ class Application_Service_Reports {
 						$newsheet->getStyleByColumnAndRow($c,$row)->applyFromArray($vlBorderStyle);
 					}
 				}
-				
+
 				$countOfVlAssaySheet++;
 			}
-			
+
 			//var_dump($assayList);die;
-				
+
 			$excel->setActiveSheetIndex(0);
-	
+
 			$writer = PHPExcel_IOFactory::createWriter($excel, 'Excel5');
             $fileSafeShipmentCode = str_replace(array_merge(
                 array_map('chr', range(0, 31)),
@@ -2368,19 +2368,19 @@ class Application_Service_Reports {
 			$filename = $fileSafeShipmentCode . '-' . date('d-M-Y-H-i-s') .rand(). '.xls';
 			$writer->save(UPLOAD_PATH . DIRECTORY_SEPARATOR . $filename);
 			return $filename;
-		
+
 
 	}
 
 	public function generateDbsEidExcelReport($shipmentId){
-		
+
 			$db = Zend_Db_Table_Abstract::getDefaultAdapter();
-	
+
 			$excel = new PHPExcel();
-	
+
 			$cacheMethod = PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp;
 			$cacheSettings = array('memoryCacheSize' => '180MB');
-	
+
 			$styleArray = array(
 				'font' => array(
 					'bold' => true,
@@ -2395,7 +2395,7 @@ class Application_Service_Reports {
 					),
 				)
 			);
-	
+
 			$borderStyle = array(
 				'font' => array(
 					'bold' => true,
@@ -2410,121 +2410,121 @@ class Application_Service_Reports {
 					),
 				)
 			);
-	
+
 			$query = $db->select()->from('shipment')
 					->where("shipment_id = ?", $shipmentId);
 			$result = $db->fetchRow($query);
-	
-			
+
+
 			$refQuery = $db->select()->from(array('refRes' => 'reference_result_eid'))->where("refRes.shipment_id = ?", $shipmentId);
 			$refResult = $db->fetchAll($refQuery);
-			
-	
+
+
 			$firstSheet = new PHPExcel_Worksheet($excel, 'DBS EID PE Results');
 			$excel->addSheet($firstSheet, 0);
-			
+
 			$firstSheet->getCellByColumnAndRow(0, 1)->setValueExplicit(html_entity_decode("Lab ID", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 			$firstSheet->getStyleByColumnAndRow(0, 1)->applyFromArray($borderStyle);
-			
+
 			$firstSheet->getCellByColumnAndRow(1, 1)->setValueExplicit(html_entity_decode("Lab Name", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 			$firstSheet->getStyleByColumnAndRow(1, 1)->applyFromArray($borderStyle);
-			
+
 			$firstSheet->getCellByColumnAndRow(2, 1)->setValueExplicit(html_entity_decode("Department", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 			$firstSheet->getStyleByColumnAndRow(2, 1)->applyFromArray($borderStyle);
-			
+
 			$firstSheet->getCellByColumnAndRow(3, 1)->setValueExplicit(html_entity_decode("Region", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 			$firstSheet->getStyleByColumnAndRow(3, 1)->applyFromArray($borderStyle);
-			
+
 			$firstSheet->getCellByColumnAndRow(4, 1)->setValueExplicit(html_entity_decode("Site Type", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 			$firstSheet->getStyleByColumnAndRow(4, 1)->applyFromArray($borderStyle);
-			
+
 			$firstSheet->getCellByColumnAndRow(5, 1)->setValueExplicit(html_entity_decode("Sample Rehydration Date", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 			$firstSheet->getStyleByColumnAndRow(5, 1)->applyFromArray($borderStyle);
-			
+
 			$firstSheet->getDefaultRowDimension()->setRowHeight(15);
-			
+
 			$colNameCount = 6;
 			foreach($refResult as $refRow){
 				$firstSheet->getCellByColumnAndRow($colNameCount, 1)->setValueExplicit(html_entity_decode($refRow['sample_label'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 				$firstSheet->getStyleByColumnAndRow($colNameCount, 1)->applyFromArray($borderStyle);
 				$colNameCount++;
 			}
-			
+
 			$firstSheet->getCellByColumnAndRow($colNameCount, 1)->setValueExplicit(html_entity_decode("Extraction", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 			$firstSheet->getStyleByColumnAndRow($colNameCount++, 1)->applyFromArray($borderStyle);
-			
+
 			$firstSheet->getCellByColumnAndRow($colNameCount, 1)->setValueExplicit(html_entity_decode("Detection", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 			$firstSheet->getStyleByColumnAndRow($colNameCount++, 1)->applyFromArray($borderStyle);
-			
+
 			$firstSheet->getStyleByColumnAndRow($colNameCount, 1)->applyFromArray($borderStyle);
 			$firstSheet->getCellByColumnAndRow($colNameCount++, 1)->setValueExplicit(html_entity_decode("Date Received", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-			
+
 
 			$firstSheet->getStyleByColumnAndRow($colNameCount, 1)->applyFromArray($borderStyle);
 			$firstSheet->getCellByColumnAndRow($colNameCount++, 1)->setValueExplicit(html_entity_decode("Date Tested", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-			
-			
+
+
 			$firstSheet->setTitle('DBS EID PE Results');
-			
+
 			$queryOverAll = $db->select()->from(array('s'=>'shipment'))
 								->joinLeft(array('spm' => 'shipment_participant_map'),"spm.shipment_id = s.shipment_id")
 								->joinLeft(array('p' => 'participant'),"p.participant_id = spm.participant_id")
 								->joinLeft(array('st'=>'r_site_type'),"st.r_stid=p.site_type")
 								->where("s.shipment_id = ?", $shipmentId);
 			$resultOverAll = $db->fetchAll($queryOverAll);
-			
+
 			$row = 1; // $row 0 is already the column headings
-			
+
 			$schemeService = new Application_Service_Schemes();
 			$extractionAssayList = $schemeService->getEidExtractionAssay();
 			$detectionAssayList = $schemeService->getEidDetectionAssay();
-			
+
 			//Zend_Debug::dump($extractionAssayList);die;
-			
+
 			foreach($resultOverAll as $rowOverAll){
 				//Zend_Debug::dump($rowOverAll);
 				$row++;
-				
+
 				$queryResponse = $db->select()->from(array('res' => 'response_result_eid'))
 								->joinLeft(array('pr'=>'r_possibleresult'),"res.reported_result=pr.id")
 								->where("res.shipment_map_id = ?", $rowOverAll['map_id']);
 				$resultResponse = $db->fetchAll($queryResponse);
-				
+
 				$attributes = json_decode($rowOverAll['attributes'], true);
 				$extraction = (array_key_exists ($attributes['extraction_assay'] , $extractionAssayList )) ? $extractionAssayList[$attributes['extraction_assay']] : "";
 				$detection = (array_key_exists ($attributes['detection_assay'] , $detectionAssayList )) ? $detectionAssayList[$attributes['detection_assay']] : "";
 				$sampleRehydrationDate = (isset($attributes['sample_rehydration_date'])) ? Application_Service_Common::ParseDateHumanFormat($attributes['sample_rehydration_date']) : "";
-				
-				
+
+
 				$firstSheet->getCellByColumnAndRow(0, $row)->setValueExplicit(html_entity_decode($rowOverAll['unique_identifier'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 				$firstSheet->getCellByColumnAndRow(1, $row)->setValueExplicit(html_entity_decode($rowOverAll['first_name']." ".$rowOverAll['last_name'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 				$firstSheet->getCellByColumnAndRow(2, $row)->setValueExplicit(html_entity_decode($rowOverAll['department_name'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 				$firstSheet->getCellByColumnAndRow(3, $row)->setValueExplicit(html_entity_decode($rowOverAll['region'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 				$firstSheet->getCellByColumnAndRow(4, $row)->setValueExplicit(html_entity_decode($rowOverAll['site_type'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 				$firstSheet->getCellByColumnAndRow(5, $row)->setValueExplicit(html_entity_decode($sampleRehydrationDate, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-				
+
 				$col = 6;
 				foreach($resultResponse as $responseRow){
 					$firstSheet->getCellByColumnAndRow($col++, $row)->setValueExplicit(html_entity_decode($responseRow['response'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 				}
-				
+
 				$firstSheet->getCellByColumnAndRow($col++, $row)->setValueExplicit(html_entity_decode($extraction, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-				$firstSheet->getCellByColumnAndRow($col++, $row)->setValueExplicit(html_entity_decode($detection, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);	
-				
+				$firstSheet->getCellByColumnAndRow($col++, $row)->setValueExplicit(html_entity_decode($detection, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+
 				$receiptDate = Application_Service_Common::ParseDateHumanFormat($rowOverAll['shipment_receipt_date']);
 				$testDate = Application_Service_Common::ParseDateHumanFormat($rowOverAll['shipment_test_date']);
-				$firstSheet->getCellByColumnAndRow($col++, $row)->setValueExplicit(html_entity_decode($receiptDate, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);	
-				$firstSheet->getCellByColumnAndRow($col++, $row)->setValueExplicit(html_entity_decode($testDate, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);	
-				
+				$firstSheet->getCellByColumnAndRow($col++, $row)->setValueExplicit(html_entity_decode($receiptDate, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+				$firstSheet->getCellByColumnAndRow($col++, $row)->setValueExplicit(html_entity_decode($testDate, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+
 			}
-			
+
 			foreach(range('A','Z') as $columnID) {
 				$firstSheet->getColumnDimension($columnID)
 					->setAutoSize(true);
 			}
-			
+
 			$excel->setActiveSheetIndex(0);
-	
+
 			$writer = PHPExcel_IOFactory::createWriter($excel, 'Excel5');
             $fileSafeShipmentCode = str_replace(array_merge(
                 array_map('chr', range(0, 31)),
@@ -2533,7 +2533,7 @@ class Application_Service_Reports {
 			$filename = $fileSafeShipmentCode . '-' . date('d-M-Y-H-i-s') .rand(). '.xls';
 			$writer->save(UPLOAD_PATH . DIRECTORY_SEPARATOR . $filename);
 			return $filename;
-		
+
 
 	}
 
@@ -3936,7 +3936,7 @@ class Application_Service_Reports {
             $sQuery = $sQuery->joinLeft(array('tn' => 'r_testkitname_dts'), 'tn.TestKitName_ID=res.test_kit_name_3', array())->where("tn.TestKitName_ID = ?", $parameters['testkitId']);
         }else{
             $sQuery = $sQuery->joinLeft(array('tn' => 'r_testkitname_dts'), 'tn.TestKitName_ID=res.test_kit_name_1 or tn.TestKitName_ID=res.test_kit_name_2 or tn.TestKitName_ID=res.test_kit_name_3', array('TestKit_Name', 'TestKitName_ID'))
-                    ->group('tn.TestKitName_ID');			
+                    ->group('tn.TestKitName_ID');
 		}
         if (isset($parameters['reportType']) && $parameters['reportType'] == "network") {
             if (isset($parameters['networkValue']) && $parameters['networkValue'] != "") {
@@ -4076,7 +4076,7 @@ class Application_Service_Reports {
 					$sQuery = $sQuery->joinLeft(array('pe' => 'participant_enrolled_programs_map'), 'pe.participant_id=p.participant_id', array())
 								->joinLeft(array('rep' => 'r_enrolled_programs'), 'rep.r_epid=pe.ep_id', array('rep.enrolled_programs'));
 				}
-			}			
+			}
             if (isset($parameters['startDate']) && $parameters['startDate'] != "" && isset($parameters['endDate']) && $parameters['endDate'] != "") {
                 $sQuery = $sQuery->where("s.shipment_date >= ?", $parameters['startDate']);
                 $sQuery = $sQuery->where("s.shipment_date <= ?", $parameters['endDate']);
@@ -4088,7 +4088,7 @@ class Application_Service_Reports {
 
         return array('testkitDtsReport' => $rResult, 'testkitDtsParticipantReport' => $pResult,'testkitChart'=>$pieChart);
     }
-    
+
     //get vl assay distribution
     public function getAllVlAssayDistributionReports($parameters) {
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
@@ -4376,7 +4376,7 @@ class Application_Service_Reports {
 	    $resultAcc[] = $resultAccept;
 	    $resultFa[] = $resultFail;
 	    $resultExe[] = $resultEx;
-	    
+
 	    $resultAcc['name'] = 'accept';
 	    $resultFa['name'] = 'fail';
 	    $resultExe['name'] = 'excluded';
@@ -4662,6 +4662,7 @@ class Application_Service_Reports {
             )
         );
         $query = $db->query("SELECT FlattenedEvaluationResults.`Country`, FlattenedEvaluationResults.`Site No.`, FlattenedEvaluationResults.`Site Name/Location`, FlattenedEvaluationResults.`PT-ID`,
+    FlattenedEvaluationResults.Submitted, FlattenedEvaluationResults.`Submission Excluded`,
     FlattenedEvaluationResults.`Date PT Received`, FlattenedEvaluationResults.`Date PT Results Reported`,
     
     JSON_UNQUOTE(FlattenedEvaluationResults.attributes_json->\"$.mtb_rif_kit_lot_no\") AS `MTB/RIF Assay Kit Lot Number`,
@@ -4699,6 +4700,15 @@ SELECT countries.iso_name AS `Country`,
       COALESCE(CONCAT(' - ', CASE WHEN participant.state = '' THEN NULL ELSE participant.state END),
                CONCAT(' - ', CASE WHEN participant.city = '' THEN NULL ELSE participant.city END), '')) AS `Site Name/Location`,
     participant.unique_identifier AS `PT-ID`,
+    CASE
+        WHEN SUBSTRING(shipment_participant_map.evaluation_status,3,1) = '9' OR SUBSTRING(shipment_participant_map.evaluation_status,4,1) = '0' THEN 'No'
+        WHEN SUBSTRING(shipment_participant_map.evaluation_status,3,1) = '1' AND SUBSTRING(shipment_participant_map.evaluation_status,4,1) = '1' THEN 'Yes'
+        WHEN SUBSTRING(shipment_participant_map.evaluation_status,4,1) = '2' THEN 'Yes (Late)'
+    END AS Submitted,
+    CASE
+        WHEN shipment_participant_map.is_excluded = 'yes' THEN 'Yes'
+        ELSE 'No'
+    END AS `Submission Excluded`,
     shipment_participant_map.shipment_receipt_date AS `Date PT Received`,
     CAST(shipment_participant_map.shipment_test_report_date AS DATE) AS `Date PT Results Reported`,
     CAST(attributes AS JSON) AS attributes_json,
@@ -4721,7 +4731,7 @@ SELECT countries.iso_name AS `Country`,
       WHEN response_result_tb_1.mtb_detected = 'notDetected' THEN 'Not Detected'
       WHEN response_result_tb_1.mtb_detected = 'noResult' THEN 'No Result'
       WHEN response_result_tb_1.mtb_detected = 'veryLow' THEN 'Very Low'
-      WHEN response_result_tb_1.mtb_detected = 'na' THEN NULL
+      WHEN response_result_tb_1.mtb_detected = 'na' THEN 'N/A'
       WHEN IFNULL(response_result_tb_1.mtb_detected, '') = '' THEN NULL
       ELSE CONCAT(UPPER(SUBSTRING(response_result_tb_1.mtb_detected, 1, 1)), SUBSTRING(response_result_tb_1.mtb_detected, 2, 254))
     END AS `1-MTB`,
@@ -4731,8 +4741,10 @@ SELECT countries.iso_name AS `Country`,
       WHEN response_result_tb_1.rif_resistance = 'notDetected' THEN 'Not Detected'
       WHEN response_result_tb_1.rif_resistance = 'noResult' THEN 'No Result'
       WHEN response_result_tb_1.rif_resistance = 'veryLow' THEN 'Very Low'
-      WHEN response_result_tb_1.rif_resistance = 'na' THEN NULL
-      WHEN IFNULL(response_result_tb_1.rif_resistance, '') = '' THEN NULL
+      WHEN response_result_tb_1.rif_resistance = 'na' THEN 'N/A'
+      WHEN response_result_tb_1.mtb_detected = 'noResult' AND IFNULL(response_result_tb_1.rif_resistance, '') = '' THEN 'No Result'
+      WHEN response_result_tb_1.mtb_detected = 'notDetected' AND IFNULL(response_result_tb_1.rif_resistance, '') = '' THEN 'N/A'
+      WHEN response_result_tb_1.mtb_detected NOT IN ('noResult', 'notDetected') AND IFNULL(response_result_tb_1.rif_resistance, '') = '' THEN NULL
       ELSE CONCAT(UPPER(SUBSTRING(response_result_tb_1.rif_resistance, 1, 1)), SUBSTRING(response_result_tb_1.rif_resistance, 2, 254))
     END AS `1-Rif`,
     response_result_tb_1.probe_d AS `1-Probe D`,
@@ -4749,7 +4761,7 @@ SELECT countries.iso_name AS `Country`,
       WHEN response_result_tb_2.mtb_detected = 'notDetected' THEN 'Not Detected'
       WHEN response_result_tb_2.mtb_detected = 'noResult' THEN 'No Result'
       WHEN response_result_tb_2.mtb_detected = 'veryLow' THEN 'Very Low'
-      WHEN response_result_tb_2.mtb_detected = 'na' THEN NULL
+      WHEN response_result_tb_2.mtb_detected = 'na' THEN 'N/A'
       WHEN IFNULL(response_result_tb_2.mtb_detected, '') = '' THEN NULL
       ELSE CONCAT(UPPER(SUBSTRING(response_result_tb_2.mtb_detected, 1, 1)), SUBSTRING(response_result_tb_2.mtb_detected, 2, 254))
     END AS `2-MTB`,
@@ -4759,8 +4771,10 @@ SELECT countries.iso_name AS `Country`,
       WHEN response_result_tb_2.rif_resistance = 'notDetected' THEN 'Not Detected'
       WHEN response_result_tb_2.rif_resistance = 'noResult' THEN 'No Result'
       WHEN response_result_tb_2.rif_resistance = 'veryLow' THEN 'Very Low'
-      WHEN response_result_tb_2.rif_resistance = 'na' THEN NULL
-      WHEN IFNULL(response_result_tb_2.rif_resistance, '') = '' THEN NULL
+      WHEN response_result_tb_2.rif_resistance = 'na' THEN 'N/A'
+      WHEN response_result_tb_2.mtb_detected = 'noResult' AND IFNULL(response_result_tb_2.rif_resistance, '') = '' THEN 'No Result'
+      WHEN response_result_tb_2.mtb_detected = 'notDetected' AND IFNULL(response_result_tb_2.rif_resistance, '') = '' THEN 'N/A'
+      WHEN response_result_tb_2.mtb_detected NOT IN ('noResult', 'notDetected') AND IFNULL(response_result_tb_2.rif_resistance, '') = '' THEN NULL
       ELSE CONCAT(UPPER(SUBSTRING(response_result_tb_2.rif_resistance, 1, 1)), SUBSTRING(response_result_tb_2.rif_resistance, 2, 254))
     END AS `2-Rif`,
     response_result_tb_2.probe_d AS `2-Probe D`,
@@ -4777,7 +4791,7 @@ SELECT countries.iso_name AS `Country`,
       WHEN response_result_tb_3.mtb_detected = 'notDetected' THEN 'Not Detected'
       WHEN response_result_tb_3.mtb_detected = 'noResult' THEN 'No Result'
       WHEN response_result_tb_3.mtb_detected = 'veryLow' THEN 'Very Low'
-      WHEN response_result_tb_3.mtb_detected = 'na' THEN NULL
+      WHEN response_result_tb_3.mtb_detected = 'na' THEN 'N/A'
       WHEN IFNULL(response_result_tb_3.mtb_detected, '') = '' THEN NULL
       ELSE CONCAT(UPPER(SUBSTRING(response_result_tb_3.mtb_detected, 1, 1)), SUBSTRING(response_result_tb_3.mtb_detected, 2, 254))
     END AS `3-MTB`,
@@ -4787,8 +4801,10 @@ SELECT countries.iso_name AS `Country`,
       WHEN response_result_tb_3.rif_resistance = 'notDetected' THEN 'Not Detected'
       WHEN response_result_tb_3.rif_resistance = 'noResult' THEN 'No Result'
       WHEN response_result_tb_3.rif_resistance = 'veryLow' THEN 'Very Low'
-      WHEN response_result_tb_3.rif_resistance = 'na' THEN NULL
-      WHEN IFNULL(response_result_tb_3.rif_resistance, '') = '' THEN NULL
+      WHEN response_result_tb_3.rif_resistance = 'na' THEN 'N/A'
+      WHEN response_result_tb_3.mtb_detected = 'noResult' AND IFNULL(response_result_tb_3.rif_resistance, '') = '' THEN 'No Result'
+      WHEN response_result_tb_3.mtb_detected = 'notDetected' AND IFNULL(response_result_tb_3.rif_resistance, '') = '' THEN 'N/A'
+      WHEN response_result_tb_3.mtb_detected NOT IN ('noResult', 'notDetected') AND IFNULL(response_result_tb_3.rif_resistance, '') = '' THEN NULL
       ELSE CONCAT(UPPER(SUBSTRING(response_result_tb_3.rif_resistance, 1, 1)), SUBSTRING(response_result_tb_3.rif_resistance, 2, 254))
     END AS `3-Rif`,
     response_result_tb_3.probe_d AS `3-Probe D`,
@@ -4805,7 +4821,7 @@ SELECT countries.iso_name AS `Country`,
       WHEN response_result_tb_4.mtb_detected = 'notDetected' THEN 'Not Detected'
       WHEN response_result_tb_4.mtb_detected = 'noResult' THEN 'No Result'
       WHEN response_result_tb_4.mtb_detected = 'veryLow' THEN 'Very Low'
-      WHEN response_result_tb_4.mtb_detected = 'na' THEN NULL
+      WHEN response_result_tb_4.mtb_detected = 'na' THEN 'N/A'
       WHEN IFNULL(response_result_tb_4.mtb_detected, '') = '' THEN NULL
       ELSE CONCAT(UPPER(SUBSTRING(response_result_tb_4.mtb_detected, 1, 1)), SUBSTRING(response_result_tb_4.mtb_detected, 2, 254))
     END AS `4-MTB`,
@@ -4815,8 +4831,10 @@ SELECT countries.iso_name AS `Country`,
       WHEN response_result_tb_4.rif_resistance = 'notDetected' THEN 'Not Detected'
       WHEN response_result_tb_4.rif_resistance = 'noResult' THEN 'No Result'
       WHEN response_result_tb_4.rif_resistance = 'veryLow' THEN 'Very Low'
-      WHEN response_result_tb_4.rif_resistance = 'na' THEN NULL
-      WHEN IFNULL(response_result_tb_4.rif_resistance, '') = '' THEN NULL
+      WHEN response_result_tb_4.rif_resistance = 'na' THEN 'N/A'
+      WHEN response_result_tb_4.mtb_detected = 'noResult' AND IFNULL(response_result_tb_4.rif_resistance, '') = '' THEN 'No Result'
+      WHEN response_result_tb_4.mtb_detected = 'notDetected' AND IFNULL(response_result_tb_4.rif_resistance, '') = '' THEN 'N/A'
+      WHEN response_result_tb_4.mtb_detected NOT IN ('noResult', 'notDetected') AND IFNULL(response_result_tb_4.rif_resistance, '') = '' THEN NULL
       ELSE CONCAT(UPPER(SUBSTRING(response_result_tb_4.rif_resistance, 1, 1)), SUBSTRING(response_result_tb_4.rif_resistance, 2, 254))
     END AS `4-Rif`,
     response_result_tb_4.probe_d AS `4-Probe D`,
@@ -4833,7 +4851,7 @@ SELECT countries.iso_name AS `Country`,
       WHEN response_result_tb_5.mtb_detected = 'notDetected' THEN 'Not Detected'
       WHEN response_result_tb_5.mtb_detected = 'noResult' THEN 'No Result'
       WHEN response_result_tb_5.mtb_detected = 'veryLow' THEN 'Very Low'
-      WHEN response_result_tb_5.mtb_detected = 'na' THEN NULL
+      WHEN response_result_tb_5.mtb_detected = 'na' THEN 'N/A'
       WHEN IFNULL(response_result_tb_5.mtb_detected, '') = '' THEN NULL
       ELSE CONCAT(UPPER(SUBSTRING(response_result_tb_5.mtb_detected, 1, 1)), SUBSTRING(response_result_tb_5.mtb_detected, 2, 254))
     END AS `5-MTB`,
@@ -4843,8 +4861,10 @@ SELECT countries.iso_name AS `Country`,
       WHEN response_result_tb_5.rif_resistance = 'notDetected' THEN 'Not Detected'
       WHEN response_result_tb_5.rif_resistance = 'noResult' THEN 'No Result'
       WHEN response_result_tb_5.rif_resistance = 'veryLow' THEN 'Very Low'
-      WHEN response_result_tb_5.rif_resistance = 'na' THEN NULL
-      WHEN IFNULL(response_result_tb_5.rif_resistance, '') = '' THEN NULL
+      WHEN response_result_tb_5.rif_resistance = 'na' THEN 'N/A'
+      WHEN response_result_tb_5.mtb_detected = 'noResult' AND IFNULL(response_result_tb_5.rif_resistance, '') = '' THEN 'No Result'
+      WHEN response_result_tb_5.mtb_detected = 'notDetected' AND IFNULL(response_result_tb_5.rif_resistance, '') = '' THEN 'N/A'
+      WHEN response_result_tb_5.mtb_detected NOT IN ('noResult', 'notDetected') AND IFNULL(response_result_tb_5.rif_resistance, '') = '' THEN NULL
       ELSE CONCAT(UPPER(SUBSTRING(response_result_tb_5.rif_resistance, 1, 1)), SUBSTRING(response_result_tb_5.rif_resistance, 2, 254))
     END AS `5-Rif`,
     response_result_tb_5.probe_d AS `5-Probe D`,
