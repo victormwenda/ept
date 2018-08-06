@@ -22,7 +22,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
                 ->where("s.shipment_id = ?", $sId)
                 ->where("sp.participant_id = ?", $pId));
     }
-    
+
     public function getShipmentRowInfo($sId) {
 		$result = $this->getAdapter()
             ->fetchRow(
@@ -744,7 +744,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
 			}
 			$row[] = '<a href="/' . $aRow['scheme_type'] . '/response/sid/' . $aRow['shipment_id'] . '/pid/' . $aRow['participant_id'] . '/eid/' . $aRow['evaluation_status'].'/comingFrom/defaulted-schemes' . '" class="btn btn-success"  style="margin:3px 0;"> <i class="icon icon-edit"></i>  '.$buttonText.' </a>'
 					.$delete
-					.$download;			
+					.$download;
 
             $output['aaData'][] = $row;
         }
@@ -834,7 +834,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
          * SQL queries
          * Get data to display
          */
-        
+
         $sQuery = $this->getAdapter()->select()->from(array('s' => 'shipment'), array('SHIP_YEAR' => 'year(s.shipment_date)', 's.scheme_type', 's.shipment_date', 's.shipment_code', 's.lastdate_response', 's.shipment_id','s.status','s.response_switch'))
                 ->join(array('spm' => 'shipment_participant_map'), 'spm.shipment_id=s.shipment_id', array('spm.report_generated','spm.map_id', "spm.evaluation_status","qc_date", "spm.participant_id", "RESPONSEDATE" => "DATE_FORMAT(spm.shipment_test_report_date,'%Y-%m-%d')", "RESPONSE" => new Zend_Db_Expr("CASE  WHEN substr(spm.evaluation_status,3,1)='1' THEN 'View' WHEN (substr(spm.evaluation_status,3,1)='9' AND s.lastdate_response >= CURDATE()) OR (substr(spm.evaluation_status,3,1)='9' AND s.status= 'finalized') THEN 'Enter Result' END"), "REPORT" => new Zend_Db_Expr("CASE  WHEN spm.report_generated='yes' AND s.status='finalized' THEN 'Report' END")))
 				->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('scheme_name'))
@@ -843,7 +843,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
                 ->where("pmm.dm_id=?", $this->_session->dm_id)
                 ->where("s.status='shipped' OR s.status='evaluated'OR s.status='finalized'")
                 ->where("year(s.shipment_date)  + 5 > year(CURDATE())");
-     
+
         if (isset($sWhere) && $sWhere != "") {
             $sQuery = $sQuery->where($sWhere);
         }
@@ -860,7 +860,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
         if (isset($sLimit) && isset($sOffset)) {
             $sQuery = $sQuery->limit($sLimit, $sOffset);
         }
-        
+
         $rResult = $this->getAdapter()->fetchAll($sQuery);
 
         /* Data set length after filtering */
@@ -897,7 +897,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
         foreach ($rResult as $aRow) {
             $qcChkbox='';
 			$qcResponse='';
-			
+
             $isEditable=$shipmentParticipantDb->isShipmentEditable($aRow['shipment_id'],$aRow['participant_id']);
             $row = array();
             if ($aRow['RESPONSE'] == "View") {
@@ -916,7 +916,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
 				if ($globalQcAccess=='yes') {
 					if ($this->_session->qc_access=='yes') {
 					    $qcChkbox='<input type="checkbox" class="checkTablePending" name="subchk[]" id="'. $aRow['map_id'].'"  value="' . $aRow['map_id'] . '" onclick="addQc(\''.$aRow['map_id'].'\',this);"  />';
-						$qcResponse='<br/><a href="javascript:void(0);" onclick="addSingleQc(\''.$aRow['map_id'].'\',\''.$aRow['qc_date'].'\')" class="btn btn-primary"  style="margin:3px 0;"> <i class="icon icon-edit"></i>'. $qcBtnText.'</a>';	
+						$qcResponse='<br/><a href="javascript:void(0);" onclick="addSingleQc(\''.$aRow['map_id'].'\',\''.$aRow['qc_date'].'\')" class="btn btn-primary"  style="margin:3px 0;"> <i class="icon icon-edit"></i>'. $qcBtnText.'</a>';
 					}
 				}
 			}
@@ -932,8 +932,8 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
 			$buttonText = "View";
 			$download = '';
 			$delete = '';
-			
-			
+
+
 			if ($isEditable) {
 				if ($aRow['RESPONSEDATE']!='' && $aRow['RESPONSEDATE']!='0000-00-00') {
 					if ($this->_session->view_only_access=='no') {
@@ -944,17 +944,17 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
 					$download='<br/><a href="/' . $aRow['scheme_type'] . '/download/sid/' . $aRow['shipment_id'] . '/pid/' . $aRow['participant_id'] . '/eid/' . $aRow['evaluation_status'] . '" class="btn btn-default"  style="margin:3px 0;" target="_BLANK"> <i class="icon icon-download"></i> Download Form</a>';
 				}
 			}
-            
+
 			$row[] = '<a href="/' . $aRow['scheme_type'] . '/response/sid/' . $aRow['shipment_id'] . '/pid/' . $aRow['participant_id'] . '/eid/' . $aRow['evaluation_status'].'/comingFrom/all-schemes' . '" class="btn btn-success"  style="margin:3px 0;"> <i class="icon icon-edit"></i>  '.$buttonText.' </a>'
                 .$delete
 				.$download
 				.$qcResponse;
-					
-			$downloadReports= " N.A. ";		
+
+			$downloadReports= " N.A. ";
             if ($aRow['status']=='finalized') {
                  $downloadReports = '<a href="/uploads/reports/' . $aRow['shipment_code']. '/'.$aRow['shipment_code'].'-summary.pdf" class="btn btn-primary" style="text-decoration : none;overflow:hidden;" target="_BLANK" download><i class="icon icon-download"></i> Summary Report</a>
 				                    <a href="/participant/download/d92nl9d8d/' . base64_encode($aRow['map_id']) . '"  style="text-decoration : none;overflow:hidden;margin-top:4px;" class="btn btn-info" target="_BLANK" download> <i class="icon icon-download"></i> Individual ' . $aRow['REPORT'] . '</a>';
-            }					
+            }
             $row[] = $downloadReports;
 
             $output['aaData'][] = $row;
@@ -1140,12 +1140,9 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
          * you want to insert a non-database field (for example a counter or static image)
          */
-
         $aColumns = array('scheme_type', 'shipment_code', 'DATE_FORMAT(shipment_date,"%d-%b-%Y")', 'unique_identifier','first_name', 'DATE_FORMAT(spm.shipment_test_report_date,"%d-%b-%Y")');
-
         /* Indexed column (used for fast and accurate table cardinality) */
         $sIndexColumn = $this->_primary;
-
         $sTable = $this->_name;
         /*
          * Paging
@@ -1155,11 +1152,9 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
             $sOffset = $parameters['iDisplayStart'];
             $sLimit = $parameters['iDisplayLength'];
         }
-
         /*
          * Ordering
          */
-
         $sOrder = "";
         if (isset($parameters['iSortCol_0'])) {
             $sOrder = "";
@@ -1175,14 +1170,12 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
             }
             $sOrder = substr_replace($sOrder, "", -2);
         }
-
         /*
          * Filtering
          * NOTE this does not match the built-in DataTables filtering which does it
          * word by word on any field. It's possible to do here, but concerned about efficiency
          * on very large tables, and MySQL's regex functionality is very limited
          */
-
         $sWhere = "";
         if (isset($parameters['sSearch']) && $parameters['sSearch'] != "") {
             $searchArray = explode(" ", $parameters['sSearch']);
@@ -1206,7 +1199,6 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
             }
             $sWhere .= $sWhereSub;
         }
-
         /* Individual column filtering */
         for ($i = 0; $i < count($aColumns); $i++) {
             if (isset($parameters['bSearchable_' . $i]) && $parameters['bSearchable_' . $i] == "true" && $parameters['sSearch_' . $i] != '') {
@@ -1217,17 +1209,34 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
                 }
             }
         }
-
         /*
          * SQL queries
          * Get data to display
          */
-        $sQuery = $this->getAdapter()->select()->from(array('s' => 'shipment'), array('SHIP_YEAR' => 'year(s.shipment_date)', 's.scheme_type', 's.shipment_date', 's.shipment_code', 's.lastdate_response', 's.shipment_id'))
-                ->join(array('spm' => 'shipment_participant_map'), 'spm.shipment_id=s.shipment_id', array('spm.map_id', "spm.evaluation_status", "spm.participant_id", "RESPONSEDATE" => "DATE_FORMAT(spm.shipment_test_report_date,'%Y-%m-%d')", "RESPONSE" => new Zend_Db_Expr("CASE substr(spm.evaluation_status,3,1) WHEN 1 THEN 'View' WHEN '9' THEN 'Enter Result' END"), "REPORT" => new Zend_Db_Expr("CASE  WHEN spm.report_generated='yes' AND s.status='finalized' THEN 'Report' END")))
-                ->join(array('p' => 'participant'), 'p.participant_id=spm.participant_id', array('p.unique_identifier','p.first_name', 'p.last_name'))
-                ->join(array('pmm' => 'participant_manager_map'), 'pmm.participant_id=p.participant_id')
-                ->where("pmm.dm_id=?", $this->_session->dm_id)
-                ->where("s.status='shipped' OR s.status='evaluated'OR s.status='finalized'");
+        $sQuery = $this->getAdapter()->select()->from(array('s' => 'shipment'), array(
+                'SHIP_YEAR' => 'year(s.shipment_date)',
+                's.scheme_type',
+                's.shipment_date',
+                's.shipment_code',
+                's.lastdate_response',
+                's.shipment_id'
+            ))
+            ->join(array('spm' => 'shipment_participant_map'), 'spm.shipment_id=s.shipment_id', array(
+                'spm.map_id',
+                "spm.evaluation_status",
+                "spm.participant_id",
+                "RESPONSEDATE" => "DATE_FORMAT(spm.shipment_test_report_date,'%Y-%m-%d')",
+                "RESPONSE" => new Zend_Db_Expr("CASE substr(spm.evaluation_status,3,1) WHEN 1 THEN 'View' WHEN '9' THEN 'Enter Result' END"),
+                "REPORT" => new Zend_Db_Expr("CASE WHEN spm.report_generated='yes' AND s.status='finalized' THEN 'Report' END")
+            ))
+            ->join(array('p' => 'participant'), 'p.participant_id=spm.participant_id', array(
+                'p.unique_identifier',
+                'p.first_name',
+                'p.last_name'
+            ))
+            ->join(array('pmm' => 'participant_manager_map'), 'pmm.participant_id=p.participant_id')
+            ->where("pmm.dm_id=?", $this->_session->dm_id)
+            ->where("s.status='shipped' OR s.status='evaluated'OR s.status='finalized'");
 
         if (isset($parameters['scheme']) && $parameters['scheme'] != "") {
             $sQuery = $sQuery->where("s.scheme_type = ?", $parameters['scheme']);
@@ -1260,11 +1269,15 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
 
         /* Total data set length */
         $sQuery = $this->getAdapter()->select()->from(array('s' => 'shipment'), array('s.shipment_id'))
-                ->join(array('spm' => 'shipment_participant_map'), 'spm.shipment_id=s.shipment_id', array(''))
-                ->join(array('p' => 'participant'), 'p.participant_id=spm.participant_id', array('p.unique_identifier','p.first_name', 'p.last_name'))
-                ->join(array('pmm' => 'participant_manager_map'), 'pmm.participant_id=p.participant_id', array(''))
-                ->where("pmm.dm_id=?", $this->_session->dm_id)
-                 ->where("s.status='shipped' OR s.status='evaluated'OR s.status='finalized'");
+            ->join(array('spm' => 'shipment_participant_map'), 'spm.shipment_id=s.shipment_id', array(''))
+            ->join(array('p' => 'participant'), 'p.participant_id=spm.participant_id', array(
+                'p.unique_identifier',
+                'p.first_name',
+                'p.last_name'
+            ))
+            ->join(array('pmm' => 'participant_manager_map'), 'pmm.participant_id=p.participant_id', array(''))
+            ->where("pmm.dm_id=?", $this->_session->dm_id)
+            ->where("s.status='shipped' OR s.status='evaluated'OR s.status='finalized'");
 
         $aResultTotal = $this->getAdapter()->fetchAll($sQuery);
         $iTotal = count($aResultTotal);
@@ -1453,7 +1466,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
 
         echo json_encode($output);
     }
-	
+
     public function getAllShipmentFormDetails($parameters) {
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
          * you want to insert a non-database field (for example a counter or static image)
@@ -1595,19 +1608,19 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
 
         echo json_encode($output);
     }
-	
+
 	public function fetchAllFinalizedShipments($parameters)
     {
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
          * you want to insert a non-database field (for example a counter or static image)
          */
-	
+
         $aColumns = array("DATE_FORMAT(distribution_date,'%d-%b-%Y')", 'distribution_code', 's.shipment_code' ,'d.status');
         $orderColumns = array('distribution_date', 'distribution_code', 's.shipment_code' ,'d.status');
-	
+
         /* Indexed column (used for fast and accurate table cardinality) */
         $sIndexColumn = 'distribution_id';
-	
+
         /*
          * Paging
          */
@@ -1616,7 +1629,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
             $sOffset = $parameters['iDisplayStart'];
             $sLimit = $parameters['iDisplayLength'];
         }
-	
+
         /*
          * Ordering
          */
@@ -1629,10 +1642,10 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
 				 	" . ($parameters['sSortDir_' . $i]) . ", ";
                 }
             }
-	    
+
             $sOrder = substr_replace($sOrder, "", -2);
         }
-	
+
         /*
          * Filtering
          * NOTE this does not match the built-in DataTables filtering which does it
@@ -1650,7 +1663,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
                     $sWhereSub .= " AND (";
                 }
                 $colSize = count($aColumns);
-		
+
                 for ($i = 0; $i < $colSize; $i++) {
                     if($aColumns[$i] == "" || $aColumns[$i] == null){
                         continue;
@@ -1665,7 +1678,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
             }
             $sWhere .= $sWhereSub;
         }
-	
+
         /* Individual column filtering */
         for ($i = 0; $i < count($aColumns); $i++) {
             if (isset($parameters['bSearchable_' . $i]) && $parameters['bSearchable_' . $i] == "true" && $parameters['sSearch_' . $i] != '') {
@@ -1676,39 +1689,39 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
                 }
             }
         }
-	
+
         /*
          * SQL queries
          * Get data to display
          */
-		
+
 		$dbAdapter = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sQuery = $dbAdapter->select()->from(array('d' => 'distributions'))
 				->joinLeft(array('s'=>'shipment'),'s.distribution_id=d.distribution_id',array('shipments' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT s.shipment_code SEPARATOR ', ')")))
 				->where("s.status='finalized'")
 				->group('d.distribution_id');
-				
+
         if (isset($sWhere) && $sWhere != "") {
             $sQuery = $sQuery->where($sWhere);
         }
-	
+
         if (isset($sOrder) && $sOrder != "") {
             $sQuery = $sQuery->order($sOrder);
         }
-	
+
         if (isset($sLimit) && isset($sOffset)) {
             $sQuery = $sQuery->limit($sLimit, $sOffset);
         }
-	
+
         //die($sQuery);
         $rResult = $dbAdapter->fetchAll($sQuery);
-	
+
         /* Data set length after filtering */
         $sQuery = $sQuery->reset(Zend_Db_Select::LIMIT_COUNT);
         $sQuery = $sQuery->reset(Zend_Db_Select::LIMIT_OFFSET);
         $aResultFilterTotal = $dbAdapter->fetchAll($sQuery);
         $iFilteredTotal = count($aResultFilterTotal);
-	
+
         /* Total data set length */
 		$sQuery = $dbAdapter->select()->from(array('d' => 'distributions'))
 				->joinLeft(array('s'=>'shipment'),'s.distribution_id=d.distribution_id',array(''))
@@ -1716,7 +1729,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
 				->group('d.distribution_id');
         $aResultTotal = $dbAdapter->fetchAll($sQuery);
         $iTotal = count($aResultTotal);
-	
+
         /*
          * Output
          */
@@ -1726,20 +1739,20 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
             "iTotalDisplayRecords" => $iFilteredTotal,
             "aaData" => array()
         );
-        
+
         $shipmentDb = new Application_Model_DbTable_Shipments();
         foreach ($rResult as $aRow) {
-            
+
             $shipmentResults = $shipmentDb->getPendingShipmentsByDistribution($aRow['distribution_id']);
-            
+
             $row = array();
 	    $row['DT_RowId']="dist".$aRow['distribution_id'];
             $row[] = Application_Service_Common::ParseDateHumanFormat($aRow['distribution_date']);
             $row[] = $aRow['distribution_code'];
             $row[] = $aRow['shipments'];
             $row[] = ucwords($aRow['status']);
-            $row[] = '<a class="btn btn-primary btn-xs" href="javascript:void(0);" onclick="getShipmentInReports(\''.($aRow['distribution_id']).'\')"><span><i class="icon-search"></i> View</span></a>';	    
-            
+            $row[] = '<a class="btn btn-primary btn-xs" href="javascript:void(0);" onclick="getShipmentInReports(\''.($aRow['distribution_id']).'\')"><span><i class="icon-search"></i> View</span></a>';
+
             $output['aaData'][] = $row;
         }
 

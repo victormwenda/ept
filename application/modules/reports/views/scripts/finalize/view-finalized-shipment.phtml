@@ -18,7 +18,7 @@ if (count($this->shipment) > 0) {
                     <th style="text-align: center;">Response %</th>
                     <th style="text-align: center;">Number Passed</th>
                     <th style="text-align: center;">Shipment Status</th>
-                    
+
                 </tr>
                 <?php
                 if (count($this->shipmentsUnderDistro) > 0) {
@@ -31,10 +31,10 @@ if (count($this->shipment) > 0) {
                             <td style="text-align: center;"><?php echo $shipment['number_of_samples'] ?></td>
                             <td style="text-align: center;"><?php echo $shipment['participant_count'] ?></td>
                             <td style="text-align: center;"><?php echo $reported ?></td>
-                            <td style="text-align: center;"><?php echo (isset($shipment['participant_count']) && $shipment['participant_count'] > 0) ? round(($reported / $shipment['participant_count']) * 100, 2) : 0; ?></td>					
-                            <td style="text-align: center;"><?php echo (isset($shipment['number_passed']) && $shipment['number_passed'] >= 0) ? $shipment['number_passed'] : 0; ?></td>					
+                            <td style="text-align: center;"><?php echo (isset($shipment['participant_count']) && $shipment['participant_count'] > 0) ? round(($reported / $shipment['participant_count']) * 100, 2) : 0; ?></td>
+                            <td style="text-align: center;"><?php echo (isset($shipment['number_passed']) && $shipment['number_passed'] >= 0) ? $shipment['number_passed'] : 0; ?></td>
                             <td style="text-align: center;"><?php echo ucfirst($shipment['status']) ?></td>
-                            
+
                         </tr>
                         <?php
                     }
@@ -50,7 +50,7 @@ if (count($this->shipment) > 0) {
                 ?>
             </table>
         </div><!-- /.modal-dialog -->
-    </div>	
+    </div>
     <h4 style="width:100%;height:50px;border-bottom:1px solid #777;">
         <div style="font-size:22.5px;line-height:36px;color:#333;float:left;">You are currently generating reports for Shipment <strong><?php echo $this->shipment[0]['shipment_code']; ?></strong> </div>
         <div style="margin-top:10px;">
@@ -92,6 +92,7 @@ if (count($this->shipment) > 0) {
                 <th>Score</th>
                 <?php } ?>
                 <th>Result</th>
+                <th>Report</th>
                 <th>Comments (if any)</th>
             </tr>
         </thead>
@@ -125,10 +126,17 @@ if (count($this->shipment) > 0) {
                 }
                 $shipment['shipment_score'] = (isset($shipment['shipment_score']) && $shipment['shipment_score'] != "") ? $shipment['shipment_score'] : '0';
                 $shipment['documentation_score'] = (isset($shipment['documentation_score']) && $shipment['documentation_score'] != "") ? $shipment['documentation_score'] : '0';
+                $shipment['download_report_link'] = isset($shipment['report_generated']) && $shipment['report_generated'] == "yes" ? "<a href='/reports/finalize/download/d92nl9d8d/" . base64_encode($shipment['map_id']) . "'>Download Report</a>" : "";
                 ?>
                 <tr>
-                    <td class="center "><a href="javascript:void(0);" class="btn btn-xs clicker <?php echo $btnClassName; ?>"><i class="icon-plus"></i></a></td>
-                    <td style="text-align:center;vertical-align:middle;"><?php echo $shipment['unique_identifier'] . " - " . $shipment['first_name'] . " " . $shipment['last_name'] ?></td>
+                    <td class="center ">
+                        <a href="javascript:void(0);" class="btn btn-xs clicker <?php echo $btnClassName; ?>">
+                            <i class="icon-plus"></i>
+                        </a>
+                    </td>
+                    <td style="text-align:center;vertical-align:middle;">
+                        <?php echo $shipment['unique_identifier'] . " - " . $shipment['first_name'] . " " . $shipment['last_name'] ?>
+                    </td>
                     <?php if($shipment['scheme_type'] != 'tb') { ?>
                     <td style="text-align:center;vertical-align:middle;"><?php echo $shipment['shipment_score'] ?></td>
                     <td style="text-align:center;vertical-align:middle;"><?php echo $shipment['documentation_score'] ?></td>
@@ -136,8 +144,8 @@ if (count($this->shipment) > 0) {
                     <td style="text-align:center;vertical-align:middle;"><?php echo ($shipment['shipment_score'] + $shipment['documentation_score']) ?></td>
                     <?php } ?>
                     <td style="text-align:center;vertical-align:middle;"><?php echo (isset($shipment['final_result']) && $shipment['final_result'] != "" && $shipment['final_result'] != 0) ? $shipment['result_name'] : 'Not Evaluated'; ?></td>
+                    <td style="text-align:center;vertical-align:middle;"><?php echo $shipment['download_report_link'] ?></td>
                     <td style="text-align:left;vertical-align:middle;"><?php echo $shipment['failure_reason'] ?></td>
-
                 </tr>
                 <?php
             }
@@ -152,7 +160,7 @@ if (count($this->shipment) > 0) {
     <br/>
     <br/>
     <br/>
-    
+
     <div align="center" style="padding-top:3px;text-align:center;" id="summaryDiv" >
         <table class="table table-condensed table-bordered" style="width:340px;margin:0 auto;">
             <tr>
@@ -163,14 +171,14 @@ if (count($this->shipment) > 0) {
             ?>
             <a href="<?php echo $this->baseUrl("uploads/reports/" . $shipment['shipment_code'] . "/".$shipment['shipment_code'] ."-summary.pdf"); ?>" class="btn btn-info" target="_BLANK" style="width:100%;"><i class="icon-file-text"></i> Download Summary Report</a>
             <?php
-            
+
             }
             ?>
             </td>
             </tr>
         <?php
         if ($shipment['report_generated'] == 'yes') {
-               
+
             $buttonCount = (int)ceil($this->responseCount["reported_count"] / 50);
             $responseCnt=$this->responseCount["reported_count"];
             $start=1;
@@ -198,7 +206,7 @@ if (count($this->shipment) > 0) {
               if (file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . "reports" . DIRECTORY_SEPARATOR . $shipment['shipment_code'] . DIRECTORY_SEPARATOR . $shipment['shipment_code']."-".$start."-".$end."-bulk-participant-report.pdf")) {
               ?>
               <tr><td>
-              
+
               <a href="<?php echo $this->baseUrl("uploads/reports/" . $shipment['shipment_code'] . "/".$shipment['shipment_code']."-".$start."-".$end."-bulk-participant-report.pdf"); ?>"  style="width:100%;" class='btn btn-info' target='_BLANK' id="<?php echo $start."-".$end."-bulk-participant-report"; ?>" style=''><i class='icon-file-text'></i> Download <?php echo $start; ?> - <?php echo $end;?> Participants Report</a>
               </td></tr>
                <?php
@@ -208,7 +216,7 @@ if (count($this->shipment) > 0) {
         ?>
         </table>
     </div>
-    
+
     <script type="text/javascript" charset="utf-8">
 
         var oTable = null;
@@ -223,20 +231,18 @@ if (count($this->shipment) > 0) {
     }
     ?>
         $(document).ready(function () {
-            
+
             $('#shipmentEvaluation').on('click', ".clicker", function () {
                 nTr = $(this).parents('tr')[0];
                 aData = oTable.fnGetData(nTr);
                 if (oTable.fnIsOpen(nTr)) {
-                    //console.log(aData[5]);
                     /* This row is already open - close it */
                     $(this).find('i').addClass("icon-plus");
                     $(this).find('i').removeClass("icon-minus");
-                    //$(this).removeClass('btn-danger');
 
                     if (aData[4] == "Fail") {
                         $(this).addClass('btn-danger');
-                    } else if (aData[5] == "") {
+                    } else if (aData[6] == "") {
                         $(this).addClass('btn-success');
                     } else {
                         $(this).addClass('btn-warning');
@@ -248,8 +254,6 @@ if (count($this->shipment) > 0) {
                     /* Open this row */
                     $(this).find('i').addClass("icon-minus");
                     $(this).find('i').removeClass("icon-add");
-                    //$(this).removeClass('btn-success');
-                    //$(this).addClass('btn-danger');			
                     oTable.fnOpen(nTr, fnFormatDetails(oTable, nTr), 'details');
                 }
             });
@@ -274,6 +278,7 @@ if (count($this->shipment) > 0) {
                     <?php } ?>
                     {"sClass": "center"},
                     {"sClass": "center"},
+                    {"sClass": "center"},
                     {"bSearchable": false, "bVisible": false}
                 ],
                 "aaSorting": [[1, "asc"]],
@@ -285,16 +290,16 @@ if (count($this->shipment) > 0) {
         {
             var aData = oTable.fnGetData(nTr);
             var sOut = "";
-            if (aData[5] != "" && aData[5] != null && aData[5] != undefined) {
+            if (aData[6] != "" && aData[6] != null && aData[6] != undefined) {
                 sOut = '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;width:100%;">';
-                sOut += '<tr><td>' + aData[5] + '</td></tr>';
+                sOut += '<tr><td>' + aData[6] + '</td></tr>';
                 sOut += '</table>';
             } else {
                 sOut = 'No comments to show';
             }
             return sOut;
         }
-        
+
 
     </script>
 

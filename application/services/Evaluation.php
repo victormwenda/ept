@@ -1110,17 +1110,33 @@ class Application_Service_Evaluation {
     }
 
     public function getShipmentToEvaluateReports($shipmentId, $reEvaluate = false) {
+        $authNameSpace = new Zend_Session_Namespace('administrators');
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
-        $sql = $db->select()->from(array('s' => 'shipment', array('shipment_id', 'shipment_code', 'status', 'number_of_samples')))
-            ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id', array('distribution_code', 'distribution_date'))
+        $sql = $db->select()->from(array('s' => 'shipment', array(
+            'shipment_id',
+            'shipment_code',
+            'status',
+            'number_of_samples'
+        )))
+            ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id', array(
+                'distribution_code',
+                'distribution_date'
+            ))
             ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id')
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('scheme_name'))
-            ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array('first_name', 'last_name','lab_name','unique_identifier'))
+            ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array(
+                'first_name',
+                'last_name',
+                'lab_name',
+                'unique_identifier'
+            ))
             ->joinLeft(array('res' => 'r_results'), 'res.result_id=sp.final_result')
             ->where("s.shipment_id = ?", $shipmentId)
-            ->where("substring(sp.evaluation_status,4,1) != '0'")
-            ->order("p.unique_identifier");
-
+            ->where("substring(sp.evaluation_status,4,1) != '0'");
+        if($authNameSpace->is_ptcc_coordinator) {
+            $sql = $sql->where("p.country IS NULL OR p.country IN (".implode(",",$authNameSpace->countries).")");
+        }
+        $sql = $sql->order("p.unique_identifier");
         $shipmentResult = $db->fetchAll($sql);
         return $shipmentResult;
     }
@@ -2503,7 +2519,6 @@ class Application_Service_Evaluation {
             $documentationScore = 0;
             if ($shipment['is_excluded'] == 'yes') {
                 $shipmentScore = 0;
-                $failureReason = array();
                 $shipmentResult[$counter]['shipment_score'] = $shipmentScore;
                 $shipmentResult[$counter]['documentation_score'] = 0;
                 $shipmentResult[$counter]['display_result'] = 'Excluded';
