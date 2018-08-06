@@ -1959,6 +1959,7 @@ class Application_Service_Shipments {
 	}
 
 	public function getFinalizedShipmentInReports($distributionId) {
+        $authNameSpace = new Zend_Session_Namespace('administrators');
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sql = $db->select()->from(array('s' => 'shipment',
             array('shipment_id','shipment_code','status','number_of_samples')))
@@ -1969,10 +1970,14 @@ class Application_Service_Shipments {
                 'reported_count' => new Zend_Db_Expr("COUNT(CASE substr(sp.evaluation_status,4,1) WHEN '1' THEN 1 WHEN '2' THEN 1 END)"),
                 'number_passed' => new Zend_Db_Expr("SUM(final_result = 1)")))
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type',array('scheme_name'))
+            ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array())
             ->joinLeft(array('rr' => 'r_results'), 'sp.final_result=rr.result_id')
 			->where("s.status='finalized'")
-            ->where("s.distribution_id = ?", $distributionId)
-            ->group('s.shipment_id');
+            ->where("s.distribution_id = ?", $distributionId)   ;
+        if($authNameSpace->is_ptcc_coordinator) {
+            $sql = $sql->where("p.country IS NULL OR p.country IN (".implode(",",$authNameSpace->countries).")");
+        }
+        $sql = $sql->group('s.shipment_id');
 
         return $db->fetchAll($sql);
     }

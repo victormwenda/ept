@@ -5,7 +5,7 @@ class Reports_FinalizeController extends Zend_Controller_Action
 
     public function init()
     {
-       $ajaxContext = $this->_helper->getHelper('AjaxContext');
+        $ajaxContext = $this->_helper->getHelper('AjaxContext');
         $ajaxContext->addActionContext('index', 'html')
                  ->addActionContext('get-shipments', 'html')
                  ->addActionContext('shipments', 'html')

@@ -1694,12 +1694,20 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
          * SQL queries
          * Get data to display
          */
-
+        $authNameSpace = new Zend_Session_Namespace('administrators');
 		$dbAdapter = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sQuery = $dbAdapter->select()->from(array('d' => 'distributions'))
-				->joinLeft(array('s'=>'shipment'),'s.distribution_id=d.distribution_id',array('shipments' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT s.shipment_code SEPARATOR ', ')")))
-				->where("s.status='finalized'")
-				->group('d.distribution_id');
+				->joinLeft(array('s'=>'shipment'),'s.distribution_id=d.distribution_id',array(
+				    'shipments' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT s.shipment_code SEPARATOR ', ')")
+                ));
+        if ($authNameSpace->is_ptcc_coordinator) {
+            $sQuery = $sQuery->joinLeft(array('spm' => 'shipment_participant_map'), 's.shipment_id=spm.shipment_id', array())
+                ->joinLeft(array('p' => 'participant'), 'spm.participant_id=p.participant_id', array())
+                ->where("p.country IS NULL OR p.country IN (".implode(",", $authNameSpace->countries).")");
+        }
+        $sQuery = $sQuery
+            ->where("s.status='finalized'")
+            ->group('d.distribution_id');
 
         if (isset($sWhere) && $sWhere != "") {
             $sQuery = $sQuery->where($sWhere);

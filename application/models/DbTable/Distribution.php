@@ -152,14 +152,14 @@ class Application_Model_DbTable_Distribution extends Zend_Db_Table_Abstract {
                 $action .= '&nbsp;<a class="btn btn-primary btn-xs" href="javascript:void(0);" onclick="removeDistribution(\'' . base64_encode($aRow['distribution_id']) . '\', \'' . $aRow['distribution_id'] . '\')"><span><i class="icon-remove"></i> Delete</span></a>';
             }
             $row[] = $action;
-            
+
 
             $output['aaData'][] = $row;
         }
 
         echo json_encode($output);
     }
-    
+
     public function addDistribution($params) {
 	    $authNameSpace = new Zend_Session_Namespace('administrators');
         $data = array(
@@ -171,20 +171,20 @@ class Application_Model_DbTable_Distribution extends Zend_Db_Table_Abstract {
         );
         return $this->insert($data);
     }
-    
+
     public function shipDistribution($params) {
 
     }
-    
+
     public function getDistributionDates() {
         return $this->getAdapter()->fetchCol($this->select()
             ->from($this->_name,new Zend_Db_Expr("DATE_FORMAT(distribution_date,'%d-%b-%Y')")));
     }
-    
+
     public function getDistribution($did){
         return $this->fetchRow("distribution_id = ".$did);
     }
-    
+
     public function updateDistribution($params) {
 	    $authNameSpace = new Zend_Session_Namespace('administrators');
         $data = array(
@@ -199,7 +199,7 @@ class Application_Model_DbTable_Distribution extends Zend_Db_Table_Abstract {
     public function getUnshippedDistributions() {
         return $this->fetchAll($this->select()->where("status != 'shipped'"));
     }
-    
+
     public function updateDistributionStatus($distributionId,$status){
         if (isset($status) && $status != null && $status != "") {
             return $this->update(array('status'=>$status),"distribution_id=".$distributionId);
@@ -207,17 +207,17 @@ class Application_Model_DbTable_Distribution extends Zend_Db_Table_Abstract {
             return 0;
         }
     }
-    
+
     public function getAllDistributionReports($parameters) {
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
          * you want to insert a non-database field (for example a counter or static image)
          */
         $aColumns = array("DATE_FORMAT(distribution_date,'%d-%b-%Y')", 'distribution_code', 's.shipment_code' ,'d.status');
         $orderColumns = array('distribution_date', 'distribution_code', 's.shipment_code' ,'d.status');
-	
+
         /* Indexed column (used for fast and accurate table cardinality) */
         $sIndexColumn = 'distribution_id';
-	
+
         /*
          * Paging
          */
@@ -226,7 +226,7 @@ class Application_Model_DbTable_Distribution extends Zend_Db_Table_Abstract {
             $sOffset = $parameters['iDisplayStart'];
             $sLimit = $parameters['iDisplayLength'];
         }
-	
+
         /*
          * Ordering
          */
@@ -239,10 +239,10 @@ class Application_Model_DbTable_Distribution extends Zend_Db_Table_Abstract {
 				 	" . ($parameters['sSortDir_' . $i]) . ", ";
                 }
             }
-	    
+
             $sOrder = substr_replace($sOrder, "", -2);
         }
-	
+
         /*
          * Filtering
          * NOTE this does not match the built-in DataTables filtering which does it
@@ -260,7 +260,7 @@ class Application_Model_DbTable_Distribution extends Zend_Db_Table_Abstract {
                     $sWhereSub .= " AND (";
                 }
                 $colSize = count($aColumns);
-		
+
                 for ($i = 0; $i < $colSize; $i++) {
                     if($aColumns[$i] == "" || $aColumns[$i] == null){
                         continue;
@@ -275,7 +275,7 @@ class Application_Model_DbTable_Distribution extends Zend_Db_Table_Abstract {
             }
             $sWhere .= $sWhereSub;
         }
-	
+
         /* Individual column filtering */
         for ($i = 0; $i < count($aColumns); $i++) {
             if (isset($parameters['bSearchable_' . $i]) && $parameters['bSearchable_' . $i] == "true" && $parameters['sSearch_' . $i] != '') {
@@ -286,45 +286,54 @@ class Application_Model_DbTable_Distribution extends Zend_Db_Table_Abstract {
                 }
             }
         }
-	
+
          /*
          * SQL queries
          * Get data to display
          */
+        $authNameSpace = new Zend_Session_Namespace('administrators');
 		$dbAdapter = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sQuery = $dbAdapter->select()->from(array('d' => 'distributions'))
-				->joinLeft(array('s'=>'shipment'),'s.distribution_id=d.distribution_id',array('shipments' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT s.shipment_code SEPARATOR ', ')"),'not_finalized_count' => new Zend_Db_Expr("SUM(IF(s.status!='finalized',1,0))")))
-				->where("d.status='shipped'")
-				->group('d.distribution_id');
-				
+				->joinLeft(array('s'=>'shipment'),'s.distribution_id=d.distribution_id',array(
+				    'shipments' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT s.shipment_code SEPARATOR ', ')"),
+                    'not_finalized_count' => new Zend_Db_Expr("SUM(IF(s.status!='finalized',1,0))")
+                ));
+        if ($authNameSpace->is_ptcc_coordinator) {
+            $sQuery = $sQuery->joinLeft(array('spm' => 'shipment_participant_map'), 's.shipment_id=spm.shipment_id', array())
+                ->joinLeft(array('p' => 'participant'), 'spm.participant_id=p.participant_id', array())
+                ->where("p.country IS NULL OR p.country IN (".implode(",", $authNameSpace->countries).")");
+        }
+        $sQuery = $sQuery
+            ->where("d.status='shipped'")
+            ->group('d.distribution_id');
         if (isset($sWhere) && $sWhere != "") {
             $sQuery = $sQuery->where($sWhere);
         }
-	
+
         if (isset($sOrder) && $sOrder != "") {
             $sQuery = $sQuery->order($sOrder);
         }
-	
+
         if (isset($sLimit) && isset($sOffset)) {
             $sQuery = $sQuery->limit($sLimit, $sOffset);
         }
-		
+
 		$sQuery = $dbAdapter->select()->from(array('temp' => $sQuery))->where("not_finalized_count>0");
-		
+
 		//die($sQuery);
         $rResult = $dbAdapter->fetchAll($sQuery);
-	
+
         /* Data set length after filtering */
         $sQuery = $sQuery->reset(Zend_Db_Select::LIMIT_COUNT);
         $sQuery = $sQuery->reset(Zend_Db_Select::LIMIT_OFFSET);
         $aResultFilterTotal = $dbAdapter->fetchAll($sQuery);
         $iFilteredTotal = count($aResultFilterTotal);
-	
+
         /* Total data set length */
         //$sQuery = $dbAdapter->select()->from('distributions', new Zend_Db_Expr("COUNT('" . $sIndexColumn . "')"))->where("status='shipped'");
         $aResultTotal = $dbAdapter->fetchAll($sQuery);
         $iTotal = count($aResultTotal);
-		
+
         /*
          * Output
          */
@@ -334,11 +343,11 @@ class Application_Model_DbTable_Distribution extends Zend_Db_Table_Abstract {
             "iTotalDisplayRecords" => $iFilteredTotal,
             "aaData" => array()
         );
-        
+
         $shipmentDb = new Application_Model_DbTable_Shipments();
         foreach ($rResult as $aRow) {
             $shipmentResults = $shipmentDb->getPendingShipmentsByDistribution($aRow['distribution_id']);
-            
+
             $row = array();
     	    $row['DT_RowId']="dist".$aRow['distribution_id'];
             $row[] = Application_Service_Common::ParseDateHumanFormat($aRow['distribution_date']);
