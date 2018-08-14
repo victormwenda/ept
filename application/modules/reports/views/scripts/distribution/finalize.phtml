@@ -7,7 +7,8 @@ if (count($this->shipment) > 0) { ?>
     <div id="allShipmentList">
         <legend>
             <h4>
-                All Shipments Under PE Survey <?php echo $this->shipment[0]['distribution_code']; ?> (<?php echo $this->dateFormat($this->shipment[0]['distribution_date']); ?>)
+                All Shipments Under PE Survey&nbsp;
+                <?php echo $this->shipment[0]['distribution_code']; ?> (<?php echo $this->dateFormat($this->shipment[0]['distribution_date']); ?>)
             </h4>
         </legend>
         <table class="table table-bordered table-striped table-hover">
@@ -410,7 +411,13 @@ if (count($this->shipment) > 0) { ?>
             if (individual == 'success') {
               finalizeShipmentBtn();
               $( "#" + startVal + '-' + endVal + "-bulk-participant-report").remove();
-              $( "#summaryDiv" ).append('&nbsp;<a href="<?php echo $this->baseUrl() ;?>/uploads/reports/<?php echo $shipment['shipment_code'] ?>/<?php echo $shipment['shipment_code'] ?>-' + startVal + '-' + endVal + '-bulk-participant-report.pdf" id="' + startVal + '-' + endVal + '-bulk-participant-report" class="btn btn-info btn-sm" target="_BLANK" style="margin-top:10px;float:left;clear:both;"> <i class="icon-file-text"></i> &nbsp Download ' + startVal + '-' + endVal + ' Participants Report</a>');
+              <?php
+                $fileSafeShipmentCode = str_replace(array_merge(
+                  array_map('chr', range(0, 31)),
+                  array('<', '>', ':', '"', '/', '\\', '|', '?', '*')
+                ), '', $shipment['shipment_code']);
+              ?>
+              $( "#summaryDiv" ).append('&nbsp;<a href="<?php echo $this->baseUrl() ;?>/uploads/reports/<?php echo $fileSafeShipmentCode ?>/<?php echo $fileSafeShipmentCode ?>-' + startVal + '-' + endVal + '-bulk-participant-report.pdf" id="' + startVal + '-' + endVal + '-bulk-participant-report" class="btn btn-info btn-sm" target="_BLANK" style="margin-top:10px;float:left;clear:both;"> <i class="icon-file-text"></i> &nbsp Download ' + startVal + '-' + endVal + ' Participants Report</a>');
             }
             $.unblockUI();
           });
@@ -443,7 +450,13 @@ if (count($this->shipment) > 0) { ?>
             finalizeShipmentBtn();
             if (summary == 'success') {
               $("#summaryReport").remove();
-              $("#summaryDiv").append("&nbsp <a href=\"<?php echo $this->baseUrl("uploads/reports/".$shipment['shipment_code']."/".$shipment['shipment_code']."-summary.pdf"); ?>\" class='btn btn-success btn-sm' id='summaryReport' target='_BLANK' style='margin-top:10px;float:left;clear:both;'><i class='icon-file-text'></i>&nbsp Download Summary Report</a>");
+              <?php
+                $fileSafeShipmentCode = str_replace(array_merge(
+                  array_map('chr', range(0, 31)),
+                  array('<', '>', ':', '"', '/', '\\', '|', '?', '*')
+                ), '', $shipment['shipment_code']);
+              ?>
+              $("#summaryDiv").append("&nbsp <a href=\"<?php echo $this->baseUrl("uploads/reports/".$fileSafeShipmentCode."/".$shipment['shipment_code']."-summary.pdf"); ?>\" class='btn btn-success btn-sm' id='summaryReport' target='_BLANK' style='margin-top:10px;float:left;clear:both;'><i class='icon-file-text'></i>&nbsp Download Summary Report</a>");
             }
             $.unblockUI();
           });
