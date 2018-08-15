@@ -456,7 +456,7 @@ if (count($this->shipment) > 0) { ?>
                   array('<', '>', ':', '"', '/', '\\', '|', '?', '*')
                 ), '', $shipment['shipment_code']);
               ?>
-              $("#summaryDiv").append("&nbsp <a href=\"<?php echo $this->baseUrl("uploads/reports/".$fileSafeShipmentCode."/".$shipment['shipment_code']."-summary.pdf"); ?>\" class='btn btn-success btn-sm' id='summaryReport' target='_BLANK' style='margin-top:10px;float:left;clear:both;'><i class='icon-file-text'></i>&nbsp Download Summary Report</a>");
+              $("#summaryDiv").append("&nbsp <a href=\"<?php echo $this->baseUrl("uploads/reports/".$fileSafeShipmentCode."/".$fileSafeShipmentCode."-summary.pdf"); ?>\" class='btn btn-success btn-sm' id='summaryReport' target='_BLANK' style='margin-top:10px;float:left;clear:both;'><i class='icon-file-text'></i>&nbsp Download Summary Report</a>");
             }
             $.unblockUI();
           });
