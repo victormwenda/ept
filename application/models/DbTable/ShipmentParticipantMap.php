@@ -94,7 +94,17 @@ class Application_Model_DbTable_ShipmentParticipantMap extends Zend_Db_Table_Abs
 
             // changing evaluation status 4th character to 1 = timely response or 2 = delayed response
             $date = new Zend_Date();
-            $lastDate = new Zend_Date($lastDate, Zend_Date::ISO_8601);
+            /*
+            ACCESS LOG
+            52.44.9.255:80 197.255.173.42 - - [06/Oct/2018:15:45:46 +0000] "PUT /api/results/result-footer?sid=23&pid=789&submitResponse=yes HTTP/1.1" 200 363 "-" "okhttp/3.4.1"
+
+            ERROR LOG
+            [Sat Oct 06 15:45:46.918171 2018] [:error] [pid 485] [client 197.255.173.42:4754] Application_Model_DbTable_ShipmentParticipantMap->updateShipment params: {"supervisor_approval":"y
+es","participant_supervisor":"Thomas S. Ayodeji","user_comment":"only two modules are funcrional for now. ","updated_by_user":"924","updated_on_user":{},"shipment_test_report_date"
+:"2018-10-02"} lastDate: 07-Dec-2018 submitAction: submit
+            07-Dec-2018 doesn't seem to be parsed correctly
+             */
+            $lastDate = Application_Service_Common::ParseDateISO8601OrYYYYMMDD($lastDate);
             // only if current date is LATER than last date we make status = 2
             if ($date->compare($lastDate) == 1) {
                 $params['evaluation_status'][3] = 2;
@@ -139,7 +149,7 @@ class Application_Model_DbTable_ShipmentParticipantMap extends Zend_Db_Table_Abs
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $shipment = $db->fetchRow($db->select()->from(array('s' => 'shipment'))
                         ->where("s.shipment_id = ?", $shipmentId));
-        
+
         if($shipment["status"] == 'finalized' || $shipment["response_switch"] == 'off'){
             return false;
         }else{
@@ -195,7 +205,7 @@ class Application_Model_DbTable_ShipmentParticipantMap extends Zend_Db_Table_Abs
             return 0;
         }
     }
-    
+
     public function addQcInfo($params){
         $authNameSpace = new Zend_Session_Namespace('datamanagers');
         if(isset($params['mapId']) && trim($params['mapId'])!=""){
@@ -214,7 +224,7 @@ class Application_Model_DbTable_ShipmentParticipantMap extends Zend_Db_Table_Abs
             }
             return $result;
         }
-        
-        
+
+
     }
 }

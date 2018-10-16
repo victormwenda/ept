@@ -41,7 +41,7 @@ if(isset($this->shipment["shipment_test_report_date"]) && trim($this->shipment["
     <div id="view-content">
 		<?php
 		$date = new Zend_Date();
-		$lastDate = new Zend_Date($this->shipment['lastdate_response'], Zend_Date::ISO_8601);
+		$lastDate = Application_Service_Common::ParseDateISO8601OrYYYYMMDD($this->shipment['lastdate_response']);
 		$response=$date->compare($lastDate,Zend_Date::DATES);
         if ($this->isEditable) {
 			if ($response == 1 && $this->shipment['status'] == 'finalized') {
@@ -96,7 +96,7 @@ if(isset($this->shipment["shipment_test_report_date"]) && trim($this->shipment["
 			</td>
             </tr>
 			<tr>
-				<td><label>Shipment Testing Date</label></td> 
+				<td><label>Shipment Testing Date</label></td>
 				<td>
 					<input type="text" id="testDate" name="testDate"  style="width:180px;float:left;"  maxlength="11" value="<?php  echo  $this->dateFormat($this->shipment["shipment_test_date"]); ?>"  class="isRequired datepicker form-control" readonly="readonly" />
 					<i class="icon-remove-sign" style="cursor:pointer;margin-top:10px;margin-left:10px;float:left;" alt="Clear Date" title="Clear Date"  onclick="clearDate('testDate')"> Clear</i>
@@ -113,49 +113,49 @@ if(isset($this->shipment["shipment_test_report_date"]) && trim($this->shipment["
                         <?php
                         foreach ($this->extractionAssay as $eAssayId => $eAssayName) {
                             ?>
-                            <option value="<?php echo $eAssayId; ?>" <?php echo (isset($this->shipment['attributes']['extraction_assay']) && $this->shipment['attributes']['extraction_assay'] == $eAssayId) ? "selected='selected'" : "" ?>><?php echo $eAssayName; ?></option>	
+                            <option value="<?php echo $eAssayId; ?>" <?php echo (isset($this->shipment['attributes']['extraction_assay']) && $this->shipment['attributes']['extraction_assay'] == $eAssayId) ? "selected='selected'" : "" ?>><?php echo $eAssayName; ?></option>
                             <?php
                         }
                         ?>
                     </select>
                 </td>
-                <td><label>Detection Assay</label></td> 
+                <td><label>Detection Assay</label></td>
                 <td>
                     <select id="detectionAssay" name="detectionAssay" class="form-control">
                         <option value="">--Select--</option>
                         <?php
                         foreach ($this->detectionAssay as $dAssayId => $dAssayName) {
                             ?>
-                            <option value="<?php echo $dAssayId; ?>" <?php echo (isset($this->shipment['attributes']['detection_assay']) && $this->shipment['attributes']['detection_assay'] == $dAssayId) ? "selected='selected'" : "" ?>><?php echo $dAssayName; ?></option>	
+                            <option value="<?php echo $dAssayId; ?>" <?php echo (isset($this->shipment['attributes']['detection_assay']) && $this->shipment['attributes']['detection_assay'] == $dAssayId) ? "selected='selected'" : "" ?>><?php echo $dAssayName; ?></option>
                             <?php
                         }
-                        ?>				
+                        ?>
                     </select>
                 </td>
             </tr>
             <tr>
-                <td><label>Extraction Assay Lot No.</label></td> 
+                <td><label>Extraction Assay Lot No.</label></td>
                 <td>
 					<input type="text" id="extractionAssayLotNo" name="extractionAssayLotNo"  style=""  maxlength="11" value="<?php  echo ($this->shipment['attributes']['extraction_assay_lot_no']); ?>"  class="isRequired form-control" />
 				</td>
-                <td><label>Detection Assay Lot No.</label></td> 
+                <td><label>Detection Assay Lot No.</label></td>
                 <td>
 					<input type="text" id="detectionAssayLotNo" name="detectionAssayLotNo"  style=""  maxlength="11" value="<?php  echo ($this->shipment['attributes']['detection_assay_lot_no']); ?>"  class="isRequired form-control" />
 				</td>
             </tr>
             <tr>
-                <td><label>Extraction Assay Expiry Date</label></td> 
+                <td><label>Extraction Assay Expiry Date</label></td>
                 <td>
 					<input type="text" id="extractionAssayExpiryDate" name="extractionAssayExpiryDate"  style="width:180px;float:left;"  maxlength="11" value="<?php  echo  $this->dateFormat($this->shipment['attributes']['extraction_assay_expiry_date']); ?>"  class="datepicker form-control" readonly="readonly" />
-					<i class="icon-remove-sign" style="cursor:pointer;margin-top:10px;margin-left:10px;float:left;" alt="Clear Date" title="Clear Date"  onclick="clearDate('extractionAssayExpiryDate')"> Clear</i>					
+					<i class="icon-remove-sign" style="cursor:pointer;margin-top:10px;margin-left:10px;float:left;" alt="Clear Date" title="Clear Date"  onclick="clearDate('extractionAssayExpiryDate')"> Clear</i>
 				</td>
-                <td><label>Detection Assay Expiry Date</label></td> 
+                <td><label>Detection Assay Expiry Date</label></td>
                 <td>
 					<input type="text" id="detectionAssayExpiryDate" name="detectionAssayExpiryDate"  style="width:180px;float:left;"  maxlength="11" value="<?php  echo  $this->dateFormat($this->shipment['attributes']['detection_assay_expiry_date']); ?>"  class="isRequired datepicker form-control" readonly="readonly" />
-					<i class="icon-remove-sign" style="cursor:pointer;margin-top:10px;margin-left:10px;float:left;" alt="Clear Date" title="Clear Date"  onclick="clearDate('detectionAssayExpiryDate')"> Clear</i>					
+					<i class="icon-remove-sign" style="cursor:pointer;margin-top:10px;margin-left:10px;float:left;" alt="Clear Date" title="Clear Date"  onclick="clearDate('detectionAssayExpiryDate')"> Clear</i>
 				</td>
             </tr>
-	    
+
 	    <?php
 	    if((isset($authNameSpace->enable_adding_test_response_date) && $authNameSpace->enable_adding_test_response_date == 'yes') || (isset($authNameSpace->enable_choosing_mode_of_receipt) && $authNameSpace->enable_choosing_mode_of_receipt == 'yes')) {
 	    ?>
@@ -169,7 +169,7 @@ if(isset($this->shipment["shipment_test_report_date"]) && trim($this->shipment["
 				    <i class="icon-remove-sign" style="cursor:pointer;margin-top:10px;margin-left:10px;float:left;" alt="Clear Date" title="Clear Date"  onclick="clearDate('testReceiptDate')"> Clear</i>
 				</td>
 		<?php } ?>
-		
+
 		<?php
 		if(isset($authNameSpace->enable_choosing_mode_of_receipt) && $authNameSpace->enable_choosing_mode_of_receipt!= null && $authNameSpace->enable_choosing_mode_of_receipt!= '' && $authNameSpace->enable_choosing_mode_of_receipt=='yes'){
 		 ?>
@@ -186,19 +186,19 @@ if(isset($this->shipment["shipment_test_report_date"]) && trim($this->shipment["
 			</select>
 		</td>
 		<?php } ?>
-		
+
 		<?php
 		if(!isset($authNameSpace->enable_adding_test_response_date) || $authNameSpace->enable_adding_test_response_date== null || $authNameSpace->enable_adding_test_response_date== '' || $authNameSpace->enable_adding_test_response_date=='no'){ ?>
 		 <td colspan="2"></td>
 		<?php } ?>
-		
+
 		<?php
 		if(!isset($authNameSpace->enable_choosing_mode_of_receipt) || $authNameSpace->enable_choosing_mode_of_receipt== null || $authNameSpace->enable_choosing_mode_of_receipt== '' || $authNameSpace->enable_choosing_mode_of_receipt=='no'){ ?>
 		 <td colspan="2"></td>
 		<?php } ?>
 	    </tr>
 	    <?php } ?>
-	    
+
 	    <?php
 		if($this->globalQcAccess=='yes' && (isset($authNameSpace->qc_access) && $authNameSpace->qc_access=='yes')){
 		?>
@@ -207,7 +207,7 @@ if(isset($this->shipment["shipment_test_report_date"]) && trim($this->shipment["
 			<td><input type="radio" id="qcDoneYes" name="qcDone" value="yes" <?php echo ($this->shipment['qc_done']=="yes") ? " checked='checked' " : ""; ?> onclick="checkQcStatus();"/> <strong>Yes</strong>&nbsp;&nbsp;<input type="radio" class="isRequired" id="qcDoneNo" name="qcDone" title="Please select QC done status" <?php echo ($this->shipment['qc_done']== null || $this->shipment['qc_done']=="" || $this->shipment['qc_done']=="no") ? " checked='checked' " : ""; ?> value="no" onclick="checkQcStatus();"/> <strong>No</strong> </td>
 			<td colspan="2"></td>
 		</tr>
-	    
+
 	        <?php
 		$display = "display:none";
 		$isRquired = "";
@@ -240,14 +240,14 @@ if(isset($this->shipment["shipment_test_report_date"]) && trim($this->shipment["
             }
         }
         ?>
-<hr>        
+<hr>
         <table class="table table-bordered table-striped" style="width:100%;margin:10px auto;">
             <thead>
                 <tr>
                     <th style="width:25%;text-align: center;">Control/Sample</th>
                     <th style="width:25%;text-align: center;">Your Results</th>
                     <th style="width:25%;text-align: center;">HIV CT/OD</th>
-                    <th style="width:25%;text-align: center;">IC/QS Values</th>		
+                    <th style="width:25%;text-align: center;">IC/QS Values</th>
                 </tr>
             </thead>
 
@@ -297,9 +297,9 @@ if(isset($this->shipment["shipment_test_report_date"]) && trim($this->shipment["
 			$hideUploadFileArea = true;
 			?>
 			<span id="uploadeFileLink">
-				<a id="uploadeFileLink" href="/uploads/<?php echo $this->shipment['attributes']['uploaded_file'] ?>" download><?php echo basename($this->shipment['attributes']['uploaded_file']); ?></a>&nbsp;&nbsp;&nbsp;<a href="javascript:removeUploadedFile();" class="text-danger"><i class="icon icon-remove-sign"></i> Remove</a>	
+				<a id="uploadeFileLink" href="/uploads/<?php echo $this->shipment['attributes']['uploaded_file'] ?>" download><?php echo basename($this->shipment['attributes']['uploaded_file']); ?></a>&nbsp;&nbsp;&nbsp;<a href="javascript:removeUploadedFile();" class="text-danger"><i class="icon icon-remove-sign"></i> Remove</a>
 			</span>
-			
+
 			<?php
 		}
 		?>
@@ -308,7 +308,7 @@ if(isset($this->shipment["shipment_test_report_date"]) && trim($this->shipment["
 			<input type="hidden" name="MAX_FILE_SIZE" value="5000000" />
 		</div>
 	</td>
-</tr>	
+</tr>
 <tr>
 	<th style="width:20%;">Supervisor Review</th>
 	<td style="width:20%;">
@@ -318,7 +318,7 @@ if(isset($this->shipment["shipment_test_report_date"]) && trim($this->shipment["
                         <option value="no" <?php if ($this->shipment['supervisor_approval'] == 'no') echo " selected "; ?>>NO</option>
                     </select>
                 </td>
-                <th><label id ="labSupervisor" <?php echo(isset($this->shipment['supervisor_approval']) && $this->shipment['supervisor_approval'] == 'yes') ? "" : "style='display:none;'" ?> >Supervisor Name</label></th> 
+                <th><label id ="labSupervisor" <?php echo(isset($this->shipment['supervisor_approval']) && $this->shipment['supervisor_approval'] == 'yes') ? "" : "style='display:none;'" ?> >Supervisor Name</label></th>
                 <td><input name="participantSupervisor" id="participantSupervisor" type="text" class="form-control" <?php echo(isset($this->shipment['supervisor_approval']) && $this->shipment['supervisor_approval'] == 'yes') ? "" : "style='display:none;'" ?>  value="<?php echo $this->shipment['participant_supervisor']; ?>"/></td>
 
             </tr>
@@ -336,9 +336,9 @@ if(isset($this->shipment["shipment_test_report_date"]) && trim($this->shipment["
                 <p>
 
                     <input name="submitbtn" class="btn btn-primary"  type="button" onclick="validateNow();
-                                                    return false;" tabindex="7" value="Submit"  /> 
+                                                    return false;" tabindex="7" value="Submit"  />
                     &nbsp;&nbsp;&nbsp;
-                    <input name="cancel" class="btn btn-danger"  type="button" id="reset" tabindex="8" value="Cancel" onclick="javascript:goto_dashboard()" /> 
+                    <input name="cancel" class="btn btn-danger"  type="button" id="reset" tabindex="8" value="Cancel" onclick="javascript:goto_dashboard()" />
 
                 </p>
             </div>
@@ -347,7 +347,7 @@ if(isset($this->shipment["shipment_test_report_date"]) && trim($this->shipment["
 </div>
 </form>
 
-<?php 
+<?php
 $genderHelper = $this->getHelper('DateFormat');
 $dtFormat=  $genderHelper->getDateFormat();
 ?>
@@ -369,13 +369,13 @@ $dtFormat=  $genderHelper->getDateFormat();
     }
 
 	function removeUploadedFile() {
-		if (window.confirm("Do you really want to remove this file?")) { 
+		if (window.confirm("Do you really want to remove this file?")) {
 	  		$("#uploadeFileLink").hide();
 			$("#uploadFileArea").show();
 		}
 
 	}
-	
+
     function validateNow() {
         flag = deforayValidator.init({
             formId: 'eidResponseForm'
@@ -421,7 +421,7 @@ $dtFormat=  $genderHelper->getDateFormat();
 	function clearDate(id) {
 		$("#" + id).val('');
 	}
-	
+
 	function checkQcStatus(){
 		var radioValue = $("input[name='qcDone']:checked"). val();
 		if(radioValue == "yes"){

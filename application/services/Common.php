@@ -15,10 +15,10 @@ class Application_Service_Common {
         }
         $originalMessage=html_entity_decode($message,ENT_QUOTES,'UTF-8');
         $systemMail = new Zend_Mail();
-        
+
         $originalMessage= str_replace("&nbsp;","",strval($originalMessage));
         $originalMessage= str_replace("&amp;nbsp;","",strval($originalMessage));
-        
+
         $systemMail->setSubject($subject);
         $systemMail->setBodyHtml(html_entity_decode($originalMessage, ENT_QUOTES, 'UTF-8'));
 
@@ -62,7 +62,7 @@ class Application_Service_Common {
 			return false;
         }
     }
-	
+
 	public static function getRandomString($length = 8) {
 		$alphabet = "abcdefghijklmnopqrstuwxyzABCDEFGHIJKLMNOPQRSTUWXYZ0123456789";
 		$randStr = "";
@@ -87,23 +87,23 @@ class Application_Service_Common {
 		$message .= "Selected Reason to Contact : ".$params['reason']."<br/>";
 		$message .= "Lab/Agency : ".$params['agency']."<br/>";
 		$message .= "Additional Info : ".$params['additionalInfo']."<br/>";
-		
+
 		$db = new Application_Model_DbTable_ContactUs();
-		
+
 		$data = array('first_name'=>$params['first_name'],'last_name'=>$params['last_name'],'email'=>$params['email'],'phone'=>$params['phone'],'reason'=>$params['reason'],'lab'=>$params['agency'],'additional_info'=>$params['additionalInfo'], 'contacted_on' => new Zend_Db_Expr('now()'),'ip_address'=>$_SERVER['REMOTE_ADDR']);
 		$db->addContact($data);
-		
+
 		$fromEmail = $params['email'];
 		$fromName  = $params['first_name']." " .$params['last_name'];
-		
+
 		$to = Application_Service_Common::getConfig('admin_email');
-		
+
 		$mailSent = $this->sendMail($to,null,null,"New contact message from the ePT program",$message,$fromEmail,$fromName);
 		if ($mailSent) {
 			return 1;
 		} else {
 			return 0;
-		}		
+		}
     }
 
     public function checkDuplicate($params) {
@@ -117,16 +117,16 @@ class Application_Service_Common {
             $sql = $db->select()->from($tableName)->where($fieldName . "=" . "'$value'");
             $result = $db->fetchAll($sql);
             $data = count($result);
-            
+
         } else {
             $table = explode("##", $fnct);
             // first trying $table[1] without quotes. If this does not work, then in catch we try with single quotes
             try {
-                
+
 				$sql = $db->select()->from($tableName)->where($fieldName . "=" . "'$value'")->where($table[0] . "!=" . $table[1]);
 				$result = $db->fetchAll($sql);
 				$data = count($result);
-                
+
             } catch (Exception $e) {
                 $sql = $db->select()->from($tableName)->where($fieldName . "=" . "'$value'")->where($table[0] . "!='" . $table[1] . "'");
                 $result = $db->fetchAll($sql);
@@ -138,15 +138,15 @@ class Application_Service_Common {
 
     public function removespecials($url){
         $url=str_replace(" ","-",$url);
-        
+
         $url = preg_replace('/[^a-zA-Z0-9\-]/', '', $url);
         $url = preg_replace('/^[\-]+/', '', $url);
         $url = preg_replace('/[\-]+$/', '', $url);
         $url = preg_replace('/[\-]{2,}/', '', $url);
-        
+
         return strtolower($url);
     }
-    
+
     public function getCountriesList()  {
         $countriesDb = new Application_Model_DbTable_Countries();
         return $countriesDb->getAllCountries();
@@ -171,8 +171,8 @@ class Application_Service_Common {
         $db = new Application_Model_DbTable_SchemeList();
         return $db->getFullSchemeList();
     }
-    
-    public function updateConfig($params) {	
+
+    public function updateConfig($params) {
         $db = new Application_Model_DbTable_GlobalConfig();
         $db->updateConfigDetails($params);
     }
@@ -202,14 +202,14 @@ class Application_Service_Common {
                 error_log($exc->getMessage());
                 error_log($exc->getTraceAsString());
             }
-        }        
+        }
     }
 
     public function insertTempMail($to, $cc,$bcc, $subject, $message, $fromMail = null, $fromName = null) {
         $db = new Application_Model_DbTable_TempMail();
         return $db->insertTempMailDetails($to, $cc,$bcc, $subject, $message, $fromMail, $fromName);
     }
-	
+
     public function getAllModeOfReceipt() {
         $db = new Application_Model_DbTable_ModeOfReceipt();
         return $db->fetchAllModeOfReceipt();
@@ -246,12 +246,12 @@ class Application_Service_Common {
             }
         }
     }
-    
+
     public function getHomeBannerDetails() {
         $db= new Application_Model_DbTable_HomeBanner();
         return $db->fetchHomeBannerDetails();
     }
-    
+
     public function getHomeBanner() {
         $db= new Application_Model_DbTable_HomeBanner();
         return $db->fetchHomeBanner();
@@ -278,6 +278,17 @@ class Application_Service_Common {
         return Pt_Commons_General::excelDateFormat($dateValue);
     }
 
+    public static function ParseDateISO8601OrYYYYMMDD($dateValue) {
+        if (!isset($dateValue) || $dateValue == null || trim($dateValue) == "" || trim($dateValue) == "0000-00-00") {
+            return null;
+        }
+        if (preg_match("/^[0-9]{2}-[A-Za-z]{3}-[0-9]{4}$/", $dateValue)) {
+            return new Zend_Date($dateValue);
+        } else {
+            return new Zend_Date($dateValue, Zend_Date::ISO_8601);
+        }
+    }
+
     public static function ParseDateISO8601($dateValue) {
         if (!isset($dateValue) || $dateValue == null || trim($dateValue) == "" || trim($dateValue) == "0000-00-00") {
             return null;
@@ -292,8 +303,8 @@ class Application_Service_Common {
         return Pt_Commons_General::humanDateFormat($dateValue);
     }
 
-    public static function ParseDateISO8601OrMin($dateValue) {
-        $parsedDate = Application_Service_Common::ParseDateISO8601($dateValue);
+    public static function ParseDateISO8601OrYYYYMMDDOrMin($dateValue) {
+        $parsedDate = Application_Service_Common::ParseDateISO8601OrYYYYMMDD($dateValue);
         if ($parsedDate == null) {
             $dateArray = array('year' => 1970, 'month' => 1, 'day' => 01);
             return new Zend_Date($dateArray);

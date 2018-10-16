@@ -207,8 +207,8 @@ class Application_Service_Evaluation {
             $maxScore = 0;
             foreach ($shipmentResult as $shipment) {
                 $createdOnUser = explode(" ", $shipment['created_on_user']);
-                $createdOn = Application_Service_Common::ParseDateISO8601OrMin($createdOnUser[0]);
-                $lastDate = new Zend_Date($shipment['lastdate_response'], Zend_Date::ISO_8601);
+                $createdOn = Application_Service_Common::ParseDateISO8601OrYYYYMMDDOrMin($createdOnUser[0]);
+                $lastDate = Application_Service_Common::ParseDateISO8601OrYYYYMMDD($shipment['lastdate_response']);
                 if ($createdOn->isEarlier($lastDate)) {
 
                     $results = $schemeService->getDbsSamples($shipmentId, $shipment['participant_id']);
@@ -265,20 +265,20 @@ class Application_Service_Evaluation {
                     }
 
                     // checking test kit expiry dates
-                    $testedOn = new Zend_Date($results[0]['shipment_test_date'], Zend_Date::ISO_8601);
+                    $testedOn = Application_Service_Common::ParseDateISO8601OrYYYYMMDD($results[0]['shipment_test_date']);
                     $testDate = $testedOn->toString('dd-MMM-YYYY');
                     $expDate1 = "";
                     if (trim(strtotime($results[0]['exp_date_1'])) != "") {
-                        $expDate1 = new Zend_Date($results[0]['exp_date_1'], Zend_Date::ISO_8601);
+                        $expDate1 = Application_Service_Common::ParseDateISO8601OrYYYYMMDD($results[0]['exp_date_1']);
                     }
                     $expDate2 = "";
                     if (trim(strtotime($results[0]['exp_date_2'])) != "") {
-                        $expDate2 = new Zend_Date($results[0]['exp_date_2'], Zend_Date::ISO_8601);
+                        $expDate2 = Application_Service_Common::ParseDateISO8601OrYYYYMMDD($results[0]['exp_date_2']);
                     }
 
                     $expDate3 = "";
                     if (trim(strtotime($results[0]['exp_date_3'])) != "") {
-                        $expDate3 = new Zend_Date($results[0]['exp_date_3'], Zend_Date::ISO_8601);
+                        $expDate3 = Application_Service_Common::ParseDateISO8601OrYYYYMMDD($results[0]['exp_date_3']);
                     }
 
 
@@ -306,7 +306,7 @@ class Application_Service_Evaluation {
                             $failureReason[]['warning'] = "EIA 1 (<strong>" . $testKit1 . "</strong>) expired " . round($measure->getValue()) . " days before the test date " . $testDate;
                         }
                     }
-                    $testedOn = new Zend_Date($results[0]['shipment_test_date'], Zend_Date::ISO_8601);
+                    $testedOn = Application_Service_Common::ParseDateISO8601OrYYYYMMDD($results[0]['shipment_test_date']);
                     $testDate = $testedOn->toString('dd-MMM-YYYY');
                     if ($expDate2 != "") {
                         if ($testedOn->isLater($expDate2)) {
@@ -320,7 +320,7 @@ class Application_Service_Evaluation {
                         }
                     }
 
-                    $testedOn = new Zend_Date($results[0]['shipment_test_date'], Zend_Date::ISO_8601);
+                    $testedOn = Application_Service_Common::ParseDateISO8601OrYYYYMMDD($results[0]['shipment_test_date']);
                     $testDate = $testedOn->toString('dd-MMM-YYYY');
                     if ($expDate3 != "") {
                         if ($testedOn->isLater($expDate3)) {
@@ -2376,8 +2376,8 @@ class Application_Service_Evaluation {
 		}
 		foreach ($shipmentResult as $shipment) {
 			$createdOnUser = explode(" ", $shipment['shipment_test_report_date']);
-            $createdOn = Application_Service_Common::ParseDateISO8601OrMin($createdOnUser[0]);
-			$lastDate = new Zend_Date($shipment['lastdate_response'], Zend_Date::ISO_8601);
+            $createdOn = Application_Service_Common::ParseDateISO8601OrYYYYMMDDOrMin($createdOnUser[0]);
+            $lastDate = Application_Service_Common::ParseDateISO8601OrYYYYMMDD($shipment['lastdate_response']);
 			if ($createdOn->compare($lastDate,Zend_date::DATES) <= 0) {
 				$results = $schemeService->getVlSamples($shipmentId, $shipment['participant_id']);
 				$totalScore = 0;
@@ -2492,8 +2492,8 @@ class Application_Service_Evaluation {
             $samplePassStatuses = array();
             $maxShipmentScore = 0;
             $hasBlankResult = false;
-            $createdOn = Application_Service_Common::ParseDateISO8601OrMin($createdOnUser[0]);
-            $lastDate = new Zend_Date($shipment['lastdate_response'], Zend_Date::ISO_8601);
+            $createdOn = Application_Service_Common::ParseDateISO8601OrYYYYMMDDOrMin($createdOnUser[0]);
+            $lastDate = Application_Service_Common::ParseDateISO8601OrYYYYMMDD($shipment['lastdate_response']);
             if ($createdOn->compare($lastDate,Zend_date::DATES) <= 0) {
                 $failureReason['warning'] = "Response was submitted after the last response date.";
             }
@@ -2584,8 +2584,8 @@ class Application_Service_Evaluation {
 		$db = Zend_Db_Table_Abstract::getDefaultAdapter();
 		foreach ($shipmentResult as $shipment) {
 		    $createdOnUser = explode(" ", $shipment['shipment_test_report_date']);
-            $createdOn = Application_Service_Common::ParseDateISO8601OrMin($createdOnUser[0]);
-            $lastDate = new Zend_Date($shipment['lastdate_response'], Zend_Date::ISO_8601);
+            $createdOn = Application_Service_Common::ParseDateISO8601OrYYYYMMDDOrMin($createdOnUser[0]);
+            $lastDate = Application_Service_Common::ParseDateISO8601OrYYYYMMDD($shipment['lastdate_response']);
             if ($createdOn->compare($lastDate) <= 0) {
                 $results = $schemeService->getEidSamples($shipmentId, $shipment['participant_id']);
                 $totalScore = 0;
@@ -2679,7 +2679,7 @@ class Application_Service_Evaluation {
 
 		foreach ($shipmentResult as $shipment) {
 			$createdOnUser = explode(" ", $shipment['created_on_user']);
-            $createdOn = Application_Service_Common::ParseDateISO8601OrMin($createdOnUser[0]);
+            $createdOn = Application_Service_Common::ParseDateISO8601OrYYYYMMDDOrMin($createdOnUser[0]);
 			$results = $schemeService->getDtsSamples($shipmentId, $shipment['participant_id']);
 			$totalScore = 0;
 			$maxScore = 0;
@@ -2693,23 +2693,23 @@ class Application_Service_Evaluation {
 			$controlTesKitFail = "";
 			$attributes = json_decode($shipment['attributes'], true);
 			//Response was submitted after the last response date.
-			$lastDate = new Zend_Date($shipment['lastdate_response'], Zend_Date::ISO_8601);
+            $lastDate = Application_Service_Common::ParseDateISO8601OrYYYYMMDD($shipment['lastdate_response']);
 			if ($createdOn->compare($lastDate,Zend_date::DATES) > 0) {
 				$failureReason[] = array('warning' => "Response was submitted after the last response date.",
 					'correctiveAction' => $correctiveActions[1]);
 				$correctiveActionList[] = 1;
 			}
 
-			$testedOn = new Zend_Date($results[0]['shipment_test_date'], Zend_Date::ISO_8601);
+            $testedOn = Application_Service_Common::ParseDateISO8601OrYYYYMMDD($results[0]['shipment_test_date']);
 
 			// Getting the Test Date string to show in Corrective Actions and other sentences
 			$testDate = $testedOn->toString('dd-MMM-YYYY');
 
 			// Getting test kit expiry dates as reported
 			$expDate1 = "";
-            $expDate1 = Application_Service_Common::ParseDateISO8601($results[0]['exp_date_1']);
-            $expDate2 = Application_Service_Common::ParseDateISO8601($results[0]['exp_date_2']);
-            $expDate3 = Application_Service_Common::ParseDateISO8601($results[0]['exp_date_3']);
+            $expDate1 = Application_Service_Common::ParseDateISO8601OrYYYYMMDD($results[0]['exp_date_1']);
+            $expDate2 = Application_Service_Common::ParseDateISO8601OrYYYYMMDD($results[0]['exp_date_2']);
+            $expDate3 = Application_Service_Common::ParseDateISO8601OrYYYYMMDD($results[0]['exp_date_3']);
 
 			// Getting Test Kit Names
 			$testKitDb = new Application_Model_DbTable_TestkitnameDts();

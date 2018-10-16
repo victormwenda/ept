@@ -1765,7 +1765,7 @@ class Application_Service_Reports {
 
 					if (trim($aRow['attributes']) != "") {
 						$attributes = json_decode($aRow['attributes'], true);
-                        $sampleRehydrationDate = Application_Service_Common::ParseDateISO8601($attributes['sample_rehydration_date']);
+						$sampleRehydrationDate = Application_Service_Common::ParseDateISO8601OrYYYYMMDD($attributes['sample_rehydration_date']);
                         $rehydrationDate = Application_Service_Common::ParseDateExcel($attributes["sample_rehydration_date"]);
 					}
 
