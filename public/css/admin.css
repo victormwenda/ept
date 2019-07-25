@@ -32,7 +32,7 @@ text-align:center;
   border-radius:25px;
   -webkit-border-radius:25px;
   -moz-border-radius:25px;
-  
+
   text-align:center;
 }
 
@@ -42,23 +42,30 @@ text-align:center;
 }
 
 
-	.evenResult td, .evenResult th{
-		background: #acb6d0 !important;
-		border-color: #acb6d0 !important;
-	}
-	
-	.oddResult td, .oddResult th{
-		background: #e0f0ff !important;
-		border-color: #e0f0ff !important;		
-	}
-	.totalResult td, .totalResult th{
-		background:#ECF0F1;
-	}
-	.datepicker{
-	 background: #ffffff !important;
-	 cursor: pointer !important;
-	}
-	
+.evenResult td, .evenResult th{
+	background: #acb6d0 !important;
+	border-color: #acb6d0 !important;
+}
+
+.oddResult td, .oddResult th{
+	background: #e0f0ff !important;
+	border-color: #e0f0ff !important;
+}
+
+.totalResult td, .totalResult th{
+	background:#ECF0F1;
+}
+
+.datepicker{
+	background: #fff !important;
+	cursor: pointer !important;
+}
+
+.datepicker[disabled]{
+	background-color: #ecf0f1 !important;
+	cursor: not-allowed !important;
+}
+
 .dataTables_wrapper{
  clear:both !important;
 }
@@ -78,6 +85,16 @@ input.numberInput {
 
 .dropdownTextContainer {
     background-color: #fff;
+    cursor: pointer;
+}
+
+.dropdownTextContainer[disabled] {
+    background-color: #ecf0f1;
+    cursor: not-allowed;
+}
+
+.dropdownTextContainer[disabled] a {
+    cursor: not-allowed;
 }
 
 .dropdownText {

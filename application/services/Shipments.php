@@ -709,7 +709,7 @@ class Application_Service_Shipments {
                 $data['shipment_test_report_date'] = new Zend_Db_Expr('now()');
             }
             if (isset($authNameSpace->qc_access) && $authNameSpace->qc_access =='yes') {
-                $data['qc_done'] = $params['qcDone'];
+                $data['qc_done'] = isset($params['qcDone']) ? $params['qcDone'] : 'no';
                 if (isset($data['qc_done']) && trim($data['qc_done'])=="yes") {
                     $data['qc_date'] = Application_Service_Common::ParseDate($params['qcDate']);
                     $data['qc_done_by'] = trim($params['qcDoneBy']);

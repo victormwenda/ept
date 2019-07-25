@@ -96,7 +96,7 @@ if (isset($this->responseData['shipment']["shipment_test_report_date"]) &&
     </tr>
 </table>
 <hr />
-<table class="table table-bordered table-striped" style="width:100%;margin:0 auto 10px auto;">
+<table id="submissionHeader" class="table table-bordered table-striped" style="width:100%;margin:0 auto 10px auto;">
     <tr>
         <th style="width: 20%;">
             <label class="fieldLabel">
@@ -324,7 +324,7 @@ if (isset($this->responseData['shipment']["shipment_test_report_date"]) &&
     </tr>
 </table>
 <br />
-<table class="table table-bordered table-striped table-hover" style="width:100%;margin:0 auto;">
+<table id="results" class="table table-bordered table-striped table-hover" style="width:100%;margin:0 auto;">
 <?php
 $total = 0;
 $counter = 1;
@@ -503,6 +503,40 @@ foreach ($this->responseData['results'] as $result) {
 } ?>
 </table>
 <script>
+  function toggleToEnterResults() {
+    if ($("input[name='ableToEnterResults']:checked").val() === "yes") {
+      $("#ableToEnterResultsReasonsRow").hide();
+      $("#transferToParticipantRow").hide();
+      $("#ableToEnterResultsOtherReasonRow").hide();
+      $("#notTestedReason").val("");
+      $("#notTestedOtherReason").val("");
+      $("#submissionHeader").find("input,select,textarea").removeAttr("disabled");
+      $("#submissionHeader").find("input,select,textarea").not(".datepicker").removeAttr("readonly");
+      $("#results").find("input,select,textarea").removeAttr("disabled");
+      $("#results").find("input,select,textarea").not(".datepicker").removeAttr("readonly");
+      $("#results").find(".btn.dropdown-toggle").attr("data-toggle", "dropdown");
+      $("#results").find(".btn.dropdown-toggle").attr("href", "#");
+      $("#results").find(".dropdownTextContainer").removeAttr("disabled");
+      $("#submissionFooter").find("input,select,textarea").removeAttr("disabled");
+      $("#submissionFooter").find("input,select,textarea").not(".datepicker").removeAttr("readonly");
+      for (var i = 1; i <= 5; i++) {
+        changeMtbDetected(i)
+      }
+    } else if ($("input[name='ableToEnterResults']:checked").val() === "no") {
+      $("#ableToEnterResultsReasonsRow").show();
+      $("#transferToParticipantRow").show();
+      $("#submissionHeader").find("input,select,textarea").attr("disabled", "");
+      $("#submissionHeader").find("input,select,textarea").not(".datepicker").attr("readonly", "");
+      $("#results").find("input,select,textarea").attr("disabled", "");
+      $("#results").find("input,select,textarea").not(".datepicker").attr("readonly", "");
+      $("#results").find(".btn.dropdown-toggle").removeAttr("data-toggle");
+      $("#results").find(".btn.dropdown-toggle").removeAttr("href");
+      $("#results").find(".dropdownTextContainer").attr("disabled", "");
+      $("#submissionFooter").find("input,select,textarea").attr("disabled", "");
+      $("#submissionFooter").find("input,select,textarea").not(".datepicker").attr("readonly", "");
+    }
+  }
+
   $(function() {
     $(".datepicker:not(.instrument-date-picker)")
       .datepicker({
@@ -518,18 +552,7 @@ foreach ($this->responseData['results'] as $result) {
     $("#tbResponseForm").find("input:enabled, select:enabled, textarea:enabled").attr("disabled", "disabled");
     <?php } ?>
 
-    $("input[name='ableToEnterResults']").on('click change', function(e) {
-      if ($("input[name='ableToEnterResults']:checked").val() === "yes") {
-        $("#ableToEnterResultsReasonsRow").hide();
-        $("#transferToParticipantRow").hide();
-        $("#ableToEnterResultsOtherReasonRow").hide();
-        $("#notTestedReason").val("");
-        $("#notTestedOtherReason").val("");
-      } else if ($("input[name='ableToEnterResults']:checked").val() === "no") {
-        $("#ableToEnterResultsReasonsRow").show();
-        $("#transferToParticipantRow").show();
-      }
-    });
+    $("input[name='ableToEnterResults']").on('click change', toggleToEnterResults);
 
     $("#notTestedReason").on('change', function(e) {
       if ($("#notTestedReason").val() === "other") {
@@ -539,10 +562,13 @@ foreach ($this->responseData['results'] as $result) {
         $("#notTestedOtherReason").val("");
       }
     });
+    toggleToEnterResults();
   });
 
   function clearDate(id) {
-    $("#" + id).val('');
+    if ($("input[name='ableToEnterResults']:checked").val() === "yes") {
+      $("#" + id).val('');
+    }
   }
 
   function changeInstrument(details) {
@@ -556,14 +582,18 @@ foreach ($this->responseData['results'] as $result) {
     var errorCodeInput = $("#errorCode" + resultNumber);
     var rifResistanceSelect = $("#rifResistance" + resultNumber);
     if (mtbDetected === "error") {
+      errorCodeInput.removeAttr("disabled");
       errorCodeInput.removeAttr("readonly");
     } else {
+      errorCodeInput.attr("disabled", "");
       errorCodeInput.attr("readonly", "");
       errorCodeInput.val('')
     }
     if (["detected", "high", "medium", "low", "veryLow"].includes(mtbDetected)) {
+      rifResistanceSelect.removeAttr("disabled");
       rifResistanceSelect.removeAttr("readonly");
     } else {
+      rifResistanceSelect.attr("disabled", "");
       rifResistanceSelect.attr("readonly", "");
       rifResistanceSelect.val('na')
     }
@@ -601,7 +631,8 @@ foreach ($this->responseData['results'] as $result) {
   };
 
   function addInstrumentRow(obj) {
-    $(obj.parentNode.parentNode).after('<tr id="instrumentRow' + newInstrumentIndex + '">\
+    if ($("input[name='ableToEnterResults']:checked").val() === "yes") {
+      $(obj.parentNode.parentNode).after('<tr id="instrumentRow' + newInstrumentIndex + '">\
       <td>\
         <input type="hidden" name="headerInstrumentIndex[' + newInstrumentIndex + ']"\
           class="instrumentIndex" value="' + newInstrumentIndex + '" />\
@@ -629,28 +660,31 @@ foreach ($this->responseData['results'] as $result) {
         </a>\
       </td>\
     </tr>');
-    instrumentsMap[newInstrumentIndex + ''] = {
-      serial: "",
-      installed: "",
-      calibrated: ""
-    };
-    $(".new-instrument-date-picker").datepicker({
-      dateFormat: '<?php echo $dtFormat;?>',
-      onSelect: updateInstrumentLists
-    });
-    newInstrumentIndex++;
+      instrumentsMap[newInstrumentIndex + ''] = {
+        serial: "",
+        installed: "",
+        calibrated: ""
+      };
+      $(".new-instrument-date-picker").datepicker({
+        dateFormat: '<?php echo $dtFormat;?>',
+        onSelect: updateInstrumentLists
+      });
+      newInstrumentIndex++;
+    }
   }
 
   function removeInstrumentRow(obj) {
-    if (Object.keys(instrumentsMap).length == 1) {
-      addInstrumentRow(obj);
+    if ($("input[name='ableToEnterResults']:checked").val() === "yes") {
+      if (Object.keys(instrumentsMap).length == 1) {
+        addInstrumentRow(obj);
+      }
+      var removeInstrumentIndex = $(obj.parentNode.parentNode).find('.instrumentIndex').val();
+      $(obj.parentNode.parentNode).fadeOut("normal", function () {
+        $(this).remove();
+      });
+      delete instrumentsMap[removeInstrumentIndex];
+      updateInstrumentLists();
     }
-    var removeInstrumentIndex = $(obj.parentNode.parentNode).find('.instrumentIndex').val();
-    $(obj.parentNode.parentNode).fadeOut("normal",function(){
-      $(this).remove();
-    });
-    delete instrumentsMap[removeInstrumentIndex];
-    updateInstrumentLists();
   }
 
   function updateInstrumentLists() {

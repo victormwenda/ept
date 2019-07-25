@@ -8,13 +8,13 @@ class Admin_ResponseController extends Zend_Controller_Action
                     ->addActionContext('get-shipments', 'html')
                     ->addActionContext('update-shipment-status', 'html')
                     ->addActionContext('delete-response', 'html')
-                    ->initContext();        
+                    ->initContext();
         $this->_helper->layout()->pageName = 'analyze';
     }
 
     public function indexAction() {
         if ($this->getRequest()->isPost()) {
-            $params = $this->_getAllParams();            
+            $params = $this->_getAllParams();
             $responseService = new Application_Service_Response();
             $responseService->echoAllDistributions($params);
         }
@@ -48,6 +48,7 @@ class Admin_ResponseController extends Zend_Controller_Action
     public function editAction() {
         if ($this->getRequest()->isPost()) {
             $params = $this->getRequest()->getPost();
+
             $responseService = new Application_Service_Response();
             $shipmentId = base64_encode($params['shipmentId']);
             if ($responseService->updateShipmentResults($params)) {
@@ -57,7 +58,7 @@ class Admin_ResponseController extends Zend_Controller_Action
             $alertMsg = new Zend_Session_Namespace('alertSpace');
             $alertMsg->message = "Shipment Results updated successfully";
             if (isset($params['whereToGo']) && $params['whereToGo'] != "") {
-               $this->_redirect($params['whereToGo']); 
+               $this->_redirect($params['whereToGo']);
             } else {
                 $this->_redirect("/admin/response/shipment/sid/$shipmentId");
             }
