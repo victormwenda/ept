@@ -1591,7 +1591,7 @@ class Application_Service_Evaluation {
                     ->joinLeft('instrument',
                         'instrument.participant_id = spm.participant_id and instrument.instrument_serial = res.instrument_serial', array(
                             'years_since_last_calibrated' =>
-                                new Zend_Db_Expr("YEAR(COALESCE(res.date_tested, spm.shipment_test_date, spm.shipment_test_report_date)) - YEAR(COALESCE(res.instrument_last_calibrated_on, instrument.instrument_last_calibrated_on, res.instrument_installed_on, instrument.instrument_installed_on, CAST('1990-01-01' AS DATE))) - ((DATE_FORMAT(COALESCE(res.date_tested, spm.shipment_test_date, spm.shipment_test_report_date), '%m%d') < DATE_FORMAT(COALESCE(res.instrument_last_calibrated_on, instrument.instrument_last_calibrated_on, res.instrument_installed_on, instrument.instrument_installed_on, CAST('1990-01-01' AS DATE)), '%m%d')))"),
+                                new Zend_Db_Expr("DATEDIFF(COALESCE(res.date_tested, spm.shipment_test_date, spm.shipment_test_report_date), COALESCE(res.instrument_last_calibrated_on, instrument.instrument_last_calibrated_on, res.instrument_installed_on, instrument.instrument_installed_on, CAST('1990-01-01' AS DATE))) / 365"),
                             'instrument_installed_on' =>
                                 new Zend_Db_Expr("COALESCE(res.instrument_installed_on, instrument.instrument_installed_on)"),
                             'instrument_last_calibrated_on' =>
