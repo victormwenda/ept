@@ -24,7 +24,7 @@ $activeSubMenu = isset($this->layout()->activeSubMenu) ? $this->layout()->active
 	<link rel="stylesheet" href='<?php echo $this->baseUrl("css/jquery-ui.min.css"); ?>' type="text/css" media="all" />
 	<link rel="stylesheet" href='<?php echo $this->baseUrl("assets/plugins/datatables/dataTables.bootstrap.css"); ?>' />
 	<link rel="stylesheet" href='<?php echo $this->baseUrl("css/deforayModal.css"); ?>' type="text/css" media="all" />
-	
+
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
     <script src="<?php echo $this->baseUrl('js/html5shiv.min.js'); ?>"></script>
@@ -39,7 +39,7 @@ $activeSubMenu = isset($this->layout()->activeSubMenu) ? $this->layout()->active
 	  .center{
 		  text-align: center;
 	  }
-	  
+
 	  .mandatory{
 		color:red;
 	  }
@@ -108,9 +108,9 @@ $activeSubMenu = isset($this->layout()->activeSubMenu) ? $this->layout()->active
                 <i class="icon icon-home"></i> <span>Program Information</span>
               </a>
             </li>
-			
-				 
-				 
+
+
+
 		  <?php if(isset($authNameSpace->dm_id)){ ?>
 			  <li class="<?php echo ($activeMenu == 'dashboard') ? ' active ' : '';  ?>">
 				<a href="<?php echo $this->url(array("controller"=>"participant","action"=>"dashboard"),null,true) ?>">
@@ -122,12 +122,10 @@ $activeSubMenu = isset($this->layout()->activeSubMenu) ? $this->layout()->active
 				  <i class="icon icon-list-ul"></i> <span>PE Result Submission</span>
 				</a>
 			  </li>
-              <li class="treeview <?php echo ($activeMenu == 'view-reports') ? ' active ' : '';  ?>">
-                <a href="#" class="" aria-haspopup="true" aria-expanded="false"><i class="icon icon-edit"></i> <span>View PE Result </span> <i class="fa fa-angle-left icon icon-angle-left pull-right"></i></a>
-                <ul class="treeview-menu">
-				  <li class="<?php echo ($activeSubMenu == 'individual-reports') ? ' active ' : '';  ?>"><a href="<?php echo $this->url(array("controller"=>"participant","action"=>"report"),null,true) ?>"> Individual Report</a></li>
-				  <li class="<?php echo ($activeSubMenu == 'summary-reports') ? ' active ' : '';  ?>"><a href="<?php echo $this->url(array("controller"=>"participant","action"=>"summary-report"),null,true) ?>"> Summary Report</a></li>
-                </ul>
+              <li class="<?php echo ($activeMenu == 'individual-reports') ? ' active ' : '';  ?>">
+                <a href="<?php echo $this->url(array("controller"=>"participant","action"=>"report"),null,true) ?>">
+                  <i class="icon icon-edit"></i> <span>View PE Result</span>
+                </a>
               </li>
 			  <li class="<?php echo ($activeMenu == 'all-schemes') ? ' active ' : '';  ?>">
 				<a href="<?php echo $this->url(array("controller"=>"participant","action"=>"all-schemes"),null,true) ?>">
@@ -144,18 +142,18 @@ $activeSubMenu = isset($this->layout()->activeSubMenu) ? $this->layout()->active
 				  <i class="icon icon-exclamation"></i> <span>Defaulted Schemes</span>
 				</a>
 			  </li>
-			  	  
+
               <li class="treeview <?php echo ($activeMenu == 'my-account') ? ' active ' : '';  ?>">
                 <a href="#" class="" data-toggle="" role="" aria-haspopup="true" aria-expanded="false"><i class="icon icon-user"></i> <span>My Account</span> <i class="fa fa-angle-left icon icon-angle-left pull-right"></i></a>
                 <ul class="treeview-menu">
 				  <li class="<?php echo ($activeSubMenu == 'user-info') ? ' active ' : '';  ?>"><a href="<?php echo $this->url(array("controller"=>"participant","action"=>"user-info"),null,true) ?>">My Login Information</a></li>
 				  <li class="<?php echo ($activeSubMenu == 'testers') ? ' active ' : '';  ?>"><a href="<?php echo $this->url(array("controller"=>"participant","action"=>"testers"),null,true) ?>">PE Participant Info</a></li>
 				  <li class="<?php echo ($activeSubMenu == 'scheme') ? ' active ' : '';  ?>"><a href="<?php echo $this->url(array("controller"=>"participant","action"=>"scheme"),null,true) ?>">Scheme Information</a></li>
-				  <li class="<?php echo ($activeSubMenu == 'change-password') ? ' active ' : '';  ?>"><a href="<?php echo $this->url(array("controller"=>"participant","action"=>"password"),null,true) ?>">Change Password</a></li>                                
+				  <li class="<?php echo ($activeSubMenu == 'change-password') ? ' active ' : '';  ?>"><a href="<?php echo $this->url(array("controller"=>"participant","action"=>"password"),null,true) ?>">Change Password</a></li>
                 </ul>
               </li>
 			  <li class="<?php echo ($activeMenu == 'contact-us') ? ' active ' : '';  ?>"><a href="<?php echo $this->url(array("controller"=>"contact-us"),null,true) ?>"><i class="icon icon-envelope"></i> <span>Contact Us </span></a></li>
-			  <?php } ?>				 
+			  <?php } ?>
 
 
 <?php if(!isset($authNameSpace->dm_id)){ ?>
@@ -183,14 +181,14 @@ $activeSubMenu = isset($this->layout()->activeSubMenu) ? $this->layout()->active
 		  <?php echo $this->layout()->content; ?>
 		  <br/>
 		</section>
-      
+
       </div><!-- /.content-wrapper -->
-	  
-	  <div id="dDiv" class="dialog"> 
-            <div style="text-align:center"><span onclick="closeLayoutModal();" style="float:right;clear:both;" class="closeModal"></span></div> 
-            <iframe id="dFrame" src="" style="border:none;" scrolling='yes' marginwidth='0' marginheight='0' frameborder='0' vspace='0' hspace='0' >some problem</iframe> 
+
+	  <div id="dDiv" class="dialog">
+            <div style="text-align:center"><span onclick="closeLayoutModal();" style="float:right;clear:both;" class="closeModal"></span></div>
+            <iframe id="dFrame" src="" style="border:none;" scrolling='yes' marginwidth='0' marginheight='0' frameborder='0' vspace='0' hspace='0' >some problem</iframe>
 	  </div>
-	  
+
       <footer class="main-footer">
         <div class="pull-right hidden-xs">
           <strong><a href="http://www.taskforce.org/">Funded by TaskForce</a></strong>
@@ -202,7 +200,7 @@ $activeSubMenu = isset($this->layout()->activeSubMenu) ? $this->layout()->active
     </div><!-- ./wrapper -->
 
     <!-- jQuery 2.1.4 -->
-    
+
     <!-- jQuery UI 1.11.4 -->
     <script src="<?php echo $this->baseUrl("assets/plugins/jQueryUI/jquery-ui.min.js"); ?>"></script>
     <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
@@ -218,11 +216,11 @@ $activeSubMenu = isset($this->layout()->activeSubMenu) ? $this->layout()->active
 <script type="text/javascript" src="<?php echo $this->baseUrl("js/jquery.blockUI.js"); ?>"></script>
 <script type="text/javascript" src="<?php echo $this->baseUrl("js/deforayValidation.js"); ?>"></script>
 <script type="text/javascript" src="<?php echo $this->baseUrl("js/moment.min.js"); ?>"></script>
-<script type="text/javascript" src="<?php echo $this->baseUrl("js/deforayModal.js"); ?>"></script>	
+<script type="text/javascript" src="<?php echo $this->baseUrl("js/deforayModal.js"); ?>"></script>
 
   <!-- AdminLTE App -->
   <script src="<?php echo $this->baseUrl('assets/dist/js/app.min.js'); ?>"></script>
-  
+
   <script type="text/javascript">
 	function layoutModal(url,w,h){
 	     showdefModal('dDiv',w,h);
@@ -230,13 +228,13 @@ $activeSubMenu = isset($this->layout()->activeSubMenu) ? $this->layout()->active
 	     document.getElementById('dFrame').style.width=w+'px';
 	     document.getElementById('dFrame').src = url;
   }
-      
+
   function closeLayoutModal(){
       document.getElementById('dFrame').src = "";
       //window.location.reload(true);
       hidedefModal();
   }
-  
+
   Array.prototype.remove= function(){
     var what, a= arguments, L= a.length, ax;
     while(L && this.length){

@@ -115,7 +115,7 @@ class ParticipantController extends Zend_Controller_Action {
         } else {
             $this->view->rsParticipant = $participantService->getParticipantDetails($this->_getParam('psid'));
         }
-        
+
         $this->view->affiliates = $participantService->getAffiliateList();
         $this->view->countriesList = $commonService->getcountriesList();
         $this->view->networks = $participantService->getNetworkTierList();
@@ -215,18 +215,6 @@ class ParticipantController extends Zend_Controller_Action {
         }
     }
 
-    public function summaryReportAction() {
-        $this->_helper->layout()->activeMenu = 'view-reports';
-        $this->_helper->layout()->activeSubMenu = 'summary-reports';
-        if ($this->getRequest()->isPost()) {
-            $params = $this->_getAllParams();
-            $shipmentService = new Application_Service_Shipments();
-            $shipmentService->getSummaryReport($params);
-        }
-        $scheme = new Application_Service_Schemes();
-        $this->view->schemes = $scheme->getAllSchemes();
-    }
-    
     public function addQcAction() {
         if ($this->getRequest()->isPost()) {
             $params = $this->_getAllParams();
