@@ -1640,10 +1640,10 @@ class Application_Service_Evaluation {
                     if ($tbResult['cartridge_expiration_date'] < $tbResult['date_tested']) {
                         $cartridgeExpiredOn = $tbResult['cartridge_expiration_date'];
                     }
-                    if (!isset($tbResult['instrument_last_calibrated_on']) &&
-                        !isset($tbResult['instrument_installed_on']) ||
+                    if ((!isset($tbResult['instrument_last_calibrated_on']) &&
+                        !isset($tbResult['instrument_installed_on'])) ||
                         (isset($tbResult['years_since_last_calibrated']) &&
-                            $tbResult['years_since_last_calibrated'] > 0)) {
+                            $tbResult['years_since_last_calibrated'] >= 1)) {
                         $instrumentRequiresCalibration = true;
                     }
                     $toReturn[$counter] = array(
