@@ -96,7 +96,7 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
         }
     }
 
-    public function updateResult($params, $cartridgeExpirationDate, $mtbRifKitLotNo) {
+    public function updateResult($params, $cartridgeExpirationDate, $cartridgeLotNo) {
         $sampleId = $params['sampleId'];
         $authNameSpace = new Zend_Session_Namespace('datamanagers');
         $dataManagerId = $authNameSpace->dm_id;
@@ -130,8 +130,8 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
             if (isset($cartridgeExpirationDate)) {
                 $responseResult['cartridge_expiration_date'] = $cartridgeExpirationDate;
             }
-            if (isset($mtbRifKitLotNo)) {
-                $responseResult['reagent_lot_id'] = $mtbRifKitLotNo;
+            if (isset($cartridgeLotNo)) {
+                $responseResult['reagent_lot_id'] = $cartridgeLotNo;
             }
             $this->insert($responseResult);
         } else {
@@ -159,8 +159,8 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
             if (isset($cartridgeExpirationDate)) {
                 $responseResult['cartridge_expiration_date'] = $cartridgeExpirationDate;
             }
-            if (isset($mtbRifKitLotNo)) {
-                $responseResult['reagent_lot_id'] = $mtbRifKitLotNo;
+            if (isset($cartridgeLotNo)) {
+                $responseResult['reagent_lot_id'] = $cartridgeLotNo;
             }
             $this->update($responseResult,
                 "shipment_map_id = " . $params['smid'] . " and sample_id = " . $sampleId);

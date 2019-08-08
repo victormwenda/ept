@@ -635,17 +635,17 @@ if ($this->scheme == 'eid') {
             </td>
         </tr>
         <tr>
-            <th><label>MTB/RIF Kit Lot No</label></th>
+            <th><label>Cartridge Kit Lot No</label></th>
             <td>
-                <?php echo $attributes['mtb_rif_kit_lot_no'];?>
+                <?php echo $attributes['cartridge_lot_no'];?>
             </td>
-            <td><label>Expiration date of MTB/RIF Kit:</label></td>
+            <td><label>Expiration date of Cartridge:</label></td>
             <td>
                 <?php echo $attributes['expiry_date']; ?>
             </td>
         </tr>
         <tr>
-            <td><label>How many Xpert MTB/RIF tests have been conducted by this site in the last full month?</label></td>
+            <td><label>How many Xpert MTB/RIF and MTB Ultra tests have been conducted by this site in the last full month?</label></td>
             <td>
                 <?php if(isset($attributes['count_tests_conducted_over_month'])) {
                     echo $attributes['count_tests_conducted_over_month'];

@@ -300,7 +300,7 @@ if ($this->scheme == 'tb') { ?>
             }
           }
         },
-        mtbRifKitLotNo: {
+        cartridgeLotNo: {
           required: {
             depends: function () {
               return ($('#submitAction').val() === 'submit' || previouslySubmitted) &&
@@ -543,9 +543,9 @@ if ($this->scheme == 'tb') { ?>
         notTestedReason: "Why couldn't the PE panel be tested?",
         notTestedOtherReason: "Required if 'Other' selected",
         receiptDate: "What date did you receipt the panel?",
-        expiryDate: "Please enter the expiration date of MTB/RIF kit",
+        expiryDate: "Please enter the expiration date of cartridge",
         testReceiptDate: "When did the lab submit the results?",
-        mtbRifKitLotNo: "Please enter the lot number of MTB/RIF kit",
+        mtbRifKitLotNo: "Please enter the lot number of cartridge",
         assay: "Which assay was used to run the samples?",
         qcDate: "When was monthly maintenance done?",
         qcDoneBy: "Who performed monthly maintenance?",

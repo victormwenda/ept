@@ -4665,7 +4665,7 @@ class Application_Service_Reports {
     FlattenedEvaluationResults.Submitted, FlattenedEvaluationResults.`Submission Excluded`,
     FlattenedEvaluationResults.`Date PT Received`, FlattenedEvaluationResults.`Date PT Results Reported`,
     
-    JSON_UNQUOTE(FlattenedEvaluationResults.attributes_json->\"$.mtb_rif_kit_lot_no\") AS `MTB/RIF Assay Kit Lot Number`,
+    JSON_UNQUOTE(FlattenedEvaluationResults.attributes_json->\"$.cartridge_lot_no\") AS `Cartridge Lot Number`,
     STR_TO_DATE(JSON_UNQUOTE(FlattenedEvaluationResults.attributes_json->\"$.expiry_date\"), '%d-%b-%Y') AS `Expiry Date`,
     
     FlattenedEvaluationResults.`Date of last instrument calibration`, FlattenedEvaluationResults.`Participated`, FlattenedEvaluationResults.`Reason for No Submission`,

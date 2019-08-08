@@ -149,17 +149,17 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
         <tr>
             <th>
                 <label class="fieldLabel">
-                    MTB/RIF Kit Lot No
+                    Cartridge Lot No
                     <span class='mandatory'>*</span>
                 </label>
             </th>
             <td>
-                <input type="text" name="mtbRifKitLotNo" id="mtbRifKitLotNo" class="form-control isRequired"
-                       value="<?php echo $attributes['mtb_rif_kit_lot_no'];?>"/>
+                <input type="text" name="cartridgeLotNo" id="cartridgeLotNo" class="form-control isRequired"
+                       value="<?php echo $attributes['cartridge_lot_no'];?>"/>
             </td>
             <td>
                 <label class="fieldLabel">
-                    Expiration date of MTB/RIF Kit
+                    Expiration date of Cartridge
                     <span class='mandatory'>*</span>
                 </label>
             </td>
@@ -189,7 +189,7 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
         </tr>
         <tr>
             <td>
-                <label>How many Xpert MTB/RIF tests have been conducted by this site in the last full month?</label>
+                <label>How many Xpert MTB/RIF and MTB Ultra tests have been conducted by this site in the last full month?</label>
             </td>
             <td>
                 <input type="text" name="countTestsConductedOverMonth" id="countTestsConductedOverMonth"

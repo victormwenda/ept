@@ -63,7 +63,7 @@ if (sizeof($this->result['shipment']) > 0) {
                 $html='<h3 style="font-weight: bold;text-align:center;">HIV-1 Proficiency Testing Program for Early Infant Diagnosis using Dried Blood Spot</h3>';
             } else if($this->schemeType == 'tb') {
                 $html = '<h3 style="background-color:#000000;color:#ffffff;font-weight: bold;text-align:center;">';
-                $html .= '<br />XPERT MTB/RIF ASSAY PROFICIENCY TEST PROGRAM PARTICIPANT’S RESULTS SUMMARY<br /></h3>';
+                $html .= '<br />XPERT MTB ASSAY PROFICIENCY TEST PROGRAM PARTICIPANT’S RESULTS SUMMARY<br /></h3>';
             } else {
                 $html='<h3 style="font-weight: bold;text-align:center;">Proficiency Testing Program for Anti-HIV Antibodies Diagnostics using '.$this->scheme_name.'</h3>';
             }
@@ -129,7 +129,7 @@ if (sizeof($this->result['shipment']) > 0) {
 
     $attestation = '<div>';
     $attestation .= '    <h5>Documentation of Report Review</h5>';
-    $attestation .= '    <p style="width:100%;font-size:10pt;">We the undersigned, have read and reviewed the above Xpert MTB/RIF performance evaluation report.  If the final score is less than 100% we have downloaded the root cause analysis and corrective actions forms from ePT, completed, and attached them to this report. Performance report and any attachments must be filed and retained as documentation.</p>';
+    $attestation .= '    <p style="width:100%;font-size:10pt;">We the undersigned, have read and reviewed the above Xpert MTB performance evaluation report.  If the final score is less than 100% we have downloaded the root cause analysis and corrective actions forms from ePT, completed, and attached them to this report. Performance report and any attachments must be filed and retained as documentation.</p>';
     $attestation .= '    <p style="width:100%;font-size:10pt;">Laboratory Manager (or Designee) _______________________________ Date:________________________</p>';
     $attestation .= '    <p style="width:100%;font-size:10pt;">Testing Personnel ____________________________________________ Date:________________________</p>';
     $attestation .= '    <p style="width:100%;font-size:10pt;">';
@@ -777,7 +777,7 @@ if (sizeof($this->result['shipment']) > 0) {
                             array_push($allComments, 'Red highlighted results represent discrepancies between actual and expected results.');
                         }
                         if ($result['cartridge_expired_on']) {
-                            array_push($allComments, 'Xpert MTB/RIF kit expired '.Pt_Commons_General::dbDateToString($result['cartridge_expired_on']).'.  Use of expired reagents could lead to incorrect reporting of clinical results.');
+                            array_push($allComments, 'Xpert cartridge kit expired '.Pt_Commons_General::dbDateToString($result['cartridge_expired_on']).'.  Use of expired reagents could lead to incorrect reporting of clinical results.');
                         }
                         if ($noResultOrError2127InSubmission) {
                             array_push($allComments, 'Check computer software GeneXpert Dx to ensure software is not freezing during testing.  Check uninterrupted power supply (UPS) to ensure it is capable of sustaining power to GeneXpert for a minimum of 2 hours should an electrical power outage occur.  If UPS is unable to sustain GeneXpert instrument for 2 hours request sufficient UPS that will provide power to GeneXpert instrument for no less than 2 hours to enable current run completion in the event of a power outage.');

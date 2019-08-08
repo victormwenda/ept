@@ -31,7 +31,7 @@ if ($this->scheme == 'tb' && isset($attributes['corrective_actions'])) {
     <input type="hidden" name="responseDeadlineDate" id="responseDeadlineDate" value="<?php echo $this->dateFormat($this->evaluateData['shipment']['lastdate_response']); ?>" />
     <input type="hidden" name="participantId" id="participantId" value="<?php echo $this->evaluateData['shipment']['participant_id']; ?>" />
 	<input type="hidden" name="smid" id="smid" value="<?php echo $this->evaluateData['shipment']['map_id']; ?>" />
-	<input type="hidden" name="scheme" id="scheme" value="<?php echo $this->scheme; ?>" />   
+	<input type="hidden" name="scheme" id="scheme" value="<?php echo $this->scheme; ?>" />
 	<input type="hidden" name="whereToGo" id="whereToGo" value="" />
     <input type="hidden" name="unableToSubmit" id="unableToSubmit" value="<?php echo $this->evaluateData['shipment']['is_pt_test_not_performed']; ?>" />
 <?php
@@ -87,7 +87,7 @@ if (isset($this->evaluateData['evalComments'])) {
         } else {
             echo " No Warnings or Corrective Actions ";
         } ?>
-		</td>		
+		</td>
 	</tr>
     <?php
     if ($this->scheme == 'tb') {
@@ -143,7 +143,7 @@ if (isset($this->evaluateData['evalComments'])) {
             <select class="form-control" name="comment" id="comment">
 			<?php echo $this->dropdownSelection($evalComments,$this->evaluateData['shipment']['evaluation_comment'],true); ?>
 			</select>
-		</td>		
+		</td>
 	</tr>
 	<tr>
 		<td style="vertical-align: middle;">
@@ -300,7 +300,7 @@ $dtFormat=  $vHelper->getDateFormat();
             }
           }
         },
-        mtbRifKitLotNo: {
+        cartridgeLotNo: {
           required: {
             depends: function () {
               return $("#isExcluded").val() != "yes" &&
@@ -539,9 +539,9 @@ $dtFormat=  $vHelper->getDateFormat();
       },
       messages: {
         receiptDate: "What date did you receipt the panel?",
-        expiryDate: "Please enter the expiration date of MTB/RIF kit",
+        expiryDate: "Please enter the expiration date of cartridge",
         testReceiptDate: "When did the lab submit the results?",
-        mtbRifKitLotNo: "Please enter the lot number of MTB/RIF kit",
+        cartridgeLotNo: "Please enter the lot number of cartridge",
         assay: "Which assay was used to run the samples?",
         qcDate: "When was monthly maintenance done?",
         qcDoneBy: "Who performed monthly maintenance?",

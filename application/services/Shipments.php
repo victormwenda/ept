@@ -556,7 +556,7 @@ class Application_Service_Shipments {
         $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
         $authNameSpace = new Zend_Session_Namespace('datamanagers');
         $attributes = array(
-            "mtb_rif_kit_lot_no" => $params['mtbRifKitLotNo'],
+            "cartridge_lot_no" => $params['cartridgeLotNo'],
             "expiry_date" => $params['expiryDate'],
             "assay" => $params['assay'],
             "count_tests_conducted_over_month" => $params['countTestsConductedOverMonth'],
@@ -606,7 +606,7 @@ class Application_Service_Shipments {
         $shipmentParticipantDb->updateShipmentValues($data, $params['smid']);
     }
 
-    public function updateTbResult($params, $cartridgeExpirationDate, $mtbRifKitLotNo) {
+    public function updateTbResult($params, $cartridgeExpirationDate, $cartridgeLotNo) {
         if (!$this->isShipmentEditable($params['shipmentId'], $params['participantId'])) {
             return false;
         }
@@ -614,7 +614,7 @@ class Application_Service_Shipments {
         $db->beginTransaction();
         try {
             $tbResponseDb = new Application_Model_DbTable_ResponseTb();
-            $tbResponseDb->updateResult($params, $cartridgeExpirationDate, $mtbRifKitLotNo);
+            $tbResponseDb->updateResult($params, $cartridgeExpirationDate, $cartridgeLotNo);
             $instrumentsDb = new Application_Model_DbTable_Instruments();
             if (isset($params['instrumentSerial']) &&
                 $params['instrumentSerial'] != "") {
@@ -672,7 +672,7 @@ class Application_Service_Shipments {
             $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
             $authNameSpace = new Zend_Session_Namespace('datamanagers');
             $attributes = array(
-                "mtb_rif_kit_lot_no" => $params['mtbRifKitLotNo'],
+                "cartridge_lot_no" => $params['cartridgeLotNo'],
                 "expiry_date" => $params['expiryDate'],
                 "assay" => $params['assay'],
                 "count_tests_conducted_over_month" => $params['countTestsConductedOverMonth'],

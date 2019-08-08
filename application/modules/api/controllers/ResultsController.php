@@ -44,8 +44,8 @@ class Api_ResultsController extends Zend_Controller_Action {
                 $sampleIds = $schemeService->getTbSampleIds($sID, $pID);
                 $attributes = $shipment["attributes"];
                 if (isset($attributes)) {
-                    if (!isset($attributes["mtb_rif_kit_lot_no"])) {
-                        $attributes["mtb_rif_kit_lot_no"] = "";
+                    if (!isset($attributes["cartridge_lot_no"])) {
+                        $attributes["cartridge_lot_no"] = "";
                     }
                     if (!isset($attributes["expiry_date"])) {
                         $attributes["expiry_date"] = "";
@@ -64,7 +64,7 @@ class Api_ResultsController extends Zend_Controller_Action {
                     }
                 } else {
                     $attributes = array(
-                        "mtb_rif_kit_lot_no" => "",
+                        "cartridge_lot_no" => "",
                         "expiry_date" => "",
                         "assay" => "",
                         "count_tests_conducted_over_month" => "",
@@ -73,7 +73,7 @@ class Api_ResultsController extends Zend_Controller_Action {
                     );
                 }
                 $response = array(
-                    'mtbRifKitLotNo' => $attributes["mtb_rif_kit_lot_no"],
+                    'cartridgeLotNo' => $attributes["cartridge_lot_no"],
                     'expiryDate' => Pt_Commons_General::dbDateToString($attributes["expiry_date"]),
                     'testReceiptDate' => Pt_Commons_General::dbDateToString($shipment['shipment_test_report_date']),
                     'assay' => $attributes["assay"],
@@ -173,12 +173,12 @@ class Api_ResultsController extends Zend_Controller_Action {
             if ($cartridgeExpirationDate == "" || $cartridgeExpirationDate == "0000-00-00") {
                 $cartridgeExpirationDate = null;
             }
-            $mtbRifKitLotNo = null;
-            if (isset($params['mtbRifKitLotNo'])) {
-                $mtbRifKitLotNo = $params['mtbRifKitLotNo'];
+            $cartridgeLotNo = null;
+            if (isset($params['cartridgeLotNo'])) {
+                $cartridgeLotNo = $params['cartridgeLotNo'];
             }
             $shipmentService = new Application_Service_Shipments();
-            $shipmentService->updateTbResult($params, $cartridgeExpirationDate, $mtbRifKitLotNo);
+            $shipmentService->updateTbResult($params, $cartridgeExpirationDate, $cartridgeLotNo);
             $this->getResponse()->setBody('OK');
             $this->getResponse()->setHttpResponseCode(200);
         }

@@ -167,15 +167,15 @@ foreach($this->allNotTestedReason as $reason) { ?>
 	</tr>
     <tr class ="dark">
 		<td style="white-space: nowrap;">
-            <label>MTB/RIF Kit Lot No</label>
+            <label>Cartridge Lot No</label>
             <span class='mandatory'>*</span>
         </td>
 		<td>
-		    <input type="text" name="mtbRifKitLotNo" id="mtbRifKitLotNo" class="form-control isRequired"
-                   value="<?php echo $this->shipment['attributes']['mtb_rif_kit_lot_no'];?>"/>
+		    <input type="text" name="cartridgeLotNo" id="cartridgeLotNo" class="form-control isRequired"
+                   value="<?php echo $this->shipment['attributes']['cartridge_lot_no'];?>"/>
 		</td>
 		<td style="width:20%; white-space: nowrap;">
-            <label>Expiration date of MTB/RIF Kit</label>
+            <label>Expiration date of Cartridge</label>
             <span class='mandatory'>*</span>
         </td>
 		<td style="width:30%;">
@@ -202,7 +202,7 @@ foreach($this->allNotTestedReason as $reason) { ?>
     </tr>
     <tr class="dark">
         <td>
-            <label>How many Xpert MTB/RIF tests have been conducted by this site in the last full month?</label>
+            <label>How many Xpert MTB/RIF and MTB Ultra tests have been conducted by this site in the last full month?</label>
         </td>
         <td>
             <input type="text" name="countTestsConductedOverMonth" id="countTestsConductedOverMonth"
@@ -747,7 +747,7 @@ $dtFormat = $genderHelper->getDateFormat();
             }
           }
         },
-        mtbRifKitLotNo: {
+        cartridgeLotNo: {
           required: {
             depends: function () {
               return ($('#submitAction').val() === 'submit' || previouslySubmitted) &&
@@ -990,9 +990,9 @@ foreach ($this->allSamples as $sample) {
         notTestedReason: "Why couldn't the PE panel be tested?",
         notTestedOtherReason: "Required if 'Other' selected",
         receiptDate: "What date did you receipt the panel?",
-        expiryDate: "Please enter the expiration date of MTB/RIF kit",
+        expiryDate: "Please enter the expiration date of cartridge",
         testReceiptDate: "When did the lab submit the results?",
-        mtbRifKitLotNo: "Please enter the lot number of MTB/RIF kit",
+        mtbRifKitLotNo: "Please enter the lot number of cartridge",
         assay: "Which assay was used to run the samples?",
         qcDate: "When was monthly maintenance done?",
         qcDoneBy: "Who performed monthly maintenance?",

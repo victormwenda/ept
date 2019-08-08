@@ -891,7 +891,7 @@ class Application_Service_Evaluation {
                 }
 
                 $attributes = array_merge($attributes, array(
-                    "mtb_rif_kit_lot_no" => $params['mtbRifKitLotNo'],
+                    "cartridge_lot_no" => $params['cartridgeLotNo'],
                     "expiry_date" => Application_Service_Common::ParseDate($params['expiryDate']),
                     "assay" => $params['assay'],
                     "count_tests_conducted_over_month" => $params['countTestsConductedOverMonth'],
@@ -1013,7 +1013,7 @@ class Application_Service_Evaluation {
                         'module_name' => $params['moduleName'][$i],
                         'instrument_user' => $params['instrumentUser'][$i],
                         'cartridge_expiration_date' => $cartridgeExpirationDate,
-                        'reagent_lot_id' => $params['mtbRifKitLotNo'],
+                        'reagent_lot_id' => $params['cartridgeLotNo'],
                         'error_code' => $params['errorCode'][$i],
                         'updated_by' => $admin,
                         'updated_on' => new Zend_Db_Expr('now()')

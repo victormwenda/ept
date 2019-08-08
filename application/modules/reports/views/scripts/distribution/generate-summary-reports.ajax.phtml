@@ -66,7 +66,7 @@ if ($this->result['shipment'] != "") {
                 $html='<h3 style="font-weight: bold;text-align:center;">HIV-1 Proficiency Testing Program for Early Infant Diagnosis using Dried Blood Spot</h3>';
             } else if($this->schemeType == 'tb') {
                 $html = '<h3 style="background-color:#000000;color:#ffffff;font-weight: bold;text-align:center;">';
-                $html .= '<br />XPERT MTB/RIF ASSAY PROFICIENCY TEST PROGRAM PARTICIPANT’S RESULTS SUMMARY<br /></h3>';
+                $html .= '<br />XPERT MTB ASSAY PROFICIENCY TEST PROGRAM PARTICIPANT’S RESULTS SUMMARY<br /></h3>';
             } else {
                 $html='<h3 style="font-weight: bold;text-align:center;">Proficiency Testing Program for Anti-HIV Antibodies Diagnostics using '.$this->scheme_name.'</h3>';
             }
@@ -163,7 +163,7 @@ if ($this->result['shipment'] != "") {
             $overAllSumRes .= '<td style="text-align:center;">Total number of participants scoring below "'.$this->result['shipment']['max_score'].'"</td>';
             $overAllSumRes .= '<td style="text-align:center;">Percentage of participants scoring "' . $this->result['shipment']['max_score'] . '"</td>';
             $overAllSumRes .= '</tr>';
-            
+
             $overAllSumRes .= '<tr>';
             $overAllSumRes .= '<td style="text-align:center;">' . $participantCount . '</td>';
             $overAllSumRes .= '<td style="text-align:center;">' . $partCount . '</td>';
@@ -171,11 +171,11 @@ if ($this->result['shipment'] != "") {
             $overAllSumRes .= '<td style="text-align:center;">' . $overAllBelowScore . '</td>';
             $overAllSumRes .= '<td style="text-align:center;">' . $scoringPer . '%</td>';
             $overAllSumRes .= '</tr>';
-                
+
             $overAllSumRes .= '</table>';
-            
+
             $pdf->writeHTML($overAllSumRes, true, false, true, false, '');
-            
+
             $n = count($this->result['shipment']['correctRes']);
             if ($n > 0) {
                 $overAllCorrectRes = '<h3>Percentage of laboratories reporting correctly*</h3>';
@@ -183,7 +183,7 @@ if ($this->result['shipment'] != "") {
                 $overAllCorrectRes .= '<tr style="background-color:#dbe4ee;">';
                 $overAllCorrectRes .= '<td style="text-align:center;font-weight:bold;" colspan="'.($n+2).'">Sample Id</td>';
                 $overAllCorrectRes .= '</tr>';
-                
+
                 $overAllCorrectRes .= '<tr style="background-color:#dbe4ee;">';
                 $overAllCorrectRes .= '<td></td>';
                 foreach ($this->result['shipment']['correctRes'] as $cKey=>$cVal) {
@@ -191,7 +191,7 @@ if ($this->result['shipment'] != "") {
                 }
                 $overAllCorrectRes .= '<td style="text-align:center;">Average</td>';
                 $overAllCorrectRes .= '</tr>';
-                
+
                 $avg = '';
                 $overAllCorrectRes .= '<tr>';
                 $overAllCorrectRes .= '<td style="text-align:center;">Correctly Reported</td>';
@@ -203,10 +203,10 @@ if ($this->result['shipment'] != "") {
                 $overAllCorrectRes .= '</tr>';
                 $overAllCorrectRes .= '</table>';
                 $overAllCorrectRes .= '* Includes In-house and Other assays<br>';
-                
+
                 $pdf->writeHTML($overAllCorrectRes, true, false, true, false, '');
             }
-            
+
             $k = count($this->result['shipment']['avgAssayResult']);
 
             $avgAssay = "";
@@ -243,7 +243,7 @@ if ($this->result['shipment'] != "") {
                     $avgAssay .= '<tr style="background-color:#dbe4ee;">';
                     $avgAssay .= '<td style="text-align:center;" colspan="'.($m+2).'">Sample ID</td>';
                     $avgAssay .= '</tr>';
-                    
+
                     $avgAssay .= '<tr style="background-color:#dbe4ee;">';
                     $avgAssay .= '<td></td>';
                     foreach ($assayResult['specimen'] as $sKey=>$sample) {
@@ -262,7 +262,7 @@ if ($this->result['shipment'] != "") {
                     $avg = round(($sampleAvg/$sCount),2);
                     $avgAssay .= '<td style="text-align:center;">'.$avg.'</td>';
                     $avgAssay .= '</tr>';
-                    
+
                     $sampleAvgInPer = '';
                     $avgAssay .= '<tr>';
                     foreach ($assayResult['specimen'] as $sKey=>$sample) {
@@ -272,7 +272,7 @@ if ($this->result['shipment'] != "") {
                     $avgAssay .= '<td style="text-align:center;">'.round(($avg/$assayResult['participantCount'])*100,2).'%</td>';
                     $avgAssay .= '</tr>';
                     $avgAssay .= '</table>';
-                    
+
                     $avgAssay .= '</div><br/>';
                     $pdf->writeHTML($avgAssay, true, false, true, false, '');
                     if ($pdf->getY()>=250) {
@@ -305,7 +305,7 @@ if ($this->result['shipment'] != "") {
 					<td style="background-color:#dbe4ee;text-align:center;">Highest Acceptable Limit</td>
 					<td style="background-color:#dbe4ee;text-align:center;">CV</td>
 				</tr>';
-				
+
 				$countCal = count($vlCal)-1;
 				for ($c = 0; $c < $countCal; $c++) {
 					if (isset($vlCal[$c]['mean'])) {
@@ -327,12 +327,12 @@ if ($this->result['shipment'] != "") {
 					}
 				}
 				$calRes .= '</table>';
-				
+
 				$pdf->writeHTML($calRes, true, false, true, false, '');
 			}
 		}
 		$uncalculatedAssayList = null;
-        
+
 		if (count($this->result['pendingAssay']) > 0) {
 		    foreach ($this->result['pendingAssay'] as $vlId=>$vlCal) {
 		        if ($pdf->getY() >= 250) {
