@@ -453,8 +453,8 @@ class Application_Service_Evaluation {
             for ($i = 0; $i < count($sampleRes); $i++) {
                 $sampleRes[$i]['calculated_score'] = $scoringService->calculateTbSamplePassStatus($sampleRes[$i]['ref_mtb_detected'],
                     $sampleRes[$i]['res_mtb_detected'], $sampleRes[$i]['ref_rif_resistance'], $sampleRes[$i]['res_rif_resistance'],
-                    $sampleRes[$i]['res_probe_d'], $sampleRes[$i]['res_probe_c'], $sampleRes[$i]['res_probe_e'],
-                    $sampleRes[$i]['res_probe_b'], $sampleRes[$i]['res_spc'], $sampleRes[$i]['res_probe_a'],
+                    $sampleRes[$i]['res_probe_1'], $sampleRes[$i]['res_probe_2'], $sampleRes[$i]['res_probe_3'],
+                    $sampleRes[$i]['res_probe_4'], $sampleRes[$i]['res_probe_5'], $sampleRes[$i]['res_probe_6'],
                     $sampleRes[$i]['ref_is_excluded'], $sampleRes[$i]['ref_is_exempt']);
                 $submissionShipmentScore += $scoringService->calculateTbSampleScore(
                     $sampleRes[$i]['calculated_score'],
@@ -545,8 +545,8 @@ class Application_Service_Evaluation {
             for ($i=0; $i < count($sampleRes); $i++) {
                 $sampleRes[$i]['calculated_score'] = $scoringService->calculateTbSamplePassStatus($sampleRes[$i]['ref_mtb_detected'],
                     $sampleRes[$i]['res_mtb_detected'], $sampleRes[$i]['ref_rif_resistance'], $sampleRes[$i]['res_rif_resistance'],
-                    $sampleRes[$i]['res_probe_d'], $sampleRes[$i]['res_probe_c'], $sampleRes[$i]['res_probe_e'],
-                    $sampleRes[$i]['res_probe_b'], $sampleRes[$i]['res_spc'], $sampleRes[$i]['res_probe_a'],
+                    $sampleRes[$i]['res_probe_1'], $sampleRes[$i]['res_probe_2'], $sampleRes[$i]['res_probe_3'],
+                    $sampleRes[$i]['res_probe_4'], $sampleRes[$i]['res_probe_5'], $sampleRes[$i]['res_probe_6'],
                     $sampleRes[$i]['ref_is_excluded'], $sampleRes[$i]['ref_is_exempt']);
                 $submissionShipmentScore += $scoringService->calculateTbSampleScore(
                     $sampleRes[$i]['calculated_score'],
@@ -990,8 +990,9 @@ class Application_Service_Evaluation {
                     $referenceSample = $db->fetchRow($sql);
                     $calculatedScorePassStatus = $scoringService->calculateTbSamplePassStatus($referenceSample['mtb_detected'],
                         $params['mtbDetected'][$i], $referenceSample['rif_resistance'], $params['rifResistance'][$i],
-                        $params['probeD'][$i], $params['probeC'][$i], $params['probeE'][$i], $params['probeB'][$i],
-                        $params['spc'][$i], $params['probeA'][$i], $referenceSample['is_excluded'], $referenceSample['is_exempt']);
+                        $params['probe1'][$i], $params['probe2'][$i], $params['probe3'][$i], $params['probe4'][$i],
+                        $params['probe5'][$i], $params['probe6'][$i], $referenceSample['is_excluded'],
+                        $referenceSample['is_exempt']);
                     $shipmentScore += $scoringService->calculateTbSampleScore(
                         $calculatedScorePassStatus,
                         $referenceSample['sample_score']);
@@ -1000,12 +1001,12 @@ class Application_Service_Evaluation {
                         'date_tested' => $dateTested,
                         'mtb_detected' => $params['mtbDetected'][$i],
                         'rif_resistance' => $params['rifResistance'][$i],
-                        'probe_d' => $params['probeD'][$i],
-                        'probe_c' => $params['probeC'][$i],
-                        'probe_e' => $params['probeE'][$i],
-                        'probe_b' => $params['probeB'][$i],
-                        'spc' => $params['spc'][$i],
-                        'probe_a' => $params['probeA'][$i],
+                        'probe_1' => $params['probe1'][$i],
+                        'probe_2' => $params['probe2'][$i],
+                        'probe_3' => $params['probe3'][$i],
+                        'probe_4' => $params['probe4'][$i],
+                        'probe_5' => $params['probe5'][$i],
+                        'probe_6' => $params['probe6'][$i],
                         'calculated_score' => $calculatedScorePassStatus,
                         'instrument_serial' => $params['instrumentSerial'][$i],
                         'instrument_installed_on' => $instrumentInstalledOn,
@@ -1582,12 +1583,12 @@ class Application_Service_Evaluation {
                             'error_code',
                             'date_tested',
                             'cartridge_expiration_date',
-                            'probe_d',
-                            'probe_c',
-                            'probe_e',
-                            'probe_b',
-                            'spc',
-                            'probe_a'))
+                            'probe_1',
+                            'probe_2',
+                            'probe_3',
+                            'probe_4',
+                            'probe_5',
+                            'probe_6'))
                     ->joinLeft('instrument',
                         'instrument.participant_id = spm.participant_id and instrument.instrument_serial = res.instrument_serial', array(
                             'years_since_last_calibrated' =>
@@ -1614,8 +1615,8 @@ class Application_Service_Evaluation {
                         $tbResult['mtb_detected'],
                         $tbResultsExpected[$tbResult['sample_id']]['rif_resistance'],
                         $tbResult['rif_resistance'],
-                        $tbResult['probe_d'], $tbResult['probe_c'], $tbResult['probe_e'], $tbResult['probe_b'],
-                        $tbResult['spc'], $tbResult['probe_a'], $tbResult['ref_is_excluded'],
+                        $tbResult['probe_1'], $tbResult['probe_2'], $tbResult['probe_3'], $tbResult['probe_4'],
+                        $tbResult['probe_5'], $tbResult['probe_6'], $tbResult['ref_is_excluded'],
                         $tbResult['ref_is_exempt']);
                     array_push($sampleStatuses, $sampleScoreStatus);
                     $sampleScore = $scoringService->calculateTbSampleScore(
@@ -1655,12 +1656,12 @@ class Application_Service_Evaluation {
                             $sampleScore == 0,
                         'rif_resistance' => $tbResult['rif_resistance'],
                         'error_code' => $tbResult['error_code'],
-                        'probe_d' => $tbResult['probe_d'],
-                        'probe_c' => $tbResult['probe_c'],
-                        'probe_e' => $tbResult['probe_e'],
-                        'probe_b' => $tbResult['probe_b'],
-                        'spc' => $tbResult['spc'],
-                        'probe_a' => $tbResult['probe_a'],
+                        'probe_1' => $tbResult['probe_1'],
+                        'probe_2' => $tbResult['probe_2'],
+                        'probe_3' => $tbResult['probe_3'],
+                        'probe_4' => $tbResult['probe_4'],
+                        'probe_5' => $tbResult['probe_5'],
+                        'probe_6' => $tbResult['probe_6'],
                         'expected_mtb_detected' => $tbResultsExpected[$tbResult['sample_id']]['mtb_detected'],
                         'expected_rif_resistance' => $tbResultsExpected[$tbResult['sample_id']]['rif_resistance'],
                         'consensus_mtb_detected' => $consensusTbMtbDetected,
@@ -2500,8 +2501,8 @@ class Application_Service_Evaluation {
             foreach ($results as $result) {
                 $calculatedScorePassStatus = $scoringService->calculateTbSamplePassStatus($result['ref_mtb_detected'],
                     $result['res_mtb_detected'], $result['ref_rif_resistance'], $result['res_rif_resistance'],
-                    $result['res_probe_d'], $result['res_probe_c'], $result['res_probe_e'], $result['res_probe_b'],
-                    $result['res_spc'], $result['res_probe_a'], $result['ref_is_excluded'], $result['ref_is_exempt']);
+                    $result['res_probe_1'], $result['res_probe_2'], $result['res_probe_3'], $result['res_probe_4'],
+                    $result['res_probe_5'], $result['res_probe_6'], $result['ref_is_excluded'], $result['ref_is_exempt']);
 
                 $shipmentScore += $scoringService->calculateTbSampleScore(
                     $calculatedScorePassStatus,

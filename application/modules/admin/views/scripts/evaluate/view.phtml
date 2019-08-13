@@ -626,9 +626,9 @@ if ($this->scheme == 'eid') {
             <td>
                 <?php
                 if(isset($attributes['assay'])) {
-                    foreach($this->assays as $id => $name) {
+                    foreach($this->assays as $id => $definition) {
                         if($attributes['assay'] == $id) {
-                            echo $name;
+                            echo $definition['name'];
                         }
                     }
                 } ?>
@@ -709,12 +709,24 @@ if ($this->scheme == 'eid') {
                         <th style="background-color: transparent;">MTB Detected</th>
                         <th style="background-color: transparent;">Error Code</th>
                         <th style="background-color: transparent;">Rif Resistance</th>
-                        <th style="background-color: transparent;">Probe D</th>
-                        <th style="background-color: transparent;">Probe C</th>
-                        <th style="background-color: transparent;">Probe E</th>
-                        <th style="background-color: transparent;">Probe B</th>
-                        <th style="background-color: transparent;">SPC</th>
-                        <th style="background-color: transparent;">Probe A</th>
+                        <th style="background-color: transparent;">
+                            <?php echo $this->evaluateData['shipment']['analyte1Label']; ?>
+                        </th>
+                        <th style="background-color: transparent;">
+                            <?php echo $this->evaluateData['shipment']['analyte2Label']; ?>
+                        </th>
+                        <th style="background-color: transparent;">
+                            <?php echo $this->evaluateData['shipment']['analyte3Label']; ?>
+                        </th>
+                        <th style="background-color: transparent;">
+                            <?php echo $this->evaluateData['shipment']['analyte4Label']; ?>
+                        </th>
+                        <th style="background-color: transparent;">
+                            <?php echo $this->evaluateData['shipment']['analyte5Label']; ?>
+                        </th>
+                        <th style="background-color: transparent;">
+                            <?php echo $this->evaluateData['shipment']['analyte6Label']; ?>
+                        </th>
                         <th style="text-align: center;font-size:17px;">Score</th>
                     </tr>
                     <tr>
@@ -780,22 +792,22 @@ if ($this->scheme == 'eid') {
                             ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;width: 7%;">
-                            <?php echo $result['res_probe_d']; ?>
+                            <?php echo $result['res_probe_1']; ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;width: 7%;">
-                            <?php echo $result['res_probe_c']; ?>
+                            <?php echo $result['res_probe_2']; ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;width: 7%;">
-                            <?php echo $result['res_probe_e']; ?>
+                            <?php echo $result['res_probe_3']; ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;width: 7%;">
-                            <?php echo $result['res_probe_b']; ?>
+                            <?php echo $result['res_probe_4']; ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;width: 7%;">
-                            <?php echo $result['res_spc']; ?>
+                            <?php echo $result['res_probe_5']; ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;width: 7%;">
-                            <?php echo $result['res_probe_a']; ?>
+                            <?php echo $result['res_probe_6']; ?>
                         </td>
                         <td style="vertical-align: middle;text-align: center;width: 7%;font-weight: bold;">
                             <?php
@@ -875,22 +887,22 @@ if ($this->scheme == 'eid') {
                             ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;">
-                            <?php echo $result['ref_probe_d']; ?>
+                            <?php echo $result['ref_probe_1']; ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;">
-                            <?php echo $result['ref_probe_c']; ?>
+                            <?php echo $result['ref_probe_2']; ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;">
-                            <?php echo $result['ref_probe_e']; ?>
+                            <?php echo $result['ref_probe_3']; ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;">
-                            <?php echo $result['ref_probe_b']; ?>
+                            <?php echo $result['ref_probe_4']; ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;">
-                            <?php echo $result['ref_spc']; ?>
+                            <?php echo $result['ref_probe_5']; ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;">
-                            <?php echo $result['ref_probe_a']; ?>
+                            <?php echo $result['ref_probe_6']; ?>
                         </td>
                     </tr>
                     <tr>

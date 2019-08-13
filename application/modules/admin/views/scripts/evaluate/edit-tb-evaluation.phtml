@@ -136,13 +136,11 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
             <td>
                 <select class="form-control" name="assay" id="assay" class="form-control"
                         title="Please choose the assay type">
-                    <?php
-                    foreach($this->assays as $id => $name) {
-                        ?>
-                        <option value="<?php echo $id; ?>" <?php if(isset($attributes['assay'])) { echo ($attributes['assay'] == $id) ? "selected='selected'" : ""; } ?>><?php echo $name; ?></option>
-                        <?php
-                    }
-                    ?>
+                    <?php foreach ($this->assays as $id => $definition) { ?>
+                    <option value="<?php echo $id; ?>" <?php if(isset($attributes['assay'])) { echo ($attributes['assay'] == $id) ? "selected='selected'" : ""; } ?>>
+                        <?php echo $definition['name']; ?>
+                    </option>
+                    <?php } ?>
                 </select>
             </td>
         </tr>
@@ -405,12 +403,12 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
                             <th style="background-color: transparent;width:12%;">MTB Detected</th>
                             <th style="background-color: transparent;width:9%;">Error Code</th>
                             <th style="background-color: transparent;width:12%;">Rif Resistance</th>
-                            <th style="background-color: transparent;width:8%;">Probe D</th>
-                            <th style="background-color: transparent;width:8%;">Probe C</th>
-                            <th style="background-color: transparent;width:8%;">Probe E</th>
-                            <th style="background-color: transparent;width:8%;">Probe B</th>
-                            <th style="background-color: transparent;width:8%;">SPC</th>
-                            <th style="background-color: transparent;width:8%;">Probe A</th>
+                            <th class="probe1Header" style="background-color: transparent;width:8%;"></th>
+                            <th class="probe2Header" style="background-color: transparent;width:8%;"></th>
+                            <th class="probe3Header" style="background-color: transparent;width:8%;"></th>
+                            <th class="probe4Header" style="background-color: transparent;width:8%;"></th>
+                            <th class="probe5Header" style="background-color: transparent;width:8%;"></th>
+                            <th class="probe6Header" style="background-color: transparent;width:8%;"></th>
                             <th style="text-align: center;font-size:17px;width:7%;">Score</th>
                         </tr>
                         <tr>
@@ -482,34 +480,34 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
                                 </select>
                             </td>
                             <td style="vertical-align: top;text-align: center;width: 7%;">
-                                <input type="text" name="probeD[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
-                                       value="<?php echo $result['res_probe_d']; ?>"
-                                       title="Please enter the Probe D value for <?php echo $result['sample_label']; ?>" />
+                                <input type="text" name="probe1[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
+                                       value="<?php echo $result['res_probe_1']; ?>"
+                                       title="Please enter all Ct values for each sample" />
                             </td>
                             <td style="vertical-align: top;text-align: center;width: 7%;">
-                                <input type="text" name="probeC[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
-                                       value="<?php echo $result['res_probe_c']; ?>"
-                                       title="Please enter the Probe C value for <?php echo $result['sample_label']; ?>" />
+                                <input type="text" name="probe2[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
+                                       value="<?php echo $result['res_probe_2']; ?>"
+                                       title="Please enter all Ct values for each sample" />
                             </td>
                             <td style="vertical-align: top;text-align: center;width: 7%;">
-                                <input type="text" name="probeE[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
-                                       value="<?php echo $result['res_probe_e']; ?>"
-                                       title="Please enter the Probe E value for <?php echo $result['sample_label']; ?>" />
+                                <input type="text" name="probe3[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
+                                       value="<?php echo $result['res_probe_3']; ?>"
+                                       title="Please enter all Ct values for each sample" />
                             </td>
                             <td style="vertical-align: top;text-align: center;width: 7%;">
-                                <input type="text" name="probeB[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
-                                       value="<?php echo $result['res_probe_b']; ?>"
-                                       title="Please enter the Probe B value for <?php echo $result['sample_label']; ?>" />
+                                <input type="text" name="probe4[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
+                                       value="<?php echo $result['res_probe_4']; ?>"
+                                       title="Please enter all Ct values for each sample" />
                             </td>
                             <td style="vertical-align: top;text-align: center;width: 7%;">
-                                <input type="text" name="spc[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
-                                       value="<?php echo $result['res_spc']; ?>"
-                                       title="Please enter the SPC value for <?php echo $result['sample_label']; ?>" />
+                                <input type="text" name="probe5[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
+                                       value="<?php echo $result['res_probe_5']; ?>"
+                                       title="Please enter all Ct values for each sample" />
                             </td>
                             <td style="vertical-align: top;text-align: center;width: 7%;">
-                                <input type="text" name="probeA[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
-                                       value="<?php echo $result['res_probe_a']; ?>"
-                                       title="Please enter the Probe A value for <?php echo $result['sample_label']; ?>" />
+                                <input type="text" name="probe6[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
+                                       value="<?php echo $result['res_probe_6']; ?>"
+                                       title="Please enter all Ct values for each sample" />
                             </td>
                             <td style="vertical-align: top;text-align: center;width: 7%;font-weight: bold;">
                                 <?php
@@ -589,22 +587,22 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
                                 ?>
                             </td>
                             <td style="vertical-align: top;text-align: right;">
-                                <?php echo $result['ref_probe_d']; ?>
+                                <?php echo $result['ref_probe_1']; ?>
                             </td>
                             <td style="vertical-align: top;text-align: right;">
-                                <?php echo $result['ref_probe_c']; ?>
+                                <?php echo $result['ref_probe_2']; ?>
                             </td>
                             <td style="vertical-align: top;text-align: right;">
-                                <?php echo $result['ref_probe_e']; ?>
+                                <?php echo $result['ref_probe_3']; ?>
                             </td>
                             <td style="vertical-align: top;text-align: right;">
-                                <?php echo $result['ref_probe_b']; ?>
+                                <?php echo $result['ref_probe_4']; ?>
                             </td>
                             <td style="vertical-align: top;text-align: right;">
-                                <?php echo $result['ref_spc']; ?>
+                                <?php echo $result['ref_probe_5']; ?>
                             </td>
                             <td style="vertical-align: top;text-align: right;">
-                                <?php echo $result['ref_probe_a']; ?>
+                                <?php echo $result['ref_probe_6']; ?>
                             </td>
                         </tr>
                         <tr>

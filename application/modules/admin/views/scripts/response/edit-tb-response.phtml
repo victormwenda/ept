@@ -120,9 +120,9 @@ if (isset($this->responseData['shipment']["shipment_test_report_date"]) &&
         <td>
             <select class="form-control" name="assay" id="assay" class="form-control"
                     title="Please choose the assay type">
-                <?php foreach($this->assays as $id => $name) { ?>
+                <?php foreach ($this->assays as $id => $definition) { ?>
                     <option value="<?php echo $id; ?>" <?php if(isset($attributes['assay'])) { echo ($attributes['assay'] == $id) ? "selected='selected'" : ""; } ?>>
-                        <?php echo $name; ?>
+                        <?php echo $definition['name']; ?>
                     </option>
                 <?php } ?>
             </select>
@@ -353,12 +353,12 @@ foreach ($this->responseData['results'] as $result) {
                     <th style="background-color: transparent;width:14%;">MTB Detected</th>
                     <th style="background-color: transparent;width:10%;">Error Code</th>
                     <th style="background-color: transparent;width:14%;">Rif Resistance</th>
-                    <th style="background-color: transparent;width:8%;">Probe D</th>
-                    <th style="background-color: transparent;width:8%;">Probe C</th>
-                    <th style="background-color: transparent;width:8%;">Probe E</th>
-                    <th style="background-color: transparent;width:8%;">Probe B</th>
-                    <th style="background-color: transparent;width:8%;">SPC</th>
-                    <th style="background-color: transparent;width:8%;">Probe A</th>
+                    <th class="probe1Header" style="background-color: transparent;width:8%;"></th>
+                    <th class="probe2Header" style="background-color: transparent;width:8%;"></th>
+                    <th class="probe3Header" style="background-color: transparent;width:8%;"></th>
+                    <th class="probe4Header" style="background-color: transparent;width:8%;"></th>
+                    <th class="probe5Header" style="background-color: transparent;width:8%;"></th>
+                    <th class="probe6Header" style="background-color: transparent;width:8%;"></th>
                 </tr>
                 <tr>
                     <td colspan="2" style="vertical-align: top;text-align: center;width: 14%;background-color: transparent;">
@@ -426,28 +426,28 @@ foreach ($this->responseData['results'] as $result) {
                         </select>
                     </td>
                     <td style="vertical-align: top;text-align: center;width: 7%;">
-                        <input type="text" name="probeD[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
-                               value="<?php echo $result['res_probe_d']; ?>" title="Please enter the Probe D value for <?php echo $result['sample_label']; ?>" />
+                        <input type="text" name="probe1[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
+                               value="<?php echo $result['res_probe_1']; ?>" title="Please enter all Ct values for each sample" />
                     </td>
                     <td style="vertical-align: top;text-align: center;width: 7%;">
-                        <input type="text" name="probeC[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
-                               value="<?php echo $result['res_probe_c']; ?>" title="Please enter the Probe C value for <?php echo $result['sample_label']; ?>" />
+                        <input type="text" name="probe2[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
+                               value="<?php echo $result['res_probe_2']; ?>" title="Please enter all Ct values for each sample" />
                     </td>
                     <td style="vertical-align: top;text-align: center;width: 7%;">
-                        <input type="text" name="probeE[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
-                               value="<?php echo $result['res_probe_e']; ?>" title="Please enter the Probe E value for <?php echo $result['sample_label']; ?>" />
+                        <input type="text" name="probe3[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
+                               value="<?php echo $result['res_probe_3']; ?>" title="Please enter all Ct values for each sample" />
                     </td>
                     <td style="vertical-align: top;text-align: center;width: 7%;">
-                        <input type="text" name="probeB[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
-                               value="<?php echo $result['res_probe_b']; ?>" title="Please enter the Probe B value for <?php echo $result['sample_label']; ?>" />
+                        <input type="text" name="probe4[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
+                               value="<?php echo $result['res_probe_4']; ?>" title="Please enter all Ct values for each sample" />
                     </td>
                     <td style="vertical-align: top;text-align: center;width: 7%;">
-                        <input type="text" name="spc[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
-                               value="<?php echo $result['res_spc']; ?>" title="Please enter the SPC value for <?php echo $result['sample_label']; ?>" />
+                        <input type="text" name="probe5[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
+                               value="<?php echo $result['res_probe_5']; ?>" title="Please enter all Ct values for each sample" />
                     </td>
                     <td style="vertical-align: top;text-align: center;width: 7%;">
-                        <input type="text" name="probeA[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
-                               value="<?php echo $result['res_probe_a']; ?>" title="Please enter the Probe A value for <?php echo $result['sample_label']; ?>" />
+                        <input type="text" name="probe6[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
+                               value="<?php echo $result['res_probe_6']; ?>" title="Please enter all Ct values for each sample" />
                     </td>
                 </tr>
                 <tr>
@@ -537,6 +537,35 @@ foreach ($this->responseData['results'] as $result) {
     }
   }
 
+
+  var analyteLables = {
+  <?php
+    foreach ($this->assays as $id => $definition) {
+    echo "    \"".$id."\": {\n";
+    echo "      \"analyte1Label\": \"".$definition['analyte1Label']."\",\n";
+    echo "      \"analyte2Label\": \"".$definition['analyte2Label']."\",\n";
+    echo "      \"analyte3Label\": \"".$definition['analyte3Label']."\",\n";
+    echo "      \"analyte4Label\": \"".$definition['analyte4Label']."\",\n";
+    echo "      \"analyte5Label\": \"".$definition['analyte5Label']."\",\n";
+    echo "      \"analyte6Label\": \"".$definition['analyte6Label']."\"\n";
+    echo "    },\n";
+  }
+    ?>
+  };
+  function setAnalyteLabels() {
+    var selectedAssayId = $("#assay").val();
+    if (!selectedAssayId) {
+      selectedAssayId = Object.keys(analyteLables)[0];
+    }
+    var selectedAssayDefinition = analyteLables[selectedAssayId];
+    $(".probe1Header").text(selectedAssayDefinition['analyte1Label']);
+    $(".probe2Header").text(selectedAssayDefinition['analyte2Label']);
+    $(".probe3Header").text(selectedAssayDefinition['analyte3Label']);
+    $(".probe4Header").text(selectedAssayDefinition['analyte4Label']);
+    $(".probe5Header").text(selectedAssayDefinition['analyte5Label']);
+    $(".probe6Header").text(selectedAssayDefinition['analyte6Label']);
+  }
+
   $(function() {
     $(".datepicker:not(.instrument-date-picker)")
       .datepicker({
@@ -563,6 +592,8 @@ foreach ($this->responseData['results'] as $result) {
       }
     });
     toggleToEnterResults();
+    $("#assay").on('change', setAnalyteLabels);
+    setAnalyteLabels()
   });
 
   function clearDate(id) {

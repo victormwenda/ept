@@ -88,7 +88,16 @@ class Application_Service_Schemes {
         $res = $db->fetchAll($db->select()->from('r_tb_assay'));
         $response = array();
         foreach ($res as $row) {
-            $response[$row['id']] = $row['name'];
+            $response[$row['id']] = array(
+                'id' => $row['id'],
+                'name' => $row['name'],
+                'analyte1Label' => $row['analyte1Label'],
+                'analyte2Label' => $row['analyte2Label'],
+                'analyte3Label' => $row['analyte3Label'],
+                'analyte4Label' => $row['analyte4Label'],
+                'analyte5Label' => $row['analyte5Label'],
+                'analyte6Label' => $row['analyte6Label']
+            );
         }
         return $response;
     }
@@ -178,7 +187,6 @@ class Application_Service_Schemes {
     }
 
     public function getDbsSamples($sId, $pId) {
-
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sql = $db->select()->from(array('ref' => 'reference_result_dbs'))
                 ->join(array('s' => 'shipment'), 's.shipment_id=ref.shipment_id')
@@ -220,7 +228,6 @@ class Application_Service_Schemes {
     }
 
     public function getEidSamples($sId, $pId) {
-
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sql = $db->select()->from(array('ref' => 'reference_result_eid'))
                 ->join(array('s' => 'shipment'), 's.shipment_id=ref.shipment_id')
@@ -266,12 +273,12 @@ class Application_Service_Schemes {
                 'ref_is_excluded' => 'ref.is_excluded',
                 'ref_mtb_detected' => 'ref.mtb_detected',
                 'ref_rif_resistance' => 'ref.rif_resistance',
-                'ref_probe_d' => 'ref.probe_d',
-                'ref_probe_c' => 'ref.probe_c',
-                'ref_probe_e' => 'ref.probe_e',
-                'ref_probe_b' => 'ref.probe_b',
-                'ref_spc' => 'ref.spc',
-                'ref_probe_a' => 'ref.probe_a',
+                'ref_probe_1' => 'ref.probe_1',
+                'ref_probe_2' => 'ref.probe_2',
+                'ref_probe_3' => 'ref.probe_3',
+                'ref_probe_4' => 'ref.probe_4',
+                'ref_probe_5' => 'ref.probe_5',
+                'ref_probe_6' => 'ref.probe_6',
                 'ref_sample_score' => 'ref.sample_score',
             ))
             ->join(array('s' => 'shipment'), 's.shipment_id=ref.shipment_id')
@@ -288,12 +295,12 @@ class Application_Service_Schemes {
                     'res_instrument_user' => 'res.instrument_user',
                     'res_cartridge_expiration_date' => 'res.cartridge_expiration_date',
                     'res_reagent_lot_id' => 'res.reagent_lot_id',
-                    'res_probe_d' => 'res.probe_d',
-                    'res_probe_c' => 'res.probe_c',
-                    'res_probe_e' => 'res.probe_e',
-                    'res_probe_b' => 'res.probe_b',
-                    'res_spc' => 'res.spc',
-                    'res_probe_a' => 'res.probe_a',
+                    'res_probe_1' => 'res.probe_1',
+                    'res_probe_2' => 'res.probe_2',
+                    'res_probe_3' => 'res.probe_3',
+                    'res_probe_4' => 'res.probe_4',
+                    'res_probe_5' => 'res.probe_5',
+                    'res_probe_6' => 'res.probe_6',
                     'responseDate' => 'res.created_on'
                 ))
             ->joinLeft('instrument',
@@ -314,12 +321,12 @@ class Application_Service_Schemes {
                 'sample_label', 'mandatory', 'sample_id', 'control',
                 'ref_mtb_detected' => 'ref.mtb_detected',
                 'ref_rif_resistance' => 'ref.rif_resistance',
-                'ref_probe_d' => 'ref.probe_d',
-                'ref_probe_c' => 'ref.probe_c',
-                'ref_probe_e' => 'ref.probe_e',
-                'ref_probe_b' => 'ref.probe_b',
-                'ref_spc' => 'ref.spc',
-                'ref_probe_a' => 'ref.probe_a',
+                'ref_probe_1' => 'ref.probe_1',
+                'ref_probe_2' => 'ref.probe_2',
+                'ref_probe_3' => 'ref.probe_3',
+                'ref_probe_4' => 'ref.probe_4',
+                'ref_probe_5' => 'ref.probe_5',
+                'ref_probe_6' => 'ref.probe_6',
                 'ref_sample_score' => 'ref.sample_score'
             ))
             ->join(array('s' => 'shipment'), 's.shipment_id=ref.shipment_id')
@@ -336,12 +343,12 @@ class Application_Service_Schemes {
                     'res_instrument_user' => 'res.instrument_user',
                     'res_cartridge_expiration_date' => 'res.cartridge_expiration_date',
                     'res_reagent_lot_id' => 'res.reagent_lot_id',
-                    'res_probe_d' => 'res.probe_d',
-                    'res_probe_c' => 'res.probe_c',
-                    'res_probe_e' => 'res.probe_e',
-                    'res_probe_b' => 'res.probe_b',
-                    'res_spc' => 'res.spc',
-                    'res_probe_a' => 'res.probe_a',
+                    'res_probe_1' => 'res.probe_1',
+                    'res_probe_2' => 'res.probe_2',
+                    'res_probe_3' => 'res.probe_3',
+                    'res_probe_4' => 'res.probe_4',
+                    'res_probe_5' => 'res.probe_5',
+                    'res_probe_6' => 'res.probe_6',
                     'responseDate' => 'res.created_on'
                 ))
             ->joinLeft('instrument',

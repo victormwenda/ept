@@ -397,7 +397,7 @@ $dtFormat=  $vHelper->getDateFormat();
             }
           }
         },
-        'probeD[<?php echo $index; ?>]': {
+        'probe1[<?php echo $index; ?>]': {
           required: {
             depends: function () {
               return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
@@ -420,7 +420,7 @@ $dtFormat=  $vHelper->getDateFormat();
             }
           }
         },
-        'probeC[<?php echo $index; ?>]': {
+        'probe2[<?php echo $index; ?>]': {
           required: {
             depends: function () {
               return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
@@ -443,7 +443,7 @@ $dtFormat=  $vHelper->getDateFormat();
             }
           }
         },
-        'probeE[<?php echo $index; ?>]': {
+        'probe3[<?php echo $index; ?>]': {
           required: {
             depends: function () {
               return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
@@ -466,7 +466,7 @@ $dtFormat=  $vHelper->getDateFormat();
             }
           }
         },
-        'probeB[<?php echo $index; ?>]': {
+        'probe4[<?php echo $index; ?>]': {
           required: {
             depends: function () {
               return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
@@ -487,7 +487,7 @@ $dtFormat=  $vHelper->getDateFormat();
             }
           }
         },
-        'spc[<?php echo $index; ?>]': {
+        'probe5[<?php echo $index; ?>]': {
           required: {
             depends: function () {
               return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
@@ -510,7 +510,7 @@ $dtFormat=  $vHelper->getDateFormat();
             }
           }
         },
-        'probeA[<?php echo $index; ?>]': {
+        'probe6[<?php echo $index; ?>]': {
           required: {
             depends: function () {
               return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
@@ -559,32 +559,32 @@ $dtFormat=  $vHelper->getDateFormat();
           validRifForNoMtb: "Invalid Selection for MTB Detected"
         },
         'errorCode[<?php echo $index; ?>]': "Required",
-        'probeD[<?php echo $index; ?>]': {
+        'probe1[<?php echo $index; ?>]': {
           required: "Required",
           number: "Only numerical values allowed for probe/spc fields",
           ctEndpointValue: "A value was detected above 42, have you entered endpoint values by mistake?"
         },
-        'probeC[<?php echo $index; ?>]': {
+        'probe2[<?php echo $index; ?>]': {
           required: "Required",
           number: "Only numerical values allowed for probe/spc fields",
           ctEndpointValue: "A value was detected above 42, have you entered endpoint values by mistake?"
         },
-        'probeE[<?php echo $index; ?>]': {
+        'probe3[<?php echo $index; ?>]': {
           required: "Required",
           number: "Only numerical values allowed for probe/spc fields",
           ctEndpointValue: "A value was detected above 42, have you entered endpoint values by mistake?"
         },
-        'probeB[<?php echo $index; ?>]': {
+        'probe4[<?php echo $index; ?>]': {
           required: "Required",
           number: "Only numerical values allowed for probe/spc fields",
           ctEndpointValue: "A value was detected above 42, have you entered endpoint values by mistake?"
         },
-        'spc[<?php echo $index; ?>]': {
+        'probe5[<?php echo $index; ?>]': {
           required: "Required",
           number: "Only numerical values allowed for probe/spc fields",
           ctEndpointValue: "A value was detected above 42, have you entered endpoint values by mistake?"
         },
-        'probeA[<?php echo $index; ?>]': {
+        'probe6[<?php echo $index; ?>]': {
           required: "Required",
           number: "Only numerical values allowed for probe/spc fields",
           ctEndpointValue: "A value was detected above 42, have you entered endpoint values by mistake?"

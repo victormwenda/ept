@@ -155,10 +155,10 @@ foreach($this->allNotTestedReason as $reason) { ?>
             <select class="form-control" name="assay" id="assay" class="form-control"
                     title="Please choose the assay type">
                 <?php
-                foreach ($this->assays as $id => $name) { ?>
+                foreach ($this->assays as $id => $definition) { ?>
                     <option value="<?php echo $id; ?>"
                         <?php if (isset($this->shipment['attributes']['assay'])) { echo ($this->shipment['attributes']['assay'] == $id) ? "selected='selected'" : ""; } ?>>
-                        <?php echo $name; ?>
+                        <?php echo $definition['name']; ?>
                     </option>
                     <?php
                 } ?>
@@ -372,12 +372,12 @@ foreach($this->allNotTestedReason as $reason) { ?>
                         <th style="vertical-align: bottom; width:14%;">MTB Detected</th>
                         <th class="errorCode" style="vertical-align: bottom; width:9%;">Error Code</th>
                         <th style="vertical-align: bottom; width:13%;">Rif Resistance</th>
-                        <th style="vertical-align: bottom; width:6%;">Probe D</th>
-                        <th style="vertical-align: bottom; width:6%;">Probe C</th>
-                        <th style="vertical-align: bottom; width:6%;">Probe E</th>
-                        <th style="vertical-align: bottom; width:6%;">Probe B</th>
-                        <th style="vertical-align: bottom; width:6%;">SPC</th>
-                        <th style="vertical-align: bottom; width:6%;">Probe A</th>
+                        <th class="probe1Header" style="vertical-align: bottom; width:6%;"></th>
+                        <th class="probe2Header" style="vertical-align: bottom; width:6%;"></th>
+                        <th class="probe3Header" style="vertical-align: bottom; width:6%;"></th>
+                        <th class="probe4Header" style="vertical-align: bottom; width:6%;"></th>
+                        <th class="probe5Header" style="vertical-align: bottom; width:6%;"></th>
+                        <th class="probe6Header" style="vertical-align: bottom; width:6%;"></th>
                     </tr>
                     <tr style="background-color: transparent;">
                         <td style="background-color: transparent;">
@@ -450,34 +450,34 @@ foreach($this->allNotTestedReason as $reason) { ?>
                             </select>
                         </td>
                         <td style="background-color: transparent;">
-                            <input type="text" name="probeD[<?php echo $index; ?>]" class="form-control input-sm oneDecimal numberInput"
-                                   value="<?php echo $sample['res_probe_d']; ?>" id="probeD<?php echo $count; ?>"
-                                   title="Please enter the Probe D value for <?php echo $sample['sample_label']; ?>" />
+                            <input type="text" name="probe1[<?php echo $index; ?>]" class="form-control input-sm oneDecimal numberInput"
+                                   value="<?php echo $sample['res_probe_1']; ?>" id="probe1<?php echo $count; ?>"
+                                   title="Please enter all Ct values for each sample" />
                         </td>
                         <td style="background-color: transparent;">
-                            <input type="text" name="probeC[<?php echo $index; ?>]" class="form-control input-sm oneDecimal numberInput"
-                                   value="<?php echo $sample['res_probe_c']; ?>" id="probeC<?php echo $count; ?>"
-                                   title="Please enter the Probe C value for <?php echo $sample['sample_label']; ?>" />
+                            <input type="text" name="probe2[<?php echo $index; ?>]" class="form-control input-sm oneDecimal numberInput"
+                                   value="<?php echo $sample['res_probe_2']; ?>" id="probe2<?php echo $count; ?>"
+                                   title="Please enter all Ct values for each sample" />
                         </td>
                         <td style="background-color: transparent;">
-                            <input type="text" name="probeE[<?php echo $index; ?>]" class="form-control input-sm oneDecimal numberInput"
-                                   value="<?php echo $sample['res_probe_e']; ?>" id="probeE<?php echo $count; ?>"
-                                   title="Please enter the Probe E value for <?php echo $sample['sample_label']; ?>" />
+                            <input type="text" name="probe3[<?php echo $index; ?>]" class="form-control input-sm oneDecimal numberInput"
+                                   value="<?php echo $sample['res_probe_3']; ?>" id="probe3<?php echo $count; ?>"
+                                   title="Please enter all Ct values for each sample" />
                         </td>
                         <td style="background-color: transparent;">
-                            <input type="text" name="probeB[<?php echo $index; ?>]" class="form-control input-sm oneDecimal numberInput"
-                                   value="<?php echo $sample['res_probe_b']; ?>" id="probeB<?php echo $count; ?>"
-                                   title="Please enter the Probe B value for <?php echo $sample['sample_label']; ?>" />
+                            <input type="text" name="probe4[<?php echo $index; ?>]" class="form-control input-sm oneDecimal numberInput"
+                                   value="<?php echo $sample['res_probe_4']; ?>" id="probe4<?php echo $count; ?>"
+                                   title="Please enter all Ct values for each sample" />
                         </td>
                         <td style="background-color: transparent;">
-                            <input type="text" name="spc[<?php echo $index; ?>]" class="form-control input-sm oneDecimal numberInput"
-                                   value="<?php echo $sample['res_spc']; ?>" id="spc<?php echo $count; ?>"
-                                   title="Please enter the SPC value for <?php echo $sample['sample_label']; ?>" />
+                            <input type="text" name="probe5[<?php echo $index; ?>]" class="form-control input-sm oneDecimal numberInput"
+                                   value="<?php echo $sample['res_probe_5']; ?>" id="probe5<?php echo $count; ?>"
+                                   title="Please enter all Ct values for each sample" />
                         </td>
                         <td style="background-color: transparent;">
-                            <input type="text" name="probeA[<?php echo $index; ?>]" class="form-control input-sm oneDecimal numberInput"
-                                   value="<?php echo $sample['res_probe_a']; ?>" id="probeA<?php echo $count; ?>"
-                                   title="Please enter the Probe A value for <?php echo $sample['sample_label']; ?>" />
+                            <input type="text" name="probe6[<?php echo $index; ?>]" class="form-control input-sm oneDecimal numberInput"
+                                   value="<?php echo $sample['res_probe_6']; ?>" id="probe6<?php echo $count; ?>"
+                                   title="Please enter all Ct values for each sample" />
                         </td>
                     </tr>
                     <tr>
@@ -634,6 +634,34 @@ $dtFormat = $genderHelper->getDateFormat();
       $("#submissionFooter").find("input,select,textarea").not(".datepicker").attr("readonly", "");
     }
   }
+  var analyteLables = {
+<?php
+    foreach ($this->assays as $id => $definition) {
+      echo "    \"".$id."\": {\n";
+      echo "      \"analyte1Label\": \"".$definition['analyte1Label']."\",\n";
+      echo "      \"analyte2Label\": \"".$definition['analyte2Label']."\",\n";
+      echo "      \"analyte3Label\": \"".$definition['analyte3Label']."\",\n";
+      echo "      \"analyte4Label\": \"".$definition['analyte4Label']."\",\n";
+      echo "      \"analyte5Label\": \"".$definition['analyte5Label']."\",\n";
+      echo "      \"analyte6Label\": \"".$definition['analyte6Label']."\"\n";
+      echo "    },\n";
+    }
+?>
+  };
+  function setAnalyteLabels() {
+    var selectedAssayId = $("#assay").val();
+    if (!selectedAssayId) {
+      selectedAssayId = Object.keys(analyteLables)[0];
+    }
+    var selectedAssayDefinition = analyteLables[selectedAssayId];
+    $(".probe1Header").text(selectedAssayDefinition['analyte1Label']);
+    $(".probe2Header").text(selectedAssayDefinition['analyte2Label']);
+    $(".probe3Header").text(selectedAssayDefinition['analyte3Label']);
+    $(".probe4Header").text(selectedAssayDefinition['analyte4Label']);
+    $(".probe5Header").text(selectedAssayDefinition['analyte5Label']);
+    $(".probe6Header").text(selectedAssayDefinition['analyte6Label']);
+  }
+
   var timeOut, formValidator;
 
   var previouslySubmitted = false;
@@ -669,6 +697,8 @@ $dtFormat = $genderHelper->getDateFormat();
       }
     });
 
+    $("#assay").on('change', setAnalyteLabels);
+    setAnalyteLabels()
     jQuery.validator.addMethod('dateLargerThan', function (value, dateInput, baseDateInputSelector) {
       return moment(value).diff(new Date($(baseDateInputSelector).val())) >= 0;
 	});
@@ -844,7 +874,7 @@ foreach ($this->allSamples as $sample) {
             }
           }
         },
-        'probeD[<?php echo $index; ?>]': {
+        'probe1[<?php echo $index; ?>]': {
           required: {
             depends: function () {
               return ($('#submitAction').val() === 'submit' || previouslySubmitted) &&
@@ -867,7 +897,7 @@ foreach ($this->allSamples as $sample) {
             }
           }
         },
-        'probeC[<?php echo $index; ?>]': {
+        'probe2[<?php echo $index; ?>]': {
           required: {
             depends: function () {
               return ($('#submitAction').val() === 'submit' || previouslySubmitted) &&
@@ -890,7 +920,7 @@ foreach ($this->allSamples as $sample) {
             }
           }
         },
-        'probeE[<?php echo $index; ?>]': {
+        'probe3[<?php echo $index; ?>]': {
           required: {
             depends: function () {
               return ($('#submitAction').val() === 'submit' || previouslySubmitted) &&
@@ -913,7 +943,7 @@ foreach ($this->allSamples as $sample) {
             }
           }
         },
-        'probeB[<?php echo $index; ?>]': {
+        'probe4[<?php echo $index; ?>]': {
           required: {
             depends: function () {
               return ($('#submitAction').val() === 'submit' || previouslySubmitted) &&
@@ -936,7 +966,7 @@ foreach ($this->allSamples as $sample) {
             }
           }
         },
-        'spc[<?php echo $index; ?>]': {
+        'probe5[<?php echo $index; ?>]': {
           required: {
             depends: function () {
               return ($('#submitAction').val() === 'submit' || previouslySubmitted) &&
@@ -959,7 +989,7 @@ foreach ($this->allSamples as $sample) {
             }
           }
         },
-        'probeA[<?php echo $index; ?>]': {
+        'probe6[<?php echo $index; ?>]': {
           required: {
             depends: function () {
               return ($('#submitAction').val() === 'submit' || previouslySubmitted) &&
@@ -1010,32 +1040,32 @@ foreach ($this->allSamples as $sample) { ?>
           validRifForNoMtb: "Invalid Selection for MTB Detected"
         },
         'errorCode[<?php echo $index; ?>]': "Required",
-        'probeD[<?php echo $index; ?>]': {
+        'probe1[<?php echo $index; ?>]': {
           required: "Required",
           number: "Only numerical values allowed for probe/spc fields",
           ctEndpointValue: "A value was detected above 42, have you entered endpoint values by mistake?"
         },
-        'probeC[<?php echo $index; ?>]': {
+        'probe2[<?php echo $index; ?>]': {
           required: "Required",
           number: "Only numerical values allowed for probe/spc fields",
           ctEndpointValue: "A value was detected above 42, have you entered endpoint values by mistake?"
         },
-        'probeE[<?php echo $index; ?>]': {
+        'probe3[<?php echo $index; ?>]': {
           required: "Required",
           number: "Only numerical values allowed for probe/spc fields",
           ctEndpointValue: "A value was detected above 42, have you entered endpoint values by mistake?"
         },
-        'probeB[<?php echo $index; ?>]': {
+        'probe4[<?php echo $index; ?>]': {
           required: "Required",
           number: "Only numerical values allowed for probe/spc fields",
           ctEndpointValue: "A value was detected above 42, have you entered endpoint values by mistake?"
         },
-        'spc[<?php echo $index; ?>]': {
+        'probe5[<?php echo $index; ?>]': {
           required: "Required",
           number: "Only numerical values allowed for probe/spc fields",
           ctEndpointValue: "A value was detected above 42, have you entered endpoint values by mistake?"
         },
-        'probeA[<?php echo $index; ?>]': {
+        'probe6[<?php echo $index; ?>]': {
           required: "Required",
           number: "Only numerical values allowed for probe/spc fields",
           ctEndpointValue: "A value was detected above 42, have you entered endpoint values by mistake?"
