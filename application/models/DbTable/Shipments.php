@@ -25,7 +25,8 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
                         'analyte3Label',
                         'analyte4Label',
                         'analyte5Label',
-                        'analyte6Label'
+                        'analyte6Label',
+                        'includeTraceForMtbDetected'
                     ))
                 ->joinLeft(array('rntr' => 'response_not_tested_reason'),
                     'rntr.not_tested_reason_id=sp.not_tested_reason',array('NotTestedReason'=>'not_tested_reason'))

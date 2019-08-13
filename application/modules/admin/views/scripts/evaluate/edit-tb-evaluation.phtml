@@ -420,7 +420,7 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
                             </td>
                             <td style="vertical-align: top;text-align: center;width: 13%;background-color: transparent;">
                                 <select id="mtbDetected<?php echo $counter; ?>" name="mtbDetected[<?php echo $index; ?>]"
-                                        class="isRequired form-control input-sm"
+                                        class="isRequired form-control input-sm mtbDetected"
                                         title="Please enter the MTB Detected for this sample"
                                         placeholder="Please enter the MTB Detected for this sample"
                                         onChange="changeMtbDetected(<?php echo $counter; ?>)">
@@ -440,6 +440,7 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
                                     <option value="veryLow" <?php echo ($result['res_mtb_detected'] == 'veryLow' ? "selected='selected'" : ""); ?>>
                                         Very Low
                                     </option>
+                                    <?php if ( ?>
                                     <option value="notDetected" <?php echo ($result['res_mtb_detected'] == 'notDetected' ? "selected='selected'" : ""); ?>>
                                         Not Detected
                                     </option>
@@ -551,6 +552,9 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
                                     case "veryLow":
                                         echo "Very Low";
                                         break;
+                                    case "trace":
+                                        echo "Trace";
+                                        break;
                                     case "notDetected":
                                         echo "Not Detected";
                                         break;
@@ -659,6 +663,38 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
     }?>
 </table>
 <script>
+  var analyteLables = {
+  <?php foreach ($this->assays as $id => $definition) {
+  echo "    \"".$id."\": {\n";
+  echo "      \"analyte1Label\": \"".$definition['analyte1Label']."\",\n";
+  echo "      \"analyte2Label\": \"".$definition['analyte2Label']."\",\n";
+  echo "      \"analyte3Label\": \"".$definition['analyte3Label']."\",\n";
+  echo "      \"analyte4Label\": \"".$definition['analyte4Label']."\",\n";
+  echo "      \"analyte5Label\": \"".$definition['analyte5Label']."\",\n";
+  echo "      \"analyte6Label\": \"".$definition['analyte6Label']."\",\n";
+  echo "      \"includeTraceForMtbDetected\": ".$definition['includeTraceForMtbDetected']."\n";
+  echo "    },\n";
+  } ?>
+  };
+  function setAssay() {
+    var selectedAssayId = $("#assay").val();
+    if (!selectedAssayId) {
+      selectedAssayId = Object.keys(analyteLables)[0];
+    }
+    var selectedAssayDefinition = analyteLables[selectedAssayId];
+    $(".probe1Header").text(selectedAssayDefinition['analyte1Label']);
+    $(".probe2Header").text(selectedAssayDefinition['analyte2Label']);
+    $(".probe3Header").text(selectedAssayDefinition['analyte3Label']);
+    $(".probe4Header").text(selectedAssayDefinition['analyte4Label']);
+    $(".probe5Header").text(selectedAssayDefinition['analyte5Label']);
+    $(".probe6Header").text(selectedAssayDefinition['analyte6Label']);
+    if (selectedAssayDefinition['includeTraceForMtbDetected'] && !$(".mtbDetected option[value='trace']").length) {
+      $("<option value='trace'>Trace</option>").insertAfter(".mtbDetected option[value='veryLow']");
+    } else {
+      $(".mtbDetected option[value='trace']").remove();
+    }
+  }
+
   $(function() {
     $(".datepicker:not(.instrument-date-picker)")
       .datepicker({
@@ -672,6 +708,9 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
     <?php if (!$this->isEditable) { ?>
     $("#tbResponseForm").find("input:enabled, select:enabled, textarea:enabled").attr("disabled", "disabled");
 	<?php } ?>
+
+    $("#assay").on('change', setAssay);
+    setAssay();
   });
 
   function clearDate(id) {
@@ -689,14 +728,22 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
     var errorCodeInput = $("#errorCode" + resultNumber);
     var rifResistanceSelect = $("#rifResistance" + resultNumber);
     if (mtbDetected === "error") {
+      errorCodeInput.removeAttr("disabled");
       errorCodeInput.removeAttr("readonly");
     } else {
+      errorCodeInput.attr("disabled", "");
       errorCodeInput.attr("readonly", "");
       errorCodeInput.val('')
     }
     if (["detected", "high", "medium", "low", "veryLow"].includes(mtbDetected)) {
+      rifResistanceSelect.removeAttr("disabled");
       rifResistanceSelect.removeAttr("readonly");
+    } else if (mtbDetected === "trace") {
+      rifResistanceSelect.attr("disabled", "");
+      rifResistanceSelect.attr("readonly", "");
+      rifResistanceSelect.val('indeterminate')
     } else {
+      rifResistanceSelect.attr("disabled", "");
       rifResistanceSelect.attr("readonly", "");
       rifResistanceSelect.val('na')
     }

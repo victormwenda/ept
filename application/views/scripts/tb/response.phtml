@@ -389,7 +389,7 @@ foreach($this->allNotTestedReason as $reason) { ?>
                         </td>
                         <td style="background-color: transparent;">
                             <select id="mtbDetected<?php echo $count; ?>" name="mtbDetected[<?php echo $index; ?>]"
-                                    class="isRequired form-control input-sm" title="Please enter the MTB Detected for this sample"
+                                    class="isRequired form-control input-sm mtbDetected" title="Please enter the MTB Detected for this sample"
                                     placeholder="Please enter the MTB Detected for this sample"
                                     onChange="changeMtbDetected(<?php echo $count; ?>)">
                                 <option value="">-- Select --</option>
@@ -635,20 +635,19 @@ $dtFormat = $genderHelper->getDateFormat();
     }
   }
   var analyteLables = {
-<?php
-    foreach ($this->assays as $id => $definition) {
+  <?php foreach ($this->assays as $id => $definition) {
       echo "    \"".$id."\": {\n";
       echo "      \"analyte1Label\": \"".$definition['analyte1Label']."\",\n";
       echo "      \"analyte2Label\": \"".$definition['analyte2Label']."\",\n";
       echo "      \"analyte3Label\": \"".$definition['analyte3Label']."\",\n";
       echo "      \"analyte4Label\": \"".$definition['analyte4Label']."\",\n";
       echo "      \"analyte5Label\": \"".$definition['analyte5Label']."\",\n";
-      echo "      \"analyte6Label\": \"".$definition['analyte6Label']."\"\n";
+      echo "      \"analyte6Label\": \"".$definition['analyte6Label']."\",\n";
+      echo "      \"includeTraceForMtbDetected\": ".$definition['includeTraceForMtbDetected']."\n";
       echo "    },\n";
-    }
-?>
+    } ?>
   };
-  function setAnalyteLabels() {
+  function setAssay() {
     var selectedAssayId = $("#assay").val();
     if (!selectedAssayId) {
       selectedAssayId = Object.keys(analyteLables)[0];
@@ -660,6 +659,11 @@ $dtFormat = $genderHelper->getDateFormat();
     $(".probe4Header").text(selectedAssayDefinition['analyte4Label']);
     $(".probe5Header").text(selectedAssayDefinition['analyte5Label']);
     $(".probe6Header").text(selectedAssayDefinition['analyte6Label']);
+    if (selectedAssayDefinition['includeTraceForMtbDetected'] && !$(".mtbDetected option[value='trace']").length) {
+      $("<option value='trace'>Trace</option>").insertAfter(".mtbDetected option[value='veryLow']");
+    } else {
+      $(".mtbDetected option[value='trace']").remove();
+    }
   }
 
   var timeOut, formValidator;
@@ -697,8 +701,8 @@ $dtFormat = $genderHelper->getDateFormat();
       }
     });
 
-    $("#assay").on('change', setAnalyteLabels);
-    setAnalyteLabels()
+    $("#assay").on('change', setAssay);
+    setAssay();
     jQuery.validator.addMethod('dateLargerThan', function (value, dateInput, baseDateInputSelector) {
       return moment(value).diff(new Date($(baseDateInputSelector).val())) >= 0;
 	});
@@ -1189,6 +1193,10 @@ foreach ($this->allSamples as $sample) { ?>
     if (["detected", "high", "medium", "low", "veryLow"].includes(mtbDetected)) {
       rifResistanceSelect.removeAttr("disabled");
       rifResistanceSelect.removeAttr("readonly");
+    } else if (mtbDetected === "trace") {
+      rifResistanceSelect.attr("disabled", "");
+      rifResistanceSelect.attr("readonly", "");
+      rifResistanceSelect.val('indeterminate')
     } else {
       rifResistanceSelect.attr("disabled", "");
       rifResistanceSelect.attr("readonly", "");

@@ -96,7 +96,8 @@ class Application_Service_Schemes {
                 'analyte3Label' => $row['analyte3Label'],
                 'analyte4Label' => $row['analyte4Label'],
                 'analyte5Label' => $row['analyte5Label'],
-                'analyte6Label' => $row['analyte6Label']
+                'analyte6Label' => $row['analyte6Label'],
+                'includeTraceForMtbDetected' => $row['includeTraceForMtbDetected']
             );
         }
         return $response;
