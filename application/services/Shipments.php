@@ -2065,6 +2065,7 @@ class Application_Service_Shipments {
                                 WHEN res.mtb_detected = 'notDetected' THEN 'MTB Not Detected '
                                 WHEN res.mtb_detected = 'noResult' THEN 'No Result'
                                 WHEN res.mtb_detected = 'veryLow' THEN 'MTB Very Low '
+                                WHEN res.mtb_detected = 'trace' THEN 'MTB Trace '
                                 WHEN res.mtb_detected = 'na' THEN 'N/A'
                                 WHEN IFNULL(res.mtb_detected, '') = '' THEN ''
                                 ELSE CONCAT('MTB ', UPPER(SUBSTRING(res.mtb_detected, 1, 1)), SUBSTRING(res.mtb_detected, 2, 254), ' ')

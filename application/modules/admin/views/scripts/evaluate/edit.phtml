@@ -249,8 +249,15 @@ $dtFormat=  $vHelper->getDateFormat();
     });
 
     jQuery.validator.addMethod('validRifForNoMtb', function (value, rifInput, mtbInputSelector) {
-      if (!['detected', 'high', 'medium', 'low', 'veryLow'].includes($(mtbInputSelector).val())) {
+      if (!['detected', 'high', 'medium', 'low', 'veryLow', 'trace'].includes($(mtbInputSelector).val())) {
         return value === 'na';
+      }
+      return true;
+    });
+
+    jQuery.validator.addMethod('validRifForMtbTraceDetected', function (value, rifInput, mtbInputSelector) {
+      if ($(mtbInputSelector).val() === 'trace') {
+        return value === 'indeterminate';
       }
       return true;
     });
@@ -400,21 +407,21 @@ $dtFormat=  $vHelper->getDateFormat();
         'probe1[<?php echo $index; ?>]': {
           required: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("#isExcluded").val() != "yes" &&
                 $("#unableToSubmit").val() != "yes";
             }
           },
           number: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("#isExcluded").val() != "yes" &&
                 $("#unableToSubmit").val() != "yes";
             }
           },
           ctEndpointValue: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("#isExcluded").val() != "yes" &&
                 $("#unableToSubmit").val() != "yes";
             }
@@ -423,21 +430,21 @@ $dtFormat=  $vHelper->getDateFormat();
         'probe2[<?php echo $index; ?>]': {
           required: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("#isExcluded").val() != "yes" &&
                 $("#unableToSubmit").val() != "yes";
             }
           },
           number: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("#isExcluded").val() != "yes" &&
                 $("#unableToSubmit").val() != "yes";
             }
           },
           ctEndpointValue: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("#isExcluded").val() != "yes" &&
                 $("#unableToSubmit").val() != "yes";
             }
@@ -446,21 +453,21 @@ $dtFormat=  $vHelper->getDateFormat();
         'probe3[<?php echo $index; ?>]': {
           required: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("#isExcluded").val() != "yes" &&
                 $("#unableToSubmit").val() != "yes";
             }
           },
           number: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("#isExcluded").val() != "yes" &&
                 $("#unableToSubmit").val() != "yes";
             }
           },
           ctEndpointValue: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("#isExcluded").val() != "yes" &&
                 $("#unableToSubmit").val() != "yes";
             }
@@ -469,19 +476,19 @@ $dtFormat=  $vHelper->getDateFormat();
         'probe4[<?php echo $index; ?>]': {
           required: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val());
             }
           },
           number: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("#isExcluded").val() != "yes" &&
                 $("#unableToSubmit").val() != "yes";
             }
           },
           ctEndpointValue: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("#isExcluded").val() != "yes" &&
                 $("#unableToSubmit").val() != "yes";
             }
@@ -490,21 +497,21 @@ $dtFormat=  $vHelper->getDateFormat();
         'probe5[<?php echo $index; ?>]': {
           required: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("#isExcluded").val() != "yes" &&
                 $("#unableToSubmit").val() != "yes";
             }
           },
           number: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("#isExcluded").val() != "yes" &&
                 $("#unableToSubmit").val() != "yes";
             }
           },
           ctEndpointValue: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("#isExcluded").val() != "yes" &&
                 $("#unableToSubmit").val() != "yes";
             }
@@ -513,21 +520,21 @@ $dtFormat=  $vHelper->getDateFormat();
         'probe6[<?php echo $index; ?>]': {
           required: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("#isExcluded").val() != "yes" &&
                 $("#unableToSubmit").val() != "yes";
             }
           },
           number: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("#isExcluded").val() != "yes" &&
                 $("#unableToSubmit").val() != "yes";
             }
           },
           ctEndpointValue: {
             depends: function () {
-              return ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+              return ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("#isExcluded").val() != "yes" &&
                 $("#unableToSubmit").val() != "yes";
             }

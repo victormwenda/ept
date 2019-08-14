@@ -4731,6 +4731,7 @@ SELECT countries.iso_name AS `Country`,
       WHEN response_result_tb_1.mtb_detected = 'notDetected' THEN 'Not Detected'
       WHEN response_result_tb_1.mtb_detected = 'noResult' THEN 'No Result'
       WHEN response_result_tb_1.mtb_detected = 'veryLow' THEN 'Very Low'
+      WHEN response_result_tb_1.mtb_detected = 'trace' THEN 'Trace'
       WHEN response_result_tb_1.mtb_detected = 'na' THEN 'N/A'
       WHEN IFNULL(response_result_tb_1.mtb_detected, '') = '' THEN NULL
       ELSE CONCAT(UPPER(SUBSTRING(response_result_tb_1.mtb_detected, 1, 1)), SUBSTRING(response_result_tb_1.mtb_detected, 2, 254))
@@ -4741,7 +4742,7 @@ SELECT countries.iso_name AS `Country`,
       WHEN response_result_tb_1.mtb_detected = 'noResult' THEN 'No Result'
       WHEN response_result_tb_1.mtb_detected = 'invalid' THEN 'Invalid'
       WHEN response_result_tb_1.mtb_detected = 'notDetected' THEN 'Not Detected'
-      WHEN response_result_tb_1.mtb_detected IN ('detected', 'veryLow', 'low', 'medium', 'high') AND IFNULL(response_result_tb_1.rif_resistance, 'na') = 'na' THEN 'Not Detected'
+      WHEN response_result_tb_1.mtb_detected IN ('detected', 'trace', 'veryLow', 'low', 'medium', 'high') AND IFNULL(response_result_tb_1.rif_resistance, 'na') = 'na' THEN 'Not Detected'
       WHEN response_result_tb_1.rif_resistance = 'notDetected' THEN 'Not Detected'
       WHEN response_result_tb_1.rif_resistance = 'noResult' THEN 'No Result'
       WHEN response_result_tb_1.rif_resistance = 'veryLow' THEN 'Very Low'
@@ -4764,6 +4765,7 @@ SELECT countries.iso_name AS `Country`,
       WHEN response_result_tb_2.mtb_detected = 'notDetected' THEN 'Not Detected'
       WHEN response_result_tb_2.mtb_detected = 'noResult' THEN 'No Result'
       WHEN response_result_tb_2.mtb_detected = 'veryLow' THEN 'Very Low'
+      WHEN response_result_tb_2.mtb_detected = 'trace' THEN 'Trace'
       WHEN response_result_tb_2.mtb_detected = 'na' THEN 'N/A'
       WHEN IFNULL(response_result_tb_2.mtb_detected, '') = '' THEN NULL
       ELSE CONCAT(UPPER(SUBSTRING(response_result_tb_2.mtb_detected, 1, 1)), SUBSTRING(response_result_tb_2.mtb_detected, 2, 254))
@@ -4774,7 +4776,7 @@ SELECT countries.iso_name AS `Country`,
       WHEN response_result_tb_2.mtb_detected = 'noResult' THEN 'No Result'
       WHEN response_result_tb_2.mtb_detected = 'invalid' THEN 'Invalid'
       WHEN response_result_tb_2.mtb_detected = 'notDetected' THEN 'Not Detected'
-      WHEN response_result_tb_2.mtb_detected IN ('detected', 'veryLow', 'low', 'medium', 'high') AND IFNULL(response_result_tb_2.rif_resistance, 'na') = 'na' THEN 'Not Detected'
+      WHEN response_result_tb_2.mtb_detected IN ('detected', 'trace', 'veryLow', 'low', 'medium', 'high') AND IFNULL(response_result_tb_2.rif_resistance, 'na') = 'na' THEN 'Not Detected'
       WHEN response_result_tb_2.rif_resistance = 'notDetected' THEN 'Not Detected'
       WHEN response_result_tb_2.rif_resistance = 'noResult' THEN 'No Result'
       WHEN response_result_tb_2.rif_resistance = 'veryLow' THEN 'Very Low'
@@ -4797,6 +4799,7 @@ SELECT countries.iso_name AS `Country`,
       WHEN response_result_tb_3.mtb_detected = 'notDetected' THEN 'Not Detected'
       WHEN response_result_tb_3.mtb_detected = 'noResult' THEN 'No Result'
       WHEN response_result_tb_3.mtb_detected = 'veryLow' THEN 'Very Low'
+      WHEN response_result_tb_3.mtb_detected = 'trace' THEN 'Trace'
       WHEN response_result_tb_3.mtb_detected = 'na' THEN 'N/A'
       WHEN IFNULL(response_result_tb_3.mtb_detected, '') = '' THEN NULL
       ELSE CONCAT(UPPER(SUBSTRING(response_result_tb_3.mtb_detected, 1, 1)), SUBSTRING(response_result_tb_3.mtb_detected, 2, 254))
@@ -4807,7 +4810,7 @@ SELECT countries.iso_name AS `Country`,
       WHEN response_result_tb_3.mtb_detected = 'noResult' THEN 'No Result'
       WHEN response_result_tb_3.mtb_detected = 'invalid' THEN 'Invalid'
       WHEN response_result_tb_3.mtb_detected = 'notDetected' THEN 'Not Detected'
-      WHEN response_result_tb_3.mtb_detected IN ('detected', 'veryLow', 'low', 'medium', 'high') AND IFNULL(response_result_tb_3.rif_resistance, 'na') = 'na' THEN 'Not Detected'
+      WHEN response_result_tb_3.mtb_detected IN ('detected', 'trace', 'veryLow', 'low', 'medium', 'high') AND IFNULL(response_result_tb_3.rif_resistance, 'na') = 'na' THEN 'Not Detected'
       WHEN response_result_tb_3.rif_resistance = 'notDetected' THEN 'Not Detected'
       WHEN response_result_tb_3.rif_resistance = 'noResult' THEN 'No Result'
       WHEN response_result_tb_3.rif_resistance = 'veryLow' THEN 'Very Low'
@@ -4830,6 +4833,7 @@ SELECT countries.iso_name AS `Country`,
       WHEN response_result_tb_4.mtb_detected = 'notDetected' THEN 'Not Detected'
       WHEN response_result_tb_4.mtb_detected = 'noResult' THEN 'No Result'
       WHEN response_result_tb_4.mtb_detected = 'veryLow' THEN 'Very Low'
+      WHEN response_result_tb_4.mtb_detected = 'trace' THEN 'Trace'
       WHEN response_result_tb_4.mtb_detected = 'na' THEN 'N/A'
       WHEN IFNULL(response_result_tb_4.mtb_detected, '') = '' THEN NULL
       ELSE CONCAT(UPPER(SUBSTRING(response_result_tb_4.mtb_detected, 1, 1)), SUBSTRING(response_result_tb_4.mtb_detected, 2, 254))
@@ -4840,7 +4844,7 @@ SELECT countries.iso_name AS `Country`,
       WHEN response_result_tb_4.mtb_detected = 'noResult' THEN 'No Result'
       WHEN response_result_tb_4.mtb_detected = 'invalid' THEN 'Invalid'
       WHEN response_result_tb_4.mtb_detected = 'notDetected' THEN 'Not Detected'
-      WHEN response_result_tb_4.mtb_detected IN ('detected', 'veryLow', 'low', 'medium', 'high') AND IFNULL(response_result_tb_4.rif_resistance, 'na') = 'na' THEN 'Not Detected'
+      WHEN response_result_tb_4.mtb_detected IN ('detected', 'trace', 'veryLow', 'low', 'medium', 'high') AND IFNULL(response_result_tb_4.rif_resistance, 'na') = 'na' THEN 'Not Detected'
       WHEN response_result_tb_4.rif_resistance = 'notDetected' THEN 'Not Detected'
       WHEN response_result_tb_4.rif_resistance = 'noResult' THEN 'No Result'
       WHEN response_result_tb_4.rif_resistance = 'veryLow' THEN 'Very Low'
@@ -4863,6 +4867,7 @@ SELECT countries.iso_name AS `Country`,
       WHEN response_result_tb_5.mtb_detected = 'notDetected' THEN 'Not Detected'
       WHEN response_result_tb_5.mtb_detected = 'noResult' THEN 'No Result'
       WHEN response_result_tb_5.mtb_detected = 'veryLow' THEN 'Very Low'
+      WHEN response_result_tb_5.mtb_detected = 'trace' THEN 'Trace'
       WHEN response_result_tb_5.mtb_detected = 'na' THEN 'N/A'
       WHEN IFNULL(response_result_tb_5.mtb_detected, '') = '' THEN NULL
       ELSE CONCAT(UPPER(SUBSTRING(response_result_tb_5.mtb_detected, 1, 1)), SUBSTRING(response_result_tb_5.mtb_detected, 2, 254))
@@ -4873,7 +4878,7 @@ SELECT countries.iso_name AS `Country`,
       WHEN response_result_tb_5.mtb_detected = 'noResult' THEN 'No Result'
       WHEN response_result_tb_5.mtb_detected = 'invalid' THEN 'Invalid'
       WHEN response_result_tb_5.mtb_detected = 'notDetected' THEN 'Not Detected'
-      WHEN response_result_tb_5.mtb_detected IN ('detected', 'veryLow', 'low', 'medium', 'high') AND IFNULL(response_result_tb_5.rif_resistance, 'na') = 'na' THEN 'Not Detected'
+      WHEN response_result_tb_5.mtb_detected IN ('detected', 'trace', 'veryLow', 'low', 'medium', 'high') AND IFNULL(response_result_tb_5.rif_resistance, 'na') = 'na' THEN 'Not Detected'
       WHEN response_result_tb_5.rif_resistance = 'notDetected' THEN 'Not Detected'
       WHEN response_result_tb_5.rif_resistance = 'noResult' THEN 'No Result'
       WHEN response_result_tb_5.rif_resistance = 'veryLow' THEN 'Very Low'

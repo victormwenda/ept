@@ -44,7 +44,7 @@ class Application_Service_EvaluationScoring {
     }
 
     public function resMtbDetectedEqualsRefMtbDetected ($refMtbDetected, $resMtbDetected) {
-        $mtbDetectedValues = array("detected", "high", "medium", "low", "veryLow");
+        $mtbDetectedValues = array("detected", "high", "medium", "low", "veryLow", "trace");
         if (in_array($refMtbDetected, $mtbDetectedValues) && in_array($resMtbDetected, $mtbDetectedValues)) {
             return true;
         }

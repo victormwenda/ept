@@ -1206,7 +1206,7 @@ class Application_Service_Evaluation {
         if (count($shipmentResult) > 0 && $shipmentResult[0]['scheme_type'] == 'tb') {
             $summaryQuery = $db->select()->from(array('spm' => 'shipment_participant_map'), array())
                 ->join(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id',
-                    array('mtb_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow') THEN 1 ELSE 0 END)",
+                    array('mtb_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') THEN 1 ELSE 0 END)",
                         'mtb_not_detected' => "SUM(CASE WHEN `res`.`mtb_detected` = 'notDetected' THEN 1 ELSE 0 END)",
                         'mtb_uninterpretable' => new Zend_Db_Expr("SUM(CASE WHEN IFNULL(`res`.`mtb_detected`, '') IN ('noResult', 'invalid', 'error') THEN 1 ELSE 0 END)"),
                         'rif_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow') AND `res`.`rif_resistance` = 'detected' THEN 1 ELSE 0 END)",
@@ -2164,7 +2164,7 @@ class Application_Service_Evaluation {
 			} else if ($shipmentResult['scheme_type'] == 'tb') {
                 $summaryQuery = $db->select()->from(array('spm' => 'shipment_participant_map'), array())
                     ->join(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id',
-                        array('mtb_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow') THEN 1 ELSE 0 END)",
+                        array('mtb_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') THEN 1 ELSE 0 END)",
                             'mtb_not_detected' => "SUM(CASE WHEN `res`.`mtb_detected` = 'notDetected' THEN 1 ELSE 0 END)",
                             'mtb_uninterpretable' => new Zend_Db_Expr("SUM(CASE WHEN IFNULL(`res`.`mtb_detected`, '') IN ('noResult', 'invalid', 'error') THEN 1 ELSE 0 END)"),
                             'rif_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow') AND `res`.`rif_resistance` = 'detected' THEN 1 ELSE 0 END)",
