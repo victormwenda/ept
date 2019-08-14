@@ -408,6 +408,9 @@ foreach($this->allNotTestedReason as $reason) { ?>
                                 <option value="veryLow" <?php echo ($sample['res_mtb_detected'] == 'veryLow' ? "selected='selected'" : ""); ?>>
                                     Very Low
                                 </option>
+                                <option value="trace" <?php echo ($sample['res_mtb_detected'] == 'trace' ? "selected='selected'" : ""); ?>>
+                                    Trace
+                                </option>
                                 <option value="notDetected" <?php echo ($sample['res_mtb_detected'] == 'notDetected' ? "selected='selected'" : ""); ?>>
                                     Not Detected
                                 </option>
@@ -661,7 +664,7 @@ $dtFormat = $genderHelper->getDateFormat();
     $(".probe6Header").text(selectedAssayDefinition['analyte6Label']);
     if (selectedAssayDefinition['includeTraceForMtbDetected'] && !$(".mtbDetected option[value='trace']").length) {
       $("<option value='trace'>Trace</option>").insertAfter(".mtbDetected option[value='veryLow']");
-    } else {
+    } else if (!selectedAssayDefinition['includeTraceForMtbDetected']) {
       $(".mtbDetected option[value='trace']").remove();
     }
   }

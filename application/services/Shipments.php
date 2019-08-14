@@ -613,6 +613,20 @@ class Application_Service_Shipments {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $db->beginTransaction();
         try {
+            $mtbDetected = $params['mtbDetected'];
+            $rifResistance = $params['rifResistance'];
+            $errorCode = $params['errorCode'];
+            if ($mtbDetected != "error") {
+                $errorCode = null;
+                if(!in_array($mtbDetected, array("detected", "high", "medium", "low", "veryLow")) && ($rifResistance == null || $rifResistance == "")) {
+                    $rifResistance = "na";
+                }
+            } else {
+                $rifResistance = "na";
+            }
+            $params['rifResistance'] = $rifResistance;
+            $params['errorCode'] = $errorCode;
+
             $tbResponseDb = new Application_Model_DbTable_ResponseTb();
             $tbResponseDb->updateResult($params, $cartridgeExpirationDate, $cartridgeLotNo);
             $instrumentsDb = new Application_Model_DbTable_Instruments();
@@ -728,6 +742,22 @@ class Application_Service_Shipments {
             $evaluationStatus = $shipmentMap['evaluation_status'];
             $submitted = $evaluationStatus[2] == '1' ||
                 (isset($params['submitAction']) && $params['submitAction'] == 'submit');
+            $sampleIds = $params['sampleId'];
+            foreach ($sampleIds as $key => $sampleId) {
+                $mtbDetected = $params['mtbDetected'][$key];
+                $rifResistance = $params['rifResistance'][$key];
+                $errorCode = $params['errorCode'][$key];
+                if ($mtbDetected != "error") {
+                    $errorCode = null;
+                    if(!in_array($mtbDetected, array("detected", "high", "medium", "low", "veryLow")) && ($rifResistance == null || $rifResistance == "")) {
+                        $rifResistance = "na";
+                    }
+                } else {
+                    $rifResistance = "na";
+                }
+                $params['rifResistance'][$key] = $rifResistance;
+                $params['errorCode'][$key] = $errorCode;
+            }
             $tbResponseDb->updateResults($params, $submitted);
 
             $instrumentsDb = new Application_Model_DbTable_Instruments();

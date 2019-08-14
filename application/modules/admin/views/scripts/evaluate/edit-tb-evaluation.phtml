@@ -440,7 +440,9 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
                                     <option value="veryLow" <?php echo ($result['res_mtb_detected'] == 'veryLow' ? "selected='selected'" : ""); ?>>
                                         Very Low
                                     </option>
-                                    <?php if ( ?>
+                                    <option value="trace" <?php echo ($result['res_mtb_detected'] == 'trace' ? "selected='selected'" : ""); ?>>
+                                        Trace
+                                    </option>
                                     <option value="notDetected" <?php echo ($result['res_mtb_detected'] == 'notDetected' ? "selected='selected'" : ""); ?>>
                                         Not Detected
                                     </option>
@@ -690,7 +692,7 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
     $(".probe6Header").text(selectedAssayDefinition['analyte6Label']);
     if (selectedAssayDefinition['includeTraceForMtbDetected'] && !$(".mtbDetected option[value='trace']").length) {
       $("<option value='trace'>Trace</option>").insertAfter(".mtbDetected option[value='veryLow']");
-    } else {
+    } else if (!selectedAssayDefinition['includeTraceForMtbDetected']) {
       $(".mtbDetected option[value='trace']").remove();
     }
   }

@@ -388,7 +388,12 @@ foreach ($this->responseData['results'] as $result) {
                             <option value="veryLow" <?php echo ($result['res_mtb_detected'] == 'veryLow' ? "selected='selected'" : ""); ?>>
                                 Very Low
                             </option>
-                            <option value="notDetected" <?php echo ($result['res_mtb_detected'] == 'notDetected' ? "selected='selected'" : ""); ?>>Not Detected</option>
+                            <option value="trace" <?php echo ($result['res_mtb_detected'] == 'trace' ? "selected='selected'" : ""); ?>>
+                                Trace
+                            </option>
+                            <option value="notDetected" <?php echo ($result['res_mtb_detected'] == 'notDetected' ? "selected='selected'" : ""); ?>>
+                                Not Detected
+                            </option>
                             <option value="noResult" <?php echo ($result['res_mtb_detected'] == 'noResult' ? "selected='selected'" : ""); ?>>
                                 No Result
                             </option>
@@ -564,7 +569,7 @@ foreach ($this->responseData['results'] as $result) {
     $(".probe6Header").text(selectedAssayDefinition['analyte6Label']);
     if (selectedAssayDefinition['includeTraceForMtbDetected'] && !$(".mtbDetected option[value='trace']").length) {
       $("<option value='trace'>Trace</option>").insertAfter(".mtbDetected option[value='veryLow']");
-    } else {
+    } else if (!selectedAssayDefinition['includeTraceForMtbDetected']) {
       $(".mtbDetected option[value='trace']").remove();
     }
   }
