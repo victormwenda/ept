@@ -19,7 +19,7 @@ try {
             $participantsQuery = $db->select()
                 ->from(array('p' => 'participant'), array('p.unique_identifier'))
                 ->join(array('spm' => 'shipment_participant_map'), 'spm.participant_id = p.participant_id',
-                    array('smp.map_id', 'spm.shipment_id', 'spm.shipment_score', 'spm.documentation_score', 'spm.documentation_score',
+                    array('spm.map_id', 'spm.shipment_id', 'spm.shipment_score', 'spm.documentation_score', 'spm.documentation_score',
                         'submitted' => new Zend_Db_Expr("CASE WHEN substr(spm.evaluation_status, 3, 1) = '1' THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT) END")))
                 ->join(array('s' => 'shipment'), 's.shipment_id = spm.shipment_id', array('s.shipment_id', 's.max_score'))
                 ->join(array('r' => 'r_results'), 'r.result_id = spm.final_result', array('r.result_name'))

@@ -893,22 +893,58 @@ if ($this->scheme == 'eid') {
                             ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;">
-                            <?php echo $result['ref_probe_1']; ?>
+                            <?php
+                                if ($this->evaluateData['shipment']['assay_name'] == 'Xpert MTB/RIF') {
+                                    echo $result['ref_mtb_rif_probe_d'];
+                                } else if ($this->evaluateData['shipment']['analyte3Label'] == 'Xpert MTB Ultra') {
+                                    echo $result['ref_ultra_probe_spc'];
+                                }
+                            ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;">
-                            <?php echo $result['ref_probe_2']; ?>
+                            <?php
+                                if ($this->evaluateData['shipment']['assay_name'] == 'Xpert MTB/RIF') {
+                                    echo $result['ref_mtb_rif_probe_c'];
+                                } else if ($this->evaluateData['shipment']['analyte3Label'] == 'Xpert MTB Ultra') {
+                                    echo $result['ref_ultra_probe_is1081_is6110'];
+                                }
+                            ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;">
-                            <?php echo $result['ref_probe_3']; ?>
+                            <?php
+                                if ($this->evaluateData['shipment']['assay_name'] == 'Xpert MTB/RIF') {
+                                    echo $result['ref_mtb_rif_probe_e'];
+                                } else if ($this->evaluateData['shipment']['analyte3Label'] == 'Xpert MTB Ultra') {
+                                    echo $result['ref_ultra_probe_rpo_b1'];
+                                }
+                            ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;">
-                            <?php echo $result['ref_probe_4']; ?>
+                            <?php
+                                if ($this->evaluateData['shipment']['assay_name'] == 'Xpert MTB/RIF') {
+                                    echo $result['ref_mtb_rif_probe_b'];
+                                } else if ($this->evaluateData['shipment']['analyte3Label'] == 'Xpert MTB Ultra') {
+                                    echo $result['ref_ultra_probe_rpo_b2'];
+                                }
+                            ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;">
-                            <?php echo $result['ref_probe_5']; ?>
+                            <?php
+                                if ($this->evaluateData['shipment']['assay_name'] == 'Xpert MTB/RIF') {
+                                    echo $result['ref_mtb_rif_probe_spc'];
+                                } else if ($this->evaluateData['shipment']['analyte3Label'] == 'Xpert MTB Ultra') {
+                                    echo $result['ref_ultra_probe_rpo_b3'];
+                                }
+                            ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;">
-                            <?php echo $result['ref_probe_6']; ?>
+                            <?php
+                                if ($this->evaluateData['shipment']['assay_name'] == 'Xpert MTB/RIF') {
+                                    echo $result['ref_mtb_rif_probe_a'];
+                                } else if ($this->evaluateData['shipment']['analyte3Label'] == 'Xpert MTB Ultra') {
+                                    echo $result['ref_ultra_probe_rpo_b4'];
+                                }
+                            ?>
                         </td>
                     </tr>
                     <tr>

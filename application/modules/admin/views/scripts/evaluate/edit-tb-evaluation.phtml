@@ -593,22 +593,52 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
                                 ?>
                             </td>
                             <td style="vertical-align: top;text-align: right;">
-                                <?php echo $result['ref_probe_1']; ?>
+                                <span class="mtbRifReferenceProbe">
+                                    <?php echo $result['ref_mtb_rif_probe_d']; ?>
+                                </span>
+                                <span class="ultraReferenceProbe">
+                                    <?php echo $result['ref_ultra_probe_spc']; ?>
+                                </span>
                             </td>
                             <td style="vertical-align: top;text-align: right;">
-                                <?php echo $result['ref_probe_2']; ?>
+                                <span class="mtbRifReferenceProbe">
+                                    <?php echo $result['ref_mtb_rif_probe_c']; ?>
+                                </span>
+                                <span class="ultraReferenceProbe">
+                                    <?php echo $result['ref_ultra_probe_is1081_is6110']; ?>
+                                </span>
                             </td>
                             <td style="vertical-align: top;text-align: right;">
-                                <?php echo $result['ref_probe_3']; ?>
+                                <span class="mtbRifReferenceProbe">
+                                    <?php echo $result['ref_mtb_rif_probe_e']; ?>
+                                </span>
+                                <span class="ultraReferenceProbe">
+                                    <?php echo $result['ref_ultra_probe_rpo_b1']; ?>
+                                </span>
                             </td>
                             <td style="vertical-align: top;text-align: right;">
-                                <?php echo $result['ref_probe_4']; ?>
+                                <span class="mtbRifReferenceProbe">
+                                    <?php echo $result['ref_mtb_rif_probe_b']; ?>
+                                </span>
+                                <span class="ultraReferenceProbe">
+                                    <?php echo $result['ref_ultra_probe_rpo_b2']; ?>
+                                </span>
                             </td>
                             <td style="vertical-align: top;text-align: right;">
-                                <?php echo $result['ref_probe_5']; ?>
+                                <span class="mtbRifReferenceProbe">
+                                    <?php echo $result['ref_mtb_rif_probe_spc']; ?>
+                                </span>
+                                <span class="ultraReferenceProbe">
+                                    <?php echo $result['ref_ultra_probe_rpo_b3']; ?>
+                                </span>
                             </td>
                             <td style="vertical-align: top;text-align: right;">
-                                <?php echo $result['ref_probe_6']; ?>
+                                <span class="mtbRifReferenceProbe">
+                                    <?php echo $result['ref_mtb_rif_probe_a']; ?>
+                                </span>
+                                <span class="ultraReferenceProbe">
+                                    <?php echo $result['ref_ultra_probe_rpo_b4']; ?>
+                                </span>
                             </td>
                         </tr>
                         <tr>
@@ -674,7 +704,8 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
   echo "      \"analyte4Label\": \"".$definition['analyte4Label']."\",\n";
   echo "      \"analyte5Label\": \"".$definition['analyte5Label']."\",\n";
   echo "      \"analyte6Label\": \"".$definition['analyte6Label']."\",\n";
-  echo "      \"includeTraceForMtbDetected\": ".$definition['includeTraceForMtbDetected']."\n";
+  echo "      \"includeTraceForMtbDetected\": ".$definition['includeTraceForMtbDetected'].",\n";
+  echo "      \"name\": \"".$definition['name']."\"\n";
   echo "    },\n";
   } ?>
   };
@@ -690,6 +721,13 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
     $(".probe4Header").text(selectedAssayDefinition['analyte4Label']);
     $(".probe5Header").text(selectedAssayDefinition['analyte5Label']);
     $(".probe6Header").text(selectedAssayDefinition['analyte6Label']);
+    $(".mtbRifReferenceProbe").hide();
+    $(".ultraReferenceProbe").hide();
+    if (selectedAssayDefinition['name'] === 'Xpert MTB/RIF') {
+      $(".mtbRifReferenceProbe").show();
+    } else if (selectedAssayDefinition['name'] === 'Xpert MTB Ultra') {
+      $(".ultraReferenceProbe").show();
+    }
     if (selectedAssayDefinition['includeTraceForMtbDetected'] && !$(".mtbDetected option[value='trace']").length) {
       $("<option value='trace'>Trace</option>").insertAfter(".mtbDetected option[value='veryLow']");
     } else if (!selectedAssayDefinition['includeTraceForMtbDetected']) {
