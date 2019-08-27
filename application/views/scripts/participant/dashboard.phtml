@@ -172,16 +172,16 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
 					</table>
 				</div>
 		</div>
-		
-		
-		
+
+
+
 <div class="box">
                 <div class="box-body">
 					<h3 class="txt text-info">All Shipments</h3>
 
 					<?php
 					if($this->globalQcAccess=='yes' && (isset($authNameSpace->qc_access) && $authNameSpace->qc_access=='yes')){
-					?>					
+					?>
 					<table class="table">
 						<tr>
 							<td style="width:100%;">
@@ -213,7 +213,7 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
 					<th style="width:100px;">Response<br/>Date</th>
 					<th style="width:100px;">Action</th>
 					<th>Report</th>
-	    
+
 				    </tr>
 				</thead>
 				<tbody>
@@ -236,7 +236,7 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
 				<td><input type="text" id="qcDate" name="qcDate"  style="width:180px;float:left;"  maxlength="11" value=""  class="isRequired form-control" readonly="readonly" /></td>
 			</tr>
 		</table>
-		
+
 		<div class="box-footer" style="text-align: center">
 			<button class="btn btn-primary" onclick="submitQcForm();return false;">Submit</button>
 		</div>
@@ -629,7 +629,7 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
 			"bInfo": true,
 			"bScrollCollapse": true,
 			"sPaginationType": "full_numbers",
-			"bRetrieve": true,                        
+			"bRetrieve": true,
 			"aoColumns": [
 			    {"sClass":"center"},
 			    {"sClass":"center"},
@@ -652,7 +652,7 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
 			}
 		});
 	}
-	
+
 	$(document).ready(function(){
 		overviewSchemes();
 	});
@@ -669,7 +669,7 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
 			"bInfo": true,
 			"bScrollCollapse": true,
 			"sPaginationType": "full_numbers",
-			"bRetrieve": true,                        
+			"bRetrieve": true,
 			"aoColumns": [
 				{"bSortable":false},
 			    {"sClass":"center"},
@@ -692,7 +692,7 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
                         checkBoxes[c].setAttribute("checked",true);
                     }
                 }
-                
+
             },
 			"bProcessing": true,
 			"bServerSide": true,
@@ -716,17 +716,17 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
 			}
 		});
 	}
-	
-	
+
+
 	$(document).ready(function(){
 		allSchemes();
-		
+
 	});
-    
-    
-	
+
+
+
     function removeSchemes(schemeType,mid){
-		if (window.confirm("Are you sure you want to remove this response?\n This cannot be undone !")) { 
+		if (window.confirm("Are you sure you want to remove this response?\n This cannot be undone !")) {
 			$.blockUI();
 			$.post("<?php echo $this->url(array('module'=>'default','controller' =>'common', 'action' => 'delete-response')); ?>", { schemeType:schemeType, mid: mid, format: "html" },
 			    function (data) {
@@ -734,10 +734,10 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
 				schemeTable.fnDraw();
 				$.unblockUI();
 			});
-		}		
-		
+		}
+
 	}
-	
+
 	function addQc(mapId,obj){
 		if(obj.checked==true)
         {
@@ -749,7 +749,7 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
 		}
 		$("#participantMapId").val(selectedQc);
 		$("#qcCount").text(selectedQc.length);
-        
+
     }
 	function addSingleQc(mapId,qcDate) {
 		//$("#qcDate").val(qcDate);
@@ -761,9 +761,15 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
     }
 	function showQcForm() {
         showdefModal("migrateBox", 600,400);
-		$("#qcDate").datepicker({dateFormat: '<?php echo $dtFormat; ?>'});
+        var today = new Date('<?php echo date("Y-m-d") ?>');
+        $("#qcDate").datepicker({
+		  dateFormat: '<?php echo $dtFormat; ?>',
+          beforeShowDay: function(date){
+            return [date <= today, ""];
+          }
+		});
     }
-	
+
 	function submitQcForm() {
 		participantMapId=$("#participantMapId").val();
 		qcDate=$("#qcDate").val();
@@ -778,21 +784,21 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
 				hidedefModal();
 			}
 			});
-			
+
         }else{
 			alert("Please select the date");
 		}
-        
+
     }
-	
+
 	function checkQcStatus() {
         if(selectedQc.length==0){
 			alert("Please select at least one shipment to proceed with QC");
 		}else{
 			showQcForm();
 		}
-    }	
-	
-	
-	
+    }
+
+
+
 </script>

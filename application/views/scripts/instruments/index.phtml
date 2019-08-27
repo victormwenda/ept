@@ -109,7 +109,13 @@ $dtFormat = $dateHelper->getDateFormat();
     }
 
     $(function() {
-        $(".datepicker").datepicker({dateFormat: '<?php echo $dtFormat;?>'});
+      var today = new Date('<?php echo date("Y-m-d") ?>');
+      $(".datepicker").datepicker({
+        dateFormat: '<?php echo $dtFormat;?>',
+        beforeShowDay: function(date){
+          return [date <= today, ""];
+        }
+      });
     });
 
     function addInstrumentRow(obj) {

@@ -147,7 +147,7 @@ if (isset($this->responseData['shipment']["shipment_test_report_date"]) &&
         </td>
         <td>
             <input type="text" name="expiryDate" id="expiryDate" style="width:180px;float:left;" maxlength="11"
-                   value="<?php echo $attributes['expiry_date'];?>" class="isRequired datepicker form-control"
+                   value="<?php echo $attributes['expiry_date'];?>" class="isRequired datepicker form-control allowFutureDate"
                    readonly="readonly" />
             <i id="clearExpiryDate" class="icon-remove-sign" style="cursor:pointer;margin-top:10px;margin-left:10px;float:left;" alt="Clear Date" title="Clear Date"
                onclick="clearDate('expiryDate')"> Clear</i>
@@ -575,14 +575,26 @@ foreach ($this->responseData['results'] as $result) {
   }
 
   $(function() {
-    $(".datepicker:not(.instrument-date-picker)")
+    var today = new Date('<?php echo date("Y-m-d") ?>');
+    $(".datepicker.allowFutureDate")
       .datepicker({
         dateFormat: '<?php echo $dtFormat;?>'
       });
 
+    $(".datepicker:not(.instrument-date-picker,.allowFutureDate)")
+      .datepicker({
+        dateFormat: '<?php echo $dtFormat;?>',
+        beforeShowDay: function(date){
+          return [date <= today, ""];
+        }
+      });
+
     $(".instrument-date-picker").datepicker({
       dateFormat: '<?php echo $dtFormat;?>',
-      onSelect: updateInstrumentLists
+      onSelect: updateInstrumentLists,
+      beforeShowDay: function(date){
+        return [date <= today, ""];
+      }
     });
 
     <?php if (!$this->isEditable) { ?>
@@ -708,9 +720,13 @@ foreach ($this->responseData['results'] as $result) {
         installed: "",
         calibrated: ""
       };
+      var today = new Date('<?php echo date("Y-m-d") ?>');
       $(".new-instrument-date-picker").datepicker({
         dateFormat: '<?php echo $dtFormat;?>',
-        onSelect: updateInstrumentLists
+        onSelect: updateInstrumentLists,
+        beforeShowDay: function(date){
+          return [date <= today, ""];
+        }
       });
       newInstrumentIndex++;
     }

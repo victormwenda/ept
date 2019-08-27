@@ -15,7 +15,7 @@
                            onblur="checkDuplicate('distributions', 'distribution_code',this,null, 'This Code already exists for another PE Survey. Please try something else.')"/>
                 </div>
             </div>
-			
+
             <div class="form-group">
                 <label class="col-lg-3 control-label">PE Survey Date <span class="mandatory">*</span></label>
 
@@ -26,7 +26,7 @@
                                              placeholder="Please enter the PE Survey date here"/>
 					<span class="help-block">Dates already having a PE Survey will be disabled and marked with a red circle.</span>
 				</div>
-				
+
             </div>
 
             </table>
@@ -46,7 +46,7 @@
     function checkDuplicate(tableName, fieldName, obj, fnct, msg) {
 		if (obj.value == "" || obj.value == null) {
 			return;
-		}		
+		}
         $.post("<?php echo $this->url(array('module' => 'default', 'controller' => 'common', 'action' => 'check-duplicate')); ?>", { tableName: tableName, fieldName: fieldName, value: obj.value, fnct: fnct, format: "html" },
             function (data) {
                 if (data > 0) {
@@ -70,23 +70,22 @@
             document.getElementById('addDistributionForm').submit();
         }
     }
-	
 
-	
+
+
 	var disabledDates = [<?php echo '"'.implode('","', $this->distributionDates).'"' ?>];
-	
-	
+
+
 	$(function() {
-  	    //$(".datepicker" ).datepicker({dateFormat: '<?php echo $this->defaultDateFormat();?>'});
 		$('.datepicker').datepicker({
 				dateFormat: '<?php echo $this->defaultDateFormat();?>',
 				beforeShowDay: function(date){
 					var string = jQuery.datepicker.formatDate('dd-M-yy', date);
 					return [ disabledDates.indexOf(string) == -1 ]
 				}
-		});			
+		});
 	});
-	
 
-		
+
+
 </script>
