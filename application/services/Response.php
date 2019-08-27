@@ -205,7 +205,8 @@ class Application_Service_Response {
             $results = $schemeService->getTbSamples($shipmentId, $participantId);
         }
 
-        return array('participant' => $participantData,
+        return array(
+            'participant' => $participantData,
             'shipment' => $shipmentData,
             'possibleResults' => $possibleResults,
             'results' => $results
@@ -415,6 +416,21 @@ class Application_Service_Response {
                         ->from("response_result_tb")
                         ->where("shipment_map_id = " . $params['smid'] . " and sample_id = " . $params['sampleId'][$i]);
                     $res = $db->fetchRow($sql);
+
+                    $mtbDetected = $params['mtbDetected'][$i];
+                    $rifResistance = $params['rifResistance'][$i];
+                    $errorCode = $params['errorCode'][$i];
+                    if ($mtbDetected != "error") {
+                        $errorCode = null;
+                        if(!in_array($mtbDetected, array("detected", "high", "medium", "low", "veryLow")) && ($rifResistance == null || $rifResistance == "")) {
+                            $rifResistance = "na";
+                        }
+                    } else {
+                        $rifResistance = "na";
+                    }
+                    $params['rifResistance'][$i] = $rifResistance;
+                    $params['errorCode'][$i] = $errorCode;
+
                     $dateTested = Application_Service_Common::ParseDate($params['dateTested'][$i]);
                     $instrumentInstalledOn = null;
                     $instrumentLastCalibratedOn = null;

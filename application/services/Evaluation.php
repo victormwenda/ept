@@ -997,6 +997,20 @@ class Application_Service_Evaluation {
                         $calculatedScorePassStatus,
                         $referenceSample['sample_score']);
 
+                    $mtbDetected = $params['mtbDetected'][$i];
+                    $rifResistance = $params['rifResistance'][$i];
+                    $errorCode = $params['errorCode'][$i];
+                    if ($mtbDetected != "error") {
+                        $errorCode = null;
+                        if(!in_array($mtbDetected, array("detected", "high", "medium", "low", "veryLow")) && ($rifResistance == null || $rifResistance == "")) {
+                            $rifResistance = "na";
+                        }
+                    } else {
+                        $rifResistance = "na";
+                    }
+                    $params['rifResistance'][$i] = $rifResistance;
+                    $params['errorCode'][$i] = $errorCode;
+
                     $db->update('response_result_tb', array(
                         'date_tested' => $dateTested,
                         'mtb_detected' => $params['mtbDetected'][$i],

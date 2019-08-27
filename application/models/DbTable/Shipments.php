@@ -17,7 +17,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
                 ->from(array('s' => $this->_name))
 				->join(array('sl'=>'scheme_list'),'s.scheme_type=sl.scheme_id',array('scheme_name'))
                 ->join(array('sp' => 'shipment_participant_map'), 's.shipment_id=sp.shipment_id')
-                ->join(array('a' => 'r_tb_assay'),
+                ->joinLeft(array('a' => 'r_tb_assay'),
                     'a.id = CASE WHEN JSON_VALID(sp.attributes) = 1 THEN JSON_UNQUOTE(JSON_EXTRACT(sp.attributes, "$.assay")) ELSE 0 END',
                     array(
                         'assay_name' => 'name',
