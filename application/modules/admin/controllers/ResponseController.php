@@ -48,7 +48,6 @@ class Admin_ResponseController extends Zend_Controller_Action
     public function editAction() {
         if ($this->getRequest()->isPost()) {
             $params = $this->getRequest()->getPost();
-
             $responseService = new Application_Service_Response();
             $shipmentId = base64_encode($params['shipmentId']);
             if ($responseService->updateShipmentResults($params)) {

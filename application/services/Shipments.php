@@ -745,8 +745,8 @@ class Application_Service_Shipments {
             $sampleIds = $params['sampleId'];
             foreach ($sampleIds as $key => $sampleId) {
                 $mtbDetected = $params['mtbDetected'][$key];
-                $rifResistance = $params['rifResistance'][$key];
-                $errorCode = $params['errorCode'][$key];
+                $rifResistance = isset($params['rifResistance'][$key]) ? $params['rifResistance'][$key] : null;
+                $errorCode = isset($params['errorCode'][$key]) ? $params['errorCode'][$key] : null;
                 if ($mtbDetected != "error") {
                     $errorCode = null;
                     if(!in_array($mtbDetected, array("detected", "high", "medium", "low", "veryLow")) && ($rifResistance == null || $rifResistance == "")) {

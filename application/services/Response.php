@@ -418,8 +418,8 @@ class Application_Service_Response {
                     $res = $db->fetchRow($sql);
 
                     $mtbDetected = $params['mtbDetected'][$i];
-                    $rifResistance = $params['rifResistance'][$i];
-                    $errorCode = $params['errorCode'][$i];
+                    $rifResistance = isset($params['rifResistance'][$i]) ? $params['rifResistance'][$i] : null;
+                    $errorCode = isset($params['errorCode'][$i]) ? $params['errorCode'][$i] : null;
                     if ($mtbDetected != "error") {
                         $errorCode = null;
                         if(!in_array($mtbDetected, array("detected", "high", "medium", "low", "veryLow")) && ($rifResistance == null || $rifResistance == "")) {
