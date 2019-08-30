@@ -20,9 +20,17 @@ if ($this->scheme == 'tb' && isset($attributes['corrective_actions'])) {
 } ?>
 <br/>
 <legend>Participant Result Summary</legend>
-<h5 style="border-bottom:1px solid #999;padding-bottom:10px;">
-    <strong>Participant/Lab Name :</strong> <?php echo $this->evaluateData['participant']['first_name']. " ".$this->evaluateData['participant']['last_name']; ?>
-    <span class="pull-right"><strong>Reported on :</strong> <?php echo $this->dateFormat($reportDate[0]); ?></span>
+<h5 style="padding-bottom:10px;">
+<span class="pull-left">
+  <strong>Participant Code:</strong> <?php echo $this->evaluateData['participant']['unique_identifier']; ?>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+</span>
+<span class="pull-left">
+  <strong>Participant/Lab Name:</strong> <?php echo $this->evaluateData['participant']['first_name']. " ".$this->evaluateData['participant']['last_name']; ?>
+</span>
+<span class="pull-right">
+    <strong>Reported on:</strong> <?php echo $this->dateFormat($reportDate[0]); ?>
+</span>
 </h5>
 <form name="updateResultsForm" id="updateResultsForm" method="post" action=""
       onsubmit="return validateNow();return false;">

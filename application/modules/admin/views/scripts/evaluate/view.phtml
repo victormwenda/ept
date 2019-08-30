@@ -18,9 +18,17 @@ if ($next < count($urlListArray)) {
 <?php
 $reportDate = explode(" ", $this->evaluateData['shipment']['shipment_test_report_date'])
 ?>
-<h5 style="border-bottom:1px solid #999;padding-bottom:10px;">
-    <strong>Participant/Lab Name :</strong> <?php echo $this->evaluateData['participant']['first_name'] . " " . $this->evaluateData['participant']['last_name']; ?>
-    <span class="pull-right"><strong>Reported on :</strong> <?php echo $this->dateFormat($reportDate[0]); ?></span>
+<h5 style="padding-bottom:10px;">
+<span class="pull-left">
+  <strong>Participant Code:</strong> <?php echo $this->evaluateData['participant']['unique_identifier']; ?>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+</span>
+<span class="pull-left">
+    <strong>Participant/Lab Name:</strong> <?php echo $this->evaluateData['participant']['first_name'] . " " . $this->evaluateData['participant']['last_name']; ?>
+</span>
+<span class="pull-right">
+    <strong>Reported on:</strong> <?php echo $this->dateFormat($reportDate[0]); ?>
+</span>
 </h5>
 <input type="hidden" name="shipmentId" id="shipmentId" value="<?php echo $this->evaluateData['shipment']['shipment_id']; ?>" />
 <input type="hidden" name="participantId" id="participantId" value="<?php echo $this->evaluateData['shipment']['participant_id']; ?>" />
