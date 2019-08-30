@@ -66,6 +66,16 @@ class Application_Service_Evaluation {
             }
             $sWhere .= $sWhereSub;
         }
+        $authNameSpace = new Zend_Session_Namespace('administrators');
+        if($authNameSpace->is_ptcc_coordinator) {
+            if ($sWhere == "") {
+                $sWhere .= "(";
+            } else {
+                $sWhere .= " AND (";
+            }
+            $sWhere .= "p.country IS NULL OR p.country IN (".implode(",",$authNameSpace->countries)."))";
+        }
+
 
         /* Individual column filtering */
         for ($i = 0; $i < count($aColumns); $i++) {
@@ -87,7 +97,14 @@ class Application_Service_Evaluation {
         $dbAdapter = Zend_Db_Table_Abstract::getDefaultAdapter();
 
         $sQuery = $dbAdapter->select()->from(array('d' => 'distributions'))
-                ->joinLeft(array('s' => 'shipment'), 's.distribution_id=d.distribution_id', array('shipments' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT s.shipment_code SEPARATOR ', ')"),'not_finalized_count' => new Zend_Db_Expr("SUM(IF(s.status!='finalized',1,0))")))
+                ->joinLeft(array('s' => 'shipment'), 's.distribution_id=d.distribution_id',
+                    array(
+                        'shipments' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT s.shipment_code SEPARATOR ', ')"),
+                        'not_finalized_count' => new Zend_Db_Expr("SUM(IF(s.status!='finalized',1,0))")
+                    )
+                )
+                ->joinLeft(array('spm'=>'shipment_participant_map'),'s.shipment_id=spm.shipment_id',array())
+                ->joinLeft(array('p'=>'participant'),'spm.participant_id=p.participant_id',array())
                 ->where("d.status='shipped'")
                 ->group('d.distribution_id');
 
@@ -103,12 +120,9 @@ class Application_Service_Evaluation {
             $sQuery = $sQuery->limit($sLimit, $sOffset);
         }
 
-		$sQuery = $dbAdapter->select()->from(array('temp' => $sQuery))->where("not_finalized_count>0");
-
-        //die($sQuery);
+		$sQuery = $dbAdapter->select()->from(array('temp' => $sQuery))->where("not_finalized_count > 0");
 
         $rResult = $dbAdapter->fetchAll($sQuery);
-
 
         /* Data set length after filtering */
         $sQuery = $sQuery->reset(Zend_Db_Select::LIMIT_COUNT);
@@ -117,7 +131,6 @@ class Application_Service_Evaluation {
         $iFilteredTotal = count($aResultFilterTotal);
 
         /* Total data set length */
-        //$sQuery = $dbAdapter->select()->from('distributions', new Zend_Db_Expr("COUNT('" . $sIndexColumn . "')"))->where("status='shipped'");
         $aResultTotal = $dbAdapter->fetchAll($sQuery);
         $iTotal = count($aResultTotal);
 
@@ -163,11 +176,17 @@ class Application_Service_Evaluation {
                 'last_not_participated_mailed_on',
                 'last_not_participated_mail_count',
                 'shipment_status' => 's.status'))
+            ->joinLeft(array('p'=>'participant'),'sp.participant_id=p.participant_id',array())
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type')
             ->joinLeft(array('rr' => 'r_results'), 'sp.final_result=rr.result_id')
             ->where("s.distribution_id = ?", $distributionId)
-            ->where("IFNULL(sp.is_pt_test_not_performed, 'no') = 'no'")
-            ->group('s.shipment_id');
+            ->where("IFNULL(sp.is_pt_test_not_performed, 'no') = 'no'");
+        $authNameSpace = new Zend_Session_Namespace('administrators');
+        if($authNameSpace->is_ptcc_coordinator) {
+            $sql = $sql->where("p.country IS NULL OR p.country IN (".implode(",",$authNameSpace->countries).")");
+        }
+        $sql = $sql->group('s.shipment_id');
+        error_log($sql);
         return $db->fetchAll($sql);
     }
 
