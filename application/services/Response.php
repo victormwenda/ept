@@ -205,7 +205,8 @@ class Application_Service_Response {
             $results = $schemeService->getTbSamples($shipmentId, $participantId);
         }
 
-        return array('participant' => $participantData,
+        return array(
+            'participant' => $participantData,
             'shipment' => $shipmentData,
             'possibleResults' => $possibleResults,
             'results' => $results
@@ -220,7 +221,7 @@ class Application_Service_Response {
 
         if ($params['scheme'] == 'tb') {
             $attributes = array(
-                "mtb_rif_kit_lot_no" => $params['mtbRifKitLotNo'],
+                "cartridge_lot_no" => $params['cartridgeLotNo'],
                 "expiry_date" => $params['expiryDate'],
                 "assay" => $params['assay'],
                 "count_tests_conducted_over_month" => $params['countTestsConductedOverMonth'],
@@ -415,6 +416,21 @@ class Application_Service_Response {
                         ->from("response_result_tb")
                         ->where("shipment_map_id = " . $params['smid'] . " and sample_id = " . $params['sampleId'][$i]);
                     $res = $db->fetchRow($sql);
+
+                    $mtbDetected = $params['mtbDetected'][$i];
+                    $rifResistance = isset($params['rifResistance'][$i]) ? $params['rifResistance'][$i] : null;
+                    $errorCode = isset($params['errorCode'][$i]) ? $params['errorCode'][$i] : null;
+                    if ($mtbDetected != "error") {
+                        $errorCode = null;
+                        if(!in_array($mtbDetected, array("detected", "high", "medium", "low", "veryLow")) && ($rifResistance == null || $rifResistance == "")) {
+                            $rifResistance = "na";
+                        }
+                    } else {
+                        $rifResistance = "na";
+                    }
+                    $params['rifResistance'][$i] = $rifResistance;
+                    $params['errorCode'][$i] = $errorCode;
+
                     $dateTested = Application_Service_Common::ParseDate($params['dateTested'][$i]);
                     $instrumentInstalledOn = null;
                     $instrumentLastCalibratedOn = null;
@@ -440,19 +456,19 @@ class Application_Service_Response {
                             'mtb_detected' => $params['mtbDetected'][$i],
                             'error_code' => $params['errorCode'][$i],
                             'rif_resistance' => $params['rifResistance'][$i],
-                            'probe_d' => $params['probeD'][$i],
-                            'probe_c' => $params['probeC'][$i],
-                            'probe_e' => $params['probeE'][$i],
-                            'probe_b' => $params['probeB'][$i],
-                            'spc' => $params['spc'][$i],
-                            'probe_a' => $params['probeA'][$i],
+                            'probe_1' => $params['probe1'][$i],
+                            'probe_2' => $params['probe2'][$i],
+                            'probe_3' => $params['probe3'][$i],
+                            'probe_4' => $params['probe4'][$i],
+                            'probe_5' => $params['probe5'][$i],
+                            'probe_6' => $params['probe6'][$i],
                             'instrument_serial' => $params['instrumentSerial'][$i],
                             'instrument_installed_on' => $instrumentInstalledOn,
                             'instrument_last_calibrated_on' => $instrumentLastCalibratedOn,
                             'module_name' => $params['moduleName'][$i],
                             'instrument_user' => $params['instrumentUser'][$i],
                             'cartridge_expiration_date' => $cartridgeExpirationDate,
-                            'reagent_lot_id' => $params['mtbRifKitLotNo'],
+                            'reagent_lot_id' => $params['cartridgeLotNo'],
                             'created_by' => $admin,
                             'created_on' => new Zend_Db_Expr('now()')
                         ));
@@ -462,19 +478,19 @@ class Application_Service_Response {
                             'mtb_detected' => $params['mtbDetected'][$i],
                             'error_code' => $params['errorCode'][$i],
                             'rif_resistance' => $params['rifResistance'][$i],
-                            'probe_d' => $params['probeD'][$i],
-                            'probe_c' => $params['probeC'][$i],
-                            'probe_e' => $params['probeE'][$i],
-                            'probe_b' => $params['probeB'][$i],
-                            'spc' => $params['spc'][$i],
-                            'probe_a' => $params['probeA'][$i],
+                            'probe_1' => $params['probe1'][$i],
+                            'probe_2' => $params['probe2'][$i],
+                            'probe_3' => $params['probe3'][$i],
+                            'probe_4' => $params['probe4'][$i],
+                            'probe_5' => $params['probe5'][$i],
+                            'probe_6' => $params['probe6'][$i],
                             'instrument_serial' => $params['instrumentSerial'][$i],
                             'instrument_installed_on' => $instrumentInstalledOn,
                             'instrument_last_calibrated_on' => $instrumentLastCalibratedOn,
                             'module_name' => $params['moduleName'][$i],
                             'instrument_user' => $params['instrumentUser'][$i],
                             'cartridge_expiration_date' => $cartridgeExpirationDate,
-                            'reagent_lot_id' => $params['mtbRifKitLotNo'],
+                            'reagent_lot_id' => $params['cartridgeLotNo'],
                             'updated_by' => $admin,
                             'updated_on' => new Zend_Db_Expr('now()')
                         ), "shipment_map_id = " . $params['smid'] . " and sample_id = " . $params['sampleId'][$i]);

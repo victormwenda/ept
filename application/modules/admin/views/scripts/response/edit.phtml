@@ -233,8 +233,15 @@ if ($this->scheme == 'tb') { ?>
       return true;
     });
 
+    jQuery.validator.addMethod('validRifForMtbTraceDetected', function (value, rifInput, mtbInputSelector) {
+      if ($(mtbInputSelector).val() === 'trace') {
+        return value === 'indeterminate';
+      }
+      return true;
+    });
+
     jQuery.validator.addMethod('validRifForNoMtb', function (value, rifInput, mtbInputSelector) {
-      if (!['detected', 'high', 'medium', 'low', 'veryLow'].includes($(mtbInputSelector).val())) {
+      if (!['detected', 'high', 'medium', 'low', 'veryLow', 'trace'].includes($(mtbInputSelector).val())) {
         return value === 'na';
       }
       return true;
@@ -300,7 +307,7 @@ if ($this->scheme == 'tb') { ?>
             }
           }
         },
-        mtbRifKitLotNo: {
+        cartridgeLotNo: {
           required: {
             depends: function () {
               return ($('#submitAction').val() === 'submit' || previouslySubmitted) &&
@@ -397,140 +404,140 @@ if ($this->scheme == 'tb') { ?>
             }
           }
         },
-        'probeD[<?php echo $index; ?>]': {
+        'probe1[<?php echo $index; ?>]': {
           required: {
             depends: function () {
               return ($('#submitAction').val() === 'submit' || previouslySubmitted) &&
-                ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("input[name='ableToEnterResults']:checked").val() === "yes";
             }
           },
           number: {
             depends: function () {
               return ($('#submitAction').val() === 'submit' || previouslySubmitted) &&
-                ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("input[name='ableToEnterResults']:checked").val() === "yes";
             }
           },
           ctEndpointValue: {
             depends: function () {
               return ($('#submitAction').val() === 'submit' || previouslySubmitted) &&
-                ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("input[name='ableToEnterResults']:checked").val() === "yes";
             }
           }
         },
-        'probeC[<?php echo $index; ?>]': {
+        'probe2[<?php echo $index; ?>]': {
           required: {
             depends: function () {
               return ($('#submitAction').val() === 'submit' || previouslySubmitted) &&
-                ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("input[name='ableToEnterResults']:checked").val() === "yes";
             }
           },
           number: {
             depends: function () {
               return ($('#submitAction').val() === 'submit' || previouslySubmitted) &&
-                ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("input[name='ableToEnterResults']:checked").val() === "yes";
             }
           },
           ctEndpointValue: {
             depends: function () {
               return ($('#submitAction').val() === 'submit' || previouslySubmitted) &&
-                ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("input[name='ableToEnterResults']:checked").val() === "yes";
             }
           }
         },
-        'probeE[<?php echo $index; ?>]': {
+        'probe3[<?php echo $index; ?>]': {
           required: {
             depends: function () {
               return ($('#submitAction').val() === 'submit' || previouslySubmitted) &&
-                ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("input[name='ableToEnterResults']:checked").val() === "yes";
             }
           },
           number: {
             depends: function () {
               return ($('#submitAction').val() === 'submit' || previouslySubmitted) &&
-                ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("input[name='ableToEnterResults']:checked").val() === "yes";
             }
           },
           ctEndpointValue: {
             depends: function () {
               return ($('#submitAction').val() === 'submit' || previouslySubmitted) &&
-                ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("input[name='ableToEnterResults']:checked").val() === "yes";
             }
           }
         },
-        'probeB[<?php echo $index; ?>]': {
+        'probe4[<?php echo $index; ?>]': {
           required: {
             depends: function () {
               return ($('#submitAction').val() === 'submit' || previouslySubmitted) &&
-                ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("input[name='ableToEnterResults']:checked").val() === "yes";
             }
           },
           number: {
             depends: function () {
               return ($('#submitAction').val() === 'submit' || previouslySubmitted) &&
-                ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("input[name='ableToEnterResults']:checked").val() === "yes";
             }
           },
           ctEndpointValue: {
             depends: function () {
               return ($('#submitAction').val() === 'submit' || previouslySubmitted) &&
-                ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("input[name='ableToEnterResults']:checked").val() === "yes";
             }
           }
         },
-        'spc[<?php echo $index; ?>]': {
+        'probe5[<?php echo $index; ?>]': {
           required: {
             depends: function () {
               return ($('#submitAction').val() === 'submit' || previouslySubmitted) &&
-                ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("input[name='ableToEnterResults']:checked").val() === "yes";
             }
           },
           number: {
             depends: function () {
               return ($('#submitAction').val() === 'submit' || previouslySubmitted) &&
-                ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("input[name='ableToEnterResults']:checked").val() === "yes";
             }
           },
           ctEndpointValue: {
             depends: function () {
               return ($('#submitAction').val() === 'submit' || previouslySubmitted) &&
-                ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("input[name='ableToEnterResults']:checked").val() === "yes";
             }
           }
         },
-        'probeA[<?php echo $index; ?>]': {
+        'probe6[<?php echo $index; ?>]': {
           required: {
             depends: function () {
               return ($('#submitAction').val() === 'submit' || previouslySubmitted) &&
-                ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("input[name='ableToEnterResults']:checked").val() === "yes";
             }
           },
           number: {
             depends: function () {
               return ($('#submitAction').val() === 'submit' || previouslySubmitted) &&
-                ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("input[name='ableToEnterResults']:checked").val() === "yes";
             }
           },
           ctEndpointValue: {
             depends: function () {
               return ($('#submitAction').val() === 'submit' || previouslySubmitted) &&
-                ['detected', 'high', 'medium', 'low', 'veryLow', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
+                ['detected', 'high', 'medium', 'low', 'veryLow', 'trace', 'notDetected'].includes($("#mtbDetected<?php echo $count; ?>").val()) &&
                 $("input[name='ableToEnterResults']:checked").val() === "yes";
             }
           }
@@ -543,9 +550,9 @@ if ($this->scheme == 'tb') { ?>
         notTestedReason: "Why couldn't the PE panel be tested?",
         notTestedOtherReason: "Required if 'Other' selected",
         receiptDate: "What date did you receipt the panel?",
-        expiryDate: "Please enter the expiration date of MTB/RIF kit",
+        expiryDate: "Please enter the expiration date of cartridge",
         testReceiptDate: "When did the lab submit the results?",
-        mtbRifKitLotNo: "Please enter the lot number of MTB/RIF kit",
+        cartridgeLotNo: "Please enter the lot number of cartridge",
         assay: "Which assay was used to run the samples?",
         qcDate: "When was monthly maintenance done?",
         qcDoneBy: "Who performed monthly maintenance?",
@@ -563,32 +570,32 @@ if ($this->scheme == 'tb') { ?>
           validRifForNoMtb: "Invalid Selection for MTB Detected"
         },
         'errorCode[<?php echo $index; ?>]': "Required",
-        'probeD[<?php echo $index; ?>]': {
+        'probe1[<?php echo $index; ?>]': {
           required: "Required",
           number: "Only numerical values allowed for probe/spc fields",
           ctEndpointValue: "A value was detected above 42, have you entered endpoint values by mistake?"
         },
-        'probeC[<?php echo $index; ?>]': {
+        'probe2[<?php echo $index; ?>]': {
           required: "Required",
           number: "Only numerical values allowed for probe/spc fields",
           ctEndpointValue: "A value was detected above 42, have you entered endpoint values by mistake?"
         },
-        'probeE[<?php echo $index; ?>]': {
+        'probe3[<?php echo $index; ?>]': {
           required: "Required",
           number: "Only numerical values allowed for probe/spc fields",
           ctEndpointValue: "A value was detected above 42, have you entered endpoint values by mistake?"
         },
-        'probeB[<?php echo $index; ?>]': {
+        'probe4[<?php echo $index; ?>]': {
           required: "Required",
           number: "Only numerical values allowed for probe/spc fields",
           ctEndpointValue: "A value was detected above 42, have you entered endpoint values by mistake?"
         },
-        'spc[<?php echo $index; ?>]': {
+        'probe5[<?php echo $index; ?>]': {
           required: "Required",
           number: "Only numerical values allowed for probe/spc fields",
           ctEndpointValue: "A value was detected above 42, have you entered endpoint values by mistake?"
         },
-        'probeA[<?php echo $index; ?>]': {
+        'probe6[<?php echo $index; ?>]': {
           required: "Required",
           number: "Only numerical values allowed for probe/spc fields",
           ctEndpointValue: "A value was detected above 42, have you entered endpoint values by mistake?"

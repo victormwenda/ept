@@ -13,7 +13,7 @@ $dtFormat=  $genderHelper->getDateFormat();
 
 					<?php
 					if($this->globalQcAccess=='yes' && (isset($authNameSpace->qc_access) && $authNameSpace->qc_access=='yes')){
-					?>					
+					?>
 					<table class="table">
 						<tr>
 							<td style="width:100%;">
@@ -44,7 +44,7 @@ $dtFormat=  $genderHelper->getDateFormat();
 					<th style="width:100px;">Response<br/>Date</th>
 					<th style="width:100px;">Action</th>
 					<th>Report</th>
-	    
+
 				    </tr>
 				</thead>
 				<tbody>
@@ -67,7 +67,7 @@ $dtFormat=  $genderHelper->getDateFormat();
 				<td><input type="text" id="qcDate" name="qcDate"  style="width:180px;float:left;"  maxlength="11" value=""  class="isRequired form-control" readonly="readonly" /></td>
 			</tr>
 		</table>
-		
+
 		<div class="box-footer" style="text-align: center">
 			<button class="btn btn-primary" onclick="submitQcForm();return false;">Submit</button>
 		</div>
@@ -87,7 +87,7 @@ $dtFormat=  $genderHelper->getDateFormat();
 			"bInfo": true,
 			"bScrollCollapse": true,
 			"sPaginationType": "full_numbers",
-			"bRetrieve": true,                        
+			"bRetrieve": true,
 			"aoColumns": [
 				{"bSortable":false},
 			    {"sClass":"center"},
@@ -109,7 +109,7 @@ $dtFormat=  $genderHelper->getDateFormat();
                         checkBoxes[c].setAttribute("checked",true);
                     }
                 }
-                
+
             },
 			"bProcessing": true,
 			"bServerSide": true,
@@ -133,17 +133,17 @@ $dtFormat=  $genderHelper->getDateFormat();
 			}
 		});
 	}
-	
-	
+
+
 	$(document).ready(function(){
 		allSchemes();
-		
+
 	});
-    
-    
-	
+
+
+
     function removeSchemes(schemeType,mid){
-		if (window.confirm("Are you sure you want to remove this response?\n This cannot be undone !")) { 
+		if (window.confirm("Are you sure you want to remove this response?\n This cannot be undone !")) {
 			$.blockUI();
 			$.post("<?php echo $this->url(array('module'=>'default','controller' =>'common', 'action' => 'delete-response')); ?>", { schemeType:schemeType, mid: mid, format: "html" },
 			    function (data) {
@@ -151,10 +151,10 @@ $dtFormat=  $genderHelper->getDateFormat();
 				schemeTable.fnDraw();
 				$.unblockUI();
 			});
-		}		
-		
+		}
+
 	}
-	
+
 	function addQc(mapId,obj){
 		if(obj.checked==true)
         {
@@ -166,7 +166,7 @@ $dtFormat=  $genderHelper->getDateFormat();
 		}
 		$("#participantMapId").val(selectedQc);
 		$("#qcCount").text(selectedQc.length);
-        
+
     }
 	function addSingleQc(mapId,qcDate) {
 		//$("#qcDate").val(qcDate);
@@ -177,10 +177,16 @@ $dtFormat=  $genderHelper->getDateFormat();
 		showQcForm();
     }
 	function showQcForm() {
-        showdefModal("migrateBox", 600,400);
-		$("#qcDate").datepicker({dateFormat: '<?php echo $dtFormat; ?>'});
+      showdefModal("migrateBox", 600,400);
+      var today = new Date('<?php echo date("Y-m-d") ?>');
+	  $("#qcDate").datepicker({
+		dateFormat: '<?php echo $dtFormat; ?>',
+        beforeShowDay: function(date){
+          return [date <= today, ""];
+        }
+	  });
     }
-	
+
 	function submitQcForm() {
 		participantMapId=$("#participantMapId").val();
 		qcDate=$("#qcDate").val();
@@ -196,13 +202,13 @@ $dtFormat=  $genderHelper->getDateFormat();
 				hidedefModal();
 			}
 			});
-			
+
         }else{
 			alert("Please select the date");
 		}
-        
+
     }
-	
+
 	function checkQcStatus() {
         if(selectedQc.length==0){
 			alert("Please select at least one shipment to proceed with QC");

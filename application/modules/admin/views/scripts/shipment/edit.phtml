@@ -32,7 +32,7 @@ $dtFormat=  $vHelper->getDateFormat(); ?>
                        title="Please choose a Scheme Type on the top of this page" />
 				<input type="hidden" name="selectedDistribution" id="selectedDistribution" class=""
                        value="<?php echo $this->selectedDistribution; ?>" />
-            </div>		
+            </div>
             <div class="form-group">
                 <label class="col-lg-3 control-label">Shipment Code </label>
                 <div class="col-lg-5">
@@ -2047,19 +2047,29 @@ $dtFormat=  $vHelper->getDateFormat(); ?>
                     </script>
                 <?php
                 } else if($shipmentData['shipment']['scheme_type'] == 'tb') { ?>
-                    <table style="width: 1050px;margin: 0 auto;" border="1" class="table table-bordered table-striped clearfix" id="vlSampleTable">
+                    <table style="width: 1050px;margin: 0 auto;" border="1" class="table table-bordered table-striped clearfix">
                         <thead>
                         <tr align="center">
-                            <th style="width:10%;text-align: center;vertical-align:middle;">Control/Sample</th>
-                            <th style="text-align: center;vertical-align:middle;">MTB Detected<br/>(Level)</th>
-                            <th style="text-align: center;vertical-align:middle;">Rif Resistance</th>
-                            <th style="text-align: center;vertical-align:middle;">Probe D</th>
-                            <th style="text-align: center;vertical-align:middle;">Probe C</th>
-                            <th style="text-align: center;vertical-align:middle;">Probe E</th>
-                            <th style="text-align: center;vertical-align:middle;">Probe B</th>
-                            <th style="width:7%;text-align: center;vertical-align:middle;">SPC</th>
-                            <th style="text-align: center;vertical-align:middle;">Probe A</th>
-                            <th style="text-align: center;vertical-align:middle;">Excluded</th>
+                            <th style="width:10%;text-align: center;vertical-align:middle;" rowspan="2">Control/Sample</th>
+                            <th style="width:9%;text-align: center;vertical-align:middle;" rowspan="2">MTB Detected<br/>(Level)</th>
+                            <th style="width:9%;text-align: center;vertical-align:middle;" rowspan="2">Rif Resistance</th>
+                            <th style="text-align: center;vertical-align:middle;" colspan="6">MTB/RIF</th>
+                            <th style="text-align: center;vertical-align:middle;" colspan="6">MTB Ultra</th>
+                            <th style="text-align: center;vertical-align:middle;" rowspan="2">Excluded</th>
+                        </tr>
+                        <tr align="center">
+                            <th style="width:6%;text-align: center;vertical-align:middle;">Probe D</th>
+                            <th style="width:6%;text-align: center;vertical-align:middle;">Probe C</th>
+                            <th style="width:6%;text-align: center;vertical-align:middle;">Probe E</th>
+                            <th style="width:6%;text-align: center;vertical-align:middle;">Probe B</th>
+                            <th style="width:6%;text-align: center;vertical-align:middle;">SPC</th>
+                            <th style="width:6%;text-align: center;vertical-align:middle;">Probe A</th>
+                            <th style="width:6%;text-align: center;vertical-align:middle;">SPC</th>
+                            <th style="width:6%;text-align: center;vertical-align:middle;">IS1081-IS6110</th>
+                            <th style="width:6%;text-align: center;vertical-align:middle;">rpoB1</th>
+                            <th style="width:6%;text-align: center;vertical-align:middle;">rpoB2</th>
+                            <th style="width:6%;text-align: center;vertical-align:middle;">rpoB3</th>
+                            <th style="width:6%;text-align: center;vertical-align:middle;">rpoB4</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -2068,8 +2078,7 @@ $dtFormat=  $vHelper->getDateFormat(); ?>
                         <tr align="center">
                             <td style="text-align: center">
                                 <input type="text" name="sampleName[]" class="isRequired input-sm form-control"
-                                       value="<?php echo $reference['sample_label']; ?>"/>
-                                <!--<input type="hidden" id ="control< ?php echo $count; ?>" name="controlId[]" value="< ?php echo $control['id'];?>" />-->
+                                       value="<?php echo $reference['sample_label']; ?>" />
                             </td>
                             <td>
                                 <select name="mtbDetected[]" class="isRequired form-control input-sm"
@@ -2087,6 +2096,9 @@ $dtFormat=  $vHelper->getDateFormat(); ?>
                                     </option>
                                     <option value="veryLow" <?php echo ($reference['mtb_detected'] == 'veryLow' ? "selected='selected'" : ""); ?>>
                                         Very Low
+                                    </option>
+                                    <option value="trace" <?php echo ($reference['mtb_detected'] == 'trace' ? "selected='selected'" : ""); ?>>
+                                        Trace
                                     </option>
                                     <option value="notDetected" <?php echo ($reference['mtb_detected'] == 'notDetected' ? "selected='selected'" : ""); ?>>
                                         Not Detected
@@ -2122,40 +2134,76 @@ $dtFormat=  $vHelper->getDateFormat(); ?>
                                 </select>
                             </td>
                             <td>
-                                <input type="text" name="probeD[]" class="form-control input-sm oneDecimal"
-                                       title="Please enter the Probe D value for this sample"
-                                       placeholder="Please enter the Probe D value for this sample"
-                                       value="<?php echo $reference['probe_d']; ?>" />
+                                <input type="text" name="probeMtbRifD[]" class="form-control input-sm oneDecimal"
+                                       title="Please enter all Ct values for each sample"
+                                       placeholder="Please enter all Ct values for each sample"
+                                       value="<?php echo $reference['mtb_rif_probe_d']; ?>" />
                             </td>
                             <td>
-                                <input type="text" name="probeC[]" class="form-control input-sm oneDecimal"
-                                       title="Please enter the Probe C value for this sample"
-                                       placeholder="Please enter the Probe C value for this sample"
-                                       value="<?php echo $reference['probe_c']; ?>" />
+                                <input type="text" name="probeMtbRifC[]" class="form-control input-sm oneDecimal"
+                                       title="Please enter all Ct values for each sample"
+                                       placeholder="Please enter all Ct values for each sample"
+                                       value="<?php echo $reference['mtb_rif_probe_c']; ?>" />
                             </td>
                             <td>
-                                <input type="text" name="probeE[]" class="form-control input-sm oneDecimal"
-                                       title="Please enter the Probe E value for this sample"
-                                       placeholder="Please enter the Probe E value for this sample"
-                                       value="<?php echo $reference['probe_e']; ?>" />
+                                <input type="text" name="probeMtbRifE[]" class="form-control input-sm oneDecimal"
+                                       title="Please enter all Ct values for each sample"
+                                       placeholder="Please enter all Ct values for each sample"
+                                       value="<?php echo $reference['mtb_rif_probe_e']; ?>" />
                             </td>
                             <td>
-                                <input type="text" name="probeB[]" class="form-control input-sm oneDecimal"
-                                       title="Please enter the Probe B value for this sample"
-                                       placeholder="Please enter the Probe B value for this sample"
-                                       value="<?php echo $reference['probe_b']; ?>" />
+                                <input type="text" name="probeMtbRifB[]" class="form-control input-sm oneDecimal"
+                                       title="Please enter all Ct values for each sample"
+                                       placeholder="Please enter all Ct values for each sample"
+                                       value="<?php echo $reference['mtb_rif_probe_b']; ?>" />
                             </td>
                             <td>
-                                <input type="text" name="spc[]" class="form-control input-sm oneDecimal"
-                                       title="Please enter the SPC value for this sample"
-                                       placeholder="Please enter the SPC value for this sample"
-                                       value="<?php echo $reference['spc']; ?>" />
+                                <input type="text" name="probeMtbRifSpc[]" class="form-control input-sm oneDecimal"
+                                       title="Please enter all Ct values for each sample"
+                                       placeholder="Please enter all Ct values for each sample"
+                                       value="<?php echo $reference['mtb_rif_probe_spc']; ?>" />
                             </td>
                             <td>
-                                <input type="text" name="probeA[]" class="form-control input-sm oneDecimal"
-                                       title="Please enter the Probe A value for this sample"
-                                       placeholder="Please enter the Probe A value for this sample"
-                                       value="<?php echo $reference['probe_a']; ?>" />
+                                <input type="text" name="probeMtbRifA[]" class="form-control input-sm oneDecimal"
+                                       title="Please enter all Ct values for each sample"
+                                       placeholder="Please enter all Ct values for each sample"
+                                       value="<?php echo $reference['mtb_rif_probe_a']; ?>" />
+                            </td>
+                            <td>
+                                <input type="text" name="probeUltraSpc[]" class="form-control input-sm oneDecimal"
+                                       title="Please enter all Ct values for each sample"
+                                       placeholder="Please enter all Ct values for each sample"
+                                       value="<?php echo $reference['ultra_probe_spc']; ?>" />
+                            </td>
+                            <td>
+                                <input type="text" name="probeUltraIS1081IS6110[]" class="form-control input-sm oneDecimal"
+                                       title="Please enter all Ct values for each sample"
+                                       placeholder="Please enter all Ct values for each sample"
+                                       value="<?php echo $reference['ultra_probe_is1081_is6110']; ?>" />
+                            </td>
+                            <td>
+                                <input type="text" name="probeUltraRpoB1[]" class="form-control input-sm oneDecimal"
+                                       title="Please enter all Ct values for each sample"
+                                       placeholder="Please enter all Ct values for each sample"
+                                       value="<?php echo $reference['ultra_probe_rpo_b1']; ?>" />
+                            </td>
+                            <td>
+                                <input type="text" name="probeUltraRpoB2[]" class="form-control input-sm oneDecimal"
+                                       title="Please enter all Ct values for each sample"
+                                       placeholder="Please enter all Ct values for each sample"
+                                       value="<?php echo $reference['ultra_probe_rpo_b2']; ?>" />
+                            </td>
+                            <td>
+                                <input type="text" name="probeUltraRpoB3[]" class="form-control input-sm oneDecimal"
+                                       title="Please enter all Ct values for each sample"
+                                       placeholder="Please enter all Ct values for each sample"
+                                       value="<?php echo $reference['ultra_probe_rpo_b3']; ?>" />
+                            </td>
+                            <td>
+                                <input type="text" name="probeUltraRpoB4[]" class="form-control input-sm oneDecimal"
+                                       title="Please enter all Ct values for each sample"
+                                       placeholder="Please enter all Ct values for each sample"
+                                       value="<?php echo $reference['ultra_probe_rpo_b4']; ?>" />
                             </td>
                             <td>
                                 <select name="excluded[]" class="isRequired form-control input-sm"

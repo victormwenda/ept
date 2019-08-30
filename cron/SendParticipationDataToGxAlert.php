@@ -19,7 +19,7 @@ try {
             $participantsQuery = $db->select()
                 ->from(array('p' => 'participant'), array('p.unique_identifier'))
                 ->join(array('spm' => 'shipment_participant_map'), 'spm.participant_id = p.participant_id',
-                    array('smp.map_id', 'spm.shipment_id', 'spm.shipment_score', 'spm.documentation_score', 'spm.documentation_score',
+                    array('spm.map_id', 'spm.shipment_id', 'spm.shipment_score', 'spm.documentation_score', 'spm.documentation_score',
                         'submitted' => new Zend_Db_Expr("CASE WHEN substr(spm.evaluation_status, 3, 1) = '1' THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT) END")))
                 ->join(array('s' => 'shipment'), 's.shipment_id = spm.shipment_id', array('s.shipment_id', 's.max_score'))
                 ->join(array('r' => 'r_results'), 'r.result_id = spm.final_result', array('r.result_name'))
@@ -46,8 +46,8 @@ try {
                     $samplesQuery = $db->select()
                         ->from(array('res' => 'response_result_tb'), array('res.sample_id', 'res.instrument_serial', 'res.reagent_lot_id',
                             'res.cartridge_expiration_date', 'res.module_name', 'res.instrument_user', 'res.error_code', 'res.date_tested',
-                            'res.mtb_detected', 'res.rif_resistance', 'res.probe_d', 'res.probe_c', 'res.probe_e', 'res.probe_b', 'res.spc',
-                            'res.probe_a', 'res.calculated_score'))
+                            'res.mtb_detected', 'res.rif_resistance', 'res.probe_1', 'res.probe_2', 'res.probe_3', 'res.probe_4', 'res.probe_5',
+                            'res.probe_6', 'res.calculated_score'))
                         ->join(array('spm' => 'shipment_participant_map'),
                             'spm.map_id = res.shipment_map_id', array())
                         ->joinLeft('instrument',
@@ -72,12 +72,12 @@ try {
                             "DateTested" => $sample["date_tested"],
                             "MtbDetected" => $sample["mtb_detected"],
                             "RifResistance" => $sample["rif_resistance"],
-                            "ProbeD" => $sample["probe_d"],
-                            "ProbeC" => $sample["probe_c"],
-                            "ProbeE" => $sample["probe_e"],
-                            "ProbeB" => $sample["probe_b"],
-                            "spc" => $sample["spc"],
-                            "ProbeA" => $sample["probe_a"],
+                            "Probe1" => $sample["probe_1"],
+                            "Probe2" => $sample["probe_2"],
+                            "Probe3" => $sample["probe_3"],
+                            "Probe4" => $sample["probe_4"],
+                            "Probe5" => $sample["probe_5"],
+                            "Probe6" => $sample["probe_6"],
                             "SampleStatus" => $sample["calculated_score"]
                         );
                     }

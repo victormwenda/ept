@@ -136,36 +136,34 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
             <td>
                 <select class="form-control" name="assay" id="assay" class="form-control"
                         title="Please choose the assay type">
-                    <?php
-                    foreach($this->assays as $id => $name) {
-                        ?>
-                        <option value="<?php echo $id; ?>" <?php if(isset($attributes['assay'])) { echo ($attributes['assay'] == $id) ? "selected='selected'" : ""; } ?>><?php echo $name; ?></option>
-                        <?php
-                    }
-                    ?>
+                    <?php foreach ($this->assays as $id => $definition) { ?>
+                    <option value="<?php echo $id; ?>" <?php if(isset($attributes['assay'])) { echo ($attributes['assay'] == $id) ? "selected='selected'" : ""; } ?>>
+                        <?php echo $definition['name']; ?>
+                    </option>
+                    <?php } ?>
                 </select>
             </td>
         </tr>
         <tr>
             <th>
                 <label class="fieldLabel">
-                    MTB/RIF Kit Lot No
+                    Cartridge Lot No
                     <span class='mandatory'>*</span>
                 </label>
             </th>
             <td>
-                <input type="text" name="mtbRifKitLotNo" id="mtbRifKitLotNo" class="form-control isRequired"
-                       value="<?php echo $attributes['mtb_rif_kit_lot_no'];?>"/>
+                <input type="text" name="cartridgeLotNo" id="cartridgeLotNo" class="form-control isRequired"
+                       value="<?php echo $attributes['cartridge_lot_no'];?>"/>
             </td>
             <td>
                 <label class="fieldLabel">
-                    Expiration date of MTB/RIF Kit
+                    Expiration date of Cartridge
                     <span class='mandatory'>*</span>
                 </label>
             </td>
             <td>
                 <input type="text" name="expiryDate" id="expiryDate" style="width:180px;float:left;" maxlength="11"
-                       value="<?php echo $attributes['expiry_date'];?>" class="isRequired datepicker form-control" readonly="readonly"/>
+                       value="<?php echo $attributes['expiry_date'];?>" class="isRequired datepicker form-control allowFutureDate" readonly="readonly"/>
                 <i id="clearExpiryDate" class="icon-remove-sign" style="cursor:pointer;margin-top:10px;margin-left:10px;float:left;" alt="Clear Date" title="Clear Date"
                    onclick="clearDate('expiryDate')"> Clear</i>
             </td>
@@ -189,7 +187,7 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
         </tr>
         <tr>
             <td>
-                <label>How many Xpert MTB/RIF tests have been conducted by this site in the last full month?</label>
+                <label>How many Xpert MTB/RIF and MTB Ultra tests have been conducted by this site in the last full month?</label>
             </td>
             <td>
                 <input type="text" name="countTestsConductedOverMonth" id="countTestsConductedOverMonth"
@@ -405,12 +403,12 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
                             <th style="background-color: transparent;width:12%;">MTB Detected</th>
                             <th style="background-color: transparent;width:9%;">Error Code</th>
                             <th style="background-color: transparent;width:12%;">Rif Resistance</th>
-                            <th style="background-color: transparent;width:8%;">Probe D</th>
-                            <th style="background-color: transparent;width:8%;">Probe C</th>
-                            <th style="background-color: transparent;width:8%;">Probe E</th>
-                            <th style="background-color: transparent;width:8%;">Probe B</th>
-                            <th style="background-color: transparent;width:8%;">SPC</th>
-                            <th style="background-color: transparent;width:8%;">Probe A</th>
+                            <th class="probe1Header" style="background-color: transparent;width:8%;"></th>
+                            <th class="probe2Header" style="background-color: transparent;width:8%;"></th>
+                            <th class="probe3Header" style="background-color: transparent;width:8%;"></th>
+                            <th class="probe4Header" style="background-color: transparent;width:8%;"></th>
+                            <th class="probe5Header" style="background-color: transparent;width:8%;"></th>
+                            <th class="probe6Header" style="background-color: transparent;width:8%;"></th>
                             <th style="text-align: center;font-size:17px;width:7%;">Score</th>
                         </tr>
                         <tr>
@@ -422,7 +420,7 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
                             </td>
                             <td style="vertical-align: top;text-align: center;width: 13%;background-color: transparent;">
                                 <select id="mtbDetected<?php echo $counter; ?>" name="mtbDetected[<?php echo $index; ?>]"
-                                        class="isRequired form-control input-sm"
+                                        class="isRequired form-control input-sm mtbDetected"
                                         title="Please enter the MTB Detected for this sample"
                                         placeholder="Please enter the MTB Detected for this sample"
                                         onChange="changeMtbDetected(<?php echo $counter; ?>)">
@@ -441,6 +439,9 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
                                     </option>
                                     <option value="veryLow" <?php echo ($result['res_mtb_detected'] == 'veryLow' ? "selected='selected'" : ""); ?>>
                                         Very Low
+                                    </option>
+                                    <option value="trace" <?php echo ($result['res_mtb_detected'] == 'trace' ? "selected='selected'" : ""); ?>>
+                                        Trace
                                     </option>
                                     <option value="notDetected" <?php echo ($result['res_mtb_detected'] == 'notDetected' ? "selected='selected'" : ""); ?>>
                                         Not Detected
@@ -482,34 +483,34 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
                                 </select>
                             </td>
                             <td style="vertical-align: top;text-align: center;width: 7%;">
-                                <input type="text" name="probeD[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
-                                       value="<?php echo $result['res_probe_d']; ?>"
-                                       title="Please enter the Probe D value for <?php echo $result['sample_label']; ?>" />
+                                <input type="text" name="probe1[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
+                                       value="<?php echo $result['res_probe_1']; ?>"
+                                       title="Please enter all Ct values for each sample" />
                             </td>
                             <td style="vertical-align: top;text-align: center;width: 7%;">
-                                <input type="text" name="probeC[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
-                                       value="<?php echo $result['res_probe_c']; ?>"
-                                       title="Please enter the Probe C value for <?php echo $result['sample_label']; ?>" />
+                                <input type="text" name="probe2[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
+                                       value="<?php echo $result['res_probe_2']; ?>"
+                                       title="Please enter all Ct values for each sample" />
                             </td>
                             <td style="vertical-align: top;text-align: center;width: 7%;">
-                                <input type="text" name="probeE[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
-                                       value="<?php echo $result['res_probe_e']; ?>"
-                                       title="Please enter the Probe E value for <?php echo $result['sample_label']; ?>" />
+                                <input type="text" name="probe3[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
+                                       value="<?php echo $result['res_probe_3']; ?>"
+                                       title="Please enter all Ct values for each sample" />
                             </td>
                             <td style="vertical-align: top;text-align: center;width: 7%;">
-                                <input type="text" name="probeB[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
-                                       value="<?php echo $result['res_probe_b']; ?>"
-                                       title="Please enter the Probe B value for <?php echo $result['sample_label']; ?>" />
+                                <input type="text" name="probe4[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
+                                       value="<?php echo $result['res_probe_4']; ?>"
+                                       title="Please enter all Ct values for each sample" />
                             </td>
                             <td style="vertical-align: top;text-align: center;width: 7%;">
-                                <input type="text" name="spc[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
-                                       value="<?php echo $result['res_spc']; ?>"
-                                       title="Please enter the SPC value for <?php echo $result['sample_label']; ?>" />
+                                <input type="text" name="probe5[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
+                                       value="<?php echo $result['res_probe_5']; ?>"
+                                       title="Please enter all Ct values for each sample" />
                             </td>
                             <td style="vertical-align: top;text-align: center;width: 7%;">
-                                <input type="text" name="probeA[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
-                                       value="<?php echo $result['res_probe_a']; ?>"
-                                       title="Please enter the Probe A value for <?php echo $result['sample_label']; ?>" />
+                                <input type="text" name="probe6[<?php echo $index; ?>]" class="form-control oneDecimal input-sm numberInput"
+                                       value="<?php echo $result['res_probe_6']; ?>"
+                                       title="Please enter all Ct values for each sample" />
                             </td>
                             <td style="vertical-align: top;text-align: center;width: 7%;font-weight: bold;">
                                 <?php
@@ -553,6 +554,9 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
                                     case "veryLow":
                                         echo "Very Low";
                                         break;
+                                    case "trace":
+                                        echo "Trace";
+                                        break;
                                     case "notDetected":
                                         echo "Not Detected";
                                         break;
@@ -589,22 +593,52 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
                                 ?>
                             </td>
                             <td style="vertical-align: top;text-align: right;">
-                                <?php echo $result['ref_probe_d']; ?>
+                                <span class="mtbRifReferenceProbe">
+                                    <?php echo $result['ref_mtb_rif_probe_d']; ?>
+                                </span>
+                                <span class="ultraReferenceProbe">
+                                    <?php echo $result['ref_ultra_probe_spc']; ?>
+                                </span>
                             </td>
                             <td style="vertical-align: top;text-align: right;">
-                                <?php echo $result['ref_probe_c']; ?>
+                                <span class="mtbRifReferenceProbe">
+                                    <?php echo $result['ref_mtb_rif_probe_c']; ?>
+                                </span>
+                                <span class="ultraReferenceProbe">
+                                    <?php echo $result['ref_ultra_probe_is1081_is6110']; ?>
+                                </span>
                             </td>
                             <td style="vertical-align: top;text-align: right;">
-                                <?php echo $result['ref_probe_e']; ?>
+                                <span class="mtbRifReferenceProbe">
+                                    <?php echo $result['ref_mtb_rif_probe_e']; ?>
+                                </span>
+                                <span class="ultraReferenceProbe">
+                                    <?php echo $result['ref_ultra_probe_rpo_b1']; ?>
+                                </span>
                             </td>
                             <td style="vertical-align: top;text-align: right;">
-                                <?php echo $result['ref_probe_b']; ?>
+                                <span class="mtbRifReferenceProbe">
+                                    <?php echo $result['ref_mtb_rif_probe_b']; ?>
+                                </span>
+                                <span class="ultraReferenceProbe">
+                                    <?php echo $result['ref_ultra_probe_rpo_b2']; ?>
+                                </span>
                             </td>
                             <td style="vertical-align: top;text-align: right;">
-                                <?php echo $result['ref_spc']; ?>
+                                <span class="mtbRifReferenceProbe">
+                                    <?php echo $result['ref_mtb_rif_probe_spc']; ?>
+                                </span>
+                                <span class="ultraReferenceProbe">
+                                    <?php echo $result['ref_ultra_probe_rpo_b3']; ?>
+                                </span>
                             </td>
                             <td style="vertical-align: top;text-align: right;">
-                                <?php echo $result['ref_probe_a']; ?>
+                                <span class="mtbRifReferenceProbe">
+                                    <?php echo $result['ref_mtb_rif_probe_a']; ?>
+                                </span>
+                                <span class="ultraReferenceProbe">
+                                    <?php echo $result['ref_ultra_probe_rpo_b4']; ?>
+                                </span>
                             </td>
                         </tr>
                         <tr>
@@ -661,19 +695,74 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
     }?>
 </table>
 <script>
+  var analyteLables = {
+  <?php foreach ($this->assays as $id => $definition) {
+  echo "    \"".$id."\": {\n";
+  echo "      \"analyte1Label\": \"".$definition['analyte1Label']."\",\n";
+  echo "      \"analyte2Label\": \"".$definition['analyte2Label']."\",\n";
+  echo "      \"analyte3Label\": \"".$definition['analyte3Label']."\",\n";
+  echo "      \"analyte4Label\": \"".$definition['analyte4Label']."\",\n";
+  echo "      \"analyte5Label\": \"".$definition['analyte5Label']."\",\n";
+  echo "      \"analyte6Label\": \"".$definition['analyte6Label']."\",\n";
+  echo "      \"includeTraceForMtbDetected\": ".$definition['includeTraceForMtbDetected'].",\n";
+  echo "      \"name\": \"".$definition['name']."\"\n";
+  echo "    },\n";
+  } ?>
+  };
+  function setAssay() {
+    var selectedAssayId = $("#assay").val();
+    if (!selectedAssayId) {
+      selectedAssayId = Object.keys(analyteLables)[0];
+    }
+    var selectedAssayDefinition = analyteLables[selectedAssayId];
+    $(".probe1Header").text(selectedAssayDefinition['analyte1Label']);
+    $(".probe2Header").text(selectedAssayDefinition['analyte2Label']);
+    $(".probe3Header").text(selectedAssayDefinition['analyte3Label']);
+    $(".probe4Header").text(selectedAssayDefinition['analyte4Label']);
+    $(".probe5Header").text(selectedAssayDefinition['analyte5Label']);
+    $(".probe6Header").text(selectedAssayDefinition['analyte6Label']);
+    $(".mtbRifReferenceProbe").hide();
+    $(".ultraReferenceProbe").hide();
+    if (selectedAssayDefinition['name'] === 'Xpert MTB/RIF') {
+      $(".mtbRifReferenceProbe").show();
+    } else if (selectedAssayDefinition['name'] === 'Xpert MTB Ultra') {
+      $(".ultraReferenceProbe").show();
+    }
+    if (selectedAssayDefinition['includeTraceForMtbDetected'] && !$(".mtbDetected option[value='trace']").length) {
+      $("<option value='trace'>Trace</option>").insertAfter(".mtbDetected option[value='veryLow']");
+    } else if (!selectedAssayDefinition['includeTraceForMtbDetected']) {
+      $(".mtbDetected option[value='trace']").remove();
+    }
+  }
+
   $(function() {
-    $(".datepicker:not(.instrument-date-picker)")
+    var today = new Date('<?php echo date("Y-m-d") ?>');
+    $(".datepicker.allowFutureDate")
       .datepicker({
         dateFormat: '<?php echo $dtFormat;?>'
       });
 
+    $(".datepicker:not(.instrument-date-picker,.allowFutureDate)")
+      .datepicker({
+        dateFormat: '<?php echo $dtFormat;?>',
+        beforeShowDay: function(date){
+          return [date <= today, ""];
+        }
+      });
+
     $(".instrument-date-picker").datepicker({
       dateFormat: '<?php echo $dtFormat;?>',
-      onSelect: updateInstrumentLists
+      onSelect: updateInstrumentLists,
+      beforeShowDay: function(date){
+        return [date <= today, ""];
+      }
     });
     <?php if (!$this->isEditable) { ?>
     $("#tbResponseForm").find("input:enabled, select:enabled, textarea:enabled").attr("disabled", "disabled");
 	<?php } ?>
+
+    $("#assay").on('change', setAssay);
+    setAssay();
   });
 
   function clearDate(id) {
@@ -691,14 +780,22 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
     var errorCodeInput = $("#errorCode" + resultNumber);
     var rifResistanceSelect = $("#rifResistance" + resultNumber);
     if (mtbDetected === "error") {
+      errorCodeInput.removeAttr("disabled");
       errorCodeInput.removeAttr("readonly");
     } else {
+      errorCodeInput.attr("disabled", "");
       errorCodeInput.attr("readonly", "");
       errorCodeInput.val('')
     }
     if (["detected", "high", "medium", "low", "veryLow"].includes(mtbDetected)) {
+      rifResistanceSelect.removeAttr("disabled");
       rifResistanceSelect.removeAttr("readonly");
+    } else if (mtbDetected === "trace") {
+      rifResistanceSelect.attr("disabled", "");
+      rifResistanceSelect.attr("readonly", "");
+      rifResistanceSelect.val('indeterminate')
     } else {
+      rifResistanceSelect.attr("disabled", "");
       rifResistanceSelect.attr("readonly", "");
       rifResistanceSelect.val('na')
     }
@@ -769,9 +866,13 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
       installed: "",
       calibrated: ""
     };
+    var today = new Date('<?php echo date("Y-m-d") ?>');
     $(".new-instrument-date-picker").datepicker({
       dateFormat: '<?php echo $dtFormat;?>',
-      onSelect: updateInstrumentLists
+      onSelect: updateInstrumentLists,
+      beforeShowDay: function(date){
+        return [date <= today, ""];
+      }
     });
     newInstrumentIndex++;
   }

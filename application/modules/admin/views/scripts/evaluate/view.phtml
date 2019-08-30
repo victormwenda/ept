@@ -18,9 +18,17 @@ if ($next < count($urlListArray)) {
 <?php
 $reportDate = explode(" ", $this->evaluateData['shipment']['shipment_test_report_date'])
 ?>
-<h5 style="border-bottom:1px solid #999;padding-bottom:10px;">
-    <strong>Participant/Lab Name :</strong> <?php echo $this->evaluateData['participant']['first_name'] . " " . $this->evaluateData['participant']['last_name']; ?>
-    <span class="pull-right"><strong>Reported on :</strong> <?php echo $this->dateFormat($reportDate[0]); ?></span>
+<h5 style="padding-bottom:10px;">
+<span class="pull-left">
+  <strong>Participant Code:</strong> <?php echo $this->evaluateData['participant']['unique_identifier']; ?>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+</span>
+<span class="pull-left">
+    <strong>Participant/Lab Name:</strong> <?php echo $this->evaluateData['participant']['first_name'] . " " . $this->evaluateData['participant']['last_name']; ?>
+</span>
+<span class="pull-right">
+    <strong>Reported on:</strong> <?php echo $this->dateFormat($reportDate[0]); ?>
+</span>
 </h5>
 <input type="hidden" name="shipmentId" id="shipmentId" value="<?php echo $this->evaluateData['shipment']['shipment_id']; ?>" />
 <input type="hidden" name="participantId" id="participantId" value="<?php echo $this->evaluateData['shipment']['participant_id']; ?>" />
@@ -626,26 +634,26 @@ if ($this->scheme == 'eid') {
             <td>
                 <?php
                 if(isset($attributes['assay'])) {
-                    foreach($this->assays as $id => $name) {
+                    foreach($this->assays as $id => $definition) {
                         if($attributes['assay'] == $id) {
-                            echo $name;
+                            echo $definition['name'];
                         }
                     }
                 } ?>
             </td>
         </tr>
         <tr>
-            <th><label>MTB/RIF Kit Lot No</label></th>
+            <th><label>Cartridge Kit Lot No</label></th>
             <td>
-                <?php echo $attributes['mtb_rif_kit_lot_no'];?>
+                <?php echo $attributes['cartridge_lot_no'];?>
             </td>
-            <td><label>Expiration date of MTB/RIF Kit:</label></td>
+            <td><label>Expiration date of Cartridge:</label></td>
             <td>
                 <?php echo $attributes['expiry_date']; ?>
             </td>
         </tr>
         <tr>
-            <td><label>How many Xpert MTB/RIF tests have been conducted by this site in the last full month?</label></td>
+            <td><label>How many Xpert MTB/RIF and MTB Ultra tests have been conducted by this site in the last full month?</label></td>
             <td>
                 <?php if(isset($attributes['count_tests_conducted_over_month'])) {
                     echo $attributes['count_tests_conducted_over_month'];
@@ -709,12 +717,24 @@ if ($this->scheme == 'eid') {
                         <th style="background-color: transparent;">MTB Detected</th>
                         <th style="background-color: transparent;">Error Code</th>
                         <th style="background-color: transparent;">Rif Resistance</th>
-                        <th style="background-color: transparent;">Probe D</th>
-                        <th style="background-color: transparent;">Probe C</th>
-                        <th style="background-color: transparent;">Probe E</th>
-                        <th style="background-color: transparent;">Probe B</th>
-                        <th style="background-color: transparent;">SPC</th>
-                        <th style="background-color: transparent;">Probe A</th>
+                        <th style="background-color: transparent;">
+                            <?php echo $this->evaluateData['shipment']['analyte1Label']; ?>
+                        </th>
+                        <th style="background-color: transparent;">
+                            <?php echo $this->evaluateData['shipment']['analyte2Label']; ?>
+                        </th>
+                        <th style="background-color: transparent;">
+                            <?php echo $this->evaluateData['shipment']['analyte3Label']; ?>
+                        </th>
+                        <th style="background-color: transparent;">
+                            <?php echo $this->evaluateData['shipment']['analyte4Label']; ?>
+                        </th>
+                        <th style="background-color: transparent;">
+                            <?php echo $this->evaluateData['shipment']['analyte5Label']; ?>
+                        </th>
+                        <th style="background-color: transparent;">
+                            <?php echo $this->evaluateData['shipment']['analyte6Label']; ?>
+                        </th>
                         <th style="text-align: center;font-size:17px;">Score</th>
                     </tr>
                     <tr>
@@ -738,6 +758,9 @@ if ($this->scheme == 'eid') {
                                     break;
                                 case "veryLow":
                                     echo "Very Low";
+                                    break;
+                                case "trace":
+                                    echo "Trace";
                                     break;
                                 case "notDetected":
                                     echo "Not Detected";
@@ -780,22 +803,22 @@ if ($this->scheme == 'eid') {
                             ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;width: 7%;">
-                            <?php echo $result['res_probe_d']; ?>
+                            <?php echo $result['res_probe_1']; ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;width: 7%;">
-                            <?php echo $result['res_probe_c']; ?>
+                            <?php echo $result['res_probe_2']; ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;width: 7%;">
-                            <?php echo $result['res_probe_e']; ?>
+                            <?php echo $result['res_probe_3']; ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;width: 7%;">
-                            <?php echo $result['res_probe_b']; ?>
+                            <?php echo $result['res_probe_4']; ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;width: 7%;">
-                            <?php echo $result['res_spc']; ?>
+                            <?php echo $result['res_probe_5']; ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;width: 7%;">
-                            <?php echo $result['res_probe_a']; ?>
+                            <?php echo $result['res_probe_6']; ?>
                         </td>
                         <td style="vertical-align: middle;text-align: center;width: 7%;font-weight: bold;">
                             <?php
@@ -839,6 +862,9 @@ if ($this->scheme == 'eid') {
                                 case "veryLow":
                                     echo "Very Low";
                                     break;
+                                case "trace":
+                                    echo "Trace";
+                                    break;
                                 case "notDetected":
                                     echo "Not Detected";
                                     break;
@@ -875,22 +901,58 @@ if ($this->scheme == 'eid') {
                             ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;">
-                            <?php echo $result['ref_probe_d']; ?>
+                            <?php
+                                if ($this->evaluateData['shipment']['assay_name'] == 'Xpert MTB/RIF') {
+                                    echo $result['ref_mtb_rif_probe_d'];
+                                } else if ($this->evaluateData['shipment']['assay_name'] == 'Xpert MTB Ultra') {
+                                    echo $result['ref_ultra_probe_spc'];
+                                }
+                            ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;">
-                            <?php echo $result['ref_probe_c']; ?>
+                            <?php
+                                if ($this->evaluateData['shipment']['assay_name'] == 'Xpert MTB/RIF') {
+                                    echo $result['ref_mtb_rif_probe_c'];
+                                } else if ($this->evaluateData['shipment']['assay_name'] == 'Xpert MTB Ultra') {
+                                    echo $result['ref_ultra_probe_is1081_is6110'];
+                                }
+                            ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;">
-                            <?php echo $result['ref_probe_e']; ?>
+                            <?php
+                                if ($this->evaluateData['shipment']['assay_name'] == 'Xpert MTB/RIF') {
+                                    echo $result['ref_mtb_rif_probe_e'];
+                                } else if ($this->evaluateData['shipment']['assay_name'] == 'Xpert MTB Ultra') {
+                                    echo $result['ref_ultra_probe_rpo_b1'];
+                                }
+                            ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;">
-                            <?php echo $result['ref_probe_b']; ?>
+                            <?php
+                                if ($this->evaluateData['shipment']['assay_name'] == 'Xpert MTB/RIF') {
+                                    echo $result['ref_mtb_rif_probe_b'];
+                                } else if ($this->evaluateData['shipment']['assay_name'] == 'Xpert MTB Ultra') {
+                                    echo $result['ref_ultra_probe_rpo_b2'];
+                                }
+                            ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;">
-                            <?php echo $result['ref_spc']; ?>
+                            <?php
+                                if ($this->evaluateData['shipment']['assay_name'] == 'Xpert MTB/RIF') {
+                                    echo $result['ref_mtb_rif_probe_spc'];
+                                } else if ($this->evaluateData['shipment']['assay_name'] == 'Xpert MTB Ultra') {
+                                    echo $result['ref_ultra_probe_rpo_b3'];
+                                }
+                            ?>
                         </td>
                         <td style="vertical-align: middle;text-align: right;">
-                            <?php echo $result['ref_probe_a']; ?>
+                            <?php
+                                if ($this->evaluateData['shipment']['assay_name'] == 'Xpert MTB/RIF') {
+                                    echo $result['ref_mtb_rif_probe_a'];
+                                } else if ($this->evaluateData['shipment']['assay_name'] == 'Xpert MTB Ultra') {
+                                    echo $result['ref_ultra_probe_rpo_b4'];
+                                }
+                            ?>
                         </td>
                     </tr>
                     <tr>

@@ -11,7 +11,8 @@ class Application_Service_EvaluationScoring {
     const FAIL_SCORE_PERCENT = 0.00;
 
     public function calculateTbSamplePassStatus($refMtbDetected, $resMtbDetected, $refRifResistance, $resRifResistance,
-                                                $probeD, $probeC, $probeE, $probeB, $spc, $probeA, $isExcluded, $isExempt) {
+                                                $probe1, $probe2, $probe3, $probe4, $probe5, $probe6, $isExcluded,
+                                                $isExempt) {
         $calculatedScore = "fail";
         if ($isExcluded == 'yes') {
             $calculatedScore = "excluded";
@@ -25,12 +26,12 @@ class Application_Service_EvaluationScoring {
             if ($this->resRifResistanceEqualsRefRifResistance($resMtbDetected, $resRifResistance, $refRifResistance)) {
                 $calculatedScore = "pass";
                 $ctValues = array(
-                    floatval($probeD),
-                    floatval($probeC),
-                    floatval($probeE),
-                    floatval($probeB),
-                    floatval($spc),
-                    floatval($probeA)
+                    floatval($probe1),
+                    floatval($probe2),
+                    floatval($probe3),
+                    floatval($probe4),
+                    floatval($probe5),
+                    floatval($probe6)
                 );
                 if (max($ctValues) > self::CONCERN_CT_MAX_VALUE) {
                     $calculatedScore = "concern";
@@ -43,7 +44,7 @@ class Application_Service_EvaluationScoring {
     }
 
     public function resMtbDetectedEqualsRefMtbDetected ($refMtbDetected, $resMtbDetected) {
-        $mtbDetectedValues = array("detected", "high", "medium", "low", "veryLow");
+        $mtbDetectedValues = array("detected", "high", "medium", "low", "veryLow", "trace");
         if (in_array($refMtbDetected, $mtbDetectedValues) && in_array($resMtbDetected, $mtbDetectedValues)) {
             return true;
         }

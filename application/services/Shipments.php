@@ -556,7 +556,7 @@ class Application_Service_Shipments {
         $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
         $authNameSpace = new Zend_Session_Namespace('datamanagers');
         $attributes = array(
-            "mtb_rif_kit_lot_no" => $params['mtbRifKitLotNo'],
+            "cartridge_lot_no" => $params['cartridgeLotNo'],
             "expiry_date" => $params['expiryDate'],
             "assay" => $params['assay'],
             "count_tests_conducted_over_month" => $params['countTestsConductedOverMonth'],
@@ -606,15 +606,29 @@ class Application_Service_Shipments {
         $shipmentParticipantDb->updateShipmentValues($data, $params['smid']);
     }
 
-    public function updateTbResult($params, $cartridgeExpirationDate, $mtbRifKitLotNo) {
+    public function updateTbResult($params, $cartridgeExpirationDate, $cartridgeLotNo) {
         if (!$this->isShipmentEditable($params['shipmentId'], $params['participantId'])) {
             return false;
         }
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $db->beginTransaction();
         try {
+            $mtbDetected = $params['mtbDetected'];
+            $rifResistance = $params['rifResistance'];
+            $errorCode = $params['errorCode'];
+            if ($mtbDetected != "error") {
+                $errorCode = null;
+                if(!in_array($mtbDetected, array("detected", "high", "medium", "low", "veryLow")) && ($rifResistance == null || $rifResistance == "")) {
+                    $rifResistance = "na";
+                }
+            } else {
+                $rifResistance = "na";
+            }
+            $params['rifResistance'] = $rifResistance;
+            $params['errorCode'] = $errorCode;
+
             $tbResponseDb = new Application_Model_DbTable_ResponseTb();
-            $tbResponseDb->updateResult($params, $cartridgeExpirationDate, $mtbRifKitLotNo);
+            $tbResponseDb->updateResult($params, $cartridgeExpirationDate, $cartridgeLotNo);
             $instrumentsDb = new Application_Model_DbTable_Instruments();
             if (isset($params['instrumentSerial']) &&
                 $params['instrumentSerial'] != "") {
@@ -672,7 +686,7 @@ class Application_Service_Shipments {
             $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
             $authNameSpace = new Zend_Session_Namespace('datamanagers');
             $attributes = array(
-                "mtb_rif_kit_lot_no" => $params['mtbRifKitLotNo'],
+                "cartridge_lot_no" => $params['cartridgeLotNo'],
                 "expiry_date" => $params['expiryDate'],
                 "assay" => $params['assay'],
                 "count_tests_conducted_over_month" => $params['countTestsConductedOverMonth'],
@@ -728,6 +742,22 @@ class Application_Service_Shipments {
             $evaluationStatus = $shipmentMap['evaluation_status'];
             $submitted = $evaluationStatus[2] == '1' ||
                 (isset($params['submitAction']) && $params['submitAction'] == 'submit');
+            $sampleIds = $params['sampleId'];
+            foreach ($sampleIds as $key => $sampleId) {
+                $mtbDetected = $params['mtbDetected'][$key];
+                $rifResistance = isset($params['rifResistance'][$key]) ? $params['rifResistance'][$key] : null;
+                $errorCode = isset($params['errorCode'][$key]) ? $params['errorCode'][$key] : null;
+                if ($mtbDetected != "error") {
+                    $errorCode = null;
+                    if(!in_array($mtbDetected, array("detected", "high", "medium", "low", "veryLow")) && ($rifResistance == null || $rifResistance == "")) {
+                        $rifResistance = "na";
+                    }
+                } else {
+                    $rifResistance = "na";
+                }
+                $params['rifResistance'][$key] = $rifResistance;
+                $params['errorCode'][$key] = $errorCode;
+            }
             $tbResponseDb->updateResults($params, $submitted);
 
             $instrumentsDb = new Application_Model_DbTable_Instruments();
@@ -1081,12 +1111,18 @@ class Application_Service_Shipments {
                         'sample_label' => $params['sampleName'][$i],
                         'mtb_detected' => $params['mtbDetected'][$i],
                         'rif_resistance' => $params['rifResistance'][$i],
-                        'probe_d' => $params['probeD'][$i],
-                        'probe_c' => $params['probeC'][$i],
-                        'probe_e' => $params['probeE'][$i],
-                        'probe_b' => $params['probeB'][$i],
-                        'spc' => $params['spc'][$i],
-                        'probe_a' => $params['probeA'][$i],
+                        'mtb_rif_probe_d' => $params['probeMtbRifD'][$i],
+                        'mtb_rif_probe_c' => $params['probeMtbRifC'][$i],
+                        'mtb_rif_probe_e' => $params['probeMtbRifE'][$i],
+                        'mtb_rif_probe_b' => $params['probeMtbRifB'][$i],
+                        'mtb_rif_probe_spc' => $params['probeMtbRifSpc'][$i],
+                        'mtb_rif_probe_a' => $params['probeMtbRifA'][$i],
+                        'ultra_probe_spc' => $params['probeUltraSpc'][$i],
+                        'ultra_probe_is1081_is6110' => $params['probeUltraIS1081IS6110'][$i],
+                        'ultra_probe_rpo_b1' => $params['probeUltraRpoB1'][$i],
+                        'ultra_probe_rpo_b2' => $params['probeUltraRpoB2'][$i],
+                        'ultra_probe_rpo_b3' => $params['probeUltraRpoB3'][$i],
+                        'ultra_probe_rpo_b4' => $params['probeUltraRpoB4'][$i],
                         'control' => 0,
                         'mandatory' => 1,
                         'sample_score' => Application_Service_EvaluationScoring::SAMPLE_MAX_SCORE
@@ -1382,12 +1418,18 @@ class Application_Service_Shipments {
                         'sample_label' => $params['sampleName'][$i],
                         'mtb_detected' => $newSampleMap[$sampleId]['mtb_detected'],
                         'rif_resistance' => $newSampleMap[$sampleId]['rif_resistance'],
-                        'probe_d' => $params['probeD'][$i],
-                        'probe_c' => $params['probeC'][$i],
-                        'probe_e' => $params['probeE'][$i],
-                        'probe_b' => $params['probeB'][$i],
-                        'spc' => $params['spc'][$i],
-                        'probe_a' => $params['probeA'][$i],
+                        'mtb_rif_probe_d' => $params['probeMtbRifD'][$i],
+                        'mtb_rif_probe_c' => $params['probeMtbRifC'][$i],
+                        'mtb_rif_probe_e' => $params['probeMtbRifE'][$i],
+                        'mtb_rif_probe_b' => $params['probeMtbRifB'][$i],
+                        'mtb_rif_probe_spc' => $params['probeMtbRifSpc'][$i],
+                        'mtb_rif_probe_a' => $params['probeMtbRifA'][$i],
+                        'ultra_probe_spc' => $params['probeUltraSpc'][$i],
+                        'ultra_probe_is1081_is6110' => $params['probeUltraIS1081IS6110'][$i],
+                        'ultra_probe_rpo_b1' => $params['probeUltraRpoB1'][$i],
+                        'ultra_probe_rpo_b2' => $params['probeUltraRpoB2'][$i],
+                        'ultra_probe_rpo_b3' => $params['probeUltraRpoB3'][$i],
+                        'ultra_probe_rpo_b4' => $params['probeUltraRpoB4'][$i],
                         'control' => 0,
                         'mandatory' => 1,
                         'sample_score' => Application_Service_EvaluationScoring::SAMPLE_MAX_SCORE,
@@ -1419,9 +1461,9 @@ class Application_Service_Shipments {
                         $sampleId = $sampleRes[$i]['sample_id'];
                         $samplePassStatus = $scoringService->calculateTbSamplePassStatus($newSampleMap[$sampleId]['mtb_detected'],
                             $sampleRes[$i]['res_mtb_detected'], $newSampleMap[$sampleId]['rif_resistance'],
-                            $sampleRes[$i]['res_rif_resistance'], $sampleRes[$i]['res_probe_d'], $sampleRes[$i]['res_probe_c'],
-                            $sampleRes[$i]['res_probe_e'], $sampleRes[$i]['res_probe_b'], $sampleRes[$i]['res_spc'],
-                            $sampleRes[$i]['res_probe_a'], $newSampleMap[$sampleId]['is_excluded'],
+                            $sampleRes[$i]['res_rif_resistance'], $sampleRes[$i]['res_probe_1'], $sampleRes[$i]['res_probe_2'],
+                            $sampleRes[$i]['res_probe_3'], $sampleRes[$i]['res_probe_4'], $sampleRes[$i]['res_probe_5'],
+                            $sampleRes[$i]['res_probe_6'], $newSampleMap[$sampleId]['is_excluded'],
                             $newSampleMap[$sampleId]['is_exempt']);
                         $submissionShipmentScore += $scoringService->calculateTbSampleScore(
                             $samplePassStatus,
@@ -2065,6 +2107,7 @@ class Application_Service_Shipments {
                                 WHEN res.mtb_detected = 'notDetected' THEN 'MTB Not Detected '
                                 WHEN res.mtb_detected = 'noResult' THEN 'No Result'
                                 WHEN res.mtb_detected = 'veryLow' THEN 'MTB Very Low '
+                                WHEN res.mtb_detected = 'trace' THEN 'MTB Trace '
                                 WHEN res.mtb_detected = 'na' THEN 'N/A'
                                 WHEN IFNULL(res.mtb_detected, '') = '' THEN ''
                                 ELSE CONCAT('MTB ', UPPER(SUBSTRING(res.mtb_detected, 1, 1)), SUBSTRING(res.mtb_detected, 2, 254), ' ')
