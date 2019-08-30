@@ -62,7 +62,7 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
                         'module_name' => $params['moduleName'][$key],
                         'instrument_user' => $params['instrumentUser'][$key],
                         'cartridge_expiration_date' => $cartridgeExpirationDate,
-                        'reagent_lot_id' => $params['mtbRifKitLotNo'],
+                        'reagent_lot_id' => $params['cartridgeLotNo'],
                         'error_code' => $params['errorCode'][$key],
                         'created_by' => $dataManagerId,
                         'created_on' => new Zend_Db_Expr('now()')
@@ -86,7 +86,7 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
                         'module_name' => $params['moduleName'][$key],
                         'instrument_user' => $params['instrumentUser'][$key],
                         'cartridge_expiration_date' => $cartridgeExpirationDate,
-                        'reagent_lot_id' => $params['mtbRifKitLotNo'],
+                        'reagent_lot_id' => $params['cartridgeLotNo'],
                         'error_code' => $params['errorCode'][$key],
                         'updated_by' => $dataManagerId,
                         'updated_on' => new Zend_Db_Expr('now()')
