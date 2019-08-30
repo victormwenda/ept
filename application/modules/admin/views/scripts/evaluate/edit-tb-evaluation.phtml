@@ -746,7 +746,7 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
       .datepicker({
         dateFormat: '<?php echo $dtFormat;?>',
         beforeShowDay: function(date){
-          return date <= today;
+          return [date <= today, ""];
         }
       });
 

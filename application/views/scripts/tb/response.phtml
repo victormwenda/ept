@@ -688,14 +688,14 @@ $dtFormat = $genderHelper->getDateFormat();
       .datepicker({
         dateFormat: '<?php echo $dtFormat;?>',
         beforeShowDay: function(date){
-          return date <= today;
+          return [date <= today, ""];
         }
       });
 
     $(".instrument-date-picker").datepicker({
       dateFormat: '<?php echo $dtFormat;?>',
       onSelect: updateInstrumentLists,
-      beforeShowDay: function(date){
+      beforeShowDay: function(date) {
         return [date <= today, ""];
       }
     });
