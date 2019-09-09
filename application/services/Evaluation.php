@@ -1432,6 +1432,10 @@ class Application_Service_Evaluation {
                 $testsDoneAfterCalibrationDue = array();
                 $testsDoneAfterCartridgeExpired = array();
                 foreach ($tbResults as $tbResult) {
+                    if (in_array($tbResult['mtb_detected'], array("notDetected", "noResult", "invalid", "error")) &&
+                        $tbResult['rif_resistance'] == null) {
+                        $tbResult['rif_resistance'] = "na";
+                    }
                     $sampleScoreStatus = $scoringService->calculateTbSamplePassStatus(
                         $tbResultsExpected[$tbResult['sample_id']]['mtb_detected'],
                         $tbResult['mtb_detected'],

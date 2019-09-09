@@ -52,12 +52,16 @@ class Application_Service_EvaluationScoring {
     }
 
     public function resRifResistanceEqualsRefRifResistance ($resMtbDetected, $refRifResistance, $resRifResistance) {
+        $rifResistanceNotApplicableValues = array("notDetected", "na", "");
         if ($resMtbDetected == "notDetected") {
-            $rifResistanceNotApplicableValues = array("notDetected", "na");
             if (in_array($refRifResistance, $rifResistanceNotApplicableValues) &&
                 in_array($resRifResistance, $rifResistanceNotApplicableValues)) {
                 return true;
             }
+        }
+        if (in_array($refRifResistance, $rifResistanceNotApplicableValues) &&
+            $resRifResistance == null) {
+            return true;
         }
         return $refRifResistance == $resRifResistance;
     }
