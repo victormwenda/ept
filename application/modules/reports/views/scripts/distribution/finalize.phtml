@@ -1,4 +1,5 @@
 <?php
+$adminSession = new Zend_Session_Namespace('administrators');
 if (count($this->shipment) > 0) { ?>
 <div class="well" style="clear: both;">
     <a href="javascript:void(0);" onclick="$('#allShipmentList').fadeToggle()" class="btn btn-warning btn-xs pull-right" style="margin-top:-10px;">
@@ -179,7 +180,7 @@ if (count($this->shipment) > 0) { ?>
 <br />
 <br />
 <?php
-    if (isset($this->shipment[0]['status']) && $this->shipment[0]['status'] != 'finalized') { ?>
+    if ($adminSession->is_ptcc_coordinator == 0 && isset($this->shipment[0]['status']) && $this->shipment[0]['status'] != 'finalized') { ?>
 <div align="right" class="col-lg-6">
     <a href="javascript:void(0)" class="btn btn-sm  btn-warning" style="margin-top:10px;"
        onclick="generateSummaryReport('<?php echo base64_encode($this->shipment[0]['shipment_id']); ?>')">
@@ -246,7 +247,7 @@ if (count($this->shipment) > 0) { ?>
     $(document).ready(function () {
       if (getCookie('<?php echo $this->shipment[0]["shipment_id"]; ?>summaryReportTab')) {
 <?php
-    if ($shipment["report_generated"] == "yes") {
+    if ($adminSession->is_ptcc_coordinator == 0 && $shipment["report_generated"] == "yes") {
       $fileSafeShipmentCode = str_replace(array_merge(
         array_map('chr', range(0, 31)),
         array('<', '>', ':', '"', '/', '\\', '|', '?', '*')), '', $shipment["shipment_code"]);
@@ -263,7 +264,7 @@ if (count($this->shipment) > 0) { ?>
       }
       finalizeShipmentBtn();
 <?php
-    if ($shipment['report_generated'] == 'yes') {
+    if ($adminSession->is_ptcc_coordinator == 0 && $shipment['report_generated'] == 'yes') {
         $buttonCount = (int)ceil($this->responseCount["reported_count"] / 50);
         $responseCnt = $this->responseCount["reported_count"];
         $start = 1;

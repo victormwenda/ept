@@ -68,7 +68,7 @@ if (count($this->shipment) > 0) {
                 } ?>
             </table>
         </div><!-- /.modal-dialog -->
-    </div>	
+    </div>
     <h4 style="width:100%;height:50px;border-bottom:1px solid #777;">
         <div style="font-size:22.5px;line-height:36px;color:#333;float:left;">
             You are currently generating reports for Shipment&nbsp;
@@ -231,7 +231,7 @@ if (count($this->shipment) > 0) {
       } ?>
       $(document).ready(function () {
       <?php
-      if ($shipment['report_generated'] == 'yes') {
+      if ($adminSession->is_ptcc_coordinator == 0 && $shipment['report_generated'] == 'yes') {
           $buttonCount = (int)ceil($this->responseCount["reported_count"] / 50);
           $responseCnt = $this->responseCount["reported_count"];
           $start = 1;
