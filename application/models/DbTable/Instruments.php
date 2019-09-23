@@ -106,6 +106,7 @@ class Application_Model_DbTable_Instruments extends Zend_Db_Table_Abstract {
                 $noOfRows = $this->update($data, "instrument_id = " . $instruments[0]['instrument_id']);
             }
         }
+        $this->updateUnfinalizedResponsesWithNewDates($pid, $params['instrument_serial']);
         return $noOfRows;
     }
 
@@ -116,6 +117,36 @@ class Application_Model_DbTable_Instruments extends Zend_Db_Table_Abstract {
             $noOfRows = $this->delete($where);
         }
         return $noOfRows;
+    }
+
+    public function updateUnfinalizedResponsesWithNewDates($participantId, $instrumentSerial) {
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $sql = $db->select()->from(array('res'=>'response_result_tb'), array(
+            "shipment_map_id" => "res.shipment_map_id",
+            "sample_id" => "res.sample_id",
+            "instrument_installed_on" => "res.instrument_installed_on",
+            "instrument_last_calibrated_on" => "res.instrument_last_calibrated_on"
+        ))
+            ->join(array('spm' => 'shipment_participant_map'), 'res.shipment_map_id = spm.map_id', array())
+            ->join(array('s' => 'shipment'), 'spm.shipment_id = s.shipment_id', array())
+            ->join(array('i' => 'instrument'), 'res.instrument_serial = spm.map_id', array())
+            ->where("res.instrument_serial = ?", $instrumentSerial)
+            ->where("spm.participant_id = ?", $participantId)
+            ->where("s.status <> 'finalized'")
+            ->where("res.instrument_installed_on <> i.instrument_installed_on OR res.instrument_last_calibrated_on <> i.instrument_last_calibrated_on");
+        $unfinalizedResponses = $db->fetchAll($sql);
+        foreach ($unfinalizedResponses as $unfinalizedResponse) {
+            $data = array();
+            if (isset($instrumentInstalledOn)) {
+                $data['instrument_installed_on'] = $instrumentInstalledOn;
+            }
+            if (isset($instrumentLastCalibratedOn)) {
+                $data['instrument_last_calibrated_on'] = $instrumentLastCalibratedOn;
+            }
+            $db->update('response_result_tb', $data,
+                "shipment_map_id = " . $unfinalizedResponse['shipment_map_id'] . " AND sample_id = " . $unfinalizedResponse['sample_id']
+            );
+        }
     }
 }
 
