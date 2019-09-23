@@ -447,7 +447,7 @@ if (sizeof($this->result['shipment']) > 0) {
                     $noResultOrError2127InSubmission ||
                     (isset($result['instrument_requires_calibration']) && $result['instrument_requires_calibration']) ||
                     !isset($result['supervisor_approval']) || $result['supervisor_approval'] == 'no' ||
-                    !isset($result['qc_done']) || $result['qc_done'] == 'no' ||
+                    !isset($result['qc_done_on_time']) || !$result['qc_done_on_time'] ||
                     (isset($result['ptNotTestedComment']) && $result['ptNotTestedComment'] != '')) {
                     $commentsSection = '<br />';
                     $commentsSection .= '<table cellpadding="2" style="width:100%;font-size:8pt;">';
@@ -479,7 +479,7 @@ if (sizeof($this->result['shipment']) > 0) {
                         if ($result['instrument_requires_calibration']) {
                             array_push($allComments, 'Calibration is an important maintenance procedure to ensure GeneXpert instruments are functioning properly and yielding accurate results. '.$result['tests_done_after_calibration_due'].'Instrument calibration should take place each year or after every 2,000 runs on each instrument module (whichever comes first). Entered data suggest your GeneXpert Instrument is due for calibration. Request an XpertCheck module calibration kit and perform calibration as instructed. Details on how to perform GeneXpert Instrument calibration can be found at <a href="http://www.stoptb.org/wg/gli/TrainingPackage_Xpert_MTB_RIF.asp">http://www.stoptb.org/wg/gli/TrainingPackage_Xpert_MTB_RIF.asp</a> module 10 MAINTENANCE.');
                         }
-                        if (!isset($result['qc_done']) || $result['qc_done'] == 'no') {
+                        if (!isset($result['qc_done_on_time']) || !$result['qc_done_on_time']) {
                             array_push($allComments, 'Entered data suggest monthly maintenance needs to be performed.  Proper and timely monthly maintenance helps to ensure the longevity and accuracy of the GeneXpert Instrument. Details on how to perform GeneXpert Instrument monthly maintenance can be found at <a href="http://www.stoptb.org/wg/gli/TrainingPackage_Xpert_MTB_RIF.asp">http://www.stoptb.org/wg/gli/TrainingPackage_Xpert_MTB_RIF.asp</a> module 10 MAINTENANCE.');
                         }
                         if (!isset($result['supervisor_approval']) || $result['supervisor_approval'] == 'no') {

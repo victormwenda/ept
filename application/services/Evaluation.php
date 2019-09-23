@@ -1208,6 +1208,7 @@ class Application_Service_Evaluation {
                 'sp.supervisor_approval',
                 'sp.participant_supervisor',
                 'sp.qc_done',
+                'sp.qc_date',
                 'sp.is_pt_test_not_performed',
                 'sp.pt_test_not_performed_comments'))
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('sl.scheme_id', 'sl.scheme_name'))
@@ -1431,6 +1432,8 @@ class Application_Service_Evaluation {
                 $instrumentRequiresCalibration = false;
                 $testsDoneAfterCalibrationDue = array();
                 $testsDoneAfterCartridgeExpired = array();
+                $qcDoneOnTime = $shipmentResult[$i]['qc_done'] == 'yes' && isset($shipmentResult[$i]['qc_date']);
+                $lastTestDate = null;
                 foreach ($tbResults as $tbResult) {
                     if (in_array($tbResult['mtb_detected'], array("notDetected", "noResult", "invalid", "error")) &&
                         $tbResult['rif_resistance'] == null) {
@@ -1483,6 +1486,9 @@ class Application_Service_Evaluation {
                             "instrument_last_calibrated_on" => $tbResult['instrument_last_calibrated_on']
                         ));
                     }
+                    if ($lastTestDate == null || $lastTestDate < $tbResult['date_tested']) {
+                        $lastTestDate = $tbResult['date_tested'];
+                    }
                     $toReturn[$counter] = array(
                         'sample_id' => $tbResult['sample_id'],
                         'sample_label' => $tbResult['sample_label'],
@@ -1510,6 +1516,11 @@ class Application_Service_Evaluation {
                         'score_status' => $sampleScoreStatus);
                     $counter++;
                 }
+                if ($qcDoneOnTime) {
+                    $timeSinceQcDoneToLastTest = $qcDoneOnTime - $shipmentResult[$i]['qc_date'];
+                    $qcDoneOnTime = round($timeSinceQcDoneToLastTest / (60 * 60 * 24)) < 31;
+                }
+                $shipmentResult[$i]['qc_done_on_time'] = $qcDoneOnTime;
                 $shipmentResult[$i]['shipment_score'] = $shipmentScore;
                 $shipmentResult[$i]['max_shipment_score'] = $maxShipmentScore;
                 if(!isset($attributes['shipment_date'])) {

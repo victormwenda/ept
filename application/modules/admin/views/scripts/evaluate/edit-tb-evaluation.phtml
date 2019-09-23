@@ -163,7 +163,7 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
             </td>
             <td>
                 <input type="text" name="expiryDate" id="expiryDate" style="width:180px;float:left;" maxlength="11"
-                       value="<?php echo $attributes['expiry_date'];?>" class="isRequired datepicker form-control allowFutureDate" readonly="readonly"/>
+                       value="<?php echo $this->dateFormat($attributes['expiry_date']);?>" class="isRequired datepicker form-control allowFutureDate" readonly="readonly"/>
                 <i id="clearExpiryDate" class="icon-remove-sign" style="cursor:pointer;margin-top:10px;margin-left:10px;float:left;" alt="Clear Date" title="Clear Date"
                    onclick="clearDate('expiryDate')"> Clear</i>
             </td>
