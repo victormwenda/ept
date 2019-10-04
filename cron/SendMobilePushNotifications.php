@@ -32,6 +32,7 @@ try {
             curl_setopt_array($curl, array(
                 CURLOPT_URL => 'https://exp.host/--/api/v2/push/send',
                 CURLOPT_HTTPHEADER => array(
+                    'host: exp.host',
                     'content-type: application/json',
                     'accept-encoding: gzip, deflate',
                     'accept: application/json'
