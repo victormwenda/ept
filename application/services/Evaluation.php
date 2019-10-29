@@ -1257,7 +1257,8 @@ class Application_Service_Evaluation {
                 ->where("substring(spm.evaluation_status,4,1) != '0'")
                 ->where("spm.is_excluded = 'no'")
                 ->where("IFNULL(spm.is_pt_test_not_performed, 'no') = 'no'")
-                ->group('ref.sample_label');
+                ->group('ref.sample_label')
+                ->order("ref.sample_id");
             $tbReportSummary = $db->fetchAll($summaryQuery);
 
             $expectedResultsQuery = $db->select()->from(array('ref' => 'reference_result_tb'),
@@ -1641,7 +1642,8 @@ class Application_Service_Evaluation {
                     ->where("substring(spm.evaluation_status,4,1) != '0'")
                     ->where("spm.is_excluded = 'no'")
                     ->where("IFNULL(spm.is_pt_test_not_performed, 'no') = 'no'")
-                    ->group('ref.sample_label');
+                    ->group("ref.sample_label")
+                    ->order("ref.sample_id");
                 $tbReportSummary = $db->fetchAll($summaryQuery);
 
                 $expectedResultsQuery = $db->select()->from(array('ref' => 'reference_result_tb'),
