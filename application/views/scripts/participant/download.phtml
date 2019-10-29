@@ -8,10 +8,10 @@ if ($this->result != "") {
 	$fileName = preg_replace('/[^A-Za-z0-9.]/', '-', $fileName);
 	$fileName = str_replace(" ", "-", $fileName);
 
-    $fileSafeShipmentCode = str_replace(array_merge(
+    $fileSafeShipmentCode = str_replace( ' ', '-', str_replace(array_merge(
         array_map('chr', range(0, 31)),
         array('<', '>', ':', '"', '/', '\\', '|', '?', '*')
-        ), '', $this->result['shipment_code']);
+        ), '', $this->result['shipment_code']));
     $reportsFolderPath = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports';
     $shipmentFolderPath = $reportsFolderPath . DIRECTORY_SEPARATOR . $fileSafeShipmentCode;
 

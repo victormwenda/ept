@@ -273,9 +273,9 @@ class MYPDF extends TCPDF {
 
 	$pdf->writeHTML($labInfo, true, false, true, false, '');
 
-    $fileSafeShipmentCode = str_replace(array_merge(
+    $fileSafeShipmentCode = str_replace( ' ', '-', str_replace(array_merge(
         array_map('chr', range(0, 31)),
-        array('<', '>', ':', '"', '/', '\\', '|', '?', '*')), '', $this->shipment["shipment_code"]);
+        array('<', '>', ':', '"', '/', '\\', '|', '?', '*')), '', $this->shipment["shipment_code"]));
 	$fileName = $fileSafeShipmentCode . ".pdf";
 	$filePath = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports'. DIRECTORY_SEPARATOR .$fileName;
 

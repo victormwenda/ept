@@ -139,10 +139,10 @@ if (sizeof($this->result['shipment']) > 0) {
     $attestation .= '</div>';
 
     foreach ($this->result['shipment'] as $result) {
-        $fileSafeShipmentCode = str_replace(array_merge(
+        $fileSafeShipmentCode = str_replace( ' ', '-', str_replace(array_merge(
             array_map('chr', range(0, 31)),
             array('<', '>', ':', '"', '/', '\\', '|', '?', '*')
-            ), '', $result['shipment_code']);
+            ), '', $result['shipment_code']));
         $shipmentFolderPath = $reportsFolderPath . DIRECTORY_SEPARATOR . $fileSafeShipmentCode;
         if (!file_exists($shipmentFolderPath) || !is_dir($shipmentFolderPath)) {
             mkdir($shipmentFolderPath);

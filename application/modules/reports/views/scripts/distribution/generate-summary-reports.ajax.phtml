@@ -1,10 +1,10 @@
 <?php
 require_once('tcpdf/tcpdf.php');
 $config = new Zend_Config_Ini(APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini", APPLICATION_ENV);
-$fileSafeShipmentCode = str_replace(array_merge(
+$fileSafeShipmentCode = str_replace( ' ', '-', str_replace(array_merge(
         array_map('chr', range(0, 31)),
         array('<', '>', ':', '"', '/', '\\', '|', '?', '*')
-        ), '', $this->result['shipment']['shipment_code']);
+        ), '', $this->result['shipment']['shipment_code']));
 $reportsFolderPath = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports';
 $shipmentFolderPath = $reportsFolderPath . DIRECTORY_SEPARATOR . $fileSafeShipmentCode;
 if ($this->result['shipment'] != "") {
