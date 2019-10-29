@@ -240,8 +240,8 @@ class Application_Service_Shipments {
             $attributes = array("sample_rehydration_date" => $params['sampleRehydrationDate'],
                 "extraction_assay" => $params['extractionAssay'],
                 "detection_assay" => $params['detectionAssay'],
-                "extraction_assay_expiry_date" => $params['extractionAssayExpiryDate'],
-                "detection_assay_expiry_date" => $params['detectionAssayExpiryDate'],
+                "extraction_assay_expiry_date" => Application_Service_Common::ParseDate($params['extractionAssayExpiryDate']),
+                "detection_assay_expiry_date" => Application_Service_Common::ParseDate($params['detectionAssayExpiryDate']),
                 "extraction_assay_lot_no" => $params['extractionAssayLotNo'],
                 "detection_assay_lot_no" => $params['detectionAssayLotNo'],
 		        "uploaded_file" => $params['uploadedFilePath']);
@@ -557,7 +557,7 @@ class Application_Service_Shipments {
         $authNameSpace = new Zend_Session_Namespace('datamanagers');
         $attributes = array(
             "cartridge_lot_no" => $params['cartridgeLotNo'],
-            "expiry_date" => $params['expiryDate'],
+            "expiry_date" => Application_Service_Common::ParseDate($params['expiryDate']),
             "assay" => $params['assay'],
             "count_tests_conducted_over_month" => $params['countTestsConductedOverMonth'],
             "count_errors_encountered_over_month" => $params['countErrorsEncounteredOverMonth'],
@@ -687,7 +687,7 @@ class Application_Service_Shipments {
             $authNameSpace = new Zend_Session_Namespace('datamanagers');
             $attributes = array(
                 "cartridge_lot_no" => $params['cartridgeLotNo'],
-                "expiry_date" => $params['expiryDate'],
+                "expiry_date" => Application_Service_Common::ParseDate($params['expiryDate']),
                 "assay" => $params['assay'],
                 "count_tests_conducted_over_month" => $params['countTestsConductedOverMonth'],
                 "count_errors_encountered_over_month" => $params['countErrorsEncounteredOverMonth'],

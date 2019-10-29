@@ -222,7 +222,7 @@ class Application_Service_Response {
         if ($params['scheme'] == 'tb') {
             $attributes = array(
                 "cartridge_lot_no" => $params['cartridgeLotNo'],
-                "expiry_date" => $params['expiryDate'],
+                "expiry_date" =>  Application_Service_Common::ParseDate($params['expiryDate']),
                 "assay" => $params['assay'],
                 "count_tests_conducted_over_month" => $params['countTestsConductedOverMonth'],
                 "count_errors_encountered_over_month" => $params['countErrorsEncounteredOverMonth'],
