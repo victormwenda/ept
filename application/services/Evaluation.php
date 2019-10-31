@@ -210,10 +210,13 @@ class Application_Service_Evaluation {
             ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id')
             ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id')
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type')
-            ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id')
+            ->join(array('p' => 'participant'), 'p.participant_id = sp.participant_id', array(
+                'sorting_unique_identifier' => new Zend_Db_Expr("CASE WHEN p.unique_identifier REGEXP '\d*' THEN CAST(CAST(p.unique_identifier AS DECIMAL) AS CHAR) ELSE TRIM(LEADING '0' FROM p.unique_identifier) END"),
+                'p.*'
+            ))
             ->where("s.shipment_id = ?", $shipmentId)
             ->where("substring(sp.evaluation_status,4,1) != '0'")
-            ->order("p.unique_identifier");
+            ->order('sorting_unique_identifier');
         $shipmentResult = $db->fetchAll($sql);
 
         $schemeService = new Application_Service_Schemes();
@@ -1157,11 +1160,12 @@ class Application_Service_Evaluation {
             ))
             ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id')
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('scheme_name'))
-            ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array(
+            ->join(array('p' => 'participant'), 'p.participant_id = sp.participant_id', array(
                 'first_name',
                 'last_name',
                 'lab_name',
-                'unique_identifier'
+                'unique_identifier',
+                'sorting_unique_identifier' => new Zend_Db_Expr("CASE WHEN p.unique_identifier REGEXP '\d*' THEN CAST(CAST(p.unique_identifier AS DECIMAL) AS CHAR) ELSE TRIM(LEADING '0' FROM p.unique_identifier) END")
             ))
             ->joinLeft(array('res' => 'r_results'), 'res.result_id=sp.final_result')
             ->where("s.shipment_id = ?", $shipmentId)
@@ -1169,7 +1173,7 @@ class Application_Service_Evaluation {
         if($authNameSpace->is_ptcc_coordinator) {
             $sql = $sql->where("p.country IS NULL OR p.country IN (".implode(",",$authNameSpace->countries).")");
         }
-        $sql = $sql->order("p.unique_identifier");
+        $sql = $sql->order('sorting_unique_identifier');
         $shipmentResult = $db->fetchAll($sql);
         return $shipmentResult;
     }
@@ -1216,7 +1220,9 @@ class Application_Service_Evaluation {
                 'p.unique_identifier',
                 'p.first_name',
                 'p.last_name',
-                'p.status'))
+                'p.status',
+                'sorting_unique_identifier' => new Zend_Db_Expr("CASE WHEN p.unique_identifier REGEXP '\d*' THEN CAST(CAST(p.unique_identifier AS DECIMAL) AS CHAR) ELSE TRIM(LEADING '0' FROM p.unique_identifier) END")
+            ))
             ->join(array('c' => 'countries'), 'c.id=p.country', array('country_name' => 'c.iso_name'))
             ->joinLeft(array('res' => 'r_results'), 'res.result_id=sp.final_result', array('result_name'))
             ->joinLeft(array('ec' => 'r_evaluation_comments'), 'ec.comment_id=sp.evaluation_comment', array(
@@ -1225,7 +1231,7 @@ class Application_Service_Evaluation {
             ->where("s.shipment_id = ?", $shipmentId)
             ->where("substring(sp.evaluation_status,4,1) != '0'")
             ->where("sp.is_excluded = 'no'")
-            ->order('p.unique_identifier ASC');
+            ->order("sorting_unique_identifier");
         if (isset($sLimit) && isset($sOffset)) {
             $sql = $sql->limit($sLimit, $sOffset);
 		}
@@ -1786,7 +1792,7 @@ class Application_Service_Evaluation {
                     ->where("sp.is_excluded = 'no'")
                     ->where("IFNULL(sp.is_pt_test_not_performed, 'no') = 'no'")
                     ->order('country_name ASC')
-                    ->order("p.unique_identifier ASC");
+                    ->order("sorting_unique_identifier ASC");
 
                 $tbReportParticipants = $db->fetchAll($participantsSql);
             }

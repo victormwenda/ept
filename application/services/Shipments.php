@@ -1280,7 +1280,7 @@ class Application_Service_Shipments {
                 ->joinLeft(array('csm' => 'country_shipment_map'), 'csm.country_id = p.country AND csm.shipment_id = spm.shipment_id', array('due_date' => new Zend_Db_Expr('IFNULL(csm.due_date_text, CAST(s.lastdate_response AS CHAR))')))
                 ->where("spm.shipment_id = ?", $sid)
                 ->group('p.participant_id')
-                ->order("p.unique_identifier ASC")
+                ->order(new Zend_Db_Expr("CASE WHEN p.unique_identifier REGEXP '\d*' THEN CAST(CAST(p.unique_identifier AS DECIMAL) AS CHAR) ELSE TRIM(LEADING '0' FROM p.unique_identifier) END"))
         );
 
         $sampleData = $db->fetchAll(

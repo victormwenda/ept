@@ -1,7 +1,7 @@
 <style>
-  td{
-		  vertical-align: middle !important;
-  }
+    td {
+        vertical-align: middle !important;
+    }
 </style>
 <?php
 $adminSession = new Zend_Session_Namespace('administrators');
@@ -13,7 +13,7 @@ if (count($this->shipment) > 0) { ?>
             <h4>All Shipments Under PE Survey <?php echo $this->shipment[0]['distribution_code']; ?> (<?php echo $this->dateFormat($this->shipment[0]['distribution_date']); ?>)</h4>
         </legend>
         <table class="table table-bordered table-striped table-hover">
-			<tr>
+		    <tr>
 				<th style="text-align: center;">Shipment Code</th>
 				<th style="text-align: center;">Scheme</th>
 				<th style="text-align: center;">No. of Samples</th>
@@ -22,15 +22,15 @@ if (count($this->shipment) > 0) { ?>
 				<th style="text-align: center;">Response %</th>
 				<th style="text-align: center;">Number Passed</th>
 				<th style="text-align: center;">Shipment Status</th>
-				<th style="text-align: center;">Action</th>
+                <th style="text-align: center;">Action</th>
 			</tr>
 			<?php
 			if (count($this->shipmentsUnderDistro) > 0) {
-			    foreach ($this->shipmentsUnderDistro as $shipment) {
+                foreach ($this->shipmentsUnderDistro as $shipment) {
 				    $reported = (isset($shipment['reported_count']) && $shipment['reported_count'] > 0) ? $shipment['reported_count'] : 0;
                     $totalParticipant = $shipment['participant_count'];
                     $passed = (isset($shipment['number_passed']) && $shipment['number_passed'] >= 0) ? $shipment['number_passed'] : 0;
-                    $nonResponse=$totalParticipant-$reported; ?>
+                    $nonResponse = $totalParticipant-$reported; ?>
 			<tr>
 			    <td style="text-align: center;"><?php echo $shipment['shipment_code'] ?></td>
 				<td style="text-align: center;"><?php echo $shipment['scheme_name'] ?></td>
@@ -40,37 +40,37 @@ if (count($this->shipment) > 0) { ?>
 				<td style="text-align: center;"><?php echo (isset($shipment['participant_count']) && $shipment['participant_count'] > 0) ? round(($reported/$shipment['participant_count'])*100,2) : 0; ?></td>
 				<td style="text-align: center;"><?php echo (isset($shipment['number_passed']) && $shipment['number_passed'] >= 0) ? $shipment['number_passed'] : 0; ?></td>
 				<td style="text-align: center;"><?php echo ucfirst($shipment['shipment_status']) ?></td>
-				<td style="text-align: center;">
+                <td style="text-align: center;">
 <?php
                     if ($adminSession->is_ptcc_coordinator == 0) {
                         if (isset($shipment['reported_count']) && $shipment['reported_count'] > 0) { ?>
-                    <a class="btn btn-success btn-xs" href="/admin/evaluate/shipment/sid/<?php echo base64_encode($shipment['shipment_id']); ?>">
-                        <span><i class="icon-edit"></i> Evaluate</span>
-                    </a>
+                        <a class="btn btn-success btn-xs" href="/admin/evaluate/shipment/sid/<?php echo base64_encode($shipment['shipment_id']); ?>">
+                            <span><i class="icon-edit"></i> Evaluate</span>
+                        </a>
 <?php
                             if ($nonResponse > 0) {?>
-                    <a class="btn btn-warning btn-xs" href="javascript:void(0);" onclick="mailNonParticipants('<?php echo base64_encode($shipment['shipment_id']); ?>');">
-                        <span><i class="icon-envelope"></i> Mail <?php echo $nonResponse ?> Not Responded Participants</span>
-                    </a>
+                            <a class="btn btn-warning btn-xs" href="javascript:void(0);" onclick="mailNonParticipants('<?php echo base64_encode($shipment['shipment_id']); ?>');">
+                                <span><i class="icon-envelope"></i> Mail <?php echo $nonResponse ?> Not Responded Participants</span>
+                            </a>
 <?php
                             }
                         } else { ?>
-                    <a class="btn btn-primary btn-xs disabled" href="javascript:void(0)">
-                        <span><i class="icon-edit"></i> Evaluate</span>
-                    </a>
+                        <a class="btn btn-primary btn-xs disabled" href="javascript:void(0)">
+                            <span><i class="icon-edit"></i> Evaluate</span>
+                        </a>
 <?php
                         }
                     }
                     if ($nonResponse > 0 && $shipment['scheme_type'] == 'tb') { ?>
-                    <a class="btn btn-success btn-xs" href="/admin/response/shipment/sid/<?php echo base64_encode($shipment['shipment_id']); ?>">
-                        <span><i class="icon-edit"></i> Enter Response</span>
-                    </a>
+                        <a class="btn btn-success btn-xs" href="/admin/response/shipment/sid/<?php echo base64_encode($shipment['shipment_id']); ?>">
+                            <span><i class="icon-edit"></i> Enter Response</span>
+                        </a>
 <?php
                     } ?>
-				</td>
+                </td>
 			</tr>
 			<?php
-				}
+			    }
 			} else { ?>
 			<tr>
 			    <td colspan="5" align="center" style="text-align:center">
@@ -79,7 +79,7 @@ if (count($this->shipment) > 0) { ?>
 			</tr>
 			<?php
 			} ?>
-        </table>
+		</table>
     </div>
 </div>	
 <h4 style="width:100%;height:50px;border-bottom:1px solid #777;">
@@ -95,7 +95,9 @@ if (count($this->shipment) > 0) { ?>
         <?php } ?>
     </div>
 	<div style="margin-top:10px;">
-		<a href="<?php echo $this->url(array('module' => 'admin', 'controller' => 'evaluate', 'action' => 'index'), 'default', true); ?>" class="btn btn-primary" style="float:right;"><i class="icon-chevron-left"></i>&nbsp;&nbsp;Back</a>
+		<a href="<?php echo $this->url(array('module' => 'admin', 'controller' => 'evaluate', 'action' => 'index'), 'default', true); ?>" class="btn btn-primary" style="float:right;">
+            <i class="icon-chevron-left"></i>&nbsp;&nbsp;Back
+        </a>
 	</div>
 </h4>
 <table class="table table-bordered" style="margin:0 auto;">
@@ -112,7 +114,9 @@ if (count($this->shipment) > 0) { ?>
 <table class="table table-bordered" style="width:95%;margin:10px auto;">
 	<tr>
 		<td style="vertical-align: middle;">Comment for all Participants of this shipment</td>
-		<td style="width:55%;"><textarea class="form-control" name="shipmentComment" id="shipmentComment"><?php echo $this->shipment[0]['shipment_comment']; ?></textarea></td>
+		<td style="width:55%;">
+            <textarea class="form-control" name="shipmentComment" id="shipmentComment"><?php echo $this->shipment[0]['shipment_comment']; ?></textarea>
+        </td>
 		<td style="vertical-align: middle;"><button class="btn btn-primary" onclick="updateComment('<?php echo base64_encode($this->shipment[0]['shipment_id']) ?>');return false;"><span>Update Comment</span></button></td>
 	</tr>
 </table>
@@ -120,6 +124,7 @@ if (count($this->shipment) > 0) { ?>
 <table cellpadding="0" cellspacing="0" border="0" class="table table-striped table-bordered table-hover" id="shipmentEvaluation" style="margin:10px auto;">
     <thead>
         <tr>
+            <th class="hidden"></th>
             <th style="width:40px;"></th>
             <th>Participant/Tester</th>
             <?php if($this->shipment[0]['scheme_type'] != 'tb') { ?>
@@ -134,8 +139,8 @@ if (count($this->shipment) > 0) { ?>
         </tr>
     </thead>
     <tbody>
-		<?php
-		$editList = array();
+	<?php
+	    $editList = array();
 		$viewList = array();
 		foreach ($this->shipment as $shipment) {
 		    $btnClassName="btn-success";
@@ -161,6 +166,9 @@ if (count($this->shipment) > 0) { ?>
 			$shipment['shipment_score'] = (isset($shipment['shipment_score']) && $shipment['shipment_score'] != "") ? $shipment['shipment_score'] : '0';
 			$shipment['documentation_score'] = (isset($shipment['documentation_score']) && $shipment['documentation_score'] != "") ? $shipment['documentation_score'] : '0'; ?>
         <tr>
+            <td class="hidden ">
+                <?php echo $shipment['sorting_unique_identifier'] ?>
+            </td>
             <td class="center ">
                 <a href="javascript:void(0);" class="btn btn-xs clicker <?php echo $btnClassName; ?>">
                     <i class="icon-plus"></i>
@@ -192,9 +200,9 @@ if (count($this->shipment) > 0) { ?>
         </tr>
 		<?php
 		}
-		$shipmentListSession = new Zend_Session_Namespace('shipmentList');
-		$shipmentListSession->editUrlList = $editList;
-		$shipmentListSession->viewUrlList = $viewList; ?>
+        $shipmentListSession = new Zend_Session_Namespace('shipmentList');
+        $shipmentListSession->editUrlList = $editList;
+        $shipmentListSession->viewUrlList = $viewList; ?>
     </tbody>
 </table>
 <script type="text/javascript" charset="utf-8">
@@ -222,8 +230,8 @@ if (count($this->shipment) > 0) { ?>
 	        }
 	    });
 	    oTable = $("#shipmentEvaluation").dataTable({
-		    "oLanguage": {
-			    "sLengthMenu": "_MENU_ records per page"
+           "oLanguage": {
+               "sLengthMenu": "_MENU_ records per page"
 		    },
 		    "bJQueryUI": false,
 		    "bAutoWidth": false,
@@ -233,18 +241,19 @@ if (count($this->shipment) > 0) { ?>
 		    "bRetrieve": true,
 		    "bdestroy": false,
 		    "aoColumns": [
-                {"bSortable": false, "aTargets": [ 0 ] },
-                {"sClass":""},
+                { "aTargets": [ 0 ] },
+                { "bSortable": false, "aTargets": [ 1 ] },
+                { "sClass": "", "iDataSort": 0 },
                 <?php if($this->shipment[0]['scheme_type'] != 'tb') { ?>
-                {"sClass":"center"},
+                { "sClass": "center" },
                 <?php } ?>
-                {"sClass":"center"},
-                {"sClass":"center"},
-                {"bSearchable": false, "bVisible": false},
-                {"sClass":"center","bSortable":false}
+                { "sClass": "center" },
+                { "sClass": "center" },
+                { "bSearchable": false, "bVisible": false },
+                { "sClass": "center", "bSortable": false }
 		    ],
-		    "aaSorting": [[ 1, "asc" ]],
-		    "bProcessing": true,
+		    "aaSorting": [[ 0, "asc" ]],
+		    "bProcessing": true
         });
 	});
 	
@@ -308,10 +317,9 @@ if (count($this->shipment) > 0) { ?>
         }
     }
 </script>
-<?php
-} else { ?>
+<?php } else { ?>
 <br/><br/><br/>
 <h3 style="text-align: center">
-    No Shipment to evaluate. <a href="<?php echo $this->url(array('module' => 'admin', 'controller' => 'evaluate', 'action' => 'index'), 'default', true); ?>" >Click here to go back</a></h3>
-<?php
-} ?>
+    No Shipment to evaluate. <a href="<?php echo $this->url(array('module' => 'admin', 'controller' => 'evaluate', 'action' => 'index'), 'default', true); ?>" >Click here to go back</a>
+</h3>
+<?php } ?>

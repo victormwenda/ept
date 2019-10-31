@@ -84,7 +84,10 @@ if (count($this->shipment) > 0) { ?>
 </div>	
 <h4 style="width:100%;height:50px;border-bottom:1px solid #777;">
 	<div style="font-size:22.5px;line-height:36px;color:#333;float:left;">
-        You are currently entering responses for Shipment <strong><?php echo $this->shipment[0]['shipment_code']; ?></strong>
+        You are currently entering responses for Shipment
+        <strong>
+            <?php echo $this->shipment[0]['shipment_code']; ?>
+        </strong>
     </div>
 	<div style="margin-top:10px;">
 		<a href="<?php echo $this->url(array('module' => 'admin', 'controller' => 'evaluate', 'action' => 'index'), 'default', true); ?>" class="btn btn-primary" style="float:right;">
@@ -106,6 +109,7 @@ if (count($this->shipment) > 0) { ?>
 <table cellpadding="0" cellspacing="0" border="0" class="table table-striped table-bordered table-hover" id="shipmentResponse" style="margin:10px auto;">
     <thead>
         <tr>
+            <th class="hidden"></th>
             <th style="width:40px;"></th>
             <th>Participant/Tester</th>
             <?php if($this->shipment[0]['scheme_type'] != 'tb') { ?>
@@ -120,7 +124,7 @@ if (count($this->shipment) > 0) { ?>
         </tr>
     </thead>
     <tbody>
-	<?php
+    <?php
 	    $editList = array();
 		$viewList = array();
 		foreach ($this->shipment as $shipment) {
@@ -150,12 +154,15 @@ if (count($this->shipment) > 0) { ?>
 			$shipment['shipment_score'] = (isset($shipment['shipment_score']) && $shipment['shipment_score'] != "") ? $shipment['shipment_score'] : '0';
 			$shipment['documentation_score'] = (isset($shipment['documentation_score']) && $shipment['documentation_score'] != "") ? $shipment['documentation_score'] : '0'; ?>
 			<tr>
+                <td class="hidden ">
+                    <?php echo $shipment['sorting_unique_identifier'] ?>
+                </td>
                 <td class="center ">
                     <a href="javascript:void(0);" class="btn btn-xs clicker <?php echo $btnClassName; ?>">
                         <i class="icon-plus"></i>
                     </a>
                 </td>
-				<td style="vertical-align:middle;"><?php echo $shipment['first_name'] . " " .$shipment['last_name']. "(".$shipment['unique_identifier'].")" ?></td>
+                <td style="vertical-align:middle;"><?php echo $shipment['unique_identifier'] . " - " . $shipment['first_name'] . " " .$shipment['last_name'] ?></td>
                 <?php if($shipment['scheme_type'] != 'tb') { ?>
                 <td style="text-align:center;vertical-align:middle;"><?php echo $shipment['shipment_score'] ?></td>
                 <td style="text-align:center;vertical-align:middle;"><?php echo $shipment['documentation_score'] ?></td>
@@ -174,16 +181,14 @@ if (count($this->shipment) > 0) { ?>
 						<a class="btn btn-primary btn-xs" href="javascript:void(0);" onclick="removeSchemes('<?php echo $shipment['scheme_type']; ?>','<?php echo base64_encode($shipment['map_id']); ?>')"><span><i class="icon-remove"></i> Delete</span></a>
 					<?php
 					}
-					 ?>
-					</td>
-				</tr>
-				<?php
-			}
-            $shipmentListSession = new Zend_Session_Namespace('shipmentList');
-            $shipmentListSession->editUrlList = $editList;
-            $shipmentListSession->viewUrlList = $viewList;
-		?>
-    
+					?>
+				</td>
+			</tr>
+	<?php
+		}
+        $shipmentListSession = new Zend_Session_Namespace('shipmentList');
+        $shipmentListSession->editUrlList = $editList;
+        $shipmentListSession->viewUrlList = $viewList; ?>
     </tbody>
 </table>
 
@@ -191,79 +196,68 @@ if (count($this->shipment) > 0) { ?>
 	var oTable = null;
 	var nTr = null;
 	$(document).ready(function() {
-	  $('#shipmentEvaluation').on('click',".clicker", function (){
-	       nTr = $(this).parents('tr')[0];
-               aData = oTable.fnGetData( nTr );
-	       if ( oTable.fnIsOpen(nTr) ){
-                   //console.log(aData[5]);
-		   /* This row is already open - close it */
-		   $(this).find('i').addClass("icon-plus");
-		   $(this).find('i').removeClass("icon-minus");
-		   //$(this).removeClass('btn-danger');
-                   
-                   if(aData[4]=="Fail"){
-                       $(this).addClass('btn-danger');
-                   }else if(aData[5]==""){
-                       $(this).addClass('btn-success');
-                   }else{
-                       $(this).addClass('btn-warning');
-                   }
-		   
-		   oTable.fnClose( nTr );
-	       }
-	       else{
-		    /* Open this row */       
-		    $(this).find('i').addClass("icon-minus");
-		    $(this).find('i').removeClass("icon-add");
-		    //$(this).removeClass('btn-success');
-		    //$(this).addClass('btn-danger');			
-		    oTable.fnOpen( nTr, fnFormatDetails(oTable, nTr), 'details' );
-	       }
-	  });		
-		
-	  oTable = $("#shipmentEvaluation").dataTable({
-		    "oLanguage": {
-			"sLengthMenu": "_MENU_ records per page"
-		    },
-		    "bJQueryUI": false,
-		    "bAutoWidth": false,
-		    "bInfo": true,
-		    "bScrollCollapse": true,
-		    "sPaginationType": "bootstrap",
-		    "bRetrieve": true,
-		    "bdestroy": false,
-		    "aoColumns": [
-                {"bSortable": false, "aTargets": [ 0 ] },
-                {"sClass":""},
-                <?php if($this->shipment[0]['scheme_type'] != 'tb') { ?>
-                {"sClass":"center"},
-                <?php } ?>
-                {"sClass":"center"},
-                {"sClass":"center"},
-                {"bSearchable": false, "bVisible": false},
-                {"sClass":"center","bSortable":false}
+	  $('#shipmentResponse').on('click',".clicker", function () {
+	      nTr = $(this).parents('tr')[0];
+	      aData = oTable.fnGetData( nTr );
+	      if (oTable.fnIsOpen(nTr)) {
+	          $(this).find('i').addClass("icon-plus");
+	          $(this).find('i').removeClass("icon-minus");
+	          if (aData[4]=="Fail") {
+                  $(this).addClass('btn-danger');
+              } else if (aData[5]=="") {
+	              $(this).addClass('btn-success');
+              } else {
+	              $(this).addClass('btn-warning');
+              }
+	          oTable.fnClose( nTr );
+	      } else {
+	          $(this).find('i').addClass("icon-minus");
+		      $(this).find('i').removeClass("icon-add");
+		      oTable.fnOpen( nTr, fnFormatDetails(oTable, nTr), 'details' );
+	      }
+	  });
+	  oTable = $("#shipmentResponse").dataTable({
+          "oLanguage": {
+              "sLengthMenu": "_MENU_ records per page"
+		  },
+		  "bJQueryUI": false,
+		  "bAutoWidth": false,
+		  "bInfo": true,
+		  "bScrollCollapse": true,
+		  "sPaginationType": "bootstrap",
+		  "bRetrieve": true,
+		  "bdestroy": false,
+		  "aoColumns": [
+              { "aTargets": [ 0 ] },
+              { "bSortable": false, "aTargets": [ 1 ] },
+              { "sClass": "", "iDataSort": 0 },
+              <?php if($this->shipment[0]['scheme_type'] != 'tb') { ?>
+              { "sClass": "center" },
+              <?php } ?>
+              { "sClass": "center" },
+              { "sClass": "center" },
+              { "bSearchable": false, "bVisible": false },
+              { "sClass":"center", "bSortable": false }
 		    ],
-		    "aaSorting": [[ 1, "asc" ]],
-		    "bProcessing": true,
-          });
+		    "aaSorting": [[ 0, "asc" ]],
+		    "bProcessing": true
+	  });
 	});
 	
-	function fnFormatDetails ( oTable, nTr )
-	{
-		var aData = oTable.fnGetData( nTr );
+	function fnFormatDetails(oTable, nTr) {
+	    var aData = oTable.fnGetData( nTr );
 		var sOut = "";
 		if (aData[5] != "" && aData[5] != null && aData[5] != undefined) {
-			sOut = '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;width:100%;">';
+		    sOut = '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;width:100%;">';
 			sOut += '<tr><td>'+aData[5]+'</td></tr>';
 			sOut += '</table>';
-		}else{
+		} else {
 			sOut = 'No comments to show';
 		}
 		return sOut;
-
 	}	
 	
-	function updateComment(sid){
+	function updateComment(sid) {
 		if ($.trim($("#shipmentComment").val()) == "") {
 			alert("Please enter comment to proceed");
 			return;
@@ -274,22 +268,20 @@ if (count($this->shipment) > 0) { ?>
 			   $.unblockUI({  onUnblock: function(){ alert(data); }  });			   
 			});		
 	}
-        function removeSchemes(schemeType,mid){
-		if (window.confirm("Are you sure you want to remove this response?\n This cannot be undone !")) { 
-			$.blockUI();
-			$.post("<?php echo $this->url(array('module'=>'admin','controller' =>'evaluate', 'action' => 'delete-dts-response'), 'default', true); ?>", { mid: mid, schemeType : schemeType, format: "html" },
-			    function (data) {
-				alert("Response has been removed successfully. Please wait while we reload this evaluation.");
-                               // oTable.fnStandingRedraw();
-                               // oTable.fnDraw();
-					document.location.href= document.location;
+
+	function removeSchemes(schemeType,mid) {
+	    if (window.confirm("Are you sure you want to remove this response?\n This cannot be undone !")) {
+	        $.blockUI();
+	        $.post("<?php echo $this->url(array('module'=>'admin','controller' =>'evaluate', 'action' => 'delete-dts-response'), 'default', true); ?>", { mid: mid, schemeType : schemeType, format: "html" }, function (data) {
+	            alert("Response has been removed successfully. Please wait while we reload this evaluation.");
+                document.location.href= document.location;
 				$.unblockUI();
 			});
-		}		
-		
+		}
 	}
-        function mailNonParticipants(sid) {
-        if (window.confirm("Are you sure you to send email reminder to participants not yet responded ?")) {
+
+	function mailNonParticipants(sid) {
+	    if (window.confirm("Are you sure you to send email reminder to participants not yet responded ?")) {
             $.post("<?php echo $this->url(array('module' => 'admin', 'controller' => 'shipment', 'action' => 'not-participated-mail')); ?>", {sid: sid, format: "html"},
             function (data) {
                 if (data > 0) {
@@ -298,13 +290,11 @@ if (count($this->shipment) > 0) { ?>
                 oTable.fnDraw();
             });
         }
-
     }
 </script>
-
 <?php } else { ?>
-	
-	<br/><br/><br/>
-	<h3 style="text-align: center">No Shipment to evaluate. <a href="<?php echo $this->url(array('module' => 'admin', 'controller' => 'evaluate', 'action' => 'index'), 'default', true); ?>" >Click here to go back</a></h3>
-	
+<br/><br/><br/>
+<h3 style="text-align: center">
+    No Shipment to evaluate. <a href="<?php echo $this->url(array('module' => 'admin', 'controller' => 'evaluate', 'action' => 'index'), 'default', true); ?>" >Click here to go back</a>
+</h3>
 <?php } ?>

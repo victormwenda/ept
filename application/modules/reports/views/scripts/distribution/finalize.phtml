@@ -1,3 +1,8 @@
+<style>
+    td {
+        vertical-align: middle !important;
+    }
+</style>
 <?php
 $adminSession = new Zend_Session_Namespace('administrators');
 if (count($this->shipment) > 0) { ?>
@@ -71,7 +76,9 @@ if (count($this->shipment) > 0) { ?>
 <h4 style="width:100%;height:50px;border-bottom:1px solid #777;">
     <div style="font-size:22.5px;line-height:36px;color:#333;float:left;">
         You are currently generating reports for Shipment&nbsp;
-        <strong><?php echo $this->shipment[0]['shipment_code']; ?></strong>
+        <strong>
+            <?php echo $this->shipment[0]['shipment_code']; ?>
+        </strong>
     </div>
     <div style="margin-top:10px;">
         <a href="<?php echo $this->url(array('module' => 'reports', 'controller' => 'finalize', 'action' => 'index'), 'default', true); ?>" class="btn btn-primary" style="float:right;">
@@ -105,17 +112,15 @@ if (count($this->shipment) > 0) { ?>
 <table cellpadding="0" cellspacing="0" border="0" class="table table-striped table-bordered table-hover" id="shipmentEvaluation" style="margin:10px auto;">
     <thead>
         <tr>
+            <th class="hidden"></th>
             <th style="width:40px;"></th>
             <th>Participant/Tester</th>
-<?php
-    if ($this->shipment[0]['scheme_type'] != 'tb') { ?>
+            <?php if ($this->shipment[0]['scheme_type'] != 'tb') { ?>
             <th>Response Score</th>
             <th>Documentation Score</th>
-<?php
-    } else { ?>
+            <?php } else { ?>
             <th>Score</th>
-<?php
-    } ?>
+            <?php } ?>
             <th>Result</th>
             <th>Comments (if any)</th>
         </tr>
@@ -148,6 +153,9 @@ if (count($this->shipment) > 0) { ?>
         $shipment['shipment_score'] = (isset($shipment['shipment_score']) && $shipment['shipment_score'] != "") ? $shipment['shipment_score'] : '0';
         $shipment['documentation_score'] = (isset($shipment['documentation_score']) && $shipment['documentation_score'] != "") ? $shipment['documentation_score'] : '0'; ?>
         <tr>
+            <td class="hidden ">
+                <?php echo $shipment['sorting_unique_identifier'] ?>
+            </td>
             <td class="center ">
                 <a href="javascript:void(0);" class="btn btn-xs clicker <?php echo $btnClassName; ?>">
                     <i class="icon-plus"></i>
@@ -341,22 +349,22 @@ if (count($this->shipment) > 0) { ?>
         "bScrollCollapse": true,
         "sPaginationType": "bootstrap",
         "bRetrieve": true,
+        "bdestroy": false,
         "aoColumns": [
-          {"bSortable": false, "aTargets": [0]},
-          {"sClass": "center"},
-<?php
-    if ($this->shipment[0]['scheme_type'] != 'tb') { ?>
-          {"sClass":"center"},
-<?php
-    } ?>
-          {"sClass": "center"},
-          {"sClass": "center"},
-          {"bSearchable": false, "bVisible": false}
-        ],
-        "aaSorting": [[1, "asc"]],
-        "bProcessing": true
-      });
+            { "aTargets": [ 0 ] },
+            { "bSortable": false, "aTargets": [1] },
+            { "sClass": "", "iDataSort": 0 },
+            <?php if ($this->shipment[0]['scheme_type'] != 'tb') { ?>
+            { "sClass": "center" },
+            <?php } ?>
+            { "sClass": "center" },
+            { "sClass": "center" },
+            { "bSearchable": false, "bVisible": false }
+      ],
+      "aaSorting": [[0, "asc"]],
+      "bProcessing": true
     });
+  });
 
     function fnFormatDetails(oTable, nTr) {
       var aData = oTable.fnGetData(nTr);

@@ -24,8 +24,6 @@ fieldset{ border:none}
 /*======= width =======*/
 .main {	margin: 0 auto;	position: relative;	width:950px; }
 
-
-
 a{ color:#0c80a5; text-decoration:none; outline:none}
 a:hover{ text-decoration:underline}
 		
@@ -33,7 +31,6 @@ section ul.list{margin:0; padding:0; list-style:none;}
 section ul.list li{background:url(../images/marker1.gif) top left no-repeat; background-position:0 1px; margin:0; padding-left:26px; padding-bottom:12px }
 section ul.list li a{color:#0c80a5; text-decoration:none; line-height:18px} 
 section ul.list li a:hover { text-decoration:none; color:#f07700; }
-
 
 section ul.list1{margin:0; padding:0; list-style:none;}
 section ul.list1 li{ margin-bottom:6px; overflow:hidden }
@@ -69,7 +66,6 @@ nav ul { border-style: none !important;}
 .link-2 { display:inline-block; float:left; line-height:37px; background: url(../images/bg_link.png) top left no-repeat; width:126px; text-align:center; color:#fff; text-transform:uppercase; text-decoration:none; font-size:16px; }
 .link-2:hover { background: url(../images/bg_link-act.png) top left no-repeat; text-decoration:none; color:#fff}
 
-
 /*header*/
 header {font-size:0.75em; color:#FFFFFF; background:#fff; height:185px; position:relative; z-index: 999}
 header .indent{ top:95px; right:3px; position:absolute; padding:0; width:191px}
@@ -79,12 +75,8 @@ header .nav{position:relative; padding:0; margin:0; z-index:9000000}
 header h1 {}
 header h1 a {}
 
-
 .button1{color:#fff; background:url(../images/button1.gif) top left no-repeat; width:114px; text-transform:uppercase; text-align:center; line-height:35px; font-weight:bold; display:block; text-decoration:none; position:absolute; right:120px; top:0px; font-size:18px; font-family: "Trebuchet MS", Arial, Helvetica, sans-serif; padding-bottom:21px}
 .button1:hover{text-decoration:none; color:#2fc5fc }
-
-
-
 
 /*--- superfish dropdown menu begin ---*/
 .sf-menu {margin:0; padding:0;	list-style: none; z-index:90000; position:relative } 
@@ -118,7 +110,6 @@ header h1 a {}
 .sf-menu li:hover ul,
 .sf-menu li.sfHover ul {	left: 0; z-index: 99;}
 
-				
 ul.sf-menu li:hover li ul,
 ul.sf-menu li.sfHover li ul { top:-999em;}
 ul.sf-menu li li:hover ul,
@@ -217,8 +208,6 @@ footer ul.list-1 .first{background:none;}
 footer ul.list-1 .first a{ padding-left:0px}
 footer ul.list-1 li .current{ text-decoration:underline; color:#797979  }
 
-
-
 .jamp{ width:40px; margin-left:6px}
 select{font-size:.84em; color:#2d3331; height:20px}
 	
@@ -262,33 +251,9 @@ textarea{
 	padding-top:5px;
 	padding-bottom:5px;
 	margin-bottom:11px;
-	overflow:auto}
+	overflow:auto
+}
 
-
-	/*#loopedSlider .container{ width:950px; height:404px;  overflow:hidden; position:relative; cursor:pointer}
-	.slides { position:absolute; top:0; left:0; }
-	ul.slides { position:absolute; top:0; left:0; list-style:none; padding:0; margin:0; }
-	.slides .div,ul.slides li { position:absolute; top:0; width:950px; display:none; padding:0; margin:0; }
-	.info{ position:absolute; top:120px; left:28px; z-index:9000000; color:#252525; width:300px; height:160px; font-size:31px; line-height:1.2em}
-	.info span{ color:#0d80a4; font-size:36px; text-transform:uppercase}
-	
-	#loopedSlider{ margin:0 auto; width:950px; position:relative; clear:both; }
-	ul.pagination { list-style:none; padding:0; margin:0; background:url(../images/bg_1.gif); width:909px; height:30px; padding:2px 0px 0px 41px }
-	ul.pagination li  { float:left; margin-right:2px}
-	ul.pagination li a{color:#d9d9d9; width:28px; line-height:29px; text-align:center; background:url(../images/button.png) top left no-repeat; display:block; float:left; text-decoration:none; font-size:15px }
-	ul.pagination li.active a { color:#3e1f23; background:url(../images/button-act.png) top left no-repeat; border:none; text-decoration:none }
-	ul.pagination li a:hover { color:#3e1f23; background:url(../images/button-act.png) top left no-repeat; border:none; text-decoration:none}
-
-
-*/
-	
-/* * Required */
-/*#loopedCarousel{ width:880px; position:relative; clear:both; margin-left:40px}
-#loopedCarousel {height:210px;  }
-#loopedCarousel .container2 { width:880px; height:210px; overflow:hidden; position:relative; margin:0; }
-#loopedCarousel .slides { position:absolute; top:0; left:0; }
-#loopedCarousel .slides .div { position:absolute; top:0; width:176px; margin-right:10px; display:none;}*/
-/* * Optional*/
 .but1{ position:absolute; left:0; top:48px; }
 /*#loopedCarousel .previous{background:url(../images/button-1.gif) top left no-repeat; width:26px; height:105px; display:block; float:left; text-decoration:none; margin-left:-43px; position:relative}
 #loopedCarousel .next{background:url(../images/button-2.gif) top left no-repeat; text-decoration:none; width:26px; height:105px; display:block; float:right; margin-left:884px; position:relative; }
@@ -298,7 +263,6 @@ button, input, select, textarea {
   font-family : inherit;
   font-size   : 100%;
 }
-
 
 .mandatory{
 	color:red;
@@ -315,3 +279,5 @@ ul.sf-menu > li > a,section h2,.info, h3,.link-2, h1,.list1,.info span{
 input.numberInput {
 	text-align: right;
 }
+
+.hidden { display: none; }

@@ -394,7 +394,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
         if($authNameSpace->is_ptcc_coordinator) {
             $sQuery = $sQuery->where("country IN (".implode(",",$authNameSpace->countries).")");
         }
-        $sQuery = $sQuery->order("unique_identifier");
+        $sQuery = $sQuery->order(new Zend_Db_Expr("CASE WHEN unique_identifier REGEXP '\d*' THEN CAST(CAST(unique_identifier AS DECIMAL) AS CHAR) ELSE TRIM(LEADING '0' FROM unique_identifier) END"));
         return $this->fetchAll($sQuery);
     }
 

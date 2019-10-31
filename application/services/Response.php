@@ -155,7 +155,7 @@ class Application_Service_Response {
             $sql = $sql->where("p.country IN (".implode(",",$authNameSpace->countries).")");
         }
         $sql = $sql->group('s.shipment_id')
-                   ->order("p.unique_identifier");
+                   ->order(new Zend_Db_Expr("CASE WHEN p.unique_identifier REGEXP '\d*' THEN CAST(CAST(p.unique_identifier AS DECIMAL) AS CHAR) ELSE TRIM(LEADING '0' FROM p.unique_identifier) END"));
         return $db->fetchAll($sql);
     }
 
@@ -184,13 +184,16 @@ class Application_Service_Response {
                 ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id')
                 ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id')
                 ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type')
-                ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id')
+                ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array(
+                    'sorting_unique_identifier' => new Zend_Db_Expr("CASE WHEN p.unique_identifier REGEXP '\d*' THEN CAST(CAST(p.unique_identifier AS DECIMAL) AS CHAR) ELSE TRIM(LEADING '0' FROM p.unique_identifier) END"),
+                    'p.*'
+                ))
                 ->where("s.shipment_id = ?", $shipmentId);
         $authNameSpace = new Zend_Session_Namespace('administrators');
         if(isset($authNameSpace) && $authNameSpace->is_ptcc_coordinator) {
             $sql = $sql->where("p.country IN (".implode(",",$authNameSpace->countries).")");
         }
-        $sql = $sql->order("p.unique_identifier");
+        $sql = $sql->order(new Zend_Db_Expr("CASE WHEN p.unique_identifier REGEXP '\d*' THEN CAST(CAST(p.unique_identifier AS DECIMAL) AS CHAR) ELSE TRIM(LEADING '0' FROM p.unique_identifier) END"));
         $shipmentResult = $db->fetchAll($sql);
         return $shipmentResult;
     }

@@ -66,17 +66,6 @@ table th:only-child{
     border-radius: 6px 6px 0 0;
 }
 
-/* Other Code 
-table th:first-child{
-  border-radius:10px 0 0 10px;
-}
-
-table th:last-child{
-  border-radius:0 10px 10px 0;
-}
-*/
-
-
 .css_btn_class {
 	font-size:18px;
 	font-family:Arial Black;
