@@ -1524,8 +1524,8 @@ class Application_Service_Evaluation {
                     $counter++;
                 }
                 if ($qcDoneOnTime) {
-                    $timeSinceQcDoneToLastTest = $qcDoneOnTime - $shipmentResult[$i]['qc_date'];
-                    $qcDoneOnTime = round($timeSinceQcDoneToLastTest / (60 * 60 * 24)) < 31;
+                    $secondsSinceQcDoneToLastTest = strtotime(Pt_Commons_General::dbDateToString($lastTestDate)) - strtotime(Pt_Commons_General::dbDateToString($shipmentResult[$i]['qc_date']));
+                    $qcDoneOnTime = round($secondsSinceQcDoneToLastTest / (60 * 60 * 24)) < 31;
                 }
                 $shipmentResult[$i]['qc_done_on_time'] = $qcDoneOnTime;
                 $shipmentResult[$i]['shipment_score'] = $shipmentScore;
@@ -1782,7 +1782,9 @@ class Application_Service_Evaluation {
                         'p.unique_identifier',
                         'p.first_name',
                         'p.last_name',
-                        'p.status'))
+                        'p.status',
+                        'sorting_unique_identifier' => new Zend_Db_Expr("CASE WHEN p.unique_identifier REGEXP '\d*' THEN CAST(CAST(p.unique_identifier AS DECIMAL) AS CHAR) ELSE TRIM(LEADING '0' FROM p.unique_identifier) END")
+                    ))
                     ->join(array('c' => 'countries'), 'c.id=p.country', array('country_name' => 'c.iso_name'))
                     ->joinLeft(array('res' => 'r_results'), 'res.result_id=sp.final_result', array('result_name'))
                     ->joinLeft(array('ec' => 'r_evaluation_comments'), 'ec.comment_id=sp.evaluation_comment', array(

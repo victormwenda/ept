@@ -193,7 +193,7 @@ class Application_Service_Response {
         if(isset($authNameSpace) && $authNameSpace->is_ptcc_coordinator) {
             $sql = $sql->where("p.country IN (".implode(",",$authNameSpace->countries).")");
         }
-        $sql = $sql->order(new Zend_Db_Expr("CASE WHEN p.unique_identifier REGEXP '\d*' THEN CAST(CAST(p.unique_identifier AS DECIMAL) AS CHAR) ELSE TRIM(LEADING '0' FROM p.unique_identifier) END"));
+        $sql = $sql->order(new Zend_Db_Expr("sorting_unique_identifier"));
         $shipmentResult = $db->fetchAll($sql);
         return $shipmentResult;
     }
