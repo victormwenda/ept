@@ -614,7 +614,7 @@ $dtFormat=  $vHelper->getDateFormat();
     $("#updateResultsForm").submit(function(event) {
       var errors = formValidator.numberOfInvalids();
       if (errors) {
-        $('html body').animate({
+        $('html,body').animate({
           scrollTop: $(formValidator.errorList[0].element).offset().top - 100
         }, 1000);
         event.preventDefault();

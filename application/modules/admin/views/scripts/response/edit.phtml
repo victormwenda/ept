@@ -610,7 +610,7 @@ if ($this->scheme == 'tb') { ?>
     $("#updateResultsForm").submit(function(event) {
       var errors = formValidator.numberOfInvalids();
       if (errors) {
-        $('html body').animate({
+        $('html,body').animate({
           scrollTop: $(formValidator.errorList[0].element).offset().top - 100
         }, 1000);
         event.preventDefault();
@@ -652,10 +652,10 @@ if ($this->scheme == 'tb') { ?>
   function validateNow(){
 <?php
     if ($this->scheme == 'tb') { ?>
-    if (!formValidator.valid()) {
-      formValidator.showErrors();
-    }
-    return formValidator.valid();
+        if (!formValidator.valid()) {
+          formValidator.showErrors();
+        }
+        return formValidator.valid();
 <?php
     } else { ?>
     $.blockUI();
