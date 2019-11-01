@@ -77,6 +77,8 @@ class Admin_EvaluateController extends Zend_Controller_Action {
             $this->view->customField1 = $globalConfigDb->getValue('custom_field_1');
             $this->view->customField2 = $globalConfigDb->getValue('custom_field_2');
             $this->view->haveCustom = $globalConfigDb->getValue('custom_field_needed');
+            $instrumentDb = new Application_Model_DbTable_Instruments();
+            $this->view->instruments = $instrumentDb->getInstruments($pid, true);
         } else {
             $this->_redirect("/admin/evaluate/");
         }
