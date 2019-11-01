@@ -211,7 +211,7 @@ class Application_Service_Evaluation {
             ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id')
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type')
             ->join(array('p' => 'participant'), 'p.participant_id = sp.participant_id', array(
-                'sorting_unique_identifier' => new Zend_Db_Expr("CASE WHEN p.unique_identifier REGEXP '\d*' THEN CAST(CAST(p.unique_identifier AS DECIMAL) AS CHAR) ELSE TRIM(LEADING '0' FROM p.unique_identifier) END"),
+                'sorting_unique_identifier' => new Zend_Db_Expr("LPAD(p.unique_identifier, 10, '0')"),
                 'p.*'
             ))
             ->where("s.shipment_id = ?", $shipmentId)
@@ -1165,7 +1165,7 @@ class Application_Service_Evaluation {
                 'last_name',
                 'lab_name',
                 'unique_identifier',
-                'sorting_unique_identifier' => new Zend_Db_Expr("CASE WHEN p.unique_identifier REGEXP '\d*' THEN CAST(CAST(p.unique_identifier AS DECIMAL) AS CHAR) ELSE TRIM(LEADING '0' FROM p.unique_identifier) END")
+                'sorting_unique_identifier' => new Zend_Db_Expr("LPAD(p.unique_identifier, 10, '0')")
             ))
             ->joinLeft(array('res' => 'r_results'), 'res.result_id=sp.final_result')
             ->where("s.shipment_id = ?", $shipmentId)
@@ -1221,7 +1221,7 @@ class Application_Service_Evaluation {
                 'p.first_name',
                 'p.last_name',
                 'p.status',
-                'sorting_unique_identifier' => new Zend_Db_Expr("CASE WHEN p.unique_identifier REGEXP '\d*' THEN CAST(CAST(p.unique_identifier AS DECIMAL) AS CHAR) ELSE TRIM(LEADING '0' FROM p.unique_identifier) END")
+                'sorting_unique_identifier' => new Zend_Db_Expr("LPAD(p.unique_identifier, 10, '0')")
             ))
             ->join(array('c' => 'countries'), 'c.id=p.country', array('country_name' => 'c.iso_name'))
             ->joinLeft(array('res' => 'r_results'), 'res.result_id=sp.final_result', array('result_name'))
@@ -1783,7 +1783,7 @@ class Application_Service_Evaluation {
                         'p.first_name',
                         'p.last_name',
                         'p.status',
-                        'sorting_unique_identifier' => new Zend_Db_Expr("CASE WHEN p.unique_identifier REGEXP '\d*' THEN CAST(CAST(p.unique_identifier AS DECIMAL) AS CHAR) ELSE TRIM(LEADING '0' FROM p.unique_identifier) END")
+                        'sorting_unique_identifier' => new Zend_Db_Expr("LPAD(p.unique_identifier, 10, '0')")
                     ))
                     ->join(array('c' => 'countries'), 'c.id=p.country', array('country_name' => 'c.iso_name'))
                     ->joinLeft(array('res' => 'r_results'), 'res.result_id=sp.final_result', array('result_name'))

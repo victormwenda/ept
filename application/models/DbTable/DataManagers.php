@@ -239,7 +239,7 @@ class Application_Model_DbTable_DataManagers extends Zend_Db_Table_Abstract {
             ->from(array('u' => $this->_name))
             ->joinLeft(array('pmm'=>'participant_manager_map'),'pmm.dm_id=u.dm_id',array())
             ->joinLeft(array('p'=>'participant'),'p.participant_id = pmm.participant_id', array(
-                'sorting_unique_identifier' => new Zend_Db_Expr("CASE WHEN p.unique_identifier REGEXP '\d*' THEN CAST(CAST(p.unique_identifier AS DECIMAL) AS CHAR) ELSE TRIM(LEADING '0' FROM p.unique_identifier) END")
+                'sorting_unique_identifier' => new Zend_Db_Expr("LPAD(p.unique_identifier, 10, '0')")
             ))
             ->group('u.dm_id');
 	    $authNameSpace = new Zend_Session_Namespace('administrators');
