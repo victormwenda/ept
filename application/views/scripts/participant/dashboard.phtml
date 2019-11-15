@@ -22,7 +22,7 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
 </section>
 <section class="content">
     <?php if (count($this->monthly_indicators) > 0) { ?>
-        <div class="box">
+        <div id="monthlyIndicatorsContainer" class="box">
             <div class="box-body">
                 <h3 class="txt text-info">Monthly Indicators - <?php echo date('M Y'); ?></h3>
                 <?php foreach ($this->monthly_indicators as $monthly_indicator) {
@@ -65,6 +65,7 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
                     <p> &nbsp;&nbsp;&nbsp;
                         <input name="submitbtn" class="btn btn-success" type="submit" value="Submit" onclick="javascript:submitMonthlyIndicatorForm()" />
                     </p>
+                    <p id="submitMessage"></p>
                 </div>
             </div>
         </div>
@@ -440,8 +441,24 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
         $.post(
             "<?php echo $this->url(array('module'=>'default','controller' =>'participant', 'action' => 'submit-monthly-indicators')); ?>",
             monthlyIndicators,
-            function(data) {
-                console.log(data)
+            function(responseBody, response) {
+                var monthlyIndicatorsContainer = $("#monthlyIndicatorsContainer").css("background-color", "#fff");
+                if (response == 'success') {
+                    $("#submitMessage").text("Successfully submitted");
+                    monthlyIndicatorsContainer = monthlyIndicatorsContainer.css({backgroundColor: "#00a65a"});
+                    setTimeout(function() {
+                        $("#submitMessage").text("");
+                    }, 5000);
+                } else {
+                    $("#submitMessage").text(response);
+                    monthlyIndicatorsContainer = monthlyIndicatorsContainer.css("background-color", "#ff0000")
+                }
+                monthlyIndicatorsContainer.animate({backgroundColor: "#fff"}, 1000);
+            }).fail(function(err) {
+                $("#submitMessage").text(err.statusText);
+                $("#monthlyIndicatorsContainer").css("background-color", "#fff")
+                    .css("background-color", "#FF0000")
+                    .animate({backgroundColor: "#fff"}, 1000);
             });
     }
 
