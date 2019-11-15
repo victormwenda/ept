@@ -21,35 +21,55 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
     <h1> Dashboard </h1>
 </section>
 <section class="content">
-        <?php
-	    if(count($activeSchemes) > 0 && in_array('vl',$activeSchemes)) {
-	    ?>
+    <?php if (count($this->monthly_indicators) > 0) { ?>
         <div class="box">
-		    <div class="box-body">
-			    <h3 class="txt text-info">Dried Tube Specimen - HIV Viral Load</h3>
-			    <table cellpadding="0" cellspacing="0" border="0" class="display datatable table table-bordered table-hover table-striped " id="dtsViralLoadTable">
-				    <thead>
-					<tr>
-					    <th>Shipment Date</th>
-					    <th>Shipment Code</th>
-					    <th>Participant Id</th>
-					    <th>Participant</th>
-					    <th>Response Date</th>
-					    <th>Performance</th>
-					</tr>
-				    </thead>
-				    <tbody>
-					<tr>
-					  <td colspan="6" class="dataTables_empty">Loading data from server</td>
-					</tr>
-				    </tbody>
-			    </table>
-		    </div>
-		</div>
-		<?php } ?>
-		<?php
-	        if(count($activeSchemes) > 0 && in_array('tb',$activeSchemes)) {
-	        ?>
+            <div class="box-body">
+                <h3 class="txt text-info">Monthly Indicators - <?php echo date('M Y'); ?></h3>
+                <?php foreach ($this->monthly_indicators as $monthly_indicator) {
+                    $attributes = array();
+                    if (isset($monthly_indicator['attributes'])) {
+                        $attributes = json_decode($monthly_indicator['attributes'], true);
+                    } ?>
+                <h3 class="txt text-info"><?php echo $monthly_indicator['unique_identifier'].' - '.$monthly_indicator['participantName'] ?></h3>
+                <table class="table table-bordered table-striped" style="width:100%; margin: 10px auto;">
+                    <tr class="dark">
+                        <td style="width: 25%;">
+                            <label>How many Xpert MTB/RIF and MTB Ultra tests have been conducted by this site in the last full month?</label>
+                        </td>
+                        <td style="width: 25%;">
+                            <input type="text" name="countTestsConductedOverMonth_<?php echo $monthly_indicator['participant_id'] ?>" id="countTestsConductedOverMonth_<?php echo $monthly_indicator['participant_id'] ?>"
+                                   class="form-control zeroDecimal numberInput"
+                                   value="<?php if(isset($attributes['countTestsConductedOverMonth'])) { echo $attributes['countTestsConductedOverMonth']; }?>" />
+                        </td>
+                        <td style="width: 25%;">
+                            <label>How many errors occurred during testing in the last full month?</label>
+                        </td>
+                        <td style="width: 25%;">
+                            <input type="text" name="countErrorsEncounteredOverMonth_<?php echo $monthly_indicator['participant_id'] ?>" id="countErrorsEncounteredOverMonth_<?php echo $monthly_indicator['participant_id'] ?>"
+                                   class="form-control zeroDecimal numberInput"
+                                   value="<?php if(isset($attributes['countErrorsEncounteredOverMonth'])) { echo $attributes['countErrorsEncounteredOverMonth']; }?>" />
+                        </td>
+                    </tr>
+                    <tr class="light">
+                        <td>
+                            <label>What were the error codes?</label>
+                        </td>
+                        <td colspan="3">
+                            <input type="text" name="errorCodesEncounteredOverMonth_<?php echo $monthly_indicator['participant_id'] ?>" id="errorCodesEncounteredOverMonth_<?php echo $monthly_indicator['participant_id'] ?>" class="form-control"
+                                   value="<?php if(isset($attributes['errorCodesEncounteredOverMonth'])) { echo $attributes['errorCodesEncounteredOverMonth']; }?>" />
+                        </td>
+                    </tr>
+                </table>
+                <?php } ?>
+                <div style="margin: 0px auto 0px auto; text-align: center;">
+                    <p> &nbsp;&nbsp;&nbsp;
+                        <input name="submitbtn" class="btn btn-success" type="submit" value="Submit" onclick="javascript:submitMonthlyIndicatorForm()" />
+                    </p>
+                </div>
+            </div>
+        </div>
+    <?php } ?>
+	<?php if (count($activeSchemes) > 0 && in_array('tb',$activeSchemes)) { ?>
 		<div class="box">
                     <div class="box-body">
 			    <h3 class="txt text-info">Dried Tube Specimen - Tuberculosis</h3>
@@ -72,85 +92,7 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
 			    </table>
 		    </div>
 		</div>
-		<?php } ?>
-		<?php
-	        if(count($activeSchemes) > 0 && in_array('eid',$activeSchemes)) {
-	        ?>
-		<div class="box">
-                    <div class="box-body">
-			    <h3 class="txt text-info">Dried Blood Spot - Early Infant Diagnosis</h3>
-			    <table cellpadding="0" cellspacing="0" border="0" class="display datatable table table-bordered table-hover table-striped " id="earlyInfantDiagnosisTable">
-				    <thead>
-					<tr>
-					    <th>Shipment Date</th>
-					    <th>Shipment Code</th>
-						<th>Participant Id</th>
-					    <th>Participant</th>
-					    <th>Response Date</th>
-					    <th>Performance</th>
-					</tr>
-				    </thead>
-				    <tbody>
-					<tr>
-					  <td colspan="6" class="dataTables_empty">Loading data from server</td>
-					</tr>
-				    </tbody>
-			    </table>
-		    </div>
-		</div>
-		<?php } ?>
-		<?php
-	        if(count($activeSchemes) > 0 && in_array('dts',$activeSchemes)) {
-	        ?>
-		<div class="box">
-                    <div class="box-body">
-			    <h3 class="txt text-info">Dried Tube Specimen - HIV Serology</h3>
-			    <table cellpadding="0" cellspacing="0" border="0" class="display datatable table table-bordered table-hover table-striped " id="dtsHIVSerologyTable">
-				    <thead>
-					<tr>
-					    <th>Shipment Date</th>
-					    <th>Shipment Code</th>
-						<th>Participant Id</th>
-					    <th>Participant</th>
-					    <th>Response Date</th>
-					    <th>Performance</th>
-					</tr>
-				    </thead>
-				    <tbody>
-					<tr>
-					  <td colspan="6" class="dataTables_empty">Loading data from server</td>
-					</tr>
-				    </tbody>
-			    </table>
-		    </div>
-		</div>
-		<?php } ?>
-		<?php
-	        if(count($activeSchemes) > 0 && in_array('dbs',$activeSchemes)) {
-	        ?>
-		<div class="box">
-                    <div class="box-body">
-			    <h3 class="txt text-info">Dried Blood Spot - HIV Serology</h3>
-			    <table cellpadding="0" cellspacing="0" border="0" class="display datatable table table-bordered table-hover table-striped " id="dbsHIVSerologyTable">
-				    <thead>
-					<tr>
-					    <th>Shipment Date</th>
-					    <th>Shipment Code</th>
-						<th>Participant Id</th>
-					    <th>Participant</th>
-					    <th>Response Date</th>
-					    <th>Performance</th>
-					</tr>
-				    </thead>
-				    <tbody>
-					<tr>
-					  <td colspan="6" class="dataTables_empty">Loading data from server</td>
-					</tr>
-				    </tbody>
-			    </table>
-		    </div>
-		</div>
-		<?php } ?>
+	<?php } ?>
 		<div class="box">
                 <div class="box-body">
 					<h3 class="txt text-info">Schemes Overview</h3>
@@ -172,60 +114,50 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
 					</table>
 				</div>
 		</div>
-
-
-
-<div class="box">
-                <div class="box-body">
-					<h3 class="txt text-info">All Shipments</h3>
-
-					<?php
-					if($this->globalQcAccess=='yes' && (isset($authNameSpace->qc_access) && $authNameSpace->qc_access=='yes')){
-					?>
-					<table class="table">
-						<tr>
-							<td style="width:100%;">
-								<select id="qualityChecked" name="qualityChecked" onchange="schemeTable.fnDraw()"  class="form-control">
-								<option value=""> -- Filter QC Checked Responses --</option>
-								<option value="yes">Show QC Checked Responses</option>
-								<option value="no">Show Not QC Checked Responses</option>
-								</select>
-							</td>
-						</tr>
-					</table>
-					<input type="hidden" name="participantMapId" id="participantMapId"/>
-					<div style="padding-top:20px;display:none;" id="qcTopButton">
-						<a href="javascript:void(0)" onclick="checkQcStatus()" class="btn btn-primary btn-sm" style="margin-bottom: 15px;"><i class="fa fa-cogs"></i>&nbsp;<b>(<span id="qcCount">0</span>) Selected for Bulk Quality Check</b></a>
-					</div>
-					<?php
-					}
-					?>
-			<table cellpadding="0" cellspacing="0" border="0" class="display datatable table table-bordered table-hover table-striped " id="allSchemeTable">
-				<thead>
-				    <tr>
-					<th></th>
-					<th style="width:30px;">Year</th>
-					<th style="width:100px;">Shipment<br/>Date</th>
-					<th style="width:50px;">Scheme</th>
-					<th style="width:100px;">Shipment Code</th>
-					<th>Participant Id</th>
-					<th>Participant</th>
-					<th style="width:100px;">Response<br/>Date</th>
-					<th style="width:100px;">Action</th>
-					<th>Report</th>
-
-				    </tr>
-				</thead>
-				<tbody>
-				    <tr>
-					<td colspan="10" class="dataTables_empty">Loading data from server</td>
-				    </tr>
-				</tbody>
-			</table>
-				</div>
+        <div class="box">
+            <div class="box-body">
+                <h3 class="txt text-info">All Shipments</h3>
+                <?php if ($this->globalQcAccess=='yes' && (isset($authNameSpace->qc_access) && $authNameSpace->qc_access=='yes')) { ?>
+                <table class="table">
+                    <tr>
+                        <td style="width:100%;">
+                            <select id="qualityChecked" name="qualityChecked" onchange="schemeTable.fnDraw()"  class="form-control">
+                            <option value=""> -- Filter QC Checked Responses --</option>
+                            <option value="yes">Show QC Checked Responses</option>
+                            <option value="no">Show Not QC Checked Responses</option>
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+                <input type="hidden" name="participantMapId" id="participantMapId"/>
+                <div style="padding-top:20px;display:none;" id="qcTopButton">
+                    <a href="javascript:void(0)" onclick="checkQcStatus()" class="btn btn-primary btn-sm" style="margin-bottom: 15px;"><i class="fa fa-cogs"></i>&nbsp;<b>(<span id="qcCount">0</span>) Selected for Bulk Quality Check</b></a>
+                </div>
+                <?php } ?>
+                <table cellpadding="0" cellspacing="0" border="0" class="display datatable table table-bordered table-hover table-striped " id="allSchemeTable">
+                    <thead>
+                        <tr>
+                        <th></th>
+                        <th style="width:30px;">Year</th>
+                        <th style="width:100px;">Shipment<br/>Date</th>
+                        <th style="width:50px;">Scheme</th>
+                        <th style="width:100px;">Shipment Code</th>
+                        <th>Participant Id</th>
+                        <th>Participant</th>
+                        <th style="width:100px;">Response<br/>Date</th>
+                        <th style="width:100px;">Action</th>
+                        <th>Report</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                        <td colspan="10" class="dataTables_empty">Loading data from server</td>
+                        </tr>
+                    </tbody>
+                </table>
 			</div>
+		</div>
 </section>
-
 <div class="deleteAction dialog" id="migrateBox">
 	<div style="padding:10px;">
         <span onClick="hidedefModal()" class="closeModal"></span>
@@ -236,13 +168,11 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
 				<td><input type="text" id="qcDate" name="qcDate"  style="width:180px;float:left;"  maxlength="11" value=""  class="isRequired form-control" readonly="readonly" /></td>
 			</tr>
 		</table>
-
 		<div class="box-footer" style="text-align: center">
 			<button class="btn btn-primary" onclick="submitQcForm();return false;">Submit</button>
 		</div>
     </div>
 </div>
-
 <script>
     var s1Table = null;
 	var s2Table = null;
@@ -251,82 +181,10 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
 	var s5Table = null;
 	sOneLastShipmentRow = [];
 	sOneLastShipmentRowColor = [];
-	<?php
-	if(count($activeSchemes) > 0 && in_array('vl',$activeSchemes)) {
-	?>
-	function dtsViralLoadSchemes(){
-		s1Table = $('#dtsViralLoadTable').dataTable({
-			"oLanguage": {
-			    "sLengthMenu": "_MENU_ records per page"
-			},
-			"bJQueryUI": false,
-			"bAutoWidth": false,
-			"bInfo": true,
-			"bScrollCollapse": true,
-			"sPaginationType": "full_numbers",
-			"bRetrieve": true,
-			"aoColumns": [
-			    {"sClass":"center"},
-			    {"sClass":"center"},
-			    {"sClass":"center"},
-			    {"sClass":"center"},
-			    {"sClass":"center"},
-			    {"sClass":"center"}
-			],
-			"fnRowCallback": function (nRow, aData, iDisplayIndex, iDisplayIndexFull) {
-			    if($.inArray(aData[1], sOneLastShipmentRow) == -1){
-				sOneLastShipmentRow = [];
-				sOneLastShipmentRow.push(aData[1]);
-				if($.inArray("#ecf1ef", sOneLastShipmentRowColor) == -1){
-				    sOneLastShipmentRowColor = [];
-				    sOneLastShipmentRowColor.push("#ecf1ef");
-				    $(nRow).attr("class","");
-				    $(nRow).css("background-color","#ecf1ef");
-				}else{
-				    sOneLastShipmentRowColor = [];
-				    sOneLastShipmentRowColor.push("#fffff2");
-				    $(nRow).attr("class","");
-				    $(nRow).css("background-color","#fffff2");
-				}
-			    }else{
-				if($.inArray("#ecf1ef", sOneLastShipmentRowColor) == -1){
-				    $(nRow).attr("class","");
-				    $(nRow).css("background-color","#fffff2");
-				}
-				if($.inArray("#fffff2", sOneLastShipmentRowColor) == -1){
-				    $(nRow).attr("class","");
-				    $(nRow).css("background-color","#ecf1ef");
-				}
-			    }
-			},
-			"aaSorting": [[ 0, "desc" ]],
-			"bProcessing": true,
-			"bServerSide": true,
-			"sAjaxSource": "<?php echo $this->url(array('module' => 'default', 'controller' => 'participant', 'action' => 'scheme', 'format' => 'html')); ?>",
-			"fnServerData": function ( sSource, aoData, fnCallback ) {
-			    aoData.push({"name": "scheme", "value": "vl"});
-			    $.ajax({
-				"dataType": 'json',
-				"type": "POST",
-				"url": sSource,
-				"data": aoData,
-				"success": function(json){
-				//    if(json.shipmentArray.length >0){
-				//
-				//    }
-				    fnCallback(json);
-				}
-			    });
-			}
-		});
-	}
-	<?php } ?>
 	sTwoLastShipmentRow = [];
 	sTwoLastShipmentRowColor = [];
-	<?php
-	if(count($activeSchemes) > 0 && in_array('tb',$activeSchemes)) {
-	?>
-	function dtsTuberculosisSchemes(){
+	<?php if (count($activeSchemes) > 0 && in_array('tb',$activeSchemes)) { ?>
+	function dtsTuberculosisSchemes() {
 		s2Table = $('#dtsTuberculosisTable').dataTable({
 			"oLanguage": {
 			    "sLengthMenu": "_MENU_ records per page"
@@ -338,12 +196,12 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
 			"sPaginationType": "full_numbers",
 			"bRetrieve": true,
 			"aoColumns": [
-			    {"sClass":"center"},
-			    {"sClass":"center"},
-			    {"sClass":"center"},
-			    {"sClass":"center"},
-			    {"sClass":"center"},
-			    {"sClass":"center"}
+			    { "sClass": "center" },
+			    { "sClass": "center" },
+			    { "sClass": "center" },
+			    { "sClass": "center" },
+			    { "sClass": "center" },
+			    { "sClass": "center" }
 			],
 			"fnRowCallback": function (nRow, aData, iDisplayIndex, iDisplayIndexFull) {
 			    if($.inArray(aData[1], sTwoLastShipmentRow) == -1){
@@ -390,235 +248,16 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
 	<?php } ?>
 	sThreeLastShipmentRow = [];
 	sThreeLastShipmentRowColor = [];
-	<?php
-	if(count($activeSchemes) > 0 && in_array('eid',$activeSchemes)) {
-	?>
-	function dbsEarlyInfantDiagnosisSchemes(){
-		s3Table = $('#earlyInfantDiagnosisTable').dataTable({
-			"oLanguage": {
-			    "sLengthMenu": "_MENU_ records per page"
-			},
-			"bJQueryUI": false,
-			"bAutoWidth": false,
-			"bInfo": true,
-			"bScrollCollapse": true,
-			"sPaginationType": "full_numbers",
-			"bRetrieve": true,
-			"aoColumns": [
-			    {"sClass":"center"},
-			    {"sClass":"center"},
-			    {"sClass":"center"},
-			    {"sClass":"center"},
-			    {"sClass":"center"},
-			    {"sClass":"center"}
-			],
-			"fnRowCallback": function (nRow, aData, iDisplayIndex, iDisplayIndexFull) {
-			    if($.inArray(aData[1], sThreeLastShipmentRow) == -1){
-				sThreeLastShipmentRow = [];
-				sThreeLastShipmentRow.push(aData[1]);
-				if($.inArray("#ecf1ef", sThreeLastShipmentRowColor) == -1){
-				    sThreeLastShipmentRowColor = [];
-				    sThreeLastShipmentRowColor.push("#ecf1ef");
-				    $(nRow).attr("class","");
-				    $(nRow).css("background-color","#ecf1ef");
-				}else{
-				    sThreeLastShipmentRowColor = [];
-				    sThreeLastShipmentRowColor.push("#fffff2");
-				    $(nRow).attr("class","");
-				    $(nRow).css("background-color","#fffff2");
-				}
-			    }else{
-				if($.inArray("#ecf1ef", sThreeLastShipmentRowColor) == -1){
-				    $(nRow).attr("class","");
-				    $(nRow).css("background-color","#fffff2");
-				}
-				if($.inArray("#fffff2", sThreeLastShipmentRowColor) == -1){
-				    $(nRow).attr("class","");
-				    $(nRow).css("background-color","#ecf1ef");
-				}
-			    }
-			},
-			"aaSorting": [[ 0, "desc" ]],
-			"bProcessing": true,
-			"bServerSide": true,
-			"sAjaxSource": "<?php echo $this->url(array('module' => 'default', 'controller' => 'participant', 'action' => 'scheme', 'format' => 'html')); ?>",
-			"fnServerData": function ( sSource, aoData, fnCallback ) {
-			    aoData.push({"name": "scheme", "value": "eid"});
-			    $.ajax({
-				"dataType": 'json',
-				"type": "POST",
-				"url": sSource,
-				"data": aoData,
-				"success": fnCallback
-			    });
-			}
-		});
-	}
-	<?php } ?>
-	sFourLastShipmentRow = [];
-	sFourLastShipmentRowColor = [];
-	<?php
-	if(count($activeSchemes) > 0 && in_array('dts',$activeSchemes)) {
-	?>
-	function dtsHIVSerologySchemes(){
-		s4Table = $('#dtsHIVSerologyTable').dataTable({
-			"oLanguage": {
-			    "sLengthMenu": "_MENU_ records per page"
-			},
-			"bJQueryUI": false,
-			"bAutoWidth": false,
-			"bInfo": true,
-			"bScrollCollapse": true,
-			"sPaginationType": "full_numbers",
-			"bRetrieve": true,
-			"aoColumns": [
-			    {"sClass":"center"},
-			    {"sClass":"center"},
-			    {"sClass":"center"},
-			    {"sClass":"center"},
-			    {"sClass":"center"},
-			    {"sClass":"center"}
-			],
-			"fnRowCallback": function (nRow, aData, iDisplayIndex, iDisplayIndexFull) {
-			    if($.inArray(aData[1], sFourLastShipmentRow) == -1){
-				sFourLastShipmentRow = [];
-				sFourLastShipmentRow.push(aData[1]);
-				if($.inArray("#ecf1ef", sFourLastShipmentRowColor) == -1){
-				    sFourLastShipmentRowColor = [];
-				    sFourLastShipmentRowColor.push("#ecf1ef");
-				    $(nRow).attr("class","");
-				    $(nRow).css("background-color","#ecf1ef");
-				}else{
-				    sFourLastShipmentRowColor = [];
-				    sFourLastShipmentRowColor.push("#fffff2");
-				    $(nRow).attr("class","");
-				    $(nRow).css("background-color","#fffff2");
-				}
-			    }else{
-				if($.inArray("#ecf1ef", sFourLastShipmentRowColor) == -1){
-				    $(nRow).attr("class","");
-				    $(nRow).css("background-color","#fffff2");
-				}
-				if($.inArray("#fffff2", sFourLastShipmentRowColor) == -1){
-				    $(nRow).attr("class","");
-				    $(nRow).css("background-color","#ecf1ef");
-				}
-			    }
-			},
-			"aaSorting": [[ 0, "desc" ]],
-			"bProcessing": true,
-			"bServerSide": true,
-			"sAjaxSource": "<?php echo $this->url(array('module' => 'default', 'controller' => 'participant', 'action' => 'scheme', 'format' => 'html')); ?>",
-			"fnServerData": function ( sSource, aoData, fnCallback ) {
-			    aoData.push({"name": "scheme", "value": "dts"});
-			    $.ajax({
-				"dataType": 'json',
-				"type": "POST",
-				"url": sSource,
-				"data": aoData,
-				"success": fnCallback
-			    });
-			}
-		});
-	}
-	<?php } ?>
 	sFiveLastShipmentRow = [];
 	sFiveLastShipmentRowColor = [];
-	<?php
-	if(count($activeSchemes) > 0 && in_array('dbs',$activeSchemes)) {
-	?>
-	function dbsHIVSerologySchemes(){
-		s4Table = $('#dbsHIVSerologyTable').dataTable({
-			"oLanguage": {
-			    "sLengthMenu": "_MENU_ records per page"
-			},
-			"bJQueryUI": false,
-			"bAutoWidth": false,
-			"bInfo": true,
-			"bScrollCollapse": true,
-			"sPaginationType": "full_numbers",
-			"bRetrieve": true,
-			"aoColumns": [
-			    {"sClass":"center"},
-			    {"sClass":"center"},
-			    {"sClass":"center"},
-			    {"sClass":"center"},
-			    {"sClass":"center"},
-			    {"sClass":"center"}
-			],
-			"fnRowCallback": function (nRow, aData, iDisplayIndex, iDisplayIndexFull) {
-			    if($.inArray(aData[1], sFiveLastShipmentRow) == -1){
-				sFiveLastShipmentRow = [];
-				sFiveLastShipmentRow.push(aData[1]);
-				if($.inArray("#ecf1ef", sFiveLastShipmentRowColor) == -1){
-				    sFiveLastShipmentRowColor = [];
-				    sFiveLastShipmentRowColor.push("#ecf1ef");
-				    $(nRow).attr("class","");
-				    $(nRow).css("background-color","#ecf1ef");
-				}else{
-				    sFiveLastShipmentRowColor = [];
-				    sFiveLastShipmentRowColor.push("#fffff2");
-				    $(nRow).attr("class","");
-				    $(nRow).css("background-color","#fffff2");
-				}
-			    }else{
-				if($.inArray("#ecf1ef", sFiveLastShipmentRowColor) == -1){
-				    $(nRow).attr("class","");
-				    $(nRow).css("background-color","#fffff2");
-				}
-				if($.inArray("#fffff2", sFiveLastShipmentRowColor) == -1){
-				    $(nRow).attr("class","");
-				    $(nRow).css("background-color","#ecf1ef");
-				}
-			    }
-			},
-			"aaSorting": [[ 0, "desc" ]],
-			"bProcessing": true,
-			"bServerSide": true,
-			"sAjaxSource": "<?php echo $this->url(array('module' => 'default', 'controller' => 'participant', 'action' => 'scheme', 'format' => 'html')); ?>",
-			"fnServerData": function ( sSource, aoData, fnCallback ) {
-			    aoData.push({"name": "scheme", "value": "dbs"});
-			    $.ajax({
-				"dataType": 'json',
-				"type": "POST",
-				"url": sSource,
-				"data": aoData,
-				"success": fnCallback
-			    });
-			}
-		});
-	}
-	<?php } ?>
-	$(document).ready(function(){
-	    <?php
-	    if(count($activeSchemes) > 0 && in_array('vl',$activeSchemes)) {
-	    ?>
-	     dtsViralLoadSchemes();
-	    <?php } ?>
-	    <?php
-	    if(count($activeSchemes) > 0 && in_array('tb',$activeSchemes)) {
-	    ?>
-	     dtsTuberculosisSchemes();
-	    <?php } ?>
-	    <?php
-	    if(count($activeSchemes) > 0 && in_array('eid',$activeSchemes)) {
-	    ?>
-	     dbsEarlyInfantDiagnosisSchemes();
-	    <?php } ?>
-	    <?php
-	    if(count($activeSchemes) > 0 && in_array('dts',$activeSchemes)) {
-	    ?>
-	     dtsHIVSerologySchemes();
-	    <?php } ?>
-	    <?php
-	    if(count($activeSchemes) > 0 && in_array('dbs',$activeSchemes)) {
-	    ?>
-	     dbsHIVSerologySchemes();
+	$(document).ready(function() {
+	    <?php if (count($activeSchemes) > 0 && in_array('tb',$activeSchemes)) { ?>
+	    dtsTuberculosisSchemes();
 	    <?php } ?>
 	});
 
 	var oTable = null;
-	function overviewSchemes(){
+	function overviewSchemes() {
 		oTable = $('#overviewTable').dataTable({
 			"oLanguage": {
 			    "sLengthMenu": "_MENU_ records per page"
@@ -631,35 +270,35 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
 			"sPaginationType": "full_numbers",
 			"bRetrieve": true,
 			"aoColumns": [
-			    {"sClass":"center"},
-			    {"sClass":"center"},
-			    {"sClass":"center","bSortable":false},
-			    {"sClass":"center","bSortable":false},
-			    {"sClass":"center","bSortable":false}
+			    { "sClass": "center" },
+			    { "sClass": "center" },
+			    { "sClass": "center", "bSortable": false },
+			    { "sClass": "center", "bSortable": false },
+			    { "sClass": "center", "bSortable": false }
 			],
 			"aaSorting": [[ 0, "desc" ]],
 			"bProcessing": true,
 			"bServerSide": true,
 			"sAjaxSource": "<?php echo $this->url(array('module' => 'default', 'controller' => 'participant', 'action' => 'index', 'format' => 'html')); ?>",
-			"fnServerData": function ( sSource, aoData, fnCallback ) {
+			"fnServerData": function(sSource, aoData, fnCallback) {
 			    $.ajax({
-				"dataType": 'json',
-				"type": "POST",
-				"url": sSource,
-				"data": aoData,
-				"success": fnCallback
+                    "dataType": 'json',
+                    "type": "POST",
+                    "url": sSource,
+                    "data": aoData,
+                    "success": fnCallback
 			    });
 			}
 		});
 	}
 
-	$(document).ready(function(){
+	$(document).ready(function() {
 		overviewSchemes();
 	});
 
     var schemeTable = null;
 	var selectedQc=[];
-	function allSchemes(){
+	function allSchemes() {
 		schemeTable = $('#allSchemeTable').dataTable({
 			"oLanguage": {
 			    "sLengthMenu": "_MENU_ records per page"
@@ -671,59 +310,53 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
 			"sPaginationType": "full_numbers",
 			"bRetrieve": true,
 			"aoColumns": [
-				{"bSortable":false},
-			    {"sClass":"center"},
-			    {"sClass":"center"},
-			    {"sClass":"center"},
-			    {"sClass":"center"},
-			    {"sClass":""},
-			    {"sClass":""},
-			    {"sClass":"center"},
-			    {"sClass":"center","bSortable":false},
-			    {"sClass":"center","bSortable":false}
+				{ "bSortable": false },
+			    { "sClass": "center" },
+			    { "sClass": "center" },
+			    { "sClass": "center" },
+                { "sClass": "center" },
+			    { "sClass": "" },
+			    { "sClass": "" },
+			    { "sClass": "center" },
+			    { "sClass": "center", "bSortable":false },
+			    { "sClass": "center", "bSortable":false }
 			],
 			"aaSorting": [[ 1, "desc" ]],
 			"fnDrawCallback": function() {
                 var checkBoxes=document.getElementsByName("subchk[]");
                 len = checkBoxes.length;
-                for(c=0;c<len;c++){
-                    if (jQuery.inArray(checkBoxes[c].id,selectedQc) != -1 )
-                    {
-                        checkBoxes[c].setAttribute("checked",true);
+                for (c = 0; c < len; c++) {
+                    if (jQuery.inArray(checkBoxes[c].id,selectedQc) != -1 ) {
+                        checkBoxes[c].setAttribute("checked", true);
                     }
                 }
-
             },
 			"bProcessing": true,
 			"bServerSide": true,
 			"sAjaxSource": "<?php echo $this->url(array('module' => 'default', 'controller' => 'participant', 'action' => 'all-schemes', 'format' => 'html')); ?>",
 			"fnServerParams": function (aoData) {
                 aoData.push({"name": "qualityChecked", "value": $("#qualityChecked").val()});
-				if($("#qualityChecked").val() == 'yes'){
+				if ($("#qualityChecked").val() == 'yes') {
 					$("#qcTopButton").show();
-				}else{
+				} else {
 					$("#qcTopButton").hide();
 				}
             },
-			"fnServerData": function ( sSource, aoData, fnCallback ) {
+			"fnServerData": function(sSource, aoData, fnCallback ) {
 			    $.ajax({
-				"dataType": 'json',
-				"type": "POST",
-				"url": sSource,
-				"data": aoData,
-				"success": fnCallback
+				    "dataType": 'json',
+				    "type": "POST",
+				    "url": sSource,
+				    "data": aoData,
+				    "success": fnCallback
 			    });
 			}
 		});
 	}
 
-
 	$(document).ready(function(){
 		allSchemes();
-
 	});
-
-
 
     function removeSchemes(schemeType,mid){
 		if (window.confirm("Are you sure you want to remove this response?\n This cannot be undone !")) {
@@ -735,70 +368,88 @@ if(isset($this->schemes) && count($this->schemes) >0 ){
 				$.unblockUI();
 			});
 		}
-
 	}
 
-	function addQc(mapId,obj){
-		if(obj.checked==true)
+	function addQc(mapId,obj) {
+		if (obj.checked == true)
         {
-			if($.inArray(mapId,selectedQc) == -1){
-			selectedQc.push(mapId);
+			if ($.inArray(mapId,selectedQc) == -1) {
+			    selectedQc.push(mapId);
 			}
-		}else{
+		} else {
 			selectedQc.remove(mapId);
 		}
 		$("#participantMapId").val(selectedQc);
 		$("#qcCount").text(selectedQc.length);
-
     }
-	function addSingleQc(mapId,qcDate) {
-		//$("#qcDate").val(qcDate);
+
+	function addSingleQc(mapId, qcDate) {
         if($.inArray(mapId,selectedQc) == -1){
 			selectedQc.push(mapId);
 			$("#participantMapId").val(selectedQc);
 		}
 		showQcForm();
     }
+
 	function showQcForm() {
         showdefModal("migrateBox", 600,400);
         var today = new Date('<?php echo date("Y-m-d") ?>');
         $("#qcDate").datepicker({
 		  dateFormat: '<?php echo $dtFormat; ?>',
-          beforeShowDay: function(date){
+          beforeShowDay: function(date) {
             return [date <= today, ""];
           }
 		});
     }
 
 	function submitQcForm() {
-		participantMapId=$("#participantMapId").val();
-		qcDate=$("#qcDate").val();
-		if (participantMapId!="" && qcDate!="") {
+		participantMapId = $("#participantMapId").val();
+		qcDate = $("#qcDate").val();
+		if (participantMapId != "" && qcDate != "") {
             $.post("<?php echo $this->url(array('module'=>'default','controller' =>'participant', 'action' => 'add-qc')); ?>", { mapId: participantMapId,qcDate:qcDate,format: "html" },
-			function(data){
-			if (data>0) {
-				schemeTable.fnDraw();
-				$("#countChecksPending").text("0");
-				selectedQc = '';
-				alert("Monthly Maintenance details added successfully");
-				hidedefModal();
-			}
+			function(data) {
+                if (data > 0) {
+                    schemeTable.fnDraw();
+                    $("#countChecksPending").text("0");
+                    selectedQc = '';
+                    alert("Monthly Maintenance details added successfully");
+                    hidedefModal();
+                }
 			});
 
-        }else{
+        } else {
 			alert("Please select the date");
 		}
+    }
 
+    function submitMonthlyIndicatorForm() {
+        var participantIds = [
+            <?php foreach ($this->monthly_indicators as $monthly_indicator) {
+                echo $monthly_indicator['participant_id'].",";
+            } ?>
+        ];
+        var monthlyIndicators = { participants: [] };
+        for (var i = 0; i < participantIds.length; i++) {
+            monthlyIndicators.participants.push({
+                participantId: participantIds[i],
+                countTestsConductedOverMonth: $('#countTestsConductedOverMonth_' + participantIds[i]).val(),
+                countErrorsEncounteredOverMonth: $('#countErrorsEncounteredOverMonth_' + participantIds[i]).val(),
+                errorCodesEncounteredOverMonth: $('#errorCodesEncounteredOverMonth_' + participantIds[i]).val()
+            });
+        }
+        $.post(
+            "<?php echo $this->url(array('module'=>'default','controller' =>'participant', 'action' => 'submit-monthly-indicators')); ?>",
+            monthlyIndicators,
+            function(data) {
+                console.log(data)
+            });
     }
 
 	function checkQcStatus() {
-        if(selectedQc.length==0){
+        if (selectedQc.length == 0) {
 			alert("Please select at least one shipment to proceed with QC");
-		}else{
+		} else {
 			showQcForm();
 		}
     }
-
-
-
 </script>
