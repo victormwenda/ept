@@ -11,5 +11,9 @@ class Application_Model_DbTable_Countries extends Zend_Db_Table_Abstract {
         }
 		return $this->fetchAll($sql);
 	}
+
+    public function updateCountry($countryId, $countryData) {
+        return $this->update($countryData,"id=".$countryId);
+    }
 }
 

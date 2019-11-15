@@ -1,0 +1,37 @@
+<h4 style="width:100%;height:50px;border-bottom:1px solid #777;">
+    <div style="font-size:22.5px;line-height:36px;color:#333;float:left;">Enable/Disable Monthly Indicators Submission</div>
+</h4>
+<br/>
+<br/>
+<table cellpadding="0" cellspacing="0" border="0" class="table table-striped table-bordered table-hover">
+    <thead>
+    <tr>
+        <th>Country Name</th>
+        <th class="center" style="width: 20%; text-align: center;">Submit Monthly Indicators</th>
+        <th class="center" style="width: 10%; text-align: center;">Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <?php foreach ($this->countriesList as $country) { ?>
+        <tr>
+            <td>
+                <?php echo $country['iso_name'] ?>
+            </td>
+            <td class="center">
+                <?php if ($country['show_monthly_indicators'] == 0) { ?>
+                    Disabled
+                <?php } else { ?>
+                    Enabled
+                <?php } ?>
+            </td>
+            <td class="center">
+                <?php if ($country['show_monthly_indicators'] == 0) { ?>
+                    <a class="btn btn-success btn-xs" href="/admin/countries/participant-monthly-indicators/enable/<?php echo base64_encode($country['id']); ?>"><span><i class="icon-check"></i> Enable</span></a>
+                <?php } else { ?>
+                    <a class="btn btn-danger btn-xs" href="/admin/countries/participant-monthly-indicators/disable/<?php echo base64_encode($country['id']); ?>"><span><i class="icon-remove"></i> Disable</span></a>
+                <?php } ?>
+            </td>
+        </tr>
+    <?php } ?>
+    </tbody>
+</table>
