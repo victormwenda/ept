@@ -152,6 +152,20 @@ class Application_Service_Common {
         return $countriesDb->getAllCountries();
     }
 
+    public function enableMonthlyIndicatorSubmission($countryId)  {
+        $countriesDb = new Application_Model_DbTable_Countries();
+        return $countriesDb->updateCountry($countryId, array(
+            "show_monthly_indicators" => 1
+        ));
+    }
+
+    public function disableMonthlyIndicatorSubmission($countryId)  {
+        $countriesDb = new Application_Model_DbTable_Countries();
+        return $countriesDb->updateCountry($countryId, array(
+            "show_monthly_indicators" => 0
+        ));
+    }
+
     public function getAllnetwork() {
         $networkDb = new Application_Model_DbTable_NetworkTires();
         return $networkDb->getAllnetwork();

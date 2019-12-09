@@ -1,9 +1,6 @@
 <?php
 
 class ParticipantController extends Zend_Controller_Action {
-
-    private $noOfItems = 10;
-
     public function init() {
         $ajaxContext = $this->_helper->getHelper('AjaxContext');
         $ajaxContext->addActionContext('index', 'html')
@@ -14,6 +11,7 @@ class ParticipantController extends Zend_Controller_Action {
                 ->addActionContext('summary-report', 'html')
                 ->addActionContext('shipment-report', 'html')
                 ->addActionContext('add-qc', 'html')
+                ->addActionContext('submit-monthly-indicators', 'html')
                 ->addActionContext('scheme', 'html')
                 ->initContext();
     }
@@ -35,6 +33,16 @@ class ParticipantController extends Zend_Controller_Action {
     	$scheme = new Application_Service_Schemes();
         $this->view->schemes = $scheme->getAllSchemes();
         $this->view->authNameSpace = $authNameSpace;
+        $dbUsersProfile = new Application_Service_Participants();
+        $monthlyIndicators = $dbUsersProfile->getParticipantMonthlyIndicators($authNameSpace->dm_id);
+        foreach ($monthlyIndicators as $monthlyIndicator) {
+            if (isset($monthlyIndicator['attributes'])) {
+                $monthlyIndicator['attributes'] = json_decode($monthlyIndicator['attributes'], true);
+            } else {
+                $monthlyIndicator['attributes'] = array();
+            }
+        }
+        $this->view->monthly_indicators = $monthlyIndicators;
     }
 
     public function reportAction() {
@@ -75,16 +83,16 @@ class ParticipantController extends Zend_Controller_Action {
     }
 
     public function schemeAction() {
-	$authNameSpace = new Zend_Session_Namespace('datamanagers');
+	    $authNameSpace = new Zend_Session_Namespace('datamanagers');
         $dbUsersProfile = new Application_Service_Participants();
-	 if ($this->getRequest()->isPost()) {
+        if ($this->getRequest()->isPost()) {
             $parameters = $this->_getAllParams();
             $dbUsersProfile->getParticipantSchemesBySchemeId($parameters);
-        }else{
-	    $this->_helper->layout()->activeMenu = 'my-account';
-	    $this->_helper->layout()->activeSubMenu = 'scheme';
-	    $this->view->participantSchemes = $dbUsersProfile->getParticipantSchemes($authNameSpace->dm_id);
-	}
+        } else {
+            $this->_helper->layout()->activeMenu = 'my-account';
+            $this->_helper->layout()->activeSubMenu = 'scheme';
+            $this->view->participantSchemes = $dbUsersProfile->getParticipantSchemes($authNameSpace->dm_id);
+        }
     }
 
     public function passwordAction() {
@@ -220,6 +228,18 @@ class ParticipantController extends Zend_Controller_Action {
             $params = $this->_getAllParams();
             $shipmentService = new Application_Service_Shipments();
             $this->view->result =$shipmentService->addQcDetails($params);
+        }
+    }
+
+    public function submitMonthlyIndicatorsAction() {
+        if ($this->getRequest()->isPost()) {
+            $indicators = $this->_getParam('participants');
+            $dbUsersProfile = new Application_Service_Participants();
+            $authNameSpace = new Zend_Session_Namespace('datamanagers');
+            foreach ($indicators as $indicator) {
+                $dbUsersProfile->saveParticipantMonthlyIndicators($authNameSpace->dm_id, $indicator['participantId'], array_diff_key($indicator, array_flip(array('participantId'))));
+            }
+            $this->view->result = "Submitted";
         }
     }
 }

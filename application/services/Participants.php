@@ -68,6 +68,44 @@ class Application_Service_Participants {
 	    return $db->fetchAll($sql);
 	}
 
+    public function getParticipantMonthlyIndicators($dmId) {
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $sql = $db->select()->from(array('p'=>'participant'), array(
+                'sorting_unique_identifier' => new Zend_Db_Expr("LPAD(p.unique_identifier, 10, '0')"),
+                'p.participant_id',
+                'p.unique_identifier',
+                'participantName' => new Zend_Db_Expr("COALESCE(p.lab_name, CONCAT(p.first_name, ' ', p.last_name), p.first_name)")
+            ))
+            ->join(array('pmm' => 'participant_manager_map'),'p.participant_id = pmm.participant_id', array())
+            ->join(array('c' => 'countries'),'p.country = c.id', array())
+            ->joinLeft(array('pmi' => 'participant_monthly_indicators'),'p.participant_id = pmi.participant_id AND MONTH(pmi.created_on) = '.date('m').' AND YEAR(pmi.created_on) = '.date('Y'), array('submission_id', 'attributes'))
+            ->where("pmm.dm_id = ?", $dmId)
+            ->where("c.show_monthly_indicators = 1")
+            ->where("p.status = 'active'")
+            ->order("sorting_unique_identifier ASC");
+        return $db->fetchAll($sql);
+    }
+
+    public function saveParticipantMonthlyIndicators($dmId, $participantId, $monthlyIndicators) {
+        $data = array(
+            'participant_id' => $participantId,
+            'attributes' => json_encode($monthlyIndicators),
+            'created_by' => $dmId,
+            'created_on' => new Zend_Db_Expr('now()')
+        );
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $sql = $db->select()->from(array('pmi'=>'participant_monthly_indicators'))
+            ->where("pmi.participant_id = ?", $participantId)
+            ->where("MONTH(pmi.created_on) = ?", date('m'))
+            ->where("YEAR(pmi.created_on) = ?", date('Y'));
+        $monthlyIndicatorsRecord = $db->fetchRow($sql);
+        if ($monthlyIndicatorsRecord != "") {
+            $db->update('participant_monthly_indicators', $data,'submission_id = '.$monthlyIndicatorsRecord['submission_id']);
+        } else {
+            $db->insert('participant_monthly_indicators', $data);
+        }
+    }
+
 	public function getUnEnrolled($scheme) {
 		$db = Zend_Db_Table_Abstract::getDefaultAdapter();
 		$subSql = $db->select()
