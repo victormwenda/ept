@@ -5060,6 +5060,41 @@ ORDER BY FlattenedEvaluationResults.`PT-ID` * 1 ASC;", array($params['shipmentId
             )
         );
 
+        $reportHeaderLabelStyle = array(
+            'font' => array(
+                'bold' => true,
+                'size'  => 12,
+            ),
+            'borders' => array(
+                'outline' => array(
+                    'style' => PHPExcel_Style_Border::BORDER_THIN,
+                ),
+            )
+        );
+
+        $reportHeaderValueStyle = array(
+            'borders' => array(
+                'outline' => array(
+                    'style' => PHPExcel_Style_Border::BORDER_THIN,
+                ),
+            )
+        );
+        $countryName = "All Countries";
+        $countryId = $params['countryId'];
+        $authNameSpace = new Zend_Session_Namespace('administrators');
+        if (!$countryId && $authNameSpace->is_ptcc_coordinator && count($authNameSpace->countries) == 1) {
+            $countryId = $authNameSpace->countries[0];
+        }
+        if ($countryId) {
+            $countryResult = $db->fetchRow($db->select()->from(array('c' => 'countries'), array("c.iso_name"))->where("c.id = ?", $countryId));
+            if($countryResult) {
+                $countryName = $countryResult["iso_name"];
+            }
+        }
+        $yearMonth = explode(":", $params['month']);
+        $monthHeaderValue = date('M, Y', strtotime($yearMonth[0]."-".$yearMonth[1]."-01"));
+
+
         $sQuery = $db->select()->from(array('p' => 'participant'), array(
                 "sorting_unique_identifier" => new Zend_Db_Expr("LPAD(p.unique_identifier, 10, '0')"),
                 "PT ID" => "p.unique_identifier",
@@ -5077,7 +5112,6 @@ ORDER BY FlattenedEvaluationResults.`PT-ID` * 1 ASC;", array($params['shipmentId
             ->join(array('dm' => 'data_manager'),'pmi.created_by = dm.dm_id', array(
                 "Submitted By" => new Zend_Db_Expr("COALESCE(CONCAT(`dm`.`first_name`, ' ', `dm`.`last_name`), `dm`.`first_name`, `dm`.`last_name`)")
             ));
-        $authNameSpace = new Zend_Session_Namespace('administrators');
         if ($authNameSpace->is_ptcc_coordinator) {
             $sQuery = $sQuery->where("c.id IN (".implode(",",$authNameSpace->countries).")");
         }
@@ -5085,7 +5119,6 @@ ORDER BY FlattenedEvaluationResults.`PT-ID` * 1 ASC;", array($params['shipmentId
             $sQuery = $sQuery->where("c.id = ?", $params['countryId']);
         }
         if (isset($params['month']) && $params['month'] != "") {
-            $yearMonth = explode(":", $params['month']);
             $sQuery = $sQuery->where("YEAR(`pmi`.`created_on`) = ?", $yearMonth[0]);
             $sQuery = $sQuery->where("MONTH(`pmi`.`created_on`) = ?", $yearMonth[1]);
         }
@@ -5102,56 +5135,66 @@ ORDER BY FlattenedEvaluationResults.`PT-ID` * 1 ASC;", array($params['shipmentId
             "indicatorYear",
             "attributes",
         );
+        $firstSheet->getDefaultRowDimension()->setRowHeight(15);
+
+        $firstSheet->getCellByColumnAndRow($columnIndex, 1)->setValueExplicit(html_entity_decode("Country", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+        $firstSheet->getCellByColumnAndRow($columnIndex + 1, 1)->setValueExplicit(html_entity_decode($countryName, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+        $firstSheet->getStyleByColumnAndRow($columnIndex, 1)->applyFromArray($reportHeaderLabelStyle);
+        $firstSheet->getStyleByColumnAndRow($columnIndex + 1, 1)->applyFromArray($reportHeaderValueStyle);
+
+        $firstSheet->getCellByColumnAndRow($columnIndex, 2)->setValueExplicit(html_entity_decode("Month", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+        $firstSheet->getCellByColumnAndRow($columnIndex + 1, 2)->setValueExplicit(html_entity_decode($monthHeaderValue, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+        $firstSheet->getStyleByColumnAndRow($columnIndex, 2)->applyFromArray($reportHeaderLabelStyle);
+        $firstSheet->getStyleByColumnAndRow($columnIndex + 1, 2)->applyFromArray($reportHeaderValueStyle);
+
+        $initialRowNumber = 4;
+        $rowNumber = $initialRowNumber;
         if (count($results) > 0 && count($results[0]) > 0) {
             foreach($results[0] as $columnName => $value) {
                 if (!in_array($columnName, $doNotShow)) {
-                    $firstSheet->getCellByColumnAndRow($columnIndex, 1)->setValueExplicit(html_entity_decode($columnName, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-                    $firstSheet->getStyleByColumnAndRow($columnIndex, 1)->applyFromArray($borderStyle);
+                    $firstSheet->getCellByColumnAndRow($columnIndex, $rowNumber)->setValueExplicit(html_entity_decode($columnName, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                    $firstSheet->getStyleByColumnAndRow($columnIndex, $rowNumber)->applyFromArray($borderStyle);
                     $columnIndex++;
                 }
             }
-        }
-
-        $firstSheet->getDefaultRowDimension()->setRowHeight(15);
-
-        $rowNumber = 1;
-
-        $attributeLabels = array(
-            "countTestsConductedOverMonth" => "Number of Tests",
-            "countErrorsEncounteredOverMonth" => "Number of Errors",
-            "errorCodesEncounteredOverMonth" => "Error Codes",
-        );
-        $attributeColumnIndeces = array();
-        $nextAttributeColumnIndex = $columnIndex;
-        foreach ($results as $result) {
-            $rowNumber++;
-            $rowColumnIndex = 0;
-            foreach($result as $columnName => $value) {
-                if (!in_array($columnName, $doNotShow)) {
-                    $firstSheet->getCellByColumnAndRow($rowColumnIndex, $rowNumber)->setValueExplicit(html_entity_decode($value, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-                    $rowColumnIndex++;
-                }
-            }
-            $attributes = json_decode($result['attributes'], true);
-            foreach ($attributes as $attributeName => $attributeValue) {
-                $attributeRowColumnIndex = $rowColumnIndex;
-                if (array_key_exists($attributeName, $attributeColumnIndeces)) {
-                    $attributeRowColumnIndex = $attributeColumnIndeces[$attributeName];
-                } else {
-                    $attributeColumnIndeces[$attributeName] = $nextAttributeColumnIndex;
-                    $attributeRowColumnIndex = $nextAttributeColumnIndex;
-                    $attributeLabel = $attributeName;
-                    if (array_key_exists($attributeName, $attributeLabels)) {
-                        $attributeLabel = $attributeLabels[$attributeName];
+            $attributeLabels = array(
+                "countTestsConductedOverMonth" => "Number of Tests",
+                "countErrorsEncounteredOverMonth" => "Number of Errors",
+                "errorCodesEncounteredOverMonth" => "Error Codes",
+            );
+            $attributeColumnIndeces = array();
+            $nextAttributeColumnIndex = $columnIndex;
+            foreach ($results as $result) {
+                $rowNumber++;
+                $rowColumnIndex = 0;
+                foreach($result as $columnName => $value) {
+                    if (!in_array($columnName, $doNotShow)) {
+                        $firstSheet->getCellByColumnAndRow($rowColumnIndex, $rowNumber)->setValueExplicit(html_entity_decode($value, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                        $rowColumnIndex++;
                     }
-                    $firstSheet->getCellByColumnAndRow($attributeRowColumnIndex, 1)->setValueExplicit(html_entity_decode($attributeLabel, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-                    $firstSheet->getStyleByColumnAndRow($attributeRowColumnIndex, 1)->applyFromArray($borderStyle);
-                    $nextAttributeColumnIndex++;
                 }
-                $firstSheet->getCellByColumnAndRow($attributeRowColumnIndex, $rowNumber)->setValueExplicit(html_entity_decode($attributeValue, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $attributes = json_decode($result['attributes'], true);
+                foreach ($attributes as $attributeName => $attributeValue) {
+                    $attributeRowColumnIndex = $rowColumnIndex;
+                    if (array_key_exists($attributeName, $attributeColumnIndeces)) {
+                        $attributeRowColumnIndex = $attributeColumnIndeces[$attributeName];
+                    } else {
+                        $attributeColumnIndeces[$attributeName] = $nextAttributeColumnIndex;
+                        $attributeRowColumnIndex = $nextAttributeColumnIndex;
+                        $attributeLabel = $attributeName;
+                        if (array_key_exists($attributeName, $attributeLabels)) {
+                            $attributeLabel = $attributeLabels[$attributeName];
+                        }
+                        $firstSheet->getCellByColumnAndRow($attributeRowColumnIndex, $initialRowNumber)->setValueExplicit(html_entity_decode($attributeLabel, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                        $firstSheet->getStyleByColumnAndRow($attributeRowColumnIndex, $initialRowNumber)->applyFromArray($borderStyle);
+                        $nextAttributeColumnIndex++;
+                    }
+                    $firstSheet->getCellByColumnAndRow($attributeRowColumnIndex, $rowNumber)->setValueExplicit(html_entity_decode($attributeValue, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                }
             }
+        } else {
+            $firstSheet->getCellByColumnAndRow($columnIndex, $rowNumber)->setValueExplicit(html_entity_decode("No Monthly Indictors Where Submitted During this Period", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
         }
-
         foreach(range('A','Z') as $columnID) {
             $firstSheet->getColumnDimension($columnID)
                 ->setAutoSize(true);
