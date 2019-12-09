@@ -5067,8 +5067,9 @@ ORDER BY FlattenedEvaluationResults.`PT-ID` * 1 ASC;", array($params['shipmentId
             ))
             ->join(array('c' => 'countries'),'p.country = c.id', array("Country" => "c.iso_name"))
             ->join(array('pmi' => 'participant_monthly_indicators'),'p.participant_id = pmi.participant_id', array(
-                "Year" => new Zend_Db_Expr("YEAR(`pmi`.`created_on`)"),
+                "indicatorYear" => new Zend_Db_Expr("YEAR(`pmi`.`created_on`)"),
                 "indicatorMonth" => new Zend_Db_Expr("MONTH(`pmi`.`created_on`)"),
+                "Year" => new Zend_Db_Expr("YEAR(`pmi`.`created_on`)"),
                 "Month" => new Zend_Db_Expr("MONTHNAME(`pmi`.`created_on`)"),
                 "attributes",
                 "Submitted On" => "created_on"
@@ -5088,9 +5089,9 @@ ORDER BY FlattenedEvaluationResults.`PT-ID` * 1 ASC;", array($params['shipmentId
             $sQuery = $sQuery->where("YEAR(`pmi`.`created_on`) = ?", $yearMonth[0]);
             $sQuery = $sQuery->where("MONTH(`pmi`.`created_on`) = ?", $yearMonth[1]);
         }
-        $sQuery = $sQuery->order("indicatorYear, indicatorMonth, sorting_unique_identifier ASC")
+        $sQuery = $sQuery->order(array("indicatorYear ASC", "indicatorMonth ASC", "sorting_unique_identifier ASC"))
             ->distinct();
-        $results = $sQuery->fetchAll();
+        $results = $db->fetchAll($sQuery);
 
         $firstSheet = new PHPExcel_Worksheet($excel, "Monthly Indicators");
         $excel->addSheet($firstSheet, 0);
@@ -5098,6 +5099,7 @@ ORDER BY FlattenedEvaluationResults.`PT-ID` * 1 ASC;", array($params['shipmentId
         $doNotShow = array(
             "sorting_unique_identifier",
             "indicatorMonth",
+            "indicatorYear",
             "attributes",
         );
         if (count($results) > 0 && count($results[0]) > 0) {
@@ -5114,14 +5116,21 @@ ORDER BY FlattenedEvaluationResults.`PT-ID` * 1 ASC;", array($params['shipmentId
 
         $rowNumber = 1;
 
+        $attributeLabels = array(
+            "countTestsConductedOverMonth" => "Number of Tests",
+            "countErrorsEncounteredOverMonth" => "Number of Errors",
+            "errorCodesEncounteredOverMonth" => "Error Codes",
+        );
         $attributeColumnIndeces = array();
         $nextAttributeColumnIndex = $columnIndex;
         foreach ($results as $result) {
             $rowNumber++;
             $rowColumnIndex = 0;
             foreach($result as $columnName => $value) {
-                $firstSheet->getCellByColumnAndRow($rowColumnIndex, $rowNumber)->setValueExplicit(html_entity_decode($value, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-                $rowColumnIndex++;
+                if (!in_array($columnName, $doNotShow)) {
+                    $firstSheet->getCellByColumnAndRow($rowColumnIndex, $rowNumber)->setValueExplicit(html_entity_decode($value, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                    $rowColumnIndex++;
+                }
             }
             $attributes = json_decode($result['attributes'], true);
             foreach ($attributes as $attributeName => $attributeValue) {
@@ -5131,7 +5140,11 @@ ORDER BY FlattenedEvaluationResults.`PT-ID` * 1 ASC;", array($params['shipmentId
                 } else {
                     $attributeColumnIndeces[$attributeName] = $nextAttributeColumnIndex;
                     $attributeRowColumnIndex = $nextAttributeColumnIndex;
-                    $firstSheet->getCellByColumnAndRow($attributeRowColumnIndex, 1)->setValueExplicit(html_entity_decode($attributeName, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                    $attributeLabel = $attributeName;
+                    if (array_key_exists($attributeName, $attributeLabels)) {
+                        $attributeLabel = $attributeLabels[$attributeName];
+                    }
+                    $firstSheet->getCellByColumnAndRow($attributeRowColumnIndex, 1)->setValueExplicit(html_entity_decode($attributeLabel, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
                     $firstSheet->getStyleByColumnAndRow($attributeRowColumnIndex, 1)->applyFromArray($borderStyle);
                     $nextAttributeColumnIndex++;
                 }

@@ -56,25 +56,6 @@
     </tbody>
 </table>
 <script type="text/javascript">
-  $(document).ready(function() {
-    getShipmentCodes();
-  });
-
-  function getShipmentCodes() {
-    $.blockUI();
-    $.post("<?php echo $this->url(array('module' => 'reports', 'controller' => 'common', 'action' => 'get-shipments-by-scheme')); ?>",
-      {
-        schemeType: 'tb',
-        format: "html"
-      },
-      function (data) {
-        if (data != 0) {
-          $("#shipmentId").html(data);
-        }
-        $.unblockUI();
-      });
-  }
-
   function drawTable() {
     $("#generatedReportsTable").removeClass("hide");
     $.blockUI();
@@ -99,9 +80,10 @@
       "aaSorting": [[1, "desc"]],
       "bProcessing": false,
       "bServerSide": true,
-      "sAjaxSource": "<?php echo $this->url(array('module' => 'reports', 'controller' => 'tb-all-sites-results', 'action' => 'index', 'format' => 'html')); ?>",
+      "sAjaxSource": "<?php echo $this->url(array('module' => 'reports', 'controller' => 'monthly-indicators', 'action' => 'index', 'format' => 'html')); ?>",
       "fnServerParams": function (aoData) {
-        aoData.push({"name": "shipmentId", "value": $("#shipmentId").val()});
+        aoData.push({"name": "countryId", "value": $("#countryId").val()});
+        aoData.push({"name": "month", "value": $("#month").val()});
       },
       "fnServerData": function (sSource, aoData, fnCallback) {
         $.ajax({
