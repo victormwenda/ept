@@ -269,14 +269,6 @@
                                     Participant Monthly Indicators
                                 </a>
                             </li>
-                            <?php if($adminSession->is_ptcc_coordinator == 0 &&
-                                in_array('dts', $adminSession->activeSchemes)){ ?>
-                            <li>
-                                <a href="<?php echo $this->url(array('module'=>'reports','controller'=>'testkit'),'default',true); ?>">
-                                    TestKit Report For DTS
-                                </a>
-                            </li>
-                            <?php } ?>
                             <li>
                                 <a href="<?php echo $this->url(array('module'=>'reports','controller'=>'shipments'),'default',true); ?>">
                                     Shipments Report
@@ -284,18 +276,8 @@
                             </li>
                             <?php if ($adminSession->is_ptcc_coordinator == 0) { ?>
                             <li>
-                                <a href="<?php echo $this->url(array('module'=>'reports','controller'=>'shipments','action'=>'vl-sample-analysis'),'default',true); ?>">
-                                    Vl Sample Analysis
-                                </a>
-                            </li>
-                            <li>
-                                <a href="<?php echo $this->url(array('module'=>'reports','controller'=>'shipments','action'=>'vl-assay-distribution'),'default',true); ?>">
-                                    Vl Assay Distribution
-                                </a>
-                            </li>
-                            <li>
-                                <a href="<?php echo $this->url(array('module'=>'reports','controller'=>'annual','action'=>'index'),'default',true); ?>">
-                                    Annual Report
+                                <a href="<?php echo $this->url(array('module'=>'reports','controller'=>'xmpep-indicators'),'default',true); ?>">
+                                    XMPEP Indicators
                                 </a>
                             </li>
                             <li>
