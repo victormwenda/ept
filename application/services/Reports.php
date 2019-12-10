@@ -5229,12 +5229,12 @@ ORDER BY FlattenedEvaluationResults.`PT-ID` * 1 ASC;", array($params['shipmentId
   res.probe_4 AS probe_b_ct,
   res.probe_5 AS probe_spc_ct,
   res.probe_6 AS probe_a_ct,
-  ref.mtb_rif_probe_d AS expected_probe_d_ct,
-  ref.mtb_rif_probe_c AS expected_probe_c_ct,
-  ref.mtb_rif_probe_e AS expected_probe_e_ct,
-  ref.mtb_rif_probe_b AS expected_probe_b_ct,
-  ref.mtb_rif_probe_spc AS expected_probe_spc_ct,
-  ref.mtb_rif_probe_a AS expected_probe_a_ct,
+  IFNULL(ref.mtb_rif_probe_d, 0) AS expected_probe_d_ct,
+  IFNULL(ref.mtb_rif_probe_c, 0) AS expected_probe_c_ct,
+  IFNULL(ref.mtb_rif_probe_e, 0) AS expected_probe_e_ct,
+  IFNULL(ref.mtb_rif_probe_b, 0) AS expected_probe_b_ct,
+  IFNULL(ref.mtb_rif_probe_spc, 0) AS expected_probe_spc_ct,
+  IFNULL(ref.mtb_rif_probe_a, 0) AS expected_probe_a_ct,
   res.calculated_score
 FROM shipment_participant_map AS spm
 JOIN shipment AS s ON s.shipment_id = spm.shipment_id
@@ -5318,12 +5318,12 @@ FROM (SELECT s.shipment_id,
         SUM(IFNULL(res.probe_4, 0)) AS sum_probe_b_ct,
         SUM(IFNULL(res.probe_5, 0)) AS sum_probe_spc_ct,
         SUM(IFNULL(res.probe_6, 0)) AS sum_probe_a_ct,
-        ref.mtb_rif_probe_d AS expected_probe_d_ct,
-        ref.mtb_rif_probe_c AS expected_probe_c_ct,
-        ref.mtb_rif_probe_e AS expected_probe_e_ct,
-        ref.mtb_rif_probe_b AS expected_probe_b_ct,
-        ref.mtb_rif_probe_spc AS expected_probe_spc_ct,
-        ref.mtb_rif_probe_a AS expected_probe_a_ct
+        IFNULL(ref.mtb_rif_probe_d, 0) AS expected_probe_d_ct,
+        IFNULL(ref.mtb_rif_probe_c, 0) AS expected_probe_c_ct,
+        IFNULL(ref.mtb_rif_probe_e, 0) AS expected_probe_e_ct,
+        IFNULL(ref.mtb_rif_probe_b, 0) AS expected_probe_b_ct,
+        IFNULL(ref.mtb_rif_probe_spc, 0) AS expected_probe_spc_ct,
+        IFNULL(ref.mtb_rif_probe_a, 0) AS expected_probe_a_ct
       FROM reference_result_tb AS ref
       JOIN shipment AS s ON s.shipment_id = ref.shipment_id
       LEFT JOIN shipment_participant_map AS spm ON spm.shipment_id = s.shipment_id
@@ -5632,12 +5632,12 @@ ORDER BY stability_mtb_rif.sample_id;", array($params['shipmentId'], $mtbRifAssa
   res.probe_4 AS probe_rpo_b2_ct,
   res.probe_5 AS probe_rpo_b3_ct,
   res.probe_6 AS probe_rpo_b4_ct,
-  ref.ultra_probe_spc AS expected_probe_spc_ct,
-  ref.ultra_probe_is1081_is6110 AS expected_probe_is1081_is6110_ct,
-  ref.ultra_probe_rpo_b1 AS expected_probe_rpo_b1_ct,
-  ref.ultra_probe_rpo_b2 AS expected_probe_rpo_b2_ct,
-  ref.ultra_probe_rpo_b3 AS expected_probe_rpo_b3_ct,
-  ref.ultra_probe_rpo_b4 AS expected_probe_rpo_b4_ct,
+  IFNULL(ref.ultra_probe_spc, 0) AS expected_probe_spc_ct,
+  IFNULL(ref.ultra_probe_is1081_is6110, 0) AS expected_probe_is1081_is6110_ct,
+  IFNULL(ref.ultra_probe_rpo_b1, 0) AS expected_probe_rpo_b1_ct,
+  IFNULL(ref.ultra_probe_rpo_b2, 0) AS expected_probe_rpo_b2_ct,
+  IFNULL(ref.ultra_probe_rpo_b3, 0) AS expected_probe_rpo_b3_ct,
+  IFNULL(ref.ultra_probe_rpo_b4, 0) AS expected_probe_rpo_b4_ct,
   res.calculated_score
 FROM shipment_participant_map AS spm
 JOIN shipment AS s ON s.shipment_id = spm.shipment_id
@@ -5685,12 +5685,12 @@ FROM (SELECT s.shipment_id,
         SUM(IFNULL(res.probe_4, 0)) AS sum_probe_rpo_b2_ct,
         SUM(IFNULL(res.probe_5, 0)) AS sum_probe_rpo_b3_ct,
         SUM(IFNULL(res.probe_6, 0)) AS sum_probe_rpo_b4_ct,
-        ref.ultra_probe_spc AS expected_probe_spc_ct,
-        ref.ultra_probe_is1081_is6110 AS expected_probe_is1081_is6110_ct,
-        ref.ultra_probe_rpo_b1 AS expected_probe_rpo_b1_ct,
-        ref.ultra_probe_rpo_b2 AS expected_probe_rpo_b2_ct,
-        ref.ultra_probe_rpo_b3 AS expected_probe_rpo_b3_ct,
-        ref.ultra_probe_rpo_b4 AS expected_probe_rpo_b4_ct
+        IFNULL(ref.ultra_probe_spc, 0) AS expected_probe_spc_ct,
+        IFNULL(ref.ultra_probe_is1081_is6110, 0) AS expected_probe_is1081_is6110_ct,
+        IFNULL(ref.ultra_probe_rpo_b1, 0) AS expected_probe_rpo_b1_ct,
+        IFNULL(ref.ultra_probe_rpo_b2, 0) AS expected_probe_rpo_b2_ct,
+        IFNULL(ref.ultra_probe_rpo_b3, 0) AS expected_probe_rpo_b3_ct,
+        IFNULL(ref.ultra_probe_rpo_b4, 0) AS expected_probe_rpo_b4_ct
       FROM reference_result_tb AS ref
       JOIN shipment AS s ON s.shipment_id = ref.shipment_id
       LEFT JOIN shipment_participant_map AS spm ON spm.shipment_id = s.shipment_id
@@ -5702,10 +5702,10 @@ FROM (SELECT s.shipment_id,
       LEFT JOIN response_result_tb AS res ON res.shipment_map_id = spm.map_id
                                           AND ref.sample_id = res.sample_id
 	      								  AND IFNULL(res.calculated_score, 'pass') = 'pass'
-      WHERE ref.shipment_id = @shipment_id 
-      AND a.name = @mtb_ultra_assay_name
+      WHERE ref.shipment_id = ?
+      AND a.name = ?
       GROUP BY ref.sample_id) AS stability_mtb_ultra
-ORDER BY stability_mtb_ultra.sample_id;", array($params['shipmentId'], $mtbRifAssayName))
+ORDER BY stability_mtb_ultra.sample_id;", array($params['shipmentId'], $mtbUltraAssayName))
                 ->fetchAll();
 
             $mtbUltraStabilitySheet = new PHPExcel_Worksheet($excel, "Xpert MTB Ultra Stability");
@@ -5807,8 +5807,8 @@ ORDER BY stability_mtb_ultra.sample_id;", array($params['shipmentId'], $mtbRifAs
             }
             $rowIndex = 4;
             foreach ($mtbUltraStability as $mtbUltraStabilitySample) {
-                $mtbUltraStabilitySample->mergeCells("A".($rowIndex).":A".($rowIndex + 1));
-                $mtbUltraStabilitySample->mergeCells("B".($rowIndex).":B".($rowIndex + 1));
+                $mtbUltraStabilitySheet->mergeCells("A".($rowIndex).":A".($rowIndex + 1));
+                $mtbUltraStabilitySheet->mergeCells("B".($rowIndex).":B".($rowIndex + 1));
                 $rowIndex++;
                 $rowIndex++;
             }
@@ -5859,7 +5859,7 @@ ORDER BY stability_mtb_ultra.sample_id;", array($params['shipmentId'], $mtbRifAs
             $rowIndex = 4;
             $columnIndex = 0;
 
-            $currentParticipantId = $mtbRifSubmissions[0]["unique_identifier"];
+            $currentParticipantId = $mtbUltraSubmissions[0]["unique_identifier"];
             $recordIndex = 0;
             while ($mtbUltraSubmissions[$recordIndex]["unique_identifier"] == $currentParticipantId) {
                 $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmissions[$recordIndex]["sample_label"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
@@ -5923,7 +5923,7 @@ ORDER BY stability_mtb_ultra.sample_id;", array($params['shipmentId'], $mtbRifAs
             foreach ($mtbUltraSubmissions as $mtbUltraSubmission) {
                 try {
                     $columnIndex = 0;
-                    if ($currentParticipantId != $mtbRifSubmission["unique_identifier"]) {
+                    if ($currentParticipantId != $mtbUltraSubmission["unique_identifier"]) {
                         $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["unique_identifier"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
                         $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($sampleLabelStyle);
                         $columnIndex++;
@@ -5933,7 +5933,7 @@ ORDER BY stability_mtb_ultra.sample_id;", array($params['shipmentId'], $mtbRifAs
                         $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["country"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
                         $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($sampleLabelStyle);
                         $columnIndex++;
-                        $currentParticipantId = $mtbRifSubmission["unique_identifier"];
+                        $currentParticipantId = $mtbUltraSubmission["unique_identifier"];
                     } else {
                         $columnIndex++;
                         $columnIndex++;
@@ -5979,7 +5979,7 @@ ORDER BY stability_mtb_ultra.sample_id;", array($params['shipmentId'], $mtbRifAs
             }
 
             foreach(range('A','Z') as $columnID) {
-                $mtbRifConcordanceSheet->getColumnDimension($columnID)->setAutoSize(true);
+                $mtbUltraConcordanceSheet->getColumnDimension($columnID)->setAutoSize(true);
             }
         }
 
