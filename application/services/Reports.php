@@ -5268,11 +5268,23 @@ ORDER BY FlattenedEvaluationResults.`PT-ID` * 1 ASC;", array($params['shipmentId
 FROM shipment_participant_map AS spm
 JOIN participant AS p ON p.participant_id = spm.participant_id
 WHERE spm.shipment_id = ?";
+
+        $errorCodesQuery = "SELECT res.error_code, COUNT(*) AS number_of_occurrences
+FROM shipment_participant_map AS spm
+JOIN response_result_tb AS res ON res.shipment_map_id = spm.map_id
+JOIN participant AS p ON p.participant_id = spm.participant_id
+WHERE spm.shipment_id = ?
+AND res.error_code <> ''";
         if ($authNameSpace->is_ptcc_coordinator) {
             $panelStatisticsQuery .= "
 AND p.country IN (".implode(",",$authNameSpace->countries).")";
+            $errorCodesQuery .= "
+AND p.country IN (".implode(",",$authNameSpace->countries).")";
         }
         $panelStatisticsQuery .= ";";
+        $errorCodesQuery .= "
+GROUP BY res.error_code
+ORDER BY error_code ASC;";
         $panelStatistics = $db->query($panelStatisticsQuery, array($params['shipmentId']))->fetchAll()[0];
         $shipmentQuery = $db->select('shipment_code')
             ->from('shipment')
@@ -5320,9 +5332,29 @@ AND p.country IN (".implode(",",$authNameSpace->countries).")";
         $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($rowHeaderStyle);
         $columnIndex++;
         $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($panelStatistics["scored_100"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $rowIndex++;
+        $rowIndex++;
+        $columnIndex = 0;
+        $errorCodes = $db->query($errorCodesQuery, array($params['shipmentId']))->fetchAll();
+        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Error Codes Encountered", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+        $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($rowHeaderStyle);
+        $columnIndex++;
+        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Number of Occurrences", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+        $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($rowHeaderStyle);
+        $rowIndex++;
+        $columnIndex = 0;
+        foreach ($errorCodes as $errorCode) {
+            $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($errorCode['error_code'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+            $columnIndex++;
+            $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($errorCode['number_of_occurrences'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $rowIndex++;
+            $columnIndex = 0;
+        }
+
         foreach (range('A', 'Z') as $columnID) {
             $panelStatisticsSheet->getColumnDimension($columnID)->setAutoSize(true);
         }
+
         if (!$authNameSpace->is_ptcc_coordinator) {
             $nonConcordanceThreshold = 2;
             $expectedConcordance = 0.8;
