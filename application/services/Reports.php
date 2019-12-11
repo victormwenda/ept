@@ -5211,11 +5211,123 @@ ORDER BY FlattenedEvaluationResults.`PT-ID` * 1 ASC;", array($params['shipmentId
 
     public function getXmpepIndicatorsReport($params) {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
-
-        $nonConcordanceThreshold = 2;
-        $expectedConcordance = 0.8;
-        $mtbRifAssayName = "Xpert MTB/RIF";
-        $mtbRifSubmissions = $db->query("SELECT s.shipment_id,
+        $authNameSpace = new Zend_Session_Namespace('administrators');
+        $excel = new PHPExcel();
+        $sheetHeaderStyle = array(
+            'font' => array(
+                'bold' => true,
+                'size' => 16,
+            ),
+        );
+        $columnHeaderStyle = array(
+            'font' => array(
+                'bold' => true,
+                'size' => 12,
+            ),
+            'alignment' => array(
+                'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+            ),
+            'borders' => array(
+                'outline' => array(
+                    'style' => PHPExcel_Style_Border::BORDER_THIN,
+                ),
+            )
+        );
+        $rowHeaderStyle = array(
+            'font' => array(
+                'bold' => true,
+                'size' => 12,
+            ),
+            'borders' => array(
+                'outline' => array(
+                    'style' => PHPExcel_Style_Border::BORDER_THIN,
+                ),
+            )
+        );
+        $nonConcordanceStyle = array(
+            'font' => array(
+                'color' => array('rgb' => 'FF0000'),
+            ),
+        );
+        $sampleLabelStyle = array(
+            'font' => array(
+                'bold' => true,
+                'size' => 13,
+            ),
+            'alignment' => array(
+                'vertical' => PHPExcel_Style_Alignment::VERTICAL_TOP,
+            ),
+        );
+        $sheetIndex = 0;
+        $panelStatisticsQuery = "SELECT COUNT(spm.map_id) AS participating_sites,
+  SUM(CASE WHEN SUBSTRING(spm.evaluation_status, 3, 1) = '1' THEN 1 ELSE 0 END) AS response_received,
+  SUM(CASE WHEN spm.is_excluded = 'yes' THEN 1 ELSE 0 END) AS excluded,
+  SUM(CASE WHEN IFNULL(spm.is_pt_test_not_performed, 'no') = 'no' THEN 1 ELSE 0 END) AS able_to_submit,
+  SUM(CASE WHEN spm.shipment_score >= 80 THEN 1 ELSE 0 END) AS scored_higher_than_80,
+  SUM(CASE WHEN spm.shipment_score = 100 THEN 1 ELSE 0 END) AS scored_100
+FROM shipment_participant_map AS spm
+JOIN participant AS p ON p.participant_id = spm.participant_id
+WHERE spm.shipment_id = ?";
+        if ($authNameSpace->is_ptcc_coordinator) {
+            $panelStatisticsQuery .= "
+AND p.country IN (".implode(",",$authNameSpace->countries).")";
+        }
+        $panelStatisticsQuery .= ";";
+        $panelStatistics = $db->query($panelStatisticsQuery, array($params['shipmentId']))->fetchAll()[0];
+        $shipmentQuery = $db->select('shipment_code')
+            ->from('shipment')
+            ->where('shipment_id=?', $params['shipmentId']);
+        $shipmentResult = $db->fetchRow($shipmentQuery);
+        $panelStatisticsSheet = new PHPExcel_Worksheet($excel, "Panel Statistics");
+        $excel->addSheet($panelStatisticsSheet, $sheetIndex);
+        $sheetIndex++;
+        $panelStatisticsSheet->getCellByColumnAndRow(0, 1)->setValueExplicit(html_entity_decode("Panel Statistics for " . $shipmentResult['shipment_code'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+        $panelStatisticsSheet->getStyleByColumnAndRow(0, 1)->applyFromArray($sheetHeaderStyle);
+        $panelStatisticsSheet->getRowDimension(1)->setRowHeight(25);
+        $rowIndex = 3;
+        $columnIndex = 0;
+        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Number of Participating Sites", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+        $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($rowHeaderStyle);
+        $columnIndex++;
+        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($panelStatistics["participating_sites"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $rowIndex++;
+        $columnIndex = 0;
+        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Number of Responses Received", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+        $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($rowHeaderStyle);
+        $columnIndex++;
+        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($panelStatistics["response_received"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $rowIndex++;
+        $columnIndex = 0;
+        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Number of Responses Excluded", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+        $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($rowHeaderStyle);
+        $columnIndex++;
+        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($panelStatistics["excluded"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $rowIndex++;
+        $columnIndex = 0;
+        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Number of Participants Able to Submit", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+        $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($rowHeaderStyle);
+        $columnIndex++;
+        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($panelStatistics["able_to_submit"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $rowIndex++;
+        $columnIndex = 0;
+        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Number of Participants Scoring 80% or Higher", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+        $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($rowHeaderStyle);
+        $columnIndex++;
+        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($panelStatistics["scored_higher_than_80"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $rowIndex++;
+        $columnIndex = 0;
+        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Number of Participants Scoring 100%", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+        $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($rowHeaderStyle);
+        $columnIndex++;
+        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($panelStatistics["scored_100"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        foreach (range('A', 'Z') as $columnID) {
+            $panelStatisticsSheet->getColumnDimension($columnID)->setAutoSize(true);
+        }
+        if (!$authNameSpace->is_ptcc_coordinator) {
+            $nonConcordanceThreshold = 2;
+            $expectedConcordance = 0.8;
+            $mtbRifAssayName = "Xpert MTB/RIF";
+            $mtbRifSubmissions = $db->query("SELECT s.shipment_id,
   s.shipment_code,
   LPAD(p.unique_identifier, 10, '0') AS sorting_unique_identifier,
   p.unique_identifier,
@@ -5252,45 +5364,9 @@ AND SUBSTRING(spm.evaluation_status, 4, 1) = '1'
 AND IFNULL(spm.is_excluded, 'no') = 'no'
 AND a.name = ?
 ORDER BY sorting_unique_identifier ASC, res.sample_id ASC;", array($params['shipmentId'], $mtbRifAssayName))
-            ->fetchAll();
-        $excel = new PHPExcel();
-        $sheetHeaderStyle = array(
-            'font' => array(
-                'bold' => true,
-                'size'  => 16,
-            ),
-        );
-        $columnHeaderStyle = array(
-            'font' => array(
-                'bold' => true,
-                'size'  => 12,
-            ),
-            'alignment' => array(
-                'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
-            ),
-            'borders' => array(
-                'outline' => array(
-                    'style' => PHPExcel_Style_Border::BORDER_THIN,
-                ),
-            )
-        );
-        $nonConcordanceStyle = array(
-            'font' => array(
-                'color' => array('rgb' => 'FF0000'),
-            ),
-        );
-        $sampleLabelStyle = array(
-            'font' => array(
-                'bold' => true,
-                'size'  => 13,
-            ),
-            'alignment' => array(
-                'vertical' => PHPExcel_Style_Alignment::VERTICAL_TOP,
-            ),
-        );
-        $sheetIndex = 0;
-        if (count($mtbRifSubmissions) > 0) {
-            $mtbRifStability = $db->query("SELECT stability_mtb_rif.shipment_id,
+                ->fetchAll();
+            if (count($mtbRifSubmissions) > 0) {
+                $mtbRifStability = $db->query("SELECT stability_mtb_rif.shipment_id,
   stability_mtb_rif.shipment_code,
   stability_mtb_rif.assay,
   stability_mtb_rif.sample_label,
@@ -5340,321 +5416,319 @@ FROM (SELECT s.shipment_id,
       AND a.name = ?
       GROUP BY ref.sample_id) AS stability_mtb_rif
 ORDER BY stability_mtb_rif.sample_id;", array($params['shipmentId'], $mtbRifAssayName))
-                ->fetchAll();
+                    ->fetchAll();
 
-            $mtbRifStabilitySheet = new PHPExcel_Worksheet($excel, "Xpert MTB RIF Stability");
-            $excel->addSheet($mtbRifStabilitySheet, $sheetIndex);
-            $sheetIndex++;
-            $mtbRifStabilitySheet->getCellByColumnAndRow(0, 1)->setValueExplicit(html_entity_decode("MTB/RIF Panel Stability for ".$mtbRifSubmissions[0]["shipment_code"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbRifStabilitySheet->getStyleByColumnAndRow(0, 1)->applyFromArray($sheetHeaderStyle);
-            $mtbRifStabilitySheet->getRowDimension(1)->setRowHeight(25);
-            $rowIndex = 3;
-            $columnIndex = 0;
-            $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Sample", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("# Valid Submissions", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe D", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe C", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe E", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe B", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe SPC", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe A", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $rowIndex++;
-            foreach ($mtbRifStability as $mtbRifStabilitySample) {
-                try {
-                    $columnIndex = 0;
-                    $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["sample_label"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-                    $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($sampleLabelStyle);
-                    $columnIndex++;
-                    $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["number_of_valid_submissions"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($sampleLabelStyle);
-                    $columnIndex++;
-                    $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Mean", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-                    $columnIndex++;
-                    $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["mean_probe_d_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    if (abs($mtbRifStabilitySample["mean_probe_d_ct"] - $mtbRifStabilitySample["expected_probe_d_ct"]) > $nonConcordanceThreshold) {
-                        $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
-                    }
-                    $columnIndex++;
-                    $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["mean_probe_c_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    if (abs($mtbRifStabilitySample["mean_probe_c_ct"] - $mtbRifStabilitySample["expected_probe_c_ct"]) > $nonConcordanceThreshold) {
-                        $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
-                    }
-                    $columnIndex++;
-                    $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["mean_probe_e_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    if (abs($mtbRifStabilitySample["mean_probe_e_ct"] - $mtbRifStabilitySample["expected_probe_e_ct"]) > $nonConcordanceThreshold) {
-                        $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
-                    }
-                    $columnIndex++;
-                    $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["mean_probe_b_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    if (abs($mtbRifStabilitySample["mean_probe_b_ct"] - $mtbRifStabilitySample["expected_probe_b_ct"]) > $nonConcordanceThreshold) {
-                        $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
-                    }
-                    $columnIndex++;
-                    $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["mean_probe_spc_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    if (abs($mtbRifStabilitySample["mean_probe_spc_ct"] - $mtbRifStabilitySample["expected_probe_spc_ct"]) > $nonConcordanceThreshold) {
-                        $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
-                    }
-                    $columnIndex++;
-                    $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["mean_probe_a_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    if (abs($mtbRifStabilitySample["mean_probe_a_ct"] - $mtbRifStabilitySample["expected_probe_a_ct"]) > $nonConcordanceThreshold) {
-                        $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
-                    }
-                    $columnIndex = 2;
-                    $rowIndex++;
-                    $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Expected", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-                    $columnIndex++;
-                    $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["expected_probe_d_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    $columnIndex++;
-                    $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["expected_probe_c_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    $columnIndex++;
-                    $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["expected_probe_e_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    $columnIndex++;
-                    $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["expected_probe_b_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    $columnIndex++;
-                    $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["expected_probe_spc_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    $columnIndex++;
-                    $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["expected_probe_a_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    $rowIndex++;
-                }
-                catch (Exception $e) {
-                    error_log($e->getMessage(), 0);
-                    error_log($e->getTraceAsString(), 0);
-                }
-            }
-            $rowIndex = 4;
-            foreach ($mtbRifStability as $mtbRifStabilitySample) {
-                $mtbRifStabilitySheet->mergeCells("A".($rowIndex).":A".($rowIndex + 1));
-                $mtbRifStabilitySheet->mergeCells("B".($rowIndex).":B".($rowIndex + 1));
-                $rowIndex++;
-                $rowIndex++;
-            }
-            $mtbRifStabilitySheet->getDefaultRowDimension()->setRowHeight(15);
-            foreach(range('A','Z') as $columnID) {
-                $mtbRifStabilitySheet->getColumnDimension($columnID)->setAutoSize(true);
-            }
-
-            $mtbRifConcordanceSheet = new PHPExcel_Worksheet($excel, "Xpert MTB RIF Concordance");
-            $excel->addSheet($mtbRifConcordanceSheet, $sheetIndex);
-            $sheetIndex++;
-
-            $mtbRifConcordanceSheet->getCellByColumnAndRow(0, 1)->setValueExplicit(html_entity_decode("MTB/RIF Panel Concordance for ".$mtbRifSubmissions[0]["shipment_code"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbRifConcordanceSheet->getStyleByColumnAndRow(0, 1)->applyFromArray($sheetHeaderStyle);
-            $mtbRifConcordanceSheet->getRowDimension(1)->setRowHeight(25);
-            $rowIndex = 3;
-            $columnIndex = 0;
-            $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Expected Values", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $mtbRifConcordanceSheet->mergeCells("A".($rowIndex).":C".($rowIndex));
-            $columnIndex++;
-            $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Concordance", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe D", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe C", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe E", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe B", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe SPC", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe A", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-
-            $mtbRifConcordance = array();
-            foreach ($mtbRifSubmissions as $mtbRifSubmission) {
-                if (!isset($mtbRifConcordance[$mtbRifSubmission['sample_label']])) {
-                    $mtbRifConcordance[$mtbRifSubmission['sample_label']] = array(
-                        "withinRange" => 0,
-                        "outsideOfRange" => 0,
-                        "totalValidSubmissions" => 0,
-                    );
-                }
-                if ($mtbRifSubmission["calculated_score"] == 'pass') {
-                    $mtbRifConcordance[$mtbRifSubmission['sample_label']]["totalValidSubmissions"]++;
-                    if (
-                        abs($mtbRifSubmission["probe_d_ct"] - $mtbRifSubmission["expected_probe_d_ct"]) > $nonConcordanceThreshold ||
-                        abs($mtbRifSubmission["probe_c_ct"] - $mtbRifSubmission["expected_probe_c_ct"]) > $nonConcordanceThreshold ||
-                        abs($mtbRifSubmission["probe_e_ct"] - $mtbRifSubmission["expected_probe_e_ct"]) > $nonConcordanceThreshold ||
-                        abs($mtbRifSubmission["probe_b_ct"] - $mtbRifSubmission["expected_probe_b_ct"]) > $nonConcordanceThreshold ||
-                        abs($mtbRifSubmission["probe_spc_ct"] - $mtbRifSubmission["expected_probe_spc_ct"]) > $nonConcordanceThreshold ||
-                        abs($mtbRifSubmission["probe_a_ct"] - $mtbRifSubmission["expected_probe_a_ct"]) > $nonConcordanceThreshold
-                    ) {
-                        $mtbRifConcordance[$mtbRifSubmission['sample_label']]["outsideOfRange"]++;
-                    } else {
-                        $mtbRifConcordance[$mtbRifSubmission['sample_label']]["withinRange"]++;
-                    }
-                }
-            }
-
-            $rowIndex = 4;
-            $columnIndex = 0;
-            $currentParticipantId = $mtbRifSubmissions[0]["unique_identifier"];
-            $recordIndex = 0;
-            while ($mtbRifSubmissions[$recordIndex]["unique_identifier"] == $currentParticipantId) {
-                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmissions[$recordIndex]["sample_label"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-                $columnIndex++;
-                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmissions[$recordIndex]["sample_label"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-                $columnIndex++;
-                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmissions[$recordIndex]["sample_label"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-                $mtbRifConcordanceSheet->mergeCells("A".($rowIndex).":C".($rowIndex));
-                $columnIndex++;
-                $concordanceTotals = $mtbRifConcordance[$mtbRifSubmissions[$recordIndex]["sample_label"]];
-                $sampleConcordance = $concordanceTotals["withinRange"] / $concordanceTotals["totalValidSubmissions"];
-                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($sampleConcordance, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                if($sampleConcordance < $expectedConcordance) {
-                    $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
-                }
-                $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->getNumberFormat()->applyFromArray(
-                    array(
-                        'code' => PHPExcel_Style_NumberFormat::FORMAT_PERCENTAGE_00
-                    )
-                );
-                $columnIndex++;
-                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmissions[$recordIndex]["expected_probe_d_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                $columnIndex++;
-                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmissions[$recordIndex]["expected_probe_c_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                $columnIndex++;
-                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmissions[$recordIndex]["expected_probe_b_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                $columnIndex++;
-                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmissions[$recordIndex]["expected_probe_e_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                $columnIndex++;
-                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmissions[$recordIndex]["expected_probe_spc_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                $columnIndex++;
-                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmissions[$recordIndex]["expected_probe_a_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                $rowIndex++;
+                $mtbRifStabilitySheet = new PHPExcel_Worksheet($excel, "Xpert MTB RIF Stability");
+                $excel->addSheet($mtbRifStabilitySheet, $sheetIndex);
+                $sheetIndex++;
+                $mtbRifStabilitySheet->getCellByColumnAndRow(0, 1)->setValueExplicit(html_entity_decode("MTB/RIF Panel Stability for " . $mtbRifSubmissions[0]["shipment_code"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifStabilitySheet->getStyleByColumnAndRow(0, 1)->applyFromArray($sheetHeaderStyle);
+                $mtbRifStabilitySheet->getRowDimension(1)->setRowHeight(25);
+                $rowIndex = 3;
                 $columnIndex = 0;
-                $recordIndex++;
-            }
-
-            $rowIndex++;
-            $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("PT ID", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Participant", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Country", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Sample", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe D", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe C", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe E", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe B", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe SPC", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe A", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $rowIndex++;
-
-            $currentParticipantId = "";
-            foreach ($mtbRifSubmissions as $mtbRifSubmission) {
-                try {
-                    $columnIndex = 0;
-                    if ($currentParticipantId != $mtbRifSubmission["unique_identifier"]) {
-                        $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmission["unique_identifier"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-                        $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($sampleLabelStyle);
+                $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Sample", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("# Valid Submissions", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe D", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe C", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe E", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe B", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe SPC", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe A", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $rowIndex++;
+                foreach ($mtbRifStability as $mtbRifStabilitySample) {
+                    try {
+                        $columnIndex = 0;
+                        $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["sample_label"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                        $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($sampleLabelStyle);
                         $columnIndex++;
-                        $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmission["participant_name"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-                        $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($sampleLabelStyle);
+                        $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["number_of_valid_submissions"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($sampleLabelStyle);
                         $columnIndex++;
-                        $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmission["country"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-                        $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($sampleLabelStyle);
+                        $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Mean", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
                         $columnIndex++;
-                        $currentParticipantId = $mtbRifSubmission["unique_identifier"];
-                    } else {
+                        $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["mean_probe_d_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        if (abs($mtbRifStabilitySample["mean_probe_d_ct"] - $mtbRifStabilitySample["expected_probe_d_ct"]) > $nonConcordanceThreshold) {
+                            $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
+                        }
                         $columnIndex++;
+                        $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["mean_probe_c_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        if (abs($mtbRifStabilitySample["mean_probe_c_ct"] - $mtbRifStabilitySample["expected_probe_c_ct"]) > $nonConcordanceThreshold) {
+                            $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
+                        }
                         $columnIndex++;
+                        $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["mean_probe_e_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        if (abs($mtbRifStabilitySample["mean_probe_e_ct"] - $mtbRifStabilitySample["expected_probe_e_ct"]) > $nonConcordanceThreshold) {
+                            $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
+                        }
                         $columnIndex++;
+                        $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["mean_probe_b_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        if (abs($mtbRifStabilitySample["mean_probe_b_ct"] - $mtbRifStabilitySample["expected_probe_b_ct"]) > $nonConcordanceThreshold) {
+                            $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
+                        }
+                        $columnIndex++;
+                        $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["mean_probe_spc_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        if (abs($mtbRifStabilitySample["mean_probe_spc_ct"] - $mtbRifStabilitySample["expected_probe_spc_ct"]) > $nonConcordanceThreshold) {
+                            $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
+                        }
+                        $columnIndex++;
+                        $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["mean_probe_a_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        if (abs($mtbRifStabilitySample["mean_probe_a_ct"] - $mtbRifStabilitySample["expected_probe_a_ct"]) > $nonConcordanceThreshold) {
+                            $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
+                        }
+                        $columnIndex = 2;
+                        $rowIndex++;
+                        $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Expected", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                        $columnIndex++;
+                        $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["expected_probe_d_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        $columnIndex++;
+                        $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["expected_probe_c_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        $columnIndex++;
+                        $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["expected_probe_e_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        $columnIndex++;
+                        $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["expected_probe_b_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        $columnIndex++;
+                        $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["expected_probe_spc_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        $columnIndex++;
+                        $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["expected_probe_a_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        $rowIndex++;
+                    } catch (Exception $e) {
+                        error_log($e->getMessage(), 0);
+                        error_log($e->getTraceAsString(), 0);
                     }
-                    $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmission["sample_label"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-                    $columnIndex++;
-                    $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmission["probe_d_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    if (abs($mtbRifSubmission["probe_d_ct"] - $mtbRifSubmission["expected_probe_d_ct"]) > $nonConcordanceThreshold) {
-                        $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
-                    }
-                    $columnIndex++;
-                    $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmission["probe_c_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    if (abs($mtbRifSubmission["probe_c_ct"] - $mtbRifSubmission["expected_probe_c_ct"]) > $nonConcordanceThreshold) {
-                        $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
-                    }
-                    $columnIndex++;
-                    $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmission["probe_e_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    if (abs($mtbRifSubmission["probe_e_ct"] - $mtbRifSubmission["expected_probe_e_ct"]) > $nonConcordanceThreshold) {
-                        $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
-                    }
-                    $columnIndex++;
-                    $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmission["probe_b_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    if (abs($mtbRifSubmission["probe_b_ct"] - $mtbRifSubmission["expected_probe_b_ct"]) > $nonConcordanceThreshold) {
-                        $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
-                    }
-                    $columnIndex++;
-                    $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmission["probe_spc_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    if (abs($mtbRifSubmission["probe_spc_ct"] - $mtbRifSubmission["expected_probe_spc_ct"]) > $nonConcordanceThreshold) {
-                        $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
-                    }
-                    $columnIndex++;
-                    $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmission["probe_a_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    if (abs($mtbRifSubmission["probe_a_ct"] - $mtbRifSubmission["expected_probe_a_ct"]) > $nonConcordanceThreshold) {
-                        $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
-                    }
+                }
+                $rowIndex = 4;
+                foreach ($mtbRifStability as $mtbRifStabilitySample) {
+                    $mtbRifStabilitySheet->mergeCells("A" . ($rowIndex) . ":A" . ($rowIndex + 1));
+                    $mtbRifStabilitySheet->mergeCells("B" . ($rowIndex) . ":B" . ($rowIndex + 1));
+                    $rowIndex++;
                     $rowIndex++;
                 }
-                catch (Exception $e) {
-                    error_log($e->getMessage(), 0);
-                    error_log($e->getTraceAsString(), 0);
+                $mtbRifStabilitySheet->getDefaultRowDimension()->setRowHeight(15);
+                foreach (range('A', 'Z') as $columnID) {
+                    $mtbRifStabilitySheet->getColumnDimension($columnID)->setAutoSize(true);
+                }
+
+                $mtbRifConcordanceSheet = new PHPExcel_Worksheet($excel, "Xpert MTB RIF Concordance");
+                $excel->addSheet($mtbRifConcordanceSheet, $sheetIndex);
+                $sheetIndex++;
+
+                $mtbRifConcordanceSheet->getCellByColumnAndRow(0, 1)->setValueExplicit(html_entity_decode("MTB/RIF Panel Concordance for " . $mtbRifSubmissions[0]["shipment_code"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifConcordanceSheet->getStyleByColumnAndRow(0, 1)->applyFromArray($sheetHeaderStyle);
+                $mtbRifConcordanceSheet->getRowDimension(1)->setRowHeight(25);
+                $rowIndex = 3;
+                $columnIndex = 0;
+                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Expected Values", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $mtbRifConcordanceSheet->mergeCells("A" . ($rowIndex) . ":C" . ($rowIndex));
+                $columnIndex++;
+                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Concordance", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe D", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe C", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe E", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe B", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe SPC", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe A", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+
+                $mtbRifConcordance = array();
+                foreach ($mtbRifSubmissions as $mtbRifSubmission) {
+                    if (!isset($mtbRifConcordance[$mtbRifSubmission['sample_label']])) {
+                        $mtbRifConcordance[$mtbRifSubmission['sample_label']] = array(
+                            "withinRange" => 0,
+                            "outsideOfRange" => 0,
+                            "totalValidSubmissions" => 0,
+                        );
+                    }
+                    if ($mtbRifSubmission["calculated_score"] == 'pass') {
+                        $mtbRifConcordance[$mtbRifSubmission['sample_label']]["totalValidSubmissions"]++;
+                        if (
+                            abs($mtbRifSubmission["probe_d_ct"] - $mtbRifSubmission["expected_probe_d_ct"]) > $nonConcordanceThreshold ||
+                            abs($mtbRifSubmission["probe_c_ct"] - $mtbRifSubmission["expected_probe_c_ct"]) > $nonConcordanceThreshold ||
+                            abs($mtbRifSubmission["probe_e_ct"] - $mtbRifSubmission["expected_probe_e_ct"]) > $nonConcordanceThreshold ||
+                            abs($mtbRifSubmission["probe_b_ct"] - $mtbRifSubmission["expected_probe_b_ct"]) > $nonConcordanceThreshold ||
+                            abs($mtbRifSubmission["probe_spc_ct"] - $mtbRifSubmission["expected_probe_spc_ct"]) > $nonConcordanceThreshold ||
+                            abs($mtbRifSubmission["probe_a_ct"] - $mtbRifSubmission["expected_probe_a_ct"]) > $nonConcordanceThreshold
+                        ) {
+                            $mtbRifConcordance[$mtbRifSubmission['sample_label']]["outsideOfRange"]++;
+                        } else {
+                            $mtbRifConcordance[$mtbRifSubmission['sample_label']]["withinRange"]++;
+                        }
+                    }
+                }
+
+                $rowIndex = 4;
+                $columnIndex = 0;
+                $currentParticipantId = $mtbRifSubmissions[0]["unique_identifier"];
+                $recordIndex = 0;
+                while ($mtbRifSubmissions[$recordIndex]["unique_identifier"] == $currentParticipantId) {
+                    $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmissions[$recordIndex]["sample_label"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                    $columnIndex++;
+                    $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmissions[$recordIndex]["sample_label"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                    $columnIndex++;
+                    $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmissions[$recordIndex]["sample_label"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                    $mtbRifConcordanceSheet->mergeCells("A" . ($rowIndex) . ":C" . ($rowIndex));
+                    $columnIndex++;
+                    $concordanceTotals = $mtbRifConcordance[$mtbRifSubmissions[$recordIndex]["sample_label"]];
+                    $sampleConcordance = $concordanceTotals["withinRange"] / $concordanceTotals["totalValidSubmissions"];
+                    $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($sampleConcordance, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                    if ($sampleConcordance < $expectedConcordance) {
+                        $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
+                    }
+                    $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->getNumberFormat()->applyFromArray(
+                        array(
+                            'code' => PHPExcel_Style_NumberFormat::FORMAT_PERCENTAGE_00
+                        )
+                    );
+                    $columnIndex++;
+                    $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmissions[$recordIndex]["expected_probe_d_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                    $columnIndex++;
+                    $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmissions[$recordIndex]["expected_probe_c_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                    $columnIndex++;
+                    $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmissions[$recordIndex]["expected_probe_b_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                    $columnIndex++;
+                    $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmissions[$recordIndex]["expected_probe_e_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                    $columnIndex++;
+                    $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmissions[$recordIndex]["expected_probe_spc_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                    $columnIndex++;
+                    $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmissions[$recordIndex]["expected_probe_a_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                    $rowIndex++;
+                    $columnIndex = 0;
+                    $recordIndex++;
+                }
+
+                $rowIndex++;
+                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("PT ID", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Participant", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Country", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Sample", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe D", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe C", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe E", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe B", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe SPC", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe A", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $rowIndex++;
+
+                $currentParticipantId = "";
+                foreach ($mtbRifSubmissions as $mtbRifSubmission) {
+                    try {
+                        $columnIndex = 0;
+                        if ($currentParticipantId != $mtbRifSubmission["unique_identifier"]) {
+                            $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmission["unique_identifier"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                            $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($sampleLabelStyle);
+                            $columnIndex++;
+                            $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmission["participant_name"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                            $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($sampleLabelStyle);
+                            $columnIndex++;
+                            $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmission["country"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                            $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($sampleLabelStyle);
+                            $columnIndex++;
+                            $currentParticipantId = $mtbRifSubmission["unique_identifier"];
+                        } else {
+                            $columnIndex++;
+                            $columnIndex++;
+                            $columnIndex++;
+                        }
+                        $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmission["sample_label"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                        $columnIndex++;
+                        $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmission["probe_d_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        if (abs($mtbRifSubmission["probe_d_ct"] - $mtbRifSubmission["expected_probe_d_ct"]) > $nonConcordanceThreshold) {
+                            $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
+                        }
+                        $columnIndex++;
+                        $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmission["probe_c_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        if (abs($mtbRifSubmission["probe_c_ct"] - $mtbRifSubmission["expected_probe_c_ct"]) > $nonConcordanceThreshold) {
+                            $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
+                        }
+                        $columnIndex++;
+                        $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmission["probe_e_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        if (abs($mtbRifSubmission["probe_e_ct"] - $mtbRifSubmission["expected_probe_e_ct"]) > $nonConcordanceThreshold) {
+                            $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
+                        }
+                        $columnIndex++;
+                        $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmission["probe_b_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        if (abs($mtbRifSubmission["probe_b_ct"] - $mtbRifSubmission["expected_probe_b_ct"]) > $nonConcordanceThreshold) {
+                            $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
+                        }
+                        $columnIndex++;
+                        $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmission["probe_spc_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        if (abs($mtbRifSubmission["probe_spc_ct"] - $mtbRifSubmission["expected_probe_spc_ct"]) > $nonConcordanceThreshold) {
+                            $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
+                        }
+                        $columnIndex++;
+                        $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmission["probe_a_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        if (abs($mtbRifSubmission["probe_a_ct"] - $mtbRifSubmission["expected_probe_a_ct"]) > $nonConcordanceThreshold) {
+                            $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
+                        }
+                        $rowIndex++;
+                    } catch (Exception $e) {
+                        error_log($e->getMessage(), 0);
+                        error_log($e->getTraceAsString(), 0);
+                    }
+                }
+
+                foreach (range('A', 'Z') as $columnID) {
+                    $mtbRifConcordanceSheet->getColumnDimension($columnID)->setAutoSize(true);
                 }
             }
 
-            foreach(range('A','Z') as $columnID) {
-                $mtbRifConcordanceSheet->getColumnDimension($columnID)->setAutoSize(true);
-            }
-        }
-
-        $mtbUltraAssayName = "Xpert MTB Ultra";
-        $mtbUltraSubmissions = $db->query("SELECT s.shipment_id,
+            $mtbUltraAssayName = "Xpert MTB Ultra";
+            $mtbUltraSubmissions = $db->query("SELECT s.shipment_id,
   s.shipment_code,
   LPAD(p.unique_identifier, 10, '0') AS sorting_unique_identifier,
   p.unique_identifier,
@@ -5691,9 +5765,9 @@ AND SUBSTRING(spm.evaluation_status, 4, 1) = '1'
 AND IFNULL(spm.is_excluded, 'no') = 'no'
 AND a.name = ?
 ORDER BY sorting_unique_identifier ASC, res.sample_id ASC;", array($params['shipmentId'], $mtbUltraAssayName))
-            ->fetchAll();
-        if (count($mtbUltraSubmissions) > 0) {
-            $mtbUltraStability = $db->query("SELECT stability_mtb_ultra.shipment_id,
+                ->fetchAll();
+            if (count($mtbUltraSubmissions) > 0) {
+                $mtbUltraStability = $db->query("SELECT stability_mtb_ultra.shipment_id,
   stability_mtb_ultra.shipment_code,
   stability_mtb_ultra.assay,
   stability_mtb_ultra.sample_label,
@@ -5743,326 +5817,319 @@ FROM (SELECT s.shipment_id,
       AND a.name = ?
       GROUP BY ref.sample_id) AS stability_mtb_ultra
 ORDER BY stability_mtb_ultra.sample_id;", array($params['shipmentId'], $mtbUltraAssayName))
-                ->fetchAll();
+                    ->fetchAll();
 
-            $mtbUltraStabilitySheet = new PHPExcel_Worksheet($excel, "Xpert MTB Ultra Stability");
-            $excel->addSheet($mtbUltraStabilitySheet, $sheetIndex);
-            $sheetIndex++;
-            $mtbUltraStabilitySheet->getCellByColumnAndRow(0, 1)->setValueExplicit(html_entity_decode("MTB Ultra Panel Stability for ".$mtbUltraSubmissions[0]["shipment_code"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbUltraStabilitySheet->getStyleByColumnAndRow(0, 1)->applyFromArray($sheetHeaderStyle);
-            $mtbUltraStabilitySheet->getRowDimension(1)->setRowHeight(25);
-            $rowIndex = 3;
-            $columnIndex = 0;
-            $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Sample", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("# Valid Submissions", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe SPC", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe IS1081-IS6110", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe rpoB1", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe rpoB2", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe rpoB3", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe rpoB4", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $rowIndex++;
-            foreach ($mtbUltraStability as $mtbUltraStabilitySample) {
-                try {
-                    $columnIndex = 0;
-                    $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["sample_label"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-                    $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($sampleLabelStyle);
-                    $columnIndex++;
-                    $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["number_of_valid_submissions"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($sampleLabelStyle);
-                    $columnIndex++;
-                    $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Mean", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-                    $columnIndex++;
-                    $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["mean_probe_spc_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    if (abs($mtbUltraStabilitySample["mean_probe_spc_ct"] - $mtbUltraStabilitySample["expected_probe_spc_ct"]) > $nonConcordanceThreshold) {
-                        $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
-                    }
-                    $columnIndex++;
-                    $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["mean_probe_is1081_is6110_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    if (abs($mtbUltraStabilitySample["mean_probe_is1081_is6110_ct"] - $mtbUltraStabilitySample["expected_probe_is1081_is6110_ct"]) > $nonConcordanceThreshold) {
-                        $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
-                    }
-                    $columnIndex++;
-                    $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["mean_probe_rpo_b1_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    if (abs($mtbUltraStabilitySample["mean_probe_rpo_b1_ct"] - $mtbUltraStabilitySample["expected_probe_rpo_b1_ct"]) > $nonConcordanceThreshold) {
-                        $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
-                    }
-                    $columnIndex++;
-                    $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["mean_probe_rpo_b2_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    if (abs($mtbUltraStabilitySample["mean_probe_rpo_b2_ct"] - $mtbUltraStabilitySample["expected_probe_rpo_b2_ct"]) > $nonConcordanceThreshold) {
-                        $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
-                    }
-                    $columnIndex++;
-                    $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["mean_probe_rpo_b3_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    if (abs($mtbUltraStabilitySample["mean_probe_rpo_b3_ct"] - $mtbUltraStabilitySample["expected_probe_rpo_b3_ct"]) > $nonConcordanceThreshold) {
-                        $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
-                    }
-                    $columnIndex++;
-                    $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["mean_probe_rpo_b4_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    if (abs($mtbUltraStabilitySample["mean_probe_rpo_b4_ct"] - $mtbUltraStabilitySample["expected_probe_rpo_b4_ct"]) > $nonConcordanceThreshold) {
-                        $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
-                    }
-                    $columnIndex = 2;
-                    $rowIndex++;
-                    $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Expected", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-                    $columnIndex++;
-                    $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["expected_probe_spc_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    $columnIndex++;
-                    $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["expected_probe_is1081_is6110_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    $columnIndex++;
-                    $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["expected_probe_rpo_b1_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    $columnIndex++;
-                    $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["expected_probe_rpo_b2_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    $columnIndex++;
-                    $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["expected_probe_rpo_b3_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    $columnIndex++;
-                    $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["expected_probe_rpo_b4_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    $rowIndex++;
-                }
-                catch (Exception $e) {
-                    error_log($e->getMessage(), 0);
-                    error_log($e->getTraceAsString(), 0);
-                }
-            }
-            $rowIndex = 4;
-            foreach ($mtbUltraStability as $mtbUltraStabilitySample) {
-                $mtbUltraStabilitySheet->mergeCells("A".($rowIndex).":A".($rowIndex + 1));
-                $mtbUltraStabilitySheet->mergeCells("B".($rowIndex).":B".($rowIndex + 1));
-                $rowIndex++;
-                $rowIndex++;
-            }
-            $mtbUltraStabilitySheet->getDefaultRowDimension()->setRowHeight(15);
-            foreach(range('A','Z') as $columnID) {
-                $mtbUltraStabilitySheet->getColumnDimension($columnID)->setAutoSize(true);
-            }
-
-            $mtbUltraConcordanceSheet = new PHPExcel_Worksheet($excel, "Xpert MTB Ultra Concordance");
-            $excel->addSheet($mtbUltraConcordanceSheet, $sheetIndex);
-            $sheetIndex++;
-
-            $mtbUltraConcordanceSheet->getCellByColumnAndRow(0, 1)->setValueExplicit(html_entity_decode("MTB Ultra Panel Concordance for ".$mtbUltraSubmissions[0]["shipment_code"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbUltraConcordanceSheet->getStyleByColumnAndRow(0, 1)->applyFromArray($sheetHeaderStyle);
-            $mtbUltraConcordanceSheet->getRowDimension(1)->setRowHeight(25);
-            $rowIndex = 3;
-            $columnIndex = 0;
-            $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Expected Values", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $mtbUltraConcordanceSheet->mergeCells("A".($rowIndex).":C".($rowIndex));
-            $columnIndex++;
-            $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Concordance", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe SPC", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe IS1081-IS6110", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe rpoB1", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe rpoB2", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe rpoB3", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe rpoB3", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-
-            $mtbUltraConcordance = array();
-            foreach ($mtbUltraSubmissions as $mtbUltraSubmission) {
-                if (!isset($mtbUltraConcordance[$mtbUltraSubmission['sample_label']])) {
-                    $mtbUltraConcordance[$mtbUltraSubmission['sample_label']] = array(
-                      "withinRange" => 0,
-                      "outsideOfRange" => 0,
-                      "totalValidSubmissions" => 0,
-                    );
-                }
-                if ($mtbUltraSubmission["calculated_score"] == 'pass') {
-                    $mtbUltraConcordance[$mtbUltraSubmission['sample_label']]["totalValidSubmissions"]++;
-                    if (
-                        abs($mtbUltraSubmission["probe_spc_ct"] - $mtbUltraSubmission["expected_probe_spc_ct"]) > $nonConcordanceThreshold ||
-                        abs($mtbUltraSubmission["probe_is1081_is6110_ct"] - $mtbUltraSubmission["expected_probe_is1081_is6110_ct"]) > $nonConcordanceThreshold ||
-                        abs($mtbUltraSubmission["probe_rpo_b1_ct"] - $mtbUltraSubmission["expected_probe_rpo_b1_ct"]) > $nonConcordanceThreshold ||
-                        abs($mtbUltraSubmission["probe_rpo_b2_ct"] - $mtbUltraSubmission["expected_probe_rpo_b2_ct"]) > $nonConcordanceThreshold ||
-                        abs($mtbUltraSubmission["probe_rpo_b3_ct"] - $mtbUltraSubmission["expected_probe_rpo_b3_ct"]) > $nonConcordanceThreshold ||
-                        abs($mtbUltraSubmission["probe_rpo_b4_ct"] - $mtbUltraSubmission["expected_probe_rpo_b4_ct"]) > $nonConcordanceThreshold
-                    ) {
-                        $mtbUltraConcordance[$mtbUltraSubmission['sample_label']]["outsideOfRange"]++;
-                    } else {
-                        $mtbUltraConcordance[$mtbUltraSubmission['sample_label']]["withinRange"]++;
-                    }
-                }
-            }
-
-            $rowIndex = 4;
-            $columnIndex = 0;
-            $currentParticipantId = $mtbUltraSubmissions[0]["unique_identifier"];
-            $recordIndex = 0;
-            while ($mtbUltraSubmissions[$recordIndex]["unique_identifier"] == $currentParticipantId) {
-                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmissions[$recordIndex]["sample_label"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-                $columnIndex++;
-                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmissions[$recordIndex]["sample_label"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-                $columnIndex++;
-                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmissions[$recordIndex]["sample_label"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-                $mtbUltraConcordanceSheet->mergeCells("A".($rowIndex).":C".($rowIndex));
-                $columnIndex++;
-                $concordanceTotals = $mtbUltraConcordance[$mtbUltraSubmissions[$recordIndex]["sample_label"]];
-                $sampleConcordance = $concordanceTotals["withinRange"] / $concordanceTotals["totalValidSubmissions"];
-                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($sampleConcordance, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                if($sampleConcordance < $expectedConcordance) {
-                    $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
-                }
-                $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->getNumberFormat()->applyFromArray(
-                    array(
-                        'code' => PHPExcel_Style_NumberFormat::FORMAT_PERCENTAGE_00
-                    )
-                );
-                $columnIndex++;
-                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmissions[$recordIndex]["expected_probe_spc_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                $columnIndex++;
-                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmissions[$recordIndex]["expected_probe_is1081_is6110_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                $columnIndex++;
-                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmissions[$recordIndex]["expected_probe_rpo_b1_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                $columnIndex++;
-                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmissions[$recordIndex]["expected_probe_rpo_b2_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                $columnIndex++;
-                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmissions[$recordIndex]["expected_probe_rpo_b3_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                $columnIndex++;
-                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmissions[$recordIndex]["expected_probe_rpo_b4_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                $rowIndex++;
+                $mtbUltraStabilitySheet = new PHPExcel_Worksheet($excel, "Xpert MTB Ultra Stability");
+                $excel->addSheet($mtbUltraStabilitySheet, $sheetIndex);
+                $sheetIndex++;
+                $mtbUltraStabilitySheet->getCellByColumnAndRow(0, 1)->setValueExplicit(html_entity_decode("MTB Ultra Panel Stability for " . $mtbUltraSubmissions[0]["shipment_code"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraStabilitySheet->getStyleByColumnAndRow(0, 1)->applyFromArray($sheetHeaderStyle);
+                $mtbUltraStabilitySheet->getRowDimension(1)->setRowHeight(25);
+                $rowIndex = 3;
                 $columnIndex = 0;
-                $recordIndex++;
-            }
-
-            $rowIndex++;
-            $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("PT ID", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Participant", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Country", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Sample", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe SPC", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe IS1081-IS6110", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe rpoB1", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe rpoB2", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe rpoB3", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $columnIndex++;
-            $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe rpoB4", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-            $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
-            $rowIndex++;
-
-            $currentParticipantId = "";
-            foreach ($mtbUltraSubmissions as $mtbUltraSubmission) {
-                try {
-                    $columnIndex = 0;
-                    if ($currentParticipantId != $mtbUltraSubmission["unique_identifier"]) {
-                        $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["unique_identifier"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-                        $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($sampleLabelStyle);
+                $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Sample", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("# Valid Submissions", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe SPC", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe IS1081-IS6110", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe rpoB1", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe rpoB2", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe rpoB3", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe rpoB4", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $rowIndex++;
+                foreach ($mtbUltraStability as $mtbUltraStabilitySample) {
+                    try {
+                        $columnIndex = 0;
+                        $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["sample_label"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                        $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($sampleLabelStyle);
                         $columnIndex++;
-                        $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["participant_name"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-                        $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($sampleLabelStyle);
+                        $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["number_of_valid_submissions"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($sampleLabelStyle);
                         $columnIndex++;
-                        $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["country"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-                        $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($sampleLabelStyle);
+                        $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Mean", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
                         $columnIndex++;
-                        $currentParticipantId = $mtbUltraSubmission["unique_identifier"];
-                    } else {
+                        $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["mean_probe_spc_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        if (abs($mtbUltraStabilitySample["mean_probe_spc_ct"] - $mtbUltraStabilitySample["expected_probe_spc_ct"]) > $nonConcordanceThreshold) {
+                            $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
+                        }
                         $columnIndex++;
+                        $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["mean_probe_is1081_is6110_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        if (abs($mtbUltraStabilitySample["mean_probe_is1081_is6110_ct"] - $mtbUltraStabilitySample["expected_probe_is1081_is6110_ct"]) > $nonConcordanceThreshold) {
+                            $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
+                        }
                         $columnIndex++;
+                        $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["mean_probe_rpo_b1_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        if (abs($mtbUltraStabilitySample["mean_probe_rpo_b1_ct"] - $mtbUltraStabilitySample["expected_probe_rpo_b1_ct"]) > $nonConcordanceThreshold) {
+                            $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
+                        }
                         $columnIndex++;
+                        $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["mean_probe_rpo_b2_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        if (abs($mtbUltraStabilitySample["mean_probe_rpo_b2_ct"] - $mtbUltraStabilitySample["expected_probe_rpo_b2_ct"]) > $nonConcordanceThreshold) {
+                            $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
+                        }
+                        $columnIndex++;
+                        $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["mean_probe_rpo_b3_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        if (abs($mtbUltraStabilitySample["mean_probe_rpo_b3_ct"] - $mtbUltraStabilitySample["expected_probe_rpo_b3_ct"]) > $nonConcordanceThreshold) {
+                            $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
+                        }
+                        $columnIndex++;
+                        $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["mean_probe_rpo_b4_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        if (abs($mtbUltraStabilitySample["mean_probe_rpo_b4_ct"] - $mtbUltraStabilitySample["expected_probe_rpo_b4_ct"]) > $nonConcordanceThreshold) {
+                            $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
+                        }
+                        $columnIndex = 2;
+                        $rowIndex++;
+                        $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Expected", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                        $columnIndex++;
+                        $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["expected_probe_spc_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        $columnIndex++;
+                        $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["expected_probe_is1081_is6110_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        $columnIndex++;
+                        $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["expected_probe_rpo_b1_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        $columnIndex++;
+                        $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["expected_probe_rpo_b2_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        $columnIndex++;
+                        $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["expected_probe_rpo_b3_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        $columnIndex++;
+                        $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["expected_probe_rpo_b4_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        $rowIndex++;
+                    } catch (Exception $e) {
+                        error_log($e->getMessage(), 0);
+                        error_log($e->getTraceAsString(), 0);
                     }
-                    $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["sample_label"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-                    $columnIndex++;
-                    $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["probe_spc_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    if (abs($mtbUltraSubmission["probe_spc_ct"] - $mtbUltraSubmission["expected_probe_spc_ct"]) > $nonConcordanceThreshold) {
-                        $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
-                    }
-                    $columnIndex++;
-                    $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["probe_is1081_is6110_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    if (abs($mtbUltraSubmission["probe_is1081_is6110_ct"] - $mtbUltraSubmission["expected_probe_is1081_is6110_ct"]) > $nonConcordanceThreshold) {
-                        $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
-                    }
-                    $columnIndex++;
-                    $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["probe_rpo_b1_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    if (abs($mtbUltraSubmission["probe_rpo_b1_ct"] - $mtbUltraSubmission["expected_probe_rpo_b1_ct"]) > $nonConcordanceThreshold) {
-                        $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
-                    }
-                    $columnIndex++;
-                    $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["probe_rpo_b2_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    if (abs($mtbUltraSubmission["probe_rpo_b2_ct"] - $mtbUltraSubmission["expected_probe_rpo_b2_ct"]) > $nonConcordanceThreshold) {
-                        $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
-                    }
-                    $columnIndex++;
-                    $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["probe_rpo_b3_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    if (abs($mtbUltraSubmission["probe_rpo_b3_ct"] - $mtbUltraSubmission["expected_probe_rpo_b3_ct"]) > $nonConcordanceThreshold) {
-                        $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
-                    }
-                    $columnIndex++;
-                    $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["probe_rpo_b4_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                    if (abs($mtbUltraSubmission["probe_rpo_b4_ct"] - $mtbUltraSubmission["expected_probe_rpo_b4_ct"]) > $nonConcordanceThreshold) {
-                        $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
-                    }
+                }
+                $rowIndex = 4;
+                foreach ($mtbUltraStability as $mtbUltraStabilitySample) {
+                    $mtbUltraStabilitySheet->mergeCells("A" . ($rowIndex) . ":A" . ($rowIndex + 1));
+                    $mtbUltraStabilitySheet->mergeCells("B" . ($rowIndex) . ":B" . ($rowIndex + 1));
+                    $rowIndex++;
                     $rowIndex++;
                 }
-                catch (Exception $e) {
-                    error_log($e->getMessage(), 0);
-                    error_log($e->getTraceAsString(), 0);
+                $mtbUltraStabilitySheet->getDefaultRowDimension()->setRowHeight(15);
+                foreach (range('A', 'Z') as $columnID) {
+                    $mtbUltraStabilitySheet->getColumnDimension($columnID)->setAutoSize(true);
                 }
-            }
 
-            foreach(range('A','Z') as $columnID) {
-                $mtbUltraConcordanceSheet->getColumnDimension($columnID)->setAutoSize(true);
+                $mtbUltraConcordanceSheet = new PHPExcel_Worksheet($excel, "Xpert MTB Ultra Concordance");
+                $excel->addSheet($mtbUltraConcordanceSheet, $sheetIndex);
+                $sheetIndex++;
+
+                $mtbUltraConcordanceSheet->getCellByColumnAndRow(0, 1)->setValueExplicit(html_entity_decode("MTB Ultra Panel Concordance for " . $mtbUltraSubmissions[0]["shipment_code"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraConcordanceSheet->getStyleByColumnAndRow(0, 1)->applyFromArray($sheetHeaderStyle);
+                $mtbUltraConcordanceSheet->getRowDimension(1)->setRowHeight(25);
+                $rowIndex = 3;
+                $columnIndex = 0;
+                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Expected Values", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $mtbUltraConcordanceSheet->mergeCells("A" . ($rowIndex) . ":C" . ($rowIndex));
+                $columnIndex++;
+                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Concordance", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe SPC", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe IS1081-IS6110", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe rpoB1", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe rpoB2", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe rpoB3", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe rpoB3", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+
+                $mtbUltraConcordance = array();
+                foreach ($mtbUltraSubmissions as $mtbUltraSubmission) {
+                    if (!isset($mtbUltraConcordance[$mtbUltraSubmission['sample_label']])) {
+                        $mtbUltraConcordance[$mtbUltraSubmission['sample_label']] = array(
+                            "withinRange" => 0,
+                            "outsideOfRange" => 0,
+                            "totalValidSubmissions" => 0,
+                        );
+                    }
+                    if ($mtbUltraSubmission["calculated_score"] == 'pass') {
+                        $mtbUltraConcordance[$mtbUltraSubmission['sample_label']]["totalValidSubmissions"]++;
+                        if (
+                            abs($mtbUltraSubmission["probe_spc_ct"] - $mtbUltraSubmission["expected_probe_spc_ct"]) > $nonConcordanceThreshold ||
+                            abs($mtbUltraSubmission["probe_is1081_is6110_ct"] - $mtbUltraSubmission["expected_probe_is1081_is6110_ct"]) > $nonConcordanceThreshold ||
+                            abs($mtbUltraSubmission["probe_rpo_b1_ct"] - $mtbUltraSubmission["expected_probe_rpo_b1_ct"]) > $nonConcordanceThreshold ||
+                            abs($mtbUltraSubmission["probe_rpo_b2_ct"] - $mtbUltraSubmission["expected_probe_rpo_b2_ct"]) > $nonConcordanceThreshold ||
+                            abs($mtbUltraSubmission["probe_rpo_b3_ct"] - $mtbUltraSubmission["expected_probe_rpo_b3_ct"]) > $nonConcordanceThreshold ||
+                            abs($mtbUltraSubmission["probe_rpo_b4_ct"] - $mtbUltraSubmission["expected_probe_rpo_b4_ct"]) > $nonConcordanceThreshold
+                        ) {
+                            $mtbUltraConcordance[$mtbUltraSubmission['sample_label']]["outsideOfRange"]++;
+                        } else {
+                            $mtbUltraConcordance[$mtbUltraSubmission['sample_label']]["withinRange"]++;
+                        }
+                    }
+                }
+
+                $rowIndex = 4;
+                $columnIndex = 0;
+                $currentParticipantId = $mtbUltraSubmissions[0]["unique_identifier"];
+                $recordIndex = 0;
+                while ($mtbUltraSubmissions[$recordIndex]["unique_identifier"] == $currentParticipantId) {
+                    $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmissions[$recordIndex]["sample_label"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                    $columnIndex++;
+                    $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmissions[$recordIndex]["sample_label"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                    $columnIndex++;
+                    $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmissions[$recordIndex]["sample_label"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                    $mtbUltraConcordanceSheet->mergeCells("A" . ($rowIndex) . ":C" . ($rowIndex));
+                    $columnIndex++;
+                    $concordanceTotals = $mtbUltraConcordance[$mtbUltraSubmissions[$recordIndex]["sample_label"]];
+                    $sampleConcordance = $concordanceTotals["withinRange"] / $concordanceTotals["totalValidSubmissions"];
+                    $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($sampleConcordance, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                    if ($sampleConcordance < $expectedConcordance) {
+                        $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
+                    }
+                    $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->getNumberFormat()->applyFromArray(
+                        array(
+                            'code' => PHPExcel_Style_NumberFormat::FORMAT_PERCENTAGE_00
+                        )
+                    );
+                    $columnIndex++;
+                    $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmissions[$recordIndex]["expected_probe_spc_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                    $columnIndex++;
+                    $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmissions[$recordIndex]["expected_probe_is1081_is6110_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                    $columnIndex++;
+                    $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmissions[$recordIndex]["expected_probe_rpo_b1_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                    $columnIndex++;
+                    $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmissions[$recordIndex]["expected_probe_rpo_b2_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                    $columnIndex++;
+                    $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmissions[$recordIndex]["expected_probe_rpo_b3_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                    $columnIndex++;
+                    $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmissions[$recordIndex]["expected_probe_rpo_b4_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                    $rowIndex++;
+                    $columnIndex = 0;
+                    $recordIndex++;
+                }
+
+                $rowIndex++;
+                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("PT ID", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Participant", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Country", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Sample", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe SPC", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe IS1081-IS6110", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe rpoB1", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe rpoB2", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe rpoB3", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
+                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe rpoB4", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $rowIndex++;
+
+                $currentParticipantId = "";
+                foreach ($mtbUltraSubmissions as $mtbUltraSubmission) {
+                    try {
+                        $columnIndex = 0;
+                        if ($currentParticipantId != $mtbUltraSubmission["unique_identifier"]) {
+                            $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["unique_identifier"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                            $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($sampleLabelStyle);
+                            $columnIndex++;
+                            $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["participant_name"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                            $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($sampleLabelStyle);
+                            $columnIndex++;
+                            $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["country"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                            $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($sampleLabelStyle);
+                            $columnIndex++;
+                            $currentParticipantId = $mtbUltraSubmission["unique_identifier"];
+                        } else {
+                            $columnIndex++;
+                            $columnIndex++;
+                            $columnIndex++;
+                        }
+                        $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["sample_label"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                        $columnIndex++;
+                        $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["probe_spc_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        if (abs($mtbUltraSubmission["probe_spc_ct"] - $mtbUltraSubmission["expected_probe_spc_ct"]) > $nonConcordanceThreshold) {
+                            $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
+                        }
+                        $columnIndex++;
+                        $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["probe_is1081_is6110_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        if (abs($mtbUltraSubmission["probe_is1081_is6110_ct"] - $mtbUltraSubmission["expected_probe_is1081_is6110_ct"]) > $nonConcordanceThreshold) {
+                            $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
+                        }
+                        $columnIndex++;
+                        $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["probe_rpo_b1_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        if (abs($mtbUltraSubmission["probe_rpo_b1_ct"] - $mtbUltraSubmission["expected_probe_rpo_b1_ct"]) > $nonConcordanceThreshold) {
+                            $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
+                        }
+                        $columnIndex++;
+                        $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["probe_rpo_b2_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        if (abs($mtbUltraSubmission["probe_rpo_b2_ct"] - $mtbUltraSubmission["expected_probe_rpo_b2_ct"]) > $nonConcordanceThreshold) {
+                            $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
+                        }
+                        $columnIndex++;
+                        $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["probe_rpo_b3_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        if (abs($mtbUltraSubmission["probe_rpo_b3_ct"] - $mtbUltraSubmission["expected_probe_rpo_b3_ct"]) > $nonConcordanceThreshold) {
+                            $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
+                        }
+                        $columnIndex++;
+                        $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["probe_rpo_b4_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        if (abs($mtbUltraSubmission["probe_rpo_b4_ct"] - $mtbUltraSubmission["expected_probe_rpo_b4_ct"]) > $nonConcordanceThreshold) {
+                            $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
+                        }
+                        $rowIndex++;
+                    } catch (Exception $e) {
+                        error_log($e->getMessage(), 0);
+                        error_log($e->getTraceAsString(), 0);
+                    }
+                }
+
+                foreach (range('A', 'Z') as $columnID) {
+                    $mtbUltraConcordanceSheet->getColumnDimension($columnID)->setAutoSize(true);
+                }
             }
         }
 
-
         $excel->setActiveSheetIndex(0);
-        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
-        $shipmentQuery = $db->select('shipment_code')
-            ->from('shipment')
-            ->where('shipment_id=?', $params['shipmentId']);
-        $shipmentResult = $db->fetchRow($shipmentQuery);
         $writer = PHPExcel_IOFactory::createWriter($excel, 'Excel5');
         if (!file_exists(UPLOAD_PATH  . DIRECTORY_SEPARATOR . "generated-reports")) {
             mkdir(UPLOAD_PATH  . DIRECTORY_SEPARATOR . "generated-reports", 0777, true);
