@@ -224,7 +224,7 @@ class Application_Service_Response {
 
         if ($params['scheme'] == 'tb') {
             $attributes = array(
-                "cartridge_lot_no" => $params['cartridgeLotNo'],
+                "cartridge_lot_no" => isset($params['cartridgeLotNo']) ? $params['cartridgeLotNo'] : $params['mtbRifKitLotNo'],
                 "expiry_date" =>  Application_Service_Common::ParseDate($params['expiryDate']),
                 "assay" => $params['assay'],
                 "count_tests_conducted_over_month" => $params['countTestsConductedOverMonth'],
@@ -471,7 +471,7 @@ class Application_Service_Response {
                             'module_name' => $params['moduleName'][$i],
                             'instrument_user' => $params['instrumentUser'][$i],
                             'cartridge_expiration_date' => $cartridgeExpirationDate,
-                            'reagent_lot_id' => $params['cartridgeLotNo'],
+                            'reagent_lot_id' => isset($params['cartridgeLotNo']) ? $params['cartridgeLotNo'] : $params['mtbRifKitLotNo'],
                             'created_by' => $admin,
                             'created_on' => new Zend_Db_Expr('now()')
                         ));
@@ -493,7 +493,7 @@ class Application_Service_Response {
                             'module_name' => $params['moduleName'][$i],
                             'instrument_user' => $params['instrumentUser'][$i],
                             'cartridge_expiration_date' => $cartridgeExpirationDate,
-                            'reagent_lot_id' => $params['cartridgeLotNo'],
+                            'reagent_lot_id' => isset($params['cartridgeLotNo']) ? $params['cartridgeLotNo'] : $params['mtbRifKitLotNo'],
                             'updated_by' => $admin,
                             'updated_on' => new Zend_Db_Expr('now()')
                         ), "shipment_map_id = " . $params['smid'] . " and sample_id = " . $params['sampleId'][$i]);

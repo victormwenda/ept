@@ -556,7 +556,7 @@ class Application_Service_Shipments {
         $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
         $authNameSpace = new Zend_Session_Namespace('datamanagers');
         $attributes = array(
-            "cartridge_lot_no" => $params['cartridgeLotNo'],
+            "cartridge_lot_no" => isset($params['cartridgeLotNo']) ? $params['cartridgeLotNo'] : $params['mtbRifKitLotNo'],
             "expiry_date" => Application_Service_Common::ParseDate($params['expiryDate']),
             "assay" => $params['assay'],
             "count_tests_conducted_over_month" => $params['countTestsConductedOverMonth'],
@@ -686,7 +686,7 @@ class Application_Service_Shipments {
             $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
             $authNameSpace = new Zend_Session_Namespace('datamanagers');
             $attributes = array(
-                "cartridge_lot_no" => $params['cartridgeLotNo'],
+                "cartridge_lot_no" => isset($params['cartridgeLotNo']) ? $params['cartridgeLotNo'] : $params['mtbRifKitLotNo'],
                 "expiry_date" => Application_Service_Common::ParseDate($params['expiryDate']),
                 "assay" => $params['assay'],
                 "count_tests_conducted_over_month" => $params['countTestsConductedOverMonth'],
