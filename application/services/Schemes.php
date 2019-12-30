@@ -87,18 +87,25 @@ class Application_Service_Schemes {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $res = $db->fetchAll($db->select()->from('r_tb_assay'));
         $response = array();
+        $userAgent = new Zend_Http_UserAgent();
         foreach ($res as $row) {
-            $response[$row['id']] = array(
-                'id' => $row['id'],
-                'name' => $row['name'],
-                'analyte1Label' => $row['analyte1Label'],
-                'analyte2Label' => $row['analyte2Label'],
-                'analyte3Label' => $row['analyte3Label'],
-                'analyte4Label' => $row['analyte4Label'],
-                'analyte5Label' => $row['analyte5Label'],
-                'analyte6Label' => $row['analyte6Label'],
-                'includeTraceForMtbDetected' => $row['includeTraceForMtbDetected']
-            );
+            if ($userAgent->getUserAgent() == "okhttp/3.4.1") {
+                if ($row['name'] == "Xpert MTB/RIF") {
+                    $response[$row['id']] = $row['name'];
+                }
+            } else {
+                $response[$row['id']] = array(
+                    'id' => $row['id'],
+                    'name' => $row['name'],
+                    'analyte1Label' => $row['analyte1Label'],
+                    'analyte2Label' => $row['analyte2Label'],
+                    'analyte3Label' => $row['analyte3Label'],
+                    'analyte4Label' => $row['analyte4Label'],
+                    'analyte5Label' => $row['analyte5Label'],
+                    'analyte6Label' => $row['analyte6Label'],
+                    'includeTraceForMtbDetected' => $row['includeTraceForMtbDetected']
+                );
+            }
         }
         return $response;
     }
