@@ -44,8 +44,15 @@ class Api_ResultsController extends Zend_Controller_Action {
                 $sampleIds = $schemeService->getTbSampleIds($sID, $pID);
                 $attributes = $shipment["attributes"];
                 if (isset($attributes)) {
-                    if (!isset($attributes["cartridge_lot_no"])) {
+                    if (!isset($attributes["cartridge_lot_no"]) && !isset($attributes["mtb_rif_kit_lot_no"])) {
                         $attributes["cartridge_lot_no"] = "";
+                        $attributes["mtb_rif_kit_lot_no"] = "";
+                    }
+                    else if (isset($attributes["mtb_rif_kit_lot_no"]) && !isset($attributes["cartridge_lot_no"])) {
+                        $attributes["cartridge_lot_no"] = $attributes["mtb_rif_kit_lot_no"];
+                    }
+                    else if (!isset($attributes["mtb_rif_kit_lot_no"]) && isset($attributes["cartridge_lot_no"])) {
+                        $attributes["mtb_rif_kit_lot_no"] = $attributes["cartridge_lot_no"];
                     }
                     if (!isset($attributes["expiry_date"])) {
                         $attributes["expiry_date"] = "";
@@ -65,6 +72,7 @@ class Api_ResultsController extends Zend_Controller_Action {
                 } else {
                     $attributes = array(
                         "cartridge_lot_no" => "",
+                        "mtb_rif_kit_lot_no" => "",
                         "expiry_date" => "",
                         "assay" => "",
                         "count_tests_conducted_over_month" => "",
@@ -74,6 +82,7 @@ class Api_ResultsController extends Zend_Controller_Action {
                 }
                 $response = array(
                     'cartridgeLotNo' => $attributes["cartridge_lot_no"],
+                    'mtbRifKitLotNo' => $attributes["cartridge_lot_no"],
                     'expiryDate' => Pt_Commons_General::dbDateToString($attributes["expiry_date"]),
                     'testReceiptDate' => Pt_Commons_General::dbDateToString($shipment['shipment_test_report_date']),
                     'assay' => $attributes["assay"],
@@ -119,6 +128,12 @@ class Api_ResultsController extends Zend_Controller_Action {
                         'probe4' => $sample['res_probe_4'],
                         'probe5' => $sample['res_probe_5'],
                         'probe6' => $sample['res_probe_6'],
+                        'probeD' => $sample['res_probe_1'],
+                        'probeC' => $sample['res_probe_2'],
+                        'probeE' => $sample['res_probe_3'],
+                        'probeB' => $sample['res_probe_4'],
+                        'spc' => $sample['res_probe_5'],
+                        'probeA' => $sample['res_probe_6'],
                         'moduleName' => $sample['res_module_name'],
                         'instrumentUser' => $sample['res_instrument_user'],
                         'cartridgeExpirationDate' => Pt_Commons_General::dbDateToString($sample['res_cartridge_expiration_date']),
@@ -176,6 +191,8 @@ class Api_ResultsController extends Zend_Controller_Action {
             $cartridgeLotNo = null;
             if (isset($params['cartridgeLotNo'])) {
                 $cartridgeLotNo = $params['cartridgeLotNo'];
+            } else if (isset($params['mtbRifKitLotNo'])) {
+                $cartridgeLotNo = $params['mtbRifKitLotNo'];
             }
             $shipmentService = new Application_Service_Shipments();
             $shipmentService->updateTbResult($params, $cartridgeExpirationDate, $cartridgeLotNo);
