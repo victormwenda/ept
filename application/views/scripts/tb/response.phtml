@@ -517,7 +517,7 @@ foreach($this->allNotTestedReason as $reason) { ?>
                             </div>
                         </th>
                         <th colspan="2" style="white-space: nowrap;background-color: transparent;">
-                            <input type="text" name="moduleName[<?php echo $index; ?>]"
+                            <input type="text" name="moduleName[<?php echo $index; ?>]" maxlength="2"
                                    class="form-control input-sm" value="<?php echo $sample['res_module_name']; ?>"
                                    title="Please enter the module number for <?php echo $sample['sample_label']; ?>" />
                         </th>
