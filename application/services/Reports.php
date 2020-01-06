@@ -5628,12 +5628,12 @@ ORDER BY sorting_unique_identifier ASC, res.sample_id ASC;", array($params['ship
   stability_mtb_rif.assay,
   stability_mtb_rif.sample_label,
   stability_mtb_rif.number_of_valid_submissions,
-  ROUND(stability_mtb_rif.sum_probe_d_ct / stability_mtb_rif.number_of_valid_submissions, 2) AS mean_probe_d_ct,
-  ROUND(stability_mtb_rif.sum_probe_c_ct / stability_mtb_rif.number_of_valid_submissions, 2) AS mean_probe_c_ct,
-  ROUND(stability_mtb_rif.sum_probe_e_ct / stability_mtb_rif.number_of_valid_submissions, 2) AS mean_probe_e_ct,
-  ROUND(stability_mtb_rif.sum_probe_b_ct / stability_mtb_rif.number_of_valid_submissions, 2) AS mean_probe_b_ct,
-  ROUND(stability_mtb_rif.sum_probe_spc_ct / stability_mtb_rif.number_of_valid_submissions, 2) AS mean_probe_spc_ct,
-  ROUND(stability_mtb_rif.sum_probe_a_ct / stability_mtb_rif.number_of_valid_submissions, 2) AS mean_probe_a_ct,
+  ROUND(stability_mtb_rif.sum_probe_d_ct / stability_mtb_rif.number_of_valid_submissions_probe_d, 2) AS mean_probe_d_ct,
+  ROUND(stability_mtb_rif.sum_probe_c_ct / stability_mtb_rif.number_of_valid_submissions_probe_c, 2) AS mean_probe_c_ct,
+  ROUND(stability_mtb_rif.sum_probe_e_ct / stability_mtb_rif.number_of_valid_submissions_probe_e, 2) AS mean_probe_e_ct,
+  ROUND(stability_mtb_rif.sum_probe_b_ct / stability_mtb_rif.number_of_valid_submissions_probe_b, 2) AS mean_probe_b_ct,
+  ROUND(stability_mtb_rif.sum_probe_spc_ct / stability_mtb_rif.number_of_valid_submissions_probe_spc, 2) AS mean_probe_spc_ct,
+  ROUND(stability_mtb_rif.sum_probe_a_ct / stability_mtb_rif.number_of_valid_submissions_probe_a, 2) AS mean_probe_a_ct,
   stability_mtb_rif.expected_probe_d_ct,
   stability_mtb_rif.expected_probe_c_ct,
   stability_mtb_rif.expected_probe_e_ct,
@@ -5645,7 +5645,18 @@ FROM (SELECT s.shipment_id,
         a.name AS assay,
         ref.sample_id,
         ref.sample_label,
-        SUM(CASE WHEN res.shipment_map_id IS NULL THEN 0 ELSE 1 END) AS number_of_valid_submissions,
+        SUM(CASE WHEN (IFNULL(res.probe_1, 0) > 0 OR IFNULL(ref.mtb_rif_probe_d, 0) = 0) AND
+                      (IFNULL(res.probe_2, 0) > 0 OR IFNULL(ref.mtb_rif_probe_c, 0) = 0) AND
+                      (IFNULL(res.probe_3, 0) > 0 OR IFNULL(ref.mtb_rif_probe_e, 0) = 0) AND
+                      (IFNULL(res.probe_4, 0) > 0 OR IFNULL(ref.mtb_rif_probe_b, 0) = 0) AND
+                      (IFNULL(res.probe_5, 0) > 0 OR IFNULL(ref.mtb_rif_probe_spc, 0) = 0) AND
+                      (IFNULL(res.probe_6, 0) > 0 OR IFNULL(ref.mtb_rif_probe_a, 0) = 0) THEN 1 ELSE 0 END) AS number_of_valid_submissions,
+        SUM(CASE WHEN IFNULL(res.probe_1, 0) > 0 THEN 1 ELSE 1 END) AS number_of_valid_submissions_probe_d,
+        SUM(CASE WHEN IFNULL(res.probe_2, 0) > 0 THEN 1 ELSE 1 END) AS number_of_valid_submissions_probe_c,
+        SUM(CASE WHEN IFNULL(res.probe_3, 0) > 0 THEN 1 ELSE 1 END) AS number_of_valid_submissions_probe_e,
+        SUM(CASE WHEN IFNULL(res.probe_4, 0) > 0 THEN 1 ELSE 1 END) AS number_of_valid_submissions_probe_b,
+        SUM(CASE WHEN IFNULL(res.probe_5, 0) > 0 THEN 1 ELSE 1 END) AS number_of_valid_submissions_probe_spc,
+        SUM(CASE WHEN IFNULL(res.probe_6, 0) > 0 THEN 1 ELSE 1 END) AS number_of_valid_submissions_probe_a,
         SUM(IFNULL(res.probe_1, 0)) AS sum_probe_d_ct,
         SUM(IFNULL(res.probe_2, 0)) AS sum_probe_c_ct,
         SUM(IFNULL(res.probe_3, 0)) AS sum_probe_e_ct,
@@ -5832,7 +5843,14 @@ ORDER BY stability_mtb_rif.sample_id;", array($params['shipmentId'], $mtbRifAssa
                             "totalValidSubmissions" => 0,
                         );
                     }
-                    if ($mtbRifSubmission["calculated_score"] == 'pass') {
+                    if ($mtbRifSubmission["calculated_score"] == 'pass' &&
+                        ($mtbRifSubmission["probe_d_ct"] > 0 ||
+                            $mtbRifSubmission["probe_c_ct"] > 0 ||
+                            $mtbRifSubmission["probe_e_ct"] > 0 ||
+                            $mtbRifSubmission["probe_b_ct"] > 0 ||
+                            $mtbRifSubmission["probe_spc_ct"] > 0 ||
+                            $mtbRifSubmission["probe_a_ct"] > 0)
+                    ) {
                         $mtbRifConcordance[$mtbRifSubmission['sample_label']]["totalValidSubmissions"]++;
                         if (
                             $mtbRifSubmission["probe_d_ct"] - $mtbRifSubmission["expected_probe_d_ct"] > $nonConcordanceThreshold ||
@@ -6035,12 +6053,12 @@ ORDER BY sorting_unique_identifier ASC, res.sample_id ASC;", array($params['ship
   stability_mtb_ultra.assay,
   stability_mtb_ultra.sample_label,
   stability_mtb_ultra.number_of_valid_submissions,
-  ROUND(stability_mtb_ultra.sum_probe_spc_ct / stability_mtb_ultra.number_of_valid_submissions, 2) AS mean_probe_spc_ct,
-  ROUND(stability_mtb_ultra.sum_probe_is1081_is6110_ct / stability_mtb_ultra.number_of_valid_submissions, 2) AS mean_probe_is1081_is6110_ct,
-  ROUND(stability_mtb_ultra.sum_probe_rpo_b1_ct / stability_mtb_ultra.number_of_valid_submissions, 2) AS mean_probe_rpo_b1_ct,
-  ROUND(stability_mtb_ultra.sum_probe_rpo_b2_ct / stability_mtb_ultra.number_of_valid_submissions, 2) AS mean_probe_rpo_b2_ct,
-  ROUND(stability_mtb_ultra.sum_probe_rpo_b3_ct / stability_mtb_ultra.number_of_valid_submissions, 2) AS mean_probe_rpo_b3_ct,
-  ROUND(stability_mtb_ultra.sum_probe_rpo_b4_ct / stability_mtb_ultra.number_of_valid_submissions, 2) AS mean_probe_rpo_b4_ct,
+  ROUND(stability_mtb_ultra.sum_probe_spc_ct / stability_mtb_ultra.number_of_valid_submissions_probe_spc, 2) AS mean_probe_spc_ct,
+  ROUND(stability_mtb_ultra.sum_probe_is1081_is6110_ct / stability_mtb_ultra.number_of_valid_submissions_probe_is1081_is6110, 2) AS mean_probe_is1081_is6110_ct,
+  ROUND(stability_mtb_ultra.sum_probe_rpo_b1_ct / stability_mtb_ultra.number_of_valid_submissions_probe_rpo_b1, 2) AS mean_probe_rpo_b1_ct,
+  ROUND(stability_mtb_ultra.sum_probe_rpo_b2_ct / stability_mtb_ultra.number_of_valid_submissions_probe_rpo_b2, 2) AS mean_probe_rpo_b2_ct,
+  ROUND(stability_mtb_ultra.sum_probe_rpo_b3_ct / stability_mtb_ultra.number_of_valid_submissions_probe_rpo_b3, 2) AS mean_probe_rpo_b3_ct,
+  ROUND(stability_mtb_ultra.sum_probe_rpo_b4_ct / stability_mtb_ultra.number_of_valid_submissions_probe_rpo_b4, 2) AS mean_probe_rpo_b4_ct,
   stability_mtb_ultra.expected_probe_spc_ct,
   stability_mtb_ultra.expected_probe_is1081_is6110_ct,
   stability_mtb_ultra.expected_probe_rpo_b1_ct,
@@ -6052,7 +6070,18 @@ FROM (SELECT s.shipment_id,
         a.name AS assay,
         ref.sample_id,
         ref.sample_label,
-        SUM(CASE WHEN res.shipment_map_id IS NULL THEN 0 ELSE 1 END) AS number_of_valid_submissions,
+        SUM(CASE WHEN (IFNULL(res.probe_1, 0) > 0 OR IFNULL(ref.ultra_probe_spc, 0) = 0) AND
+                      (IFNULL(res.probe_2, 0) > 0 OR IFNULL(ref.ultra_probe_is1081_is6110, 0) = 0) AND
+                      (IFNULL(res.probe_3, 0) > 0 OR IFNULL(ref.ultra_probe_rpo_b1, 0) = 0) AND
+                      (IFNULL(res.probe_4, 0) > 0 OR IFNULL(ref.ultra_probe_rpo_b2, 0) = 0) AND
+                      (IFNULL(res.probe_5, 0) > 0 OR IFNULL(ref.ultra_probe_rpo_b3, 0) = 0) AND
+                      (IFNULL(res.probe_6, 0) > 0 OR IFNULL(ref.ultra_probe_rpo_b4, 0) = 0) THEN 1 ELSE 0 END) AS number_of_valid_submissions,
+        SUM(CASE WHEN IFNULL(res.probe_1, 0) > 0 THEN 1 ELSE 1 END) AS number_of_valid_submissions_probe_spc,
+        SUM(CASE WHEN IFNULL(res.probe_2, 0) > 0 THEN 1 ELSE 1 END) AS number_of_valid_submissions_probe_is1081_is6110,
+        SUM(CASE WHEN IFNULL(res.probe_3, 0) > 0 THEN 1 ELSE 1 END) AS number_of_valid_submissions_probe_rpo_b1,
+        SUM(CASE WHEN IFNULL(res.probe_4, 0) > 0 THEN 1 ELSE 1 END) AS number_of_valid_submissions_probe_rpo_b2,
+        SUM(CASE WHEN IFNULL(res.probe_5, 0) > 0 THEN 1 ELSE 1 END) AS number_of_valid_submissions_probe_rpo_b3,
+        SUM(CASE WHEN IFNULL(res.probe_6, 0) > 0 THEN 1 ELSE 1 END) AS number_of_valid_submissions_probe_rpo_b4,
         SUM(IFNULL(res.probe_1, 0)) AS sum_probe_spc_ct,
         SUM(IFNULL(res.probe_2, 0)) AS sum_probe_is1081_is6110_ct,
         SUM(IFNULL(res.probe_3, 0)) AS sum_probe_rpo_b1_ct,
@@ -6239,7 +6268,14 @@ ORDER BY stability_mtb_ultra.sample_id;", array($params['shipmentId'], $mtbUltra
                             "totalValidSubmissions" => 0,
                         );
                     }
-                    if ($mtbUltraSubmission["calculated_score"] == 'pass') {
+                    if ($mtbUltraSubmission["calculated_score"] == 'pass' &&
+                        ($mtbUltraSubmission["probe_spc_ct"] > 0 ||
+                            $mtbUltraSubmission["probe_is1081_is6110_ct"] > 0 ||
+                            $mtbUltraSubmission["probe_rpo_b1_ct"] > 0 ||
+                            $mtbUltraSubmission["probe_rpo_b2_ct"] > 0 ||
+                            $mtbUltraSubmission["probe_rpo_b3_ct"] > 0 ||
+                            $mtbUltraSubmission["probe_rpo_b4_ct"] > 0)
+                    ) {
                         $mtbUltraConcordance[$mtbUltraSubmission['sample_label']]["totalValidSubmissions"]++;
                         if (
                             $mtbUltraSubmission["probe_spc_ct"] - $mtbUltraSubmission["expected_probe_spc_ct"] > $nonConcordanceThreshold ||
