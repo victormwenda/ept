@@ -98,7 +98,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
                 }
                 $colSize = count($aColumns);
 
-                for ($i = 0; $i < $colSize; $i++) {
+                for ($i = 1; $i < $colSize; $i++) {
                     if ($i < $colSize - 1) {
                         $sWhereSub .= $aColumns[$i] . " LIKE '%" . ($search) . "%' OR ";
                     } else {

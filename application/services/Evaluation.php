@@ -1525,7 +1525,7 @@ class Application_Service_Evaluation {
                 }
                 if ($qcDoneOnTime) {
                     $secondsSinceQcDoneToLastTest = strtotime(Pt_Commons_General::dbDateToString($lastTestDate)) - strtotime(Pt_Commons_General::dbDateToString($shipmentResult[$i]['qc_date']));
-                    $qcDoneOnTime = round($secondsSinceQcDoneToLastTest / (60 * 60 * 24)) < 31;
+                    $qcDoneOnTime = round($secondsSinceQcDoneToLastTest / (60 * 60 * 24)) < 62;
                 }
                 $shipmentResult[$i]['qc_done_on_time'] = $qcDoneOnTime;
                 $shipmentResult[$i]['shipment_score'] = $shipmentScore;

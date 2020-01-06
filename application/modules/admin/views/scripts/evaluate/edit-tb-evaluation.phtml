@@ -675,7 +675,7 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
                             </th>
                             <th style="vertical-align: top;white-space: nowrap;background-color: transparent;">
                                 <input type="text" name="moduleName[<?php echo $index; ?>]" class="form-control input-sm"
-                                       value="<?php echo $result['res_module_name']; ?>"
+                                       value="<?php echo $result['res_module_name']; ?>" maxlength="2"
                                        title="Please enter the module number for <?php echo $result['sample_label']; ?>" />
                             </th>
                             <th colspan="3" style="vertical-align: top;white-space: nowrap;background-color: transparent;">

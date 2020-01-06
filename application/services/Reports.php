@@ -5275,16 +5275,91 @@ JOIN response_result_tb AS res ON res.shipment_map_id = spm.map_id
 JOIN participant AS p ON p.participant_id = spm.participant_id
 WHERE spm.shipment_id = ?
 AND res.error_code <> ''";
+
+        $nonParticipatingCountriesQuery = "SELECT countries.iso_name AS country_name,
+  CASE WHEN spm.is_pt_test_not_performed = 'yes' THEN IFNULL(rntr.not_tested_reason, 'Unknown') ELSE NULL END AS not_tested_reason,
+  SUM(CASE WHEN spm.is_pt_test_not_performed = 'yes' THEN 1 ELSE 0 END) AS is_pt_test_not_performed,
+  COUNT(spm.map_id) AS number_of_participants
+FROM shipment_participant_map AS spm
+JOIN participant AS p ON p.participant_id = spm.participant_id
+JOIN countries ON countries.id = p.country
+LEFT JOIN response_not_tested_reason AS rntr ON rntr.not_tested_reason_id = spm.not_tested_reason
+WHERE spm.shipment_id = ?";
+
+        $discordantResultsQuery = "SELECT mtb_rif_detection_results.sample_label,
+  SUM(CASE WHEN mtb_rif_detection_results.res_mtb_detected = 1 AND mtb_rif_detection_results.ref_mtb_not_detected = 1 THEN 1 ELSE 0 END) AS false_positives,
+  SUM(CASE WHEN mtb_rif_detection_results.res_mtb_not_detected = 1 AND mtb_rif_detection_results.ref_mtb_detected = 1 THEN 1 ELSE 0 END) AS false_negatives,
+  SUM(CASE WHEN mtb_rif_detection_results.res_rif_resistance_detected = 1 AND mtb_rif_detection_results.ref_rif_resistance_not_detected = 1 THEN 1 ELSE 0 END) AS false_resistances
+FROM (
+  SELECT ref.sample_id,
+    ref.sample_label,
+    CASE WHEN res.mtb_detected IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') THEN 1 ELSE 0 END AS res_mtb_detected,
+    CASE WHEN ref.mtb_detected IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') THEN 1 ELSE 0 END AS ref_mtb_detected,
+    CASE WHEN res.mtb_detected = 'notDetected' THEN 1 ELSE 0 END AS res_mtb_not_detected,
+    CASE WHEN ref.mtb_detected = 'notDetected' THEN 1 ELSE 0 END AS ref_mtb_not_detected,
+    CASE WHEN res.mtb_detected IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') AND res.rif_resistance = 'detected' THEN 1 ELSE 0 END AS res_rif_resistance_detected,
+    CASE WHEN ref.rif_resistance = 'detected' THEN 1 ELSE 0 END AS ref_rif_resistance_detected,
+    CASE WHEN res.mtb_detected IN ('notDetected', 'detected', 'high', 'medium', 'low', 'veryLow') AND IFNULL(res.rif_resistance, '') IN ('notDetected', 'na', '') THEN 1 ELSE 0 END AS res_rif_resistance_not_detected,
+    CASE WHEN ref.rif_resistance <> 'detected' THEN 1 ELSE 0 END AS ref_rif_resistance_not_detected
+  FROM shipment_participant_map AS spm
+  JOIN participant AS p ON p.participant_id = spm.participant_id
+  JOIN response_result_tb AS res ON res.shipment_map_id = spm.map_id
+  JOIN reference_result_tb AS ref ON ref.shipment_id = spm.shipment_id
+                                  AND ref.sample_id = res.sample_id
+  WHERE spm.shipment_id = ?
+  AND SUBSTR(spm.evaluation_status, 3, 1) = '1'
+  AND spm.is_pt_test_not_performed <> 'yes'";
+
+        $discordantCountriesQuery = "SELECT mtb_rif_detection_results.country_name,
+  SUM(CASE WHEN (mtb_rif_detection_results.res_mtb_detected = 1 AND mtb_rif_detection_results.ref_mtb_not_detected = 1) OR (mtb_rif_detection_results.res_mtb_not_detected = 1 AND mtb_rif_detection_results.ref_mtb_detected = 1) OR (mtb_rif_detection_results.res_rif_resistance_detected = 1 AND mtb_rif_detection_results.ref_rif_resistance_not_detected = 1) THEN 1 ELSE 0 END) AS discordant,
+  COUNT(mtb_rif_detection_results.country_id) AS total_results
+FROM (
+  SELECT countries.id AS country_id,
+    countries.iso_name AS country_name,
+    CASE WHEN res.mtb_detected IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') THEN 1 ELSE 0 END AS res_mtb_detected,
+    CASE WHEN ref.mtb_detected IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') THEN 1 ELSE 0 END AS ref_mtb_detected,
+    CASE WHEN res.mtb_detected = 'notDetected' THEN 1 ELSE 0 END AS res_mtb_not_detected,
+    CASE WHEN ref.mtb_detected = 'notDetected' THEN 1 ELSE 0 END AS ref_mtb_not_detected,
+    CASE WHEN res.mtb_detected IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') AND res.rif_resistance = 'detected' THEN 1 ELSE 0 END AS res_rif_resistance_detected,
+    CASE WHEN ref.rif_resistance = 'detected' THEN 1 ELSE 0 END AS ref_rif_resistance_detected,
+    CASE WHEN res.mtb_detected IN ('notDetected', 'detected', 'high', 'medium', 'low', 'veryLow') AND IFNULL(res.rif_resistance, '') IN ('notDetected', 'na', '') THEN 1 ELSE 0 END AS res_rif_resistance_not_detected,
+    CASE WHEN ref.rif_resistance <> 'detected' THEN 1 ELSE 0 END AS ref_rif_resistance_not_detected
+  FROM shipment_participant_map AS spm
+  JOIN participant AS p ON p.participant_id = spm.participant_id
+  JOIN countries ON countries.id = p.country
+  JOIN response_result_tb AS res ON res.shipment_map_id = spm.map_id
+  JOIN reference_result_tb AS ref ON ref.shipment_id = spm.shipment_id
+                                  AND ref.sample_id = res.sample_id
+  WHERE spm.shipment_id = 23
+  AND SUBSTR(spm.evaluation_status, 3, 1) = '1'
+  AND spm.is_pt_test_not_performed <> 'yes'";
         if ($authNameSpace->is_ptcc_coordinator) {
             $panelStatisticsQuery .= "
 AND p.country IN (".implode(",",$authNameSpace->countries).")";
             $errorCodesQuery .= "
 AND p.country IN (".implode(",",$authNameSpace->countries).")";
+            $nonParticipatingCountriesQuery .= "
+AND p.country IN (".implode(",",$authNameSpace->countries).")";
+            $discordantResultsQuery .= "
+  AND p.country IN (".implode(",",$authNameSpace->countries).")";
+            $discordantCountriesQuery .= "
+  AND p.country IN (".implode(",",$authNameSpace->countries).")";
         }
         $panelStatisticsQuery .= ";";
         $errorCodesQuery .= "
 GROUP BY res.error_code
 ORDER BY error_code ASC;";
+        $nonParticipatingCountriesQuery .= "
+GROUP BY countries.iso_name, rntr.not_tested_reason
+ORDER BY countries.iso_name, rntr.not_tested_reason ASC;";
+        $discordantResultsQuery .= "
+) AS mtb_rif_detection_results
+GROUP BY mtb_rif_detection_results.sample_id
+ORDER BY mtb_rif_detection_results.sample_id ASC;";
+        $discordantCountriesQuery .= "
+) AS mtb_rif_detection_results
+GROUP BY mtb_rif_detection_results.country_id
+ORDER BY mtb_rif_detection_results.country_name ASC;";
         $panelStatistics = $db->query($panelStatisticsQuery, array($params['shipmentId']))->fetchAll()[0];
         $shipmentQuery = $db->select('shipment_code')
             ->from('shipment')
@@ -5335,6 +5410,76 @@ ORDER BY error_code ASC;";
         $rowIndex++;
         $rowIndex++;
         $columnIndex = 0;
+
+        $nonParticipantingCountries = $db->query($nonParticipatingCountriesQuery, array($params['shipmentId']))->fetchAll();
+        $nonParticipatingCountriesExist = false;
+        $nonParticipationReasons = array();
+        foreach ($nonParticipantingCountries as $nonParticipantingCountry) {
+            if (isset($nonParticipantingCountry['not_tested_reason']) && !in_array($nonParticipantingCountry['not_tested_reason'], $nonParticipationReasons)) {
+                $nonParticipatingCountriesExist = true;
+                array_push($nonParticipationReasons, $nonParticipantingCountry['not_tested_reason']);
+            }
+        }
+        sort($nonParticipationReasons);
+        if ($nonParticipatingCountriesExist) {
+            $nonParticipatingCountriesMap = array();
+            foreach ($nonParticipantingCountries as $nonParticipantingCountry) {
+                if (!array_key_exists($nonParticipantingCountry['country_name'], $nonParticipatingCountriesMap)) {
+                    $nonParticipatingCountriesMap[$nonParticipantingCountry['country_name']] = array(
+                        'not_participated' => 0,
+                        'total_participants' => 0
+                    );
+                    foreach ($nonParticipationReasons as $nonParticipationReason) {
+                        $nonParticipatingCountriesMap[$nonParticipantingCountry['country_name']][$nonParticipationReason] = 0;
+                    }
+                }
+                $nonParticipatingCountriesMap[$nonParticipantingCountry['country_name']]['total_participants'] += intval($nonParticipantingCountry['number_of_participants']);
+                if (isset($nonParticipantingCountry['not_tested_reason'])) {
+                    $nonParticipatingCountriesMap[$nonParticipantingCountry['country_name']][$nonParticipantingCountry['not_tested_reason']] = intval($nonParticipantingCountry['is_pt_test_not_performed']);
+                    $nonParticipatingCountriesMap[$nonParticipantingCountry['country_name']]['not_participated'] += intval($nonParticipantingCountry['is_pt_test_not_performed']);
+                }
+            }
+            $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("List of countries with non-participating sites", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+            $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($rowHeaderStyle);
+            $columnIndex++;
+            foreach ($nonParticipationReasons as $nonParticipationReason) {
+                $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($nonParticipationReason, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($rowHeaderStyle);
+                $columnIndex++;
+            }
+            $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Total", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+            $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($rowHeaderStyle);
+            $columnIndex++;
+            $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Rate non-participation", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+            $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($rowHeaderStyle);
+
+            $rowIndex++;
+            foreach($nonParticipatingCountriesMap as $nonParticipatingCountryName => $nonParticipatingCountryData) {
+                if ($nonParticipatingCountryData['not_participated'] > 0) {
+                    $columnIndex = 0;
+                    $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($nonParticipatingCountryName, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                    $columnIndex++;
+                    foreach ($nonParticipationReasons as $nonParticipationReason) {
+                        if (isset($nonParticipatingCountryData[$nonParticipationReason])) {
+                            $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($nonParticipatingCountryData[$nonParticipationReason], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        }
+                        $columnIndex++;
+                    }
+                    $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($nonParticipatingCountryData['not_participated'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                    $columnIndex++;
+                    $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($nonParticipatingCountryData['not_participated'] / $nonParticipatingCountryData['total_participants'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                    $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->getNumberFormat()->applyFromArray(
+                        array(
+                            'code' => PHPExcel_Style_NumberFormat::FORMAT_PERCENTAGE_00
+                        )
+                    );
+                    $rowIndex++;
+                }
+            }
+            $rowIndex++;
+            $columnIndex = 0;
+        }
+
         $errorCodes = $db->query($errorCodesQuery, array($params['shipmentId']))->fetchAll();
         $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Error Codes Encountered", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
         $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($rowHeaderStyle);
@@ -5349,6 +5494,85 @@ ORDER BY error_code ASC;";
             $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($errorCode['number_of_occurrences'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $rowIndex++;
             $columnIndex = 0;
+        }
+
+        $discordantResults = $db->query($discordantResultsQuery, array($params['shipmentId']))->fetchAll();
+        $rowIndex++;
+        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Discordant Results", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+        $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($rowHeaderStyle);
+        $columnIndex++;
+        foreach ($discordantResults as $discordantResultAggregate) {
+            $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($discordantResultAggregate['sample_label'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+            $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($rowHeaderStyle);
+            $columnIndex++;
+        }
+        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Total", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+        $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($rowHeaderStyle);
+        $rowIndex++;
+        $columnIndex = 0;
+        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("False positives", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+        $falsePositivesTotal = 0;
+        foreach ($discordantResults as $discordantResultAggregate) {
+            $columnIndex++;
+            $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($discordantResultAggregate['false_positives'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $falsePositivesTotal += intval($discordantResultAggregate['false_positives']);
+        }
+        $columnIndex++;
+        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($falsePositivesTotal, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $rowIndex++;
+        $columnIndex = 0;
+        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("False negatives", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+        $falseNegativesTotal = 0;
+        foreach ($discordantResults as $discordantResultAggregate) {
+            $columnIndex++;
+            $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($discordantResultAggregate['false_negatives'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $falseNegativesTotal += intval($discordantResultAggregate['false_negatives']);
+        }
+        $columnIndex++;
+        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($falseNegativesTotal, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $rowIndex++;
+        $columnIndex = 0;
+        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("False resistance", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+        $falseResistanceTotal = 0;
+        foreach ($discordantResults as $discordantResultAggregate) {
+            $columnIndex++;
+            $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($discordantResultAggregate['false_resistances'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $falseResistanceTotal += intval($discordantResultAggregate['false_resistances']);
+        }
+        $columnIndex++;
+        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($falseResistanceTotal, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+
+        $discordantCountries = $db->query($discordantCountriesQuery, array($params['shipmentId']))->fetchAll();
+        $rowIndex++;
+        $rowIndex++;
+        $columnIndex = 0;
+        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("List the countries reporting discordant results + count of discordant results", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+        $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($rowHeaderStyle);
+        $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex + 1, $rowIndex)->applyFromArray($rowHeaderStyle);
+        $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex + 2, $rowIndex)->applyFromArray($rowHeaderStyle);
+        $panelStatisticsSheet->mergeCells("A" . ($rowIndex) . ":C" . ($rowIndex));
+        $rowIndex++;
+        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Country", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+        $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($rowHeaderStyle);
+        $columnIndex++;
+        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("# Discordant", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+        $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($rowHeaderStyle);
+        $columnIndex++;
+        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("% Discordant", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+        $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($rowHeaderStyle);
+        foreach ($discordantCountries as $discordantCountry) {
+            $rowIndex++;
+            $columnIndex = 0;
+            $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($discordantCountry['country_name'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+            $columnIndex++;
+            $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode(intval($discordantCountry['discordant']), ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $columnIndex++;
+            $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode(intval($discordantCountry['discordant']) / intval($discordantCountry['total_results']), ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->getNumberFormat()->applyFromArray(
+                array(
+                    'code' => PHPExcel_Style_NumberFormat::FORMAT_PERCENTAGE_00
+                )
+            );
         }
 
         foreach (range('A', 'Z') as $columnID) {
@@ -5368,6 +5592,7 @@ ORDER BY error_code ASC;";
   a.name AS assay,
   ref.sample_id,
   ref.sample_label,
+  DATEDIFF(res.date_tested, s.shipment_date) AS days_between_shipment_and_test,
   res.probe_1 AS probe_d_ct,
   res.probe_2 AS probe_c_ct,
   res.probe_3 AS probe_e_ct,
@@ -5403,12 +5628,12 @@ ORDER BY sorting_unique_identifier ASC, res.sample_id ASC;", array($params['ship
   stability_mtb_rif.assay,
   stability_mtb_rif.sample_label,
   stability_mtb_rif.number_of_valid_submissions,
-  ROUND(stability_mtb_rif.sum_probe_d_ct / stability_mtb_rif.number_of_valid_submissions, 2) AS mean_probe_d_ct,
-  ROUND(stability_mtb_rif.sum_probe_c_ct / stability_mtb_rif.number_of_valid_submissions, 2) AS mean_probe_c_ct,
-  ROUND(stability_mtb_rif.sum_probe_e_ct / stability_mtb_rif.number_of_valid_submissions, 2) AS mean_probe_e_ct,
-  ROUND(stability_mtb_rif.sum_probe_b_ct / stability_mtb_rif.number_of_valid_submissions, 2) AS mean_probe_b_ct,
-  ROUND(stability_mtb_rif.sum_probe_spc_ct / stability_mtb_rif.number_of_valid_submissions, 2) AS mean_probe_spc_ct,
-  ROUND(stability_mtb_rif.sum_probe_a_ct / stability_mtb_rif.number_of_valid_submissions, 2) AS mean_probe_a_ct,
+  ROUND(stability_mtb_rif.sum_probe_d_ct / stability_mtb_rif.number_of_valid_submissions_probe_d, 2) AS mean_probe_d_ct,
+  ROUND(stability_mtb_rif.sum_probe_c_ct / stability_mtb_rif.number_of_valid_submissions_probe_c, 2) AS mean_probe_c_ct,
+  ROUND(stability_mtb_rif.sum_probe_e_ct / stability_mtb_rif.number_of_valid_submissions_probe_e, 2) AS mean_probe_e_ct,
+  ROUND(stability_mtb_rif.sum_probe_b_ct / stability_mtb_rif.number_of_valid_submissions_probe_b, 2) AS mean_probe_b_ct,
+  ROUND(stability_mtb_rif.sum_probe_spc_ct / stability_mtb_rif.number_of_valid_submissions_probe_spc, 2) AS mean_probe_spc_ct,
+  ROUND(stability_mtb_rif.sum_probe_a_ct / stability_mtb_rif.number_of_valid_submissions_probe_a, 2) AS mean_probe_a_ct,
   stability_mtb_rif.expected_probe_d_ct,
   stability_mtb_rif.expected_probe_c_ct,
   stability_mtb_rif.expected_probe_e_ct,
@@ -5420,7 +5645,18 @@ FROM (SELECT s.shipment_id,
         a.name AS assay,
         ref.sample_id,
         ref.sample_label,
-        SUM(CASE WHEN res.shipment_map_id IS NULL THEN 0 ELSE 1 END) AS number_of_valid_submissions,
+        SUM(CASE WHEN (IFNULL(res.probe_1, 0) > 0 OR IFNULL(ref.mtb_rif_probe_d, 0) = 0) AND
+                      (IFNULL(res.probe_2, 0) > 0 OR IFNULL(ref.mtb_rif_probe_c, 0) = 0) AND
+                      (IFNULL(res.probe_3, 0) > 0 OR IFNULL(ref.mtb_rif_probe_e, 0) = 0) AND
+                      (IFNULL(res.probe_4, 0) > 0 OR IFNULL(ref.mtb_rif_probe_b, 0) = 0) AND
+                      (IFNULL(res.probe_5, 0) > 0 OR IFNULL(ref.mtb_rif_probe_spc, 0) = 0) AND
+                      (IFNULL(res.probe_6, 0) > 0 OR IFNULL(ref.mtb_rif_probe_a, 0) = 0) THEN 1 ELSE 0 END) AS number_of_valid_submissions,
+        SUM(CASE WHEN IFNULL(res.probe_1, 0) > 0 THEN 1 ELSE 1 END) AS number_of_valid_submissions_probe_d,
+        SUM(CASE WHEN IFNULL(res.probe_2, 0) > 0 THEN 1 ELSE 1 END) AS number_of_valid_submissions_probe_c,
+        SUM(CASE WHEN IFNULL(res.probe_3, 0) > 0 THEN 1 ELSE 1 END) AS number_of_valid_submissions_probe_e,
+        SUM(CASE WHEN IFNULL(res.probe_4, 0) > 0 THEN 1 ELSE 1 END) AS number_of_valid_submissions_probe_b,
+        SUM(CASE WHEN IFNULL(res.probe_5, 0) > 0 THEN 1 ELSE 1 END) AS number_of_valid_submissions_probe_spc,
+        SUM(CASE WHEN IFNULL(res.probe_6, 0) > 0 THEN 1 ELSE 1 END) AS number_of_valid_submissions_probe_a,
         SUM(IFNULL(res.probe_1, 0)) AS sum_probe_d_ct,
         SUM(IFNULL(res.probe_2, 0)) AS sum_probe_c_ct,
         SUM(IFNULL(res.probe_3, 0)) AS sum_probe_e_ct,
@@ -5497,32 +5733,32 @@ ORDER BY stability_mtb_rif.sample_id;", array($params['shipmentId'], $mtbRifAssa
                         $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Mean", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
                         $columnIndex++;
                         $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["mean_probe_d_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                        if (abs($mtbRifStabilitySample["mean_probe_d_ct"] - $mtbRifStabilitySample["expected_probe_d_ct"]) > $nonConcordanceThreshold) {
+                        if ($mtbRifStabilitySample["mean_probe_d_ct"] - $mtbRifStabilitySample["expected_probe_d_ct"] > $nonConcordanceThreshold) {
                             $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
                         }
                         $columnIndex++;
                         $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["mean_probe_c_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                        if (abs($mtbRifStabilitySample["mean_probe_c_ct"] - $mtbRifStabilitySample["expected_probe_c_ct"]) > $nonConcordanceThreshold) {
+                        if ($mtbRifStabilitySample["mean_probe_c_ct"] - $mtbRifStabilitySample["expected_probe_c_ct"] > $nonConcordanceThreshold) {
                             $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
                         }
                         $columnIndex++;
                         $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["mean_probe_e_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                        if (abs($mtbRifStabilitySample["mean_probe_e_ct"] - $mtbRifStabilitySample["expected_probe_e_ct"]) > $nonConcordanceThreshold) {
+                        if ($mtbRifStabilitySample["mean_probe_e_ct"] - $mtbRifStabilitySample["expected_probe_e_ct"] > $nonConcordanceThreshold) {
                             $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
                         }
                         $columnIndex++;
                         $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["mean_probe_b_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                        if (abs($mtbRifStabilitySample["mean_probe_b_ct"] - $mtbRifStabilitySample["expected_probe_b_ct"]) > $nonConcordanceThreshold) {
+                        if ($mtbRifStabilitySample["mean_probe_b_ct"] - $mtbRifStabilitySample["expected_probe_b_ct"] > $nonConcordanceThreshold) {
                             $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
                         }
                         $columnIndex++;
                         $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["mean_probe_spc_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                        if (abs($mtbRifStabilitySample["mean_probe_spc_ct"] - $mtbRifStabilitySample["expected_probe_spc_ct"]) > $nonConcordanceThreshold) {
+                        if ($mtbRifStabilitySample["mean_probe_spc_ct"] - $mtbRifStabilitySample["expected_probe_spc_ct"] > $nonConcordanceThreshold) {
                             $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
                         }
                         $columnIndex++;
                         $mtbRifStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifStabilitySample["mean_probe_a_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                        if (abs($mtbRifStabilitySample["mean_probe_a_ct"] - $mtbRifStabilitySample["expected_probe_a_ct"]) > $nonConcordanceThreshold) {
+                        if ($mtbRifStabilitySample["mean_probe_a_ct"] - $mtbRifStabilitySample["expected_probe_a_ct"] > $nonConcordanceThreshold) {
                             $mtbRifStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
                         }
                         $columnIndex = 2;
@@ -5607,15 +5843,22 @@ ORDER BY stability_mtb_rif.sample_id;", array($params['shipmentId'], $mtbRifAssa
                             "totalValidSubmissions" => 0,
                         );
                     }
-                    if ($mtbRifSubmission["calculated_score"] == 'pass') {
+                    if ($mtbRifSubmission["calculated_score"] == 'pass' &&
+                        ($mtbRifSubmission["probe_d_ct"] > 0 ||
+                            $mtbRifSubmission["probe_c_ct"] > 0 ||
+                            $mtbRifSubmission["probe_e_ct"] > 0 ||
+                            $mtbRifSubmission["probe_b_ct"] > 0 ||
+                            $mtbRifSubmission["probe_spc_ct"] > 0 ||
+                            $mtbRifSubmission["probe_a_ct"] > 0)
+                    ) {
                         $mtbRifConcordance[$mtbRifSubmission['sample_label']]["totalValidSubmissions"]++;
                         if (
-                            abs($mtbRifSubmission["probe_d_ct"] - $mtbRifSubmission["expected_probe_d_ct"]) > $nonConcordanceThreshold ||
-                            abs($mtbRifSubmission["probe_c_ct"] - $mtbRifSubmission["expected_probe_c_ct"]) > $nonConcordanceThreshold ||
-                            abs($mtbRifSubmission["probe_e_ct"] - $mtbRifSubmission["expected_probe_e_ct"]) > $nonConcordanceThreshold ||
-                            abs($mtbRifSubmission["probe_b_ct"] - $mtbRifSubmission["expected_probe_b_ct"]) > $nonConcordanceThreshold ||
-                            abs($mtbRifSubmission["probe_spc_ct"] - $mtbRifSubmission["expected_probe_spc_ct"]) > $nonConcordanceThreshold ||
-                            abs($mtbRifSubmission["probe_a_ct"] - $mtbRifSubmission["expected_probe_a_ct"]) > $nonConcordanceThreshold
+                            $mtbRifSubmission["probe_d_ct"] - $mtbRifSubmission["expected_probe_d_ct"] > $nonConcordanceThreshold ||
+                            $mtbRifSubmission["probe_c_ct"] - $mtbRifSubmission["expected_probe_c_ct"] > $nonConcordanceThreshold ||
+                            $mtbRifSubmission["probe_e_ct"] - $mtbRifSubmission["expected_probe_e_ct"] > $nonConcordanceThreshold ||
+                            $mtbRifSubmission["probe_b_ct"] - $mtbRifSubmission["expected_probe_b_ct"] > $nonConcordanceThreshold ||
+                            $mtbRifSubmission["probe_spc_ct"] - $mtbRifSubmission["expected_probe_spc_ct"] > $nonConcordanceThreshold ||
+                            $mtbRifSubmission["probe_a_ct"] - $mtbRifSubmission["expected_probe_a_ct"] > $nonConcordanceThreshold
                         ) {
                             $mtbRifConcordance[$mtbRifSubmission['sample_label']]["outsideOfRange"]++;
                         } else {
@@ -5677,6 +5920,9 @@ ORDER BY stability_mtb_rif.sample_id;", array($params['shipmentId'], $mtbRifAssa
                 $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Sample", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
                 $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
                 $columnIndex++;
+                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("# Days Tested After Shipment", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
                 $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe D", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
                 $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
                 $columnIndex++;
@@ -5718,33 +5964,35 @@ ORDER BY stability_mtb_rif.sample_id;", array($params['shipmentId'], $mtbRifAssa
                         }
                         $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmission["sample_label"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
                         $columnIndex++;
+                        $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmission["days_between_shipment_and_test"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        $columnIndex++;
                         $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmission["probe_d_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                        if (abs($mtbRifSubmission["probe_d_ct"] - $mtbRifSubmission["expected_probe_d_ct"]) > $nonConcordanceThreshold) {
+                        if ($mtbRifSubmission["probe_d_ct"] - $mtbRifSubmission["expected_probe_d_ct"] > $nonConcordanceThreshold) {
                             $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
                         }
                         $columnIndex++;
                         $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmission["probe_c_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                        if (abs($mtbRifSubmission["probe_c_ct"] - $mtbRifSubmission["expected_probe_c_ct"]) > $nonConcordanceThreshold) {
+                        if ($mtbRifSubmission["probe_c_ct"] - $mtbRifSubmission["expected_probe_c_ct"] > $nonConcordanceThreshold) {
                             $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
                         }
                         $columnIndex++;
                         $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmission["probe_e_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                        if (abs($mtbRifSubmission["probe_e_ct"] - $mtbRifSubmission["expected_probe_e_ct"]) > $nonConcordanceThreshold) {
+                        if ($mtbRifSubmission["probe_e_ct"] - $mtbRifSubmission["expected_probe_e_ct"] > $nonConcordanceThreshold) {
                             $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
                         }
                         $columnIndex++;
                         $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmission["probe_b_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                        if (abs($mtbRifSubmission["probe_b_ct"] - $mtbRifSubmission["expected_probe_b_ct"]) > $nonConcordanceThreshold) {
+                        if ($mtbRifSubmission["probe_b_ct"] - $mtbRifSubmission["expected_probe_b_ct"] > $nonConcordanceThreshold) {
                             $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
                         }
                         $columnIndex++;
                         $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmission["probe_spc_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                        if (abs($mtbRifSubmission["probe_spc_ct"] - $mtbRifSubmission["expected_probe_spc_ct"]) > $nonConcordanceThreshold) {
+                        if ($mtbRifSubmission["probe_spc_ct"] - $mtbRifSubmission["expected_probe_spc_ct"] > $nonConcordanceThreshold) {
                             $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
                         }
                         $columnIndex++;
                         $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmission["probe_a_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                        if (abs($mtbRifSubmission["probe_a_ct"] - $mtbRifSubmission["expected_probe_a_ct"]) > $nonConcordanceThreshold) {
+                        if ($mtbRifSubmission["probe_a_ct"] - $mtbRifSubmission["expected_probe_a_ct"] > $nonConcordanceThreshold) {
                             $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
                         }
                         $rowIndex++;
@@ -5769,6 +6017,7 @@ ORDER BY stability_mtb_rif.sample_id;", array($params['shipmentId'], $mtbRifAssa
   a.name AS assay,
   ref.sample_id,
   ref.sample_label,
+  DATEDIFF(res.date_tested, s.shipment_date) AS days_between_shipment_and_test,
   res.probe_1 AS probe_spc_ct,
   res.probe_2 AS probe_is1081_is6110_ct,
   res.probe_3 AS probe_rpo_b1_ct,
@@ -5804,12 +6053,12 @@ ORDER BY sorting_unique_identifier ASC, res.sample_id ASC;", array($params['ship
   stability_mtb_ultra.assay,
   stability_mtb_ultra.sample_label,
   stability_mtb_ultra.number_of_valid_submissions,
-  ROUND(stability_mtb_ultra.sum_probe_spc_ct / stability_mtb_ultra.number_of_valid_submissions, 2) AS mean_probe_spc_ct,
-  ROUND(stability_mtb_ultra.sum_probe_is1081_is6110_ct / stability_mtb_ultra.number_of_valid_submissions, 2) AS mean_probe_is1081_is6110_ct,
-  ROUND(stability_mtb_ultra.sum_probe_rpo_b1_ct / stability_mtb_ultra.number_of_valid_submissions, 2) AS mean_probe_rpo_b1_ct,
-  ROUND(stability_mtb_ultra.sum_probe_rpo_b2_ct / stability_mtb_ultra.number_of_valid_submissions, 2) AS mean_probe_rpo_b2_ct,
-  ROUND(stability_mtb_ultra.sum_probe_rpo_b3_ct / stability_mtb_ultra.number_of_valid_submissions, 2) AS mean_probe_rpo_b3_ct,
-  ROUND(stability_mtb_ultra.sum_probe_rpo_b4_ct / stability_mtb_ultra.number_of_valid_submissions, 2) AS mean_probe_rpo_b4_ct,
+  ROUND(stability_mtb_ultra.sum_probe_spc_ct / stability_mtb_ultra.number_of_valid_submissions_probe_spc, 2) AS mean_probe_spc_ct,
+  ROUND(stability_mtb_ultra.sum_probe_is1081_is6110_ct / stability_mtb_ultra.number_of_valid_submissions_probe_is1081_is6110, 2) AS mean_probe_is1081_is6110_ct,
+  ROUND(stability_mtb_ultra.sum_probe_rpo_b1_ct / stability_mtb_ultra.number_of_valid_submissions_probe_rpo_b1, 2) AS mean_probe_rpo_b1_ct,
+  ROUND(stability_mtb_ultra.sum_probe_rpo_b2_ct / stability_mtb_ultra.number_of_valid_submissions_probe_rpo_b2, 2) AS mean_probe_rpo_b2_ct,
+  ROUND(stability_mtb_ultra.sum_probe_rpo_b3_ct / stability_mtb_ultra.number_of_valid_submissions_probe_rpo_b3, 2) AS mean_probe_rpo_b3_ct,
+  ROUND(stability_mtb_ultra.sum_probe_rpo_b4_ct / stability_mtb_ultra.number_of_valid_submissions_probe_rpo_b4, 2) AS mean_probe_rpo_b4_ct,
   stability_mtb_ultra.expected_probe_spc_ct,
   stability_mtb_ultra.expected_probe_is1081_is6110_ct,
   stability_mtb_ultra.expected_probe_rpo_b1_ct,
@@ -5821,7 +6070,18 @@ FROM (SELECT s.shipment_id,
         a.name AS assay,
         ref.sample_id,
         ref.sample_label,
-        SUM(CASE WHEN res.shipment_map_id IS NULL THEN 0 ELSE 1 END) AS number_of_valid_submissions,
+        SUM(CASE WHEN (IFNULL(res.probe_1, 0) > 0 OR IFNULL(ref.ultra_probe_spc, 0) = 0) AND
+                      (IFNULL(res.probe_2, 0) > 0 OR IFNULL(ref.ultra_probe_is1081_is6110, 0) = 0) AND
+                      (IFNULL(res.probe_3, 0) > 0 OR IFNULL(ref.ultra_probe_rpo_b1, 0) = 0) AND
+                      (IFNULL(res.probe_4, 0) > 0 OR IFNULL(ref.ultra_probe_rpo_b2, 0) = 0) AND
+                      (IFNULL(res.probe_5, 0) > 0 OR IFNULL(ref.ultra_probe_rpo_b3, 0) = 0) AND
+                      (IFNULL(res.probe_6, 0) > 0 OR IFNULL(ref.ultra_probe_rpo_b4, 0) = 0) THEN 1 ELSE 0 END) AS number_of_valid_submissions,
+        SUM(CASE WHEN IFNULL(res.probe_1, 0) > 0 THEN 1 ELSE 1 END) AS number_of_valid_submissions_probe_spc,
+        SUM(CASE WHEN IFNULL(res.probe_2, 0) > 0 THEN 1 ELSE 1 END) AS number_of_valid_submissions_probe_is1081_is6110,
+        SUM(CASE WHEN IFNULL(res.probe_3, 0) > 0 THEN 1 ELSE 1 END) AS number_of_valid_submissions_probe_rpo_b1,
+        SUM(CASE WHEN IFNULL(res.probe_4, 0) > 0 THEN 1 ELSE 1 END) AS number_of_valid_submissions_probe_rpo_b2,
+        SUM(CASE WHEN IFNULL(res.probe_5, 0) > 0 THEN 1 ELSE 1 END) AS number_of_valid_submissions_probe_rpo_b3,
+        SUM(CASE WHEN IFNULL(res.probe_6, 0) > 0 THEN 1 ELSE 1 END) AS number_of_valid_submissions_probe_rpo_b4,
         SUM(IFNULL(res.probe_1, 0)) AS sum_probe_spc_ct,
         SUM(IFNULL(res.probe_2, 0)) AS sum_probe_is1081_is6110_ct,
         SUM(IFNULL(res.probe_3, 0)) AS sum_probe_rpo_b1_ct,
@@ -5898,32 +6158,32 @@ ORDER BY stability_mtb_ultra.sample_id;", array($params['shipmentId'], $mtbUltra
                         $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Mean", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
                         $columnIndex++;
                         $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["mean_probe_spc_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                        if (abs($mtbUltraStabilitySample["mean_probe_spc_ct"] - $mtbUltraStabilitySample["expected_probe_spc_ct"]) > $nonConcordanceThreshold) {
+                        if ($mtbUltraStabilitySample["mean_probe_spc_ct"] - $mtbUltraStabilitySample["expected_probe_spc_ct"] > $nonConcordanceThreshold) {
                             $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
                         }
                         $columnIndex++;
                         $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["mean_probe_is1081_is6110_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                        if (abs($mtbUltraStabilitySample["mean_probe_is1081_is6110_ct"] - $mtbUltraStabilitySample["expected_probe_is1081_is6110_ct"]) > $nonConcordanceThreshold) {
+                        if ($mtbUltraStabilitySample["mean_probe_is1081_is6110_ct"] - $mtbUltraStabilitySample["expected_probe_is1081_is6110_ct"] > $nonConcordanceThreshold) {
                             $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
                         }
                         $columnIndex++;
                         $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["mean_probe_rpo_b1_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                        if (abs($mtbUltraStabilitySample["mean_probe_rpo_b1_ct"] - $mtbUltraStabilitySample["expected_probe_rpo_b1_ct"]) > $nonConcordanceThreshold) {
+                        if ($mtbUltraStabilitySample["mean_probe_rpo_b1_ct"] - $mtbUltraStabilitySample["expected_probe_rpo_b1_ct"] > $nonConcordanceThreshold) {
                             $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
                         }
                         $columnIndex++;
                         $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["mean_probe_rpo_b2_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                        if (abs($mtbUltraStabilitySample["mean_probe_rpo_b2_ct"] - $mtbUltraStabilitySample["expected_probe_rpo_b2_ct"]) > $nonConcordanceThreshold) {
+                        if ($mtbUltraStabilitySample["mean_probe_rpo_b2_ct"] - $mtbUltraStabilitySample["expected_probe_rpo_b2_ct"] > $nonConcordanceThreshold) {
                             $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
                         }
                         $columnIndex++;
                         $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["mean_probe_rpo_b3_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                        if (abs($mtbUltraStabilitySample["mean_probe_rpo_b3_ct"] - $mtbUltraStabilitySample["expected_probe_rpo_b3_ct"]) > $nonConcordanceThreshold) {
+                        if ($mtbUltraStabilitySample["mean_probe_rpo_b3_ct"] - $mtbUltraStabilitySample["expected_probe_rpo_b3_ct"] > $nonConcordanceThreshold) {
                             $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
                         }
                         $columnIndex++;
                         $mtbUltraStabilitySheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraStabilitySample["mean_probe_rpo_b4_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                        if (abs($mtbUltraStabilitySample["mean_probe_rpo_b4_ct"] - $mtbUltraStabilitySample["expected_probe_rpo_b4_ct"]) > $nonConcordanceThreshold) {
+                        if ($mtbUltraStabilitySample["mean_probe_rpo_b4_ct"] - $mtbUltraStabilitySample["expected_probe_rpo_b4_ct"] > $nonConcordanceThreshold) {
                             $mtbUltraStabilitySheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
                         }
                         $columnIndex = 2;
@@ -6008,15 +6268,22 @@ ORDER BY stability_mtb_ultra.sample_id;", array($params['shipmentId'], $mtbUltra
                             "totalValidSubmissions" => 0,
                         );
                     }
-                    if ($mtbUltraSubmission["calculated_score"] == 'pass') {
+                    if ($mtbUltraSubmission["calculated_score"] == 'pass' &&
+                        ($mtbUltraSubmission["probe_spc_ct"] > 0 ||
+                            $mtbUltraSubmission["probe_is1081_is6110_ct"] > 0 ||
+                            $mtbUltraSubmission["probe_rpo_b1_ct"] > 0 ||
+                            $mtbUltraSubmission["probe_rpo_b2_ct"] > 0 ||
+                            $mtbUltraSubmission["probe_rpo_b3_ct"] > 0 ||
+                            $mtbUltraSubmission["probe_rpo_b4_ct"] > 0)
+                    ) {
                         $mtbUltraConcordance[$mtbUltraSubmission['sample_label']]["totalValidSubmissions"]++;
                         if (
-                            abs($mtbUltraSubmission["probe_spc_ct"] - $mtbUltraSubmission["expected_probe_spc_ct"]) > $nonConcordanceThreshold ||
-                            abs($mtbUltraSubmission["probe_is1081_is6110_ct"] - $mtbUltraSubmission["expected_probe_is1081_is6110_ct"]) > $nonConcordanceThreshold ||
-                            abs($mtbUltraSubmission["probe_rpo_b1_ct"] - $mtbUltraSubmission["expected_probe_rpo_b1_ct"]) > $nonConcordanceThreshold ||
-                            abs($mtbUltraSubmission["probe_rpo_b2_ct"] - $mtbUltraSubmission["expected_probe_rpo_b2_ct"]) > $nonConcordanceThreshold ||
-                            abs($mtbUltraSubmission["probe_rpo_b3_ct"] - $mtbUltraSubmission["expected_probe_rpo_b3_ct"]) > $nonConcordanceThreshold ||
-                            abs($mtbUltraSubmission["probe_rpo_b4_ct"] - $mtbUltraSubmission["expected_probe_rpo_b4_ct"]) > $nonConcordanceThreshold
+                            $mtbUltraSubmission["probe_spc_ct"] - $mtbUltraSubmission["expected_probe_spc_ct"] > $nonConcordanceThreshold ||
+                            $mtbUltraSubmission["probe_is1081_is6110_ct"] - $mtbUltraSubmission["expected_probe_is1081_is6110_ct"] > $nonConcordanceThreshold ||
+                            $mtbUltraSubmission["probe_rpo_b1_ct"] - $mtbUltraSubmission["expected_probe_rpo_b1_ct"] > $nonConcordanceThreshold ||
+                            $mtbUltraSubmission["probe_rpo_b2_ct"] - $mtbUltraSubmission["expected_probe_rpo_b2_ct"] > $nonConcordanceThreshold ||
+                            $mtbUltraSubmission["probe_rpo_b3_ct"] - $mtbUltraSubmission["expected_probe_rpo_b3_ct"] > $nonConcordanceThreshold ||
+                            $mtbUltraSubmission["probe_rpo_b4_ct"] - $mtbUltraSubmission["expected_probe_rpo_b4_ct"] > $nonConcordanceThreshold
                         ) {
                             $mtbUltraConcordance[$mtbUltraSubmission['sample_label']]["outsideOfRange"]++;
                         } else {
@@ -6078,6 +6345,9 @@ ORDER BY stability_mtb_ultra.sample_id;", array($params['shipmentId'], $mtbUltra
                 $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Sample", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
                 $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
                 $columnIndex++;
+                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("# Days Tested After Shipment", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
                 $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe SPC", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
                 $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
                 $columnIndex++;
@@ -6119,33 +6389,35 @@ ORDER BY stability_mtb_ultra.sample_id;", array($params['shipmentId'], $mtbUltra
                         }
                         $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["sample_label"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
                         $columnIndex++;
+                        $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["days_between_shipment_and_test"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        $columnIndex++;
                         $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["probe_spc_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                        if (abs($mtbUltraSubmission["probe_spc_ct"] - $mtbUltraSubmission["expected_probe_spc_ct"]) > $nonConcordanceThreshold) {
+                        if ($mtbUltraSubmission["probe_spc_ct"] - $mtbUltraSubmission["expected_probe_spc_ct"] > $nonConcordanceThreshold) {
                             $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
                         }
                         $columnIndex++;
                         $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["probe_is1081_is6110_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                        if (abs($mtbUltraSubmission["probe_is1081_is6110_ct"] - $mtbUltraSubmission["expected_probe_is1081_is6110_ct"]) > $nonConcordanceThreshold) {
+                        if ($mtbUltraSubmission["probe_is1081_is6110_ct"] - $mtbUltraSubmission["expected_probe_is1081_is6110_ct"] > $nonConcordanceThreshold) {
                             $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
                         }
                         $columnIndex++;
                         $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["probe_rpo_b1_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                        if (abs($mtbUltraSubmission["probe_rpo_b1_ct"] - $mtbUltraSubmission["expected_probe_rpo_b1_ct"]) > $nonConcordanceThreshold) {
+                        if ($mtbUltraSubmission["probe_rpo_b1_ct"] - $mtbUltraSubmission["expected_probe_rpo_b1_ct"] > $nonConcordanceThreshold) {
                             $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
                         }
                         $columnIndex++;
                         $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["probe_rpo_b2_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                        if (abs($mtbUltraSubmission["probe_rpo_b2_ct"] - $mtbUltraSubmission["expected_probe_rpo_b2_ct"]) > $nonConcordanceThreshold) {
+                        if ($mtbUltraSubmission["probe_rpo_b2_ct"] - $mtbUltraSubmission["expected_probe_rpo_b2_ct"] > $nonConcordanceThreshold) {
                             $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
                         }
                         $columnIndex++;
                         $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["probe_rpo_b3_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                        if (abs($mtbUltraSubmission["probe_rpo_b3_ct"] - $mtbUltraSubmission["expected_probe_rpo_b3_ct"]) > $nonConcordanceThreshold) {
+                        if ($mtbUltraSubmission["probe_rpo_b3_ct"] - $mtbUltraSubmission["expected_probe_rpo_b3_ct"] > $nonConcordanceThreshold) {
                             $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
                         }
                         $columnIndex++;
                         $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["probe_rpo_b4_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
-                        if (abs($mtbUltraSubmission["probe_rpo_b4_ct"] - $mtbUltraSubmission["expected_probe_rpo_b4_ct"]) > $nonConcordanceThreshold) {
+                        if ($mtbUltraSubmission["probe_rpo_b4_ct"] - $mtbUltraSubmission["expected_probe_rpo_b4_ct"] > $nonConcordanceThreshold) {
                             $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
                         }
                         $rowIndex++;
