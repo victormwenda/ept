@@ -5309,6 +5309,30 @@ FROM (
   WHERE spm.shipment_id = ?
   AND SUBSTR(spm.evaluation_status, 3, 1) = '1'
   AND spm.is_pt_test_not_performed <> 'yes'";
+
+        $discordantCountriesQuery = "SELECT mtb_rif_detection_results.country_name,
+  SUM(CASE WHEN (mtb_rif_detection_results.res_mtb_detected = 1 AND mtb_rif_detection_results.ref_mtb_not_detected = 1) OR (mtb_rif_detection_results.res_mtb_not_detected = 1 AND mtb_rif_detection_results.ref_mtb_detected = 1) OR (mtb_rif_detection_results.res_rif_resistance_detected = 1 AND mtb_rif_detection_results.ref_rif_resistance_not_detected = 1) THEN 1 ELSE 0 END) AS discordant,
+  COUNT(mtb_rif_detection_results.country_id) AS total_results
+FROM (
+  SELECT countries.id AS country_id,
+    countries.iso_name AS country_name,
+    CASE WHEN res.mtb_detected IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') THEN 1 ELSE 0 END AS res_mtb_detected,
+    CASE WHEN ref.mtb_detected IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') THEN 1 ELSE 0 END AS ref_mtb_detected,
+    CASE WHEN res.mtb_detected = 'notDetected' THEN 1 ELSE 0 END AS res_mtb_not_detected,
+    CASE WHEN ref.mtb_detected = 'notDetected' THEN 1 ELSE 0 END AS ref_mtb_not_detected,
+    CASE WHEN res.mtb_detected IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') AND res.rif_resistance = 'detected' THEN 1 ELSE 0 END AS res_rif_resistance_detected,
+    CASE WHEN ref.rif_resistance = 'detected' THEN 1 ELSE 0 END AS ref_rif_resistance_detected,
+    CASE WHEN res.mtb_detected IN ('notDetected', 'detected', 'high', 'medium', 'low', 'veryLow') AND IFNULL(res.rif_resistance, '') IN ('notDetected', 'na', '') THEN 1 ELSE 0 END AS res_rif_resistance_not_detected,
+    CASE WHEN ref.rif_resistance <> 'detected' THEN 1 ELSE 0 END AS ref_rif_resistance_not_detected
+  FROM shipment_participant_map AS spm
+  JOIN participant AS p ON p.participant_id = spm.participant_id
+  JOIN countries ON countries.id = p.country
+  JOIN response_result_tb AS res ON res.shipment_map_id = spm.map_id
+  JOIN reference_result_tb AS ref ON ref.shipment_id = spm.shipment_id
+                                  AND ref.sample_id = res.sample_id
+  WHERE spm.shipment_id = 23
+  AND SUBSTR(spm.evaluation_status, 3, 1) = '1'
+  AND spm.is_pt_test_not_performed <> 'yes'";
         if ($authNameSpace->is_ptcc_coordinator) {
             $panelStatisticsQuery .= "
 AND p.country IN (".implode(",",$authNameSpace->countries).")";
@@ -5317,6 +5341,8 @@ AND p.country IN (".implode(",",$authNameSpace->countries).")";
             $nonParticipatingCountriesQuery .= "
 AND p.country IN (".implode(",",$authNameSpace->countries).")";
             $discordantResultsQuery .= "
+  AND p.country IN (".implode(",",$authNameSpace->countries).")";
+            $discordantCountriesQuery .= "
   AND p.country IN (".implode(",",$authNameSpace->countries).")";
         }
         $panelStatisticsQuery .= ";";
@@ -5330,6 +5356,10 @@ ORDER BY countries.iso_name, rntr.not_tested_reason ASC;";
 ) AS mtb_rif_detection_results
 GROUP BY mtb_rif_detection_results.sample_id
 ORDER BY mtb_rif_detection_results.sample_id ASC;";
+        $discordantCountriesQuery .= "
+) AS mtb_rif_detection_results
+GROUP BY mtb_rif_detection_results.country_id
+ORDER BY mtb_rif_detection_results.country_name ASC;";
         $panelStatistics = $db->query($panelStatisticsQuery, array($params['shipmentId']))->fetchAll()[0];
         $shipmentQuery = $db->select('shipment_code')
             ->from('shipment')
@@ -5512,6 +5542,38 @@ ORDER BY mtb_rif_detection_results.sample_id ASC;";
         $columnIndex++;
         $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($falseResistanceTotal, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
+        $discordantCountries = $db->query($discordantCountriesQuery, array($params['shipmentId']))->fetchAll();
+        $rowIndex++;
+        $rowIndex++;
+        $columnIndex = 0;
+        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("List the countries reporting discordant results + count of discordant results", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+        $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($rowHeaderStyle);
+        $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex + 1, $rowIndex)->applyFromArray($rowHeaderStyle);
+        $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex + 2, $rowIndex)->applyFromArray($rowHeaderStyle);
+        $panelStatisticsSheet->mergeCells("A" . ($rowIndex) . ":C" . ($rowIndex));
+        $rowIndex++;
+        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Country", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+        $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($rowHeaderStyle);
+        $columnIndex++;
+        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("# Discordant", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+        $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($rowHeaderStyle);
+        $columnIndex++;
+        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("% Discordant", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+        $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($rowHeaderStyle);
+        foreach ($discordantCountries as $discordantCountry) {
+            $rowIndex++;
+            $columnIndex = 0;
+            $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($discordantCountry['country_name'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+            $columnIndex++;
+            $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode(intval($discordantCountry['discordant']), ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $columnIndex++;
+            $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode(intval($discordantCountry['discordant']) / intval($discordantCountry['total_results']), ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->getNumberFormat()->applyFromArray(
+                array(
+                    'code' => PHPExcel_Style_NumberFormat::FORMAT_PERCENTAGE_00
+                )
+            );
+        }
 
         foreach (range('A', 'Z') as $columnID) {
             $panelStatisticsSheet->getColumnDimension($columnID)->setAutoSize(true);
