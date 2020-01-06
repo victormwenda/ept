@@ -5592,6 +5592,7 @@ ORDER BY mtb_rif_detection_results.country_name ASC;";
   a.name AS assay,
   ref.sample_id,
   ref.sample_label,
+  DATEDIFF(res.date_tested, s.shipment_date) AS days_between_shipment_and_test,
   res.probe_1 AS probe_d_ct,
   res.probe_2 AS probe_c_ct,
   res.probe_3 AS probe_e_ct,
@@ -5901,6 +5902,9 @@ ORDER BY stability_mtb_rif.sample_id;", array($params['shipmentId'], $mtbRifAssa
                 $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Sample", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
                 $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
                 $columnIndex++;
+                $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("# Days Tested After Shipment", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
                 $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe D", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
                 $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
                 $columnIndex++;
@@ -5941,6 +5945,8 @@ ORDER BY stability_mtb_rif.sample_id;", array($params['shipmentId'], $mtbRifAssa
                             $columnIndex++;
                         }
                         $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmission["sample_label"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                        $columnIndex++;
+                        $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmission["days_between_shipment_and_test"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
                         $columnIndex++;
                         $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbRifSubmission["probe_d_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
                         if ($mtbRifSubmission["probe_d_ct"] - $mtbRifSubmission["expected_probe_d_ct"] > $nonConcordanceThreshold) {
@@ -5993,6 +5999,7 @@ ORDER BY stability_mtb_rif.sample_id;", array($params['shipmentId'], $mtbRifAssa
   a.name AS assay,
   ref.sample_id,
   ref.sample_label,
+  DATEDIFF(res.date_tested, s.shipment_date) AS days_between_shipment_and_test,
   res.probe_1 AS probe_spc_ct,
   res.probe_2 AS probe_is1081_is6110_ct,
   res.probe_3 AS probe_rpo_b1_ct,
@@ -6302,6 +6309,9 @@ ORDER BY stability_mtb_ultra.sample_id;", array($params['shipmentId'], $mtbUltra
                 $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Sample", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
                 $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
                 $columnIndex++;
+                $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("# Days Tested After Shipment", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
+                $columnIndex++;
                 $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode("Ct for Probe SPC", ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
                 $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($columnHeaderStyle);
                 $columnIndex++;
@@ -6342,6 +6352,8 @@ ORDER BY stability_mtb_ultra.sample_id;", array($params['shipmentId'], $mtbUltra
                             $columnIndex++;
                         }
                         $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["sample_label"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                        $columnIndex++;
+                        $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["days_between_shipment_and_test"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
                         $columnIndex++;
                         $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($mtbUltraSubmission["probe_spc_ct"], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
                         if ($mtbUltraSubmission["probe_spc_ct"] - $mtbUltraSubmission["expected_probe_spc_ct"] > $nonConcordanceThreshold) {
