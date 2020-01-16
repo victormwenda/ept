@@ -836,6 +836,13 @@ $dtFormat = $genderHelper->getDateFormat();
             }
           }
         },
+        supervisorApproval: {
+          required: {F
+            depends: function () {
+              return $("input[name='ableToEnterResults']:checked").val() === "yes";
+            }
+          }
+        },
         participantSupervisor: {
           required: {
             depends: function () {

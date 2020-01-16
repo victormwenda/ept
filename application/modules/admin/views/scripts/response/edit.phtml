@@ -341,6 +341,13 @@ if ($this->scheme == 'tb') { ?>
             }
           }
         },
+        supervisorApproval: {
+          required: {
+            depends: function () {
+              return $("input[name='ableToEnterResults']:checked").val() === "yes";
+            }
+          }
+        },
         participantSupervisor: {
           required: {
             depends: function () {
