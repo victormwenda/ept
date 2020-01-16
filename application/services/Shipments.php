@@ -2098,8 +2098,8 @@ class Application_Service_Shipments {
                 'submission_status' => new Zend_Db_Expr("CASE WHEN SUBSTR(spm.evaluation_status, 3, 1) = '9' THEN 'Saved' ELSE 'Submitted' END"),
                 'is_pt_test_not_performed' => 'spm.is_pt_test_not_performed'
             ))
-            ->join(array('ref' => 'reference_result_tb'), 'ref.shipment_id = spm.shipment_id', array('ref.sample_label'))
-            ->join(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id AND res.sample_id = ref.sample_id', array(
+            ->join(array('ref' => 'reference_result_tb'), 'ref.shipment_id = spm.shipment_id', array('ref.sample_label', 'ref.sample_id'))
+            ->joinLeft(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id AND res.sample_id = ref.sample_id', array(
                 'mtb_detected' => new Zend_Db_Expr(
                     "CASE
                                 WHEN res.error_code = 'error' THEN 'Error'
@@ -2135,7 +2135,7 @@ class Application_Service_Shipments {
             ->joinLeft(array('rntr' => 'response_not_tested_reason'), 'rntr.not_tested_reason_id = spm.not_tested_reason', array('rntr.not_tested_reason'))
             ->where("spm.shipment_id = ?", $sid)
             ->where("spm.participant_id = ?", $pid)
-            ->order('res.sample_id ASC');
+            ->order('ref.sample_id ASC');
         $resultsSaved = $db->fetchAll($resultsSql);
         if(count($resultsSaved) > 0) {
 

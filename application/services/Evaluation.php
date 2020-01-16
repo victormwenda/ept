@@ -1281,19 +1281,18 @@ class Application_Service_Evaluation {
             }
 
             $consensusResultsQueryMtbDetected = $db->select()->from(array('spm' => 'shipment_participant_map'), array())
-                ->join(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id', array(
-                    'sample_id',
+                ->join(array('ref' => 'reference_result_tb'),
+                    'ref.shipment_id = spm.shipment_id', array('sample_id'))
+                ->joinLeft(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id AND res.sample_id = ref.sample_id', array(
                     'mtb_detected',
                     'occurrences' => 'COUNT(*)',
                     'matches_reference_result' => 'SUM(CASE WHEN `res`.`mtb_detected` = `ref`.`mtb_detected` THEN 1 ELSE 0 END)'))
-                ->join(array('ref' => 'reference_result_tb'),
-                    'ref.shipment_id = spm.shipment_id AND ref.sample_id = res.sample_id', array())
                 ->where("spm.shipment_id = ?", $shipmentId)
                 ->where("substring(spm.evaluation_status,4,1) != '0'")
                 ->where("spm.is_excluded = 'no'")
-                ->group('res.sample_id')
+                ->group('ref.sample_id')
                 ->group('res.mtb_detected')
-                ->order('res.sample_id ASC')
+                ->order('ref.sample_id ASC')
                 ->order('occurrences DESC')
                 ->order('matches_reference_result DESC');
             $tbResultsConsensusMtbDetected = $db->fetchAll($consensusResultsQueryMtbDetected);
@@ -1324,19 +1323,18 @@ class Application_Service_Evaluation {
             }
 
             $consensusResultsQueryRifDetected = $db->select()->from(array('spm' => 'shipment_participant_map'), array())
-                ->join(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id', array(
-                    'sample_id',
+                ->join(array('ref' => 'reference_result_tb'),
+                    'ref.shipment_id = spm.shipment_id', array('sample_id'))
+                ->joinLeft(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id AND res.sample_id = ref.sample_id', array(
                     'rif_resistance',
                     'occurrences' => 'COUNT(*)',
                     'matches_reference_result' => 'SUM(CASE WHEN `res`.`rif_resistance` = `ref`.`rif_resistance` THEN 1 ELSE 0 END)'))
-                ->join(array('ref' => 'reference_result_tb'),
-                    'ref.shipment_id = spm.shipment_id AND ref.sample_id = res.sample_id', array())
                 ->where("spm.shipment_id = ?", $shipmentId)
                 ->where("substring(spm.evaluation_status,4,1) != '0'")
                 ->where("spm.is_excluded = 'no'")
-                ->group('res.sample_id')
+                ->group('ref.sample_id')
                 ->group('res.rif_resistance')
-                ->order('res.sample_id ASC')
+                ->order('ref.sample_id ASC')
                 ->order('occurrences DESC')
                 ->order('matches_reference_result DESC');
             $tbResultsConsensusRifDetected = $db->fetchAll($consensusResultsQueryRifDetected);
@@ -1427,7 +1425,7 @@ class Application_Service_Evaluation {
                                 new Zend_Db_Expr("COALESCE(res.instrument_last_calibrated_on, instrument.instrument_last_calibrated_on)")))
                     ->where('ref.shipment_id = ? ', $shipmentId)
                     ->where('spm.participant_id = ?', $res['participant_id'])
-                    ->order('res.sample_id ASC');
+                    ->order('ref.sample_id ASC');
                 $tbResults = $db->fetchAll($sql);
 
                 $counter = 0;
@@ -1629,7 +1627,13 @@ class Application_Service_Evaluation {
             $db->update('shipment', array('status' => 'evaluated'), "shipment_id = " . $shipmentId);
             if ($shipmentResult['scheme_type'] == 'tb') {
                 $summaryQuery = $db->select()->from(array('spm' => 'shipment_participant_map'), array())
-                    ->join(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id',
+                    ->join(array('ref' => 'reference_result_tb'),
+                        'ref.shipment_id = spm.shipment_id', array(
+                            'sample_label' => 'ref.sample_label',
+                            'ref_is_excluded' => 'ref.is_excluded',
+                            'ref_is_exempt' => 'ref.is_exempt'
+                        ))
+                    ->joinLeft(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id AND res.sample_id = ref.sample_id',
                         array('mtb_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') THEN 1 ELSE 0 END)",
                             'mtb_not_detected' => "SUM(CASE WHEN `res`.`mtb_detected` = 'notDetected' THEN 1 ELSE 0 END)",
                             'mtb_uninterpretable' => new Zend_Db_Expr("SUM(CASE WHEN IFNULL(`res`.`mtb_detected`, '') IN ('noResult', 'invalid', 'error') THEN 1 ELSE 0 END)"),
@@ -1638,12 +1642,6 @@ class Application_Service_Evaluation {
                             'rif_indeterminate' => "SUM(CASE WHEN `res`.`rif_resistance` = 'indeterminate' THEN 1 ELSE 0 END)",
                             'rif_uninterpretable' => new Zend_Db_Expr("SUM(CASE WHEN IFNULL(`res`.`mtb_detected`, '') IN ('noResult', 'invalid', 'error', '') THEN 1 ELSE 0 END)"),
                             'no_of_responses' => 'COUNT(*)'))
-                    ->join(array('ref' => 'reference_result_tb'),
-                        'ref.shipment_id = spm.shipment_id AND ref.sample_id = res.sample_id', array(
-                            'sample_label' => 'ref.sample_label',
-                            'ref_is_excluded' => 'ref.is_excluded',
-                            'ref_is_exempt' => 'ref.is_exempt'
-                        ))
                     ->where("spm.shipment_id = ?", $shipmentId)
                     ->where("substring(spm.evaluation_status,4,1) != '0'")
                     ->where("spm.is_excluded = 'no'")
@@ -1668,20 +1666,19 @@ class Application_Service_Evaluation {
                 }
 
                 $consensusResultsQueryMtbDetected = $db->select()->from(array('spm' => 'shipment_participant_map'), array())
-                    ->join(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id', array(
-                        'sample_id',
+                    ->join(array('ref' => 'reference_result_tb'),
+                        'ref.shipment_id = spm.shipment_id', array('sample_id'))
+                    ->joinLeft(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id AND res.sample_id = ref.sample_id', array(
                         'mtb_detected',
                         'occurrences' => 'COUNT(*)',
                         'matches_reference_result' => 'SUM(CASE WHEN `res`.`mtb_detected` = `ref`.`mtb_detected` THEN 1 ELSE 0 END)'))
-                    ->join(array('ref' => 'reference_result_tb'),
-                        'ref.shipment_id = spm.shipment_id AND ref.sample_id = res.sample_id', array())
                     ->where("spm.shipment_id = ?", $shipmentId)
                     ->where("substring(spm.evaluation_status,4,1) != '0'")
                     ->where("IFNULL(spm.is_pt_test_not_performed, 'no') = 'no'")
                     ->where("spm.is_excluded = 'no'")
-                    ->group('res.sample_id')
+                    ->group('ref.sample_id')
                     ->group('res.mtb_detected')
-                    ->order('res.sample_id ASC')
+                    ->order('ref.sample_id ASC')
                     ->order('occurrences DESC')
                     ->order('matches_reference_result DESC');
                 $tbResultsConsensusMtbDetected = $db->fetchAll($consensusResultsQueryMtbDetected);
@@ -1707,20 +1704,19 @@ class Application_Service_Evaluation {
                 }
 
                 $consensusResultsQueryRifDetected = $db->select()->from(array('spm' => 'shipment_participant_map'), array())
-                    ->join(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id', array(
-                        'sample_id',
+                    ->join(array('ref' => 'reference_result_tb'),
+                        'ref.shipment_id = spm.shipment_id', array('sample_id'))
+                    ->joinLeft(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id AND res.sample_id = ref.sample_id', array(
                         'rif_resistance',
                         'occurrences' => 'COUNT(*)',
                         'matches_reference_result' => 'SUM(CASE WHEN `res`.`rif_resistance` = `ref`.`rif_resistance` THEN 1 ELSE 0 END)'))
-                    ->join(array('ref' => 'reference_result_tb'),
-                        'ref.shipment_id = spm.shipment_id AND ref.sample_id = res.sample_id', array())
                     ->where("spm.shipment_id = ?", $shipmentId)
                     ->where("substring(spm.evaluation_status,4,1) != '0'")
                     ->where("spm.is_excluded = 'no'")
                     ->where("IFNULL(spm.is_pt_test_not_performed, 'no') = 'no'")
-                    ->group('res.sample_id')
+                    ->group('ref.sample_id')
                     ->group('res.rif_resistance')
-                    ->order('res.sample_id ASC')
+                    ->order('ref.sample_id ASC')
                     ->order('occurrences DESC')
                     ->order('matches_reference_result DESC');
                 $tbResultsConsensusRifDetected = $db->fetchAll($consensusResultsQueryRifDetected);

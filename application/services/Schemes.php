@@ -324,7 +324,8 @@ class Application_Service_Schemes {
                     'res_instrument_last_calibrated_on' =>
                         new Zend_Db_Expr("COALESCE(res.instrument_last_calibrated_on, instrument.instrument_last_calibrated_on)")))
             ->where('sp.shipment_id = ? ', $sId)
-            ->where('sp.participant_id = ? ', $pId);
+            ->where('sp.participant_id = ? ', $pId)
+            ->order('sample_id ASC');
         return $db->fetchAll($sql);
     }
 
