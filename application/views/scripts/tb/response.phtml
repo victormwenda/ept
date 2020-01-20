@@ -837,7 +837,7 @@ $dtFormat = $genderHelper->getDateFormat();
           }
         },
         supervisorApproval: {
-          required: {F
+          required: {
             depends: function () {
               return $("input[name='ableToEnterResults']:checked").val() === "yes";
             }
