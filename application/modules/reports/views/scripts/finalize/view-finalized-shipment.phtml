@@ -153,6 +153,10 @@
         $shipmentListSession->viewUrlList = $viewList; ?>
     </tbody>
 </table>
+
+<?php
+    $adminSession = new Zend_Session_Namespace('administrators');
+    if ($adminSession->is_ptcc_coordinator == 0) { ?>
 <br/>
 <br/>
 <br/>
@@ -203,6 +207,7 @@
     } ?>
     </table>
 </div>
+<?php } ?>
 <script type="text/javascript" charset="utf-8">
     var oTable = null;
     var nTr = null;
