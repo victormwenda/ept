@@ -4658,26 +4658,32 @@ class Application_Service_Reports {
         $query = $db->query("SELECT FlattenedEvaluationResults.`Country`, FlattenedEvaluationResults.`Site No.`, FlattenedEvaluationResults.`Site Name/Location`, FlattenedEvaluationResults.`PT-ID`,
     FlattenedEvaluationResults.Submitted, FlattenedEvaluationResults.`Submission Excluded`,
     FlattenedEvaluationResults.`Date PT Received`, FlattenedEvaluationResults.`Date PT Results Reported`,
-    
+        
     JSON_UNQUOTE(FlattenedEvaluationResults.attributes_json->\"$.cartridge_lot_no\") AS `Cartridge Lot Number`,
+    FlattenedEvaluationResults.assay_name AS `Assay`,
     STR_TO_DATE(JSON_UNQUOTE(FlattenedEvaluationResults.attributes_json->\"$.expiry_date\"), '%d-%b-%Y') AS `Expiry Date`,
     
     FlattenedEvaluationResults.`Date of last instrument calibration`, FlattenedEvaluationResults.`Participated`, FlattenedEvaluationResults.`Reason for No Submission`,
-    FlattenedEvaluationResults.`1-Date Tested`, FlattenedEvaluationResults.`1-MTB`, FlattenedEvaluationResults.`1-Rif`, FlattenedEvaluationResults.`1-Probe 1`,
-    FlattenedEvaluationResults.`1-Probe 2`, FlattenedEvaluationResults.`1-Probe 3`, FlattenedEvaluationResults.`1-Probe 4`, FlattenedEvaluationResults.`1-Probe 5`,
-    FlattenedEvaluationResults.`1-Probe 6`,
-    FlattenedEvaluationResults.`2-Date Tested`, FlattenedEvaluationResults.`2-MTB`, FlattenedEvaluationResults.`2-Rif`, FlattenedEvaluationResults.`2-Probe 1`,
-    FlattenedEvaluationResults.`2-Probe 2`, FlattenedEvaluationResults.`2-Probe 3`, FlattenedEvaluationResults.`2-Probe 4`, FlattenedEvaluationResults.`2-Probe 5`,
-    FlattenedEvaluationResults.`2-Probe 6`,
-    FlattenedEvaluationResults.`3-Date Tested`, FlattenedEvaluationResults.`3-MTB`, FlattenedEvaluationResults.`3-Rif`, FlattenedEvaluationResults.`3-Probe 1`,
-    FlattenedEvaluationResults.`3-Probe 2`, FlattenedEvaluationResults.`3-Probe 3`, FlattenedEvaluationResults.`3-Probe 4`, FlattenedEvaluationResults.`3-Probe 5`,
-    FlattenedEvaluationResults.`3-Probe 6`,
-    FlattenedEvaluationResults.`4-Date Tested`, FlattenedEvaluationResults.`4-MTB`, FlattenedEvaluationResults.`4-Rif`, FlattenedEvaluationResults.`4-Probe 1`,
-    FlattenedEvaluationResults.`4-Probe 2`, FlattenedEvaluationResults.`4-Probe 3`, FlattenedEvaluationResults.`4-Probe 4`, FlattenedEvaluationResults.`4-Probe 5`,
-    FlattenedEvaluationResults.`4-Probe 6`,
-    FlattenedEvaluationResults.`5-Date Tested`, FlattenedEvaluationResults.`5-MTB`, FlattenedEvaluationResults.`5-Rif`, FlattenedEvaluationResults.`5-Probe 1`,
-    FlattenedEvaluationResults.`5-Probe 2`, FlattenedEvaluationResults.`5-Probe 3`, FlattenedEvaluationResults.`5-Probe 4`, FlattenedEvaluationResults.`5-Probe 5`,
-    FlattenedEvaluationResults.`5-Probe 6`,
+
+    FlattenedEvaluationResults.`1-Date Tested`, FlattenedEvaluationResults.`1-Instrument Serial`, FlattenedEvaluationResults.`1-Instrument Last Calibrated`,
+    FlattenedEvaluationResults.`1-MTB`, FlattenedEvaluationResults.`1-Rif`, FlattenedEvaluationResults.`1-Probe 1`, FlattenedEvaluationResults.`1-Probe 2`,
+    FlattenedEvaluationResults.`1-Probe 3`, FlattenedEvaluationResults.`1-Probe 4`, FlattenedEvaluationResults.`1-Probe 5`, FlattenedEvaluationResults.`1-Probe 6`,
+
+    FlattenedEvaluationResults.`2-Date Tested`, FlattenedEvaluationResults.`2-Instrument Serial`, FlattenedEvaluationResults.`2-Instrument Last Calibrated`,
+    FlattenedEvaluationResults.`2-MTB`, FlattenedEvaluationResults.`2-Rif`, FlattenedEvaluationResults.`2-Probe 1`, FlattenedEvaluationResults.`2-Probe 2`,
+    FlattenedEvaluationResults.`2-Probe 3`, FlattenedEvaluationResults.`2-Probe 4`, FlattenedEvaluationResults.`2-Probe 5`, FlattenedEvaluationResults.`2-Probe 6`,
+
+    FlattenedEvaluationResults.`3-Date Tested`, FlattenedEvaluationResults.`3-Instrument Serial`, FlattenedEvaluationResults.`3-Instrument Last Calibrated`,
+    FlattenedEvaluationResults.`3-MTB`, FlattenedEvaluationResults.`3-Rif`, FlattenedEvaluationResults.`3-Probe 1`, FlattenedEvaluationResults.`3-Probe 2`,
+    FlattenedEvaluationResults.`3-Probe 3`, FlattenedEvaluationResults.`3-Probe 4`, FlattenedEvaluationResults.`3-Probe 5`, FlattenedEvaluationResults.`3-Probe 6`,
+
+    FlattenedEvaluationResults.`4-Date Tested`, FlattenedEvaluationResults.`4-Instrument Serial`, FlattenedEvaluationResults.`4-Instrument Last Calibrated`,
+    FlattenedEvaluationResults.`4-MTB`, FlattenedEvaluationResults.`4-Rif`, FlattenedEvaluationResults.`4-Probe 1`, FlattenedEvaluationResults.`4-Probe 2`,
+    FlattenedEvaluationResults.`4-Probe 3`, FlattenedEvaluationResults.`4-Probe 4`, FlattenedEvaluationResults.`4-Probe 5`, FlattenedEvaluationResults.`4-Probe 6`,
+
+    FlattenedEvaluationResults.`5-Date Tested`, FlattenedEvaluationResults.`5-Instrument Serial`, FlattenedEvaluationResults.`5-Instrument Last Calibrated`,
+    FlattenedEvaluationResults.`5-MTB`, FlattenedEvaluationResults.`5-Rif`, FlattenedEvaluationResults.`5-Probe 1`, FlattenedEvaluationResults.`5-Probe 2`,
+    FlattenedEvaluationResults.`5-Probe 3`, FlattenedEvaluationResults.`5-Probe 4`, FlattenedEvaluationResults.`5-Probe 5`, FlattenedEvaluationResults.`5-Probe 6`,
     
     FlattenedEvaluationResults.`Comments`, FlattenedEvaluationResults.`Comments for reports`,
     FlattenedEvaluationResults.`1-Score`, FlattenedEvaluationResults.`2-Score`, FlattenedEvaluationResults.`3-Score`, FlattenedEvaluationResults.`4-Score`,
@@ -4706,6 +4712,7 @@ SELECT countries.iso_name AS `Country`,
     shipment_participant_map.shipment_receipt_date AS `Date PT Received`,
     CAST(shipment_participant_map.shipment_test_report_date AS DATE) AS `Date PT Results Reported`,
     CAST(attributes AS JSON) AS attributes_json,
+    r_tb_assay.name AS assay_name,
     GREATEST(MAX(instrument.instrument_last_calibrated_on),
              response_result_tb_1.instrument_last_calibrated_on,
              response_result_tb_2.instrument_last_calibrated_on,
@@ -4719,6 +4726,8 @@ SELECT countries.iso_name AS `Country`,
     IFNULL(shipment_participant_map.pt_test_not_performed_comments, response_not_tested_reason.not_tested_reason) AS `Reason for No Submission`,
 
     response_result_tb_1.date_tested AS `1-Date Tested`,
+    response_result_tb_1.instrument_serial AS `1-Instrument Serial`,
+    response_result_tb_1.instrument_last_calibrated_on AS `1-Instrument Last Calibrated`,
     CASE
       WHEN response_result_tb_1.error_code = 'error' THEN 'Error'
       WHEN IFNULL(response_result_tb_1.error_code, '') != '' THEN CONCAT('Error ', response_result_tb_1.error_code)
@@ -4753,6 +4762,8 @@ SELECT countries.iso_name AS `Country`,
     response_result_tb_1.probe_6 AS `1-Probe 6`,
 
     response_result_tb_2.date_tested AS `2-Date Tested`,
+    response_result_tb_2.instrument_serial AS `2-Instrument Serial`,
+    response_result_tb_2.instrument_last_calibrated_on AS `2-Instrument Last Calibrated`,
     CASE
       WHEN response_result_tb_2.error_code = 'error' THEN 'Error'
       WHEN IFNULL(response_result_tb_2.error_code, '') != '' THEN CONCAT('Error ', response_result_tb_2.error_code)
@@ -4787,6 +4798,8 @@ SELECT countries.iso_name AS `Country`,
     response_result_tb_2.probe_6 AS `2-Probe 6`,
 
     response_result_tb_3.date_tested AS `3-Date Tested`,
+    response_result_tb_3.instrument_serial AS `3-Instrument Serial`,
+    response_result_tb_3.instrument_last_calibrated_on AS `3-Instrument Last Calibrated`,
     CASE
       WHEN response_result_tb_3.error_code = 'error' THEN 'Error'
       WHEN IFNULL(response_result_tb_3.error_code, '') != '' THEN CONCAT('Error ', response_result_tb_3.error_code)
@@ -4821,6 +4834,8 @@ SELECT countries.iso_name AS `Country`,
     response_result_tb_3.probe_6 AS `3-Probe 6`,
 
     response_result_tb_4.date_tested AS `4-Date Tested`,
+    response_result_tb_4.instrument_serial AS `4-Instrument Serial`,
+    response_result_tb_4.instrument_last_calibrated_on AS `4-Instrument Last Calibrated`,
     CASE
       WHEN response_result_tb_4.error_code = 'error' THEN 'Error'
       WHEN IFNULL(response_result_tb_4.error_code, '') != '' THEN CONCAT('Error ', response_result_tb_4.error_code)
@@ -4855,6 +4870,8 @@ SELECT countries.iso_name AS `Country`,
     response_result_tb_4.probe_6 AS `4-Probe 6`,
 
     response_result_tb_5.date_tested AS `5-Date Tested`,
+    response_result_tb_5.instrument_serial AS `5-Instrument Serial`,
+    response_result_tb_5.instrument_last_calibrated_on AS `5-Instrument Last Calibrated`,
     CASE
       WHEN response_result_tb_5.error_code = 'error' THEN 'Error'
       WHEN IFNULL(response_result_tb_5.error_code, '') != '' THEN CONCAT('Error ', response_result_tb_5.error_code)
@@ -4940,6 +4957,7 @@ LEFT JOIN instrument ON instrument.participant_id = shipment_participant_map.par
 LEFT JOIN response_not_tested_reason ON response_not_tested_reason.not_tested_reason_id = shipment_participant_map.not_tested_reason
 LEFT JOIN r_evaluation_comments ON r_evaluation_comments.comment_id = shipment_participant_map.evaluation_comment
 LEFT JOIN r_results ON r_results.result_id = shipment_participant_map.final_result
+LEFT JOIN r_tb_assay ON r_tb_assay.id = JSON_UNQUOTE(JSON_EXTRACT(shipment_participant_map.attributes, \"$.assay\"))
 LEFT JOIN response_result_tb AS response_result_tb_1 ON response_result_tb_1.shipment_map_id = shipment_participant_map.map_id AND response_result_tb_1.sample_id = '1'
 LEFT JOIN response_result_tb AS response_result_tb_2 ON response_result_tb_2.shipment_map_id = shipment_participant_map.map_id AND response_result_tb_2.sample_id = '2'
 LEFT JOIN response_result_tb AS response_result_tb_3 ON response_result_tb_3.shipment_map_id = shipment_participant_map.map_id AND response_result_tb_3.sample_id = '3'
