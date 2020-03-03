@@ -39,12 +39,15 @@ class Application_Model_DbTable_ShipmentParticipantMap extends Zend_Db_Table_Abs
                 $shipmentDb->updateShipmentStatus($params['shipmentId'], 'ready');
             }
 
-            $resultSet = $shipmentDb->fetchAll($shipmentDb->select()
+            $shipmentsPending = $shipmentDb->fetchAll($shipmentDb->select()
                 ->where("status = 'pending' AND distribution_id = " . $shipmentRow['distribution_id']));
 
-            if (count($resultSet) == 0) {
+            if (count($shipmentsPending) == 0) {
                 $distroService = new Application_Service_Distribution();
-                $distroService->updateDistributionStatus($shipmentRow['distribution_id'], 'configured');
+                $distribution = $distroService->getDistribution($shipmentRow['distribution_id']);
+                if ($distribution["status"] == "created") {
+                    $distroService->updateDistributionStatus($shipmentRow['distribution_id'], 'configured');
+                }
             }
 
             $db->commit();
