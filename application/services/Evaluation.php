@@ -1235,7 +1235,6 @@ class Application_Service_Evaluation {
         if (isset($sLimit) && isset($sOffset)) {
             $sql = $sql->limit($sLimit, $sOffset);
 		}
-
         $shipmentResult = $db->fetchAll($sql);
 
         $tbReportSummary = array();

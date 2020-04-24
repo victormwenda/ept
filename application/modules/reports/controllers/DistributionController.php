@@ -13,7 +13,7 @@ class Reports_DistributionController extends Zend_Controller_Action {
 
     public function indexAction() {
         if ($this->getRequest()->isPost()) {
-            $params = $this->_getAllParams();            
+            $params = $this->_getAllParams();
             $distributionService = new Application_Service_Distribution();
             $distributionService->getAllDistributionReports($params);
         }
@@ -23,7 +23,7 @@ class Reports_DistributionController extends Zend_Controller_Action {
         if ($this->_hasParam('did')) {
             $id = (int)($this->_getParam('did'));
             $shipmentService = new Application_Service_Shipments();
-            $this->view->shipments = $shipmentService->getShipmentInReports($id);            
+            $this->view->shipments = $shipmentService->getShipmentInReports($id);
         } else {
             $this->view->shipments = false;
         }
