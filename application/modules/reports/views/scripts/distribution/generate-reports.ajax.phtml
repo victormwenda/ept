@@ -18,9 +18,8 @@ if (sizeof($this->result['shipment']) > 0) {
     class MYPDF extends TCPDF {
         public $scheme_name = '';
         public $result = array();
-        public function setSchemeName($header, $schemeName, $result, $logo, $logoRight, $comingFrom, $schemeType) {
+        public function setSchemeName($header, $schemeName, $logo, $logoRight, $comingFrom, $schemeType) {
             $this->scheme_name = $schemeName;
-            $this->result = $result;
             $this->header = $header;
             $this->logo = $logo;
             $this->logoRight = $logoRight;
@@ -30,52 +29,28 @@ if (sizeof($this->result['shipment']) > 0) {
 
         //Page header
         public function Header() {
-            if($this->schemeType != 'tb') {
-                if (trim($this->logo) != "") {
-                    if (file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'logo' . DIRECTORY_SEPARATOR . $this->logo)) {
-                        $image_file = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'logo' . DIRECTORY_SEPARATOR . $this->logo;
-                        $this->Image($image_file, 10, 10, 25, '', 'JPG', '', 'T', false, 300, '', false, false, 0, false, false, false);
-                    }
-                }
-                if (trim($this->logoRight) != "") {
-                    if (file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'logo' . DIRECTORY_SEPARATOR . $this->logoRight)) {
-                        $image_file = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'logo' . DIRECTORY_SEPARATOR . $this->logoRight;
-                        $this->Image($image_file, 180, 10, 20, '', 'JPG', '', 'T', false, 300, '', false, false, 0, false, false, false);
-                    }
-                }
+            $html = '<h3 style="background-color:#000000;color:#ffffff;font-weight: bold;text-align:center;"><span style="font-size:5px;"><br /></span>';
+            $html .= 'CDC/ILB XPERT TB PROFICIENCY TESTING PROGRAM: INDIVIDUAL FINAL REPORT</h3>';
+            $html .= '<h3 style="width:100%;text-align:center;margin: 0;padding:0;">'.$this->result['distribution_code'].'</h3>';
+            $html .= '<table cellpadding="2" style="width:100%;font-size:8pt;">';
+            $html .= '    <tr>';
+            $html .= '	     <td style="border-top:solid 10px #000000;border-bottom:solid 10px #000000;background-color:#777777;color:#ffffff;text-align:center;width:20%;"><strong>Country</strong></td>';
+            $html .= '	     <td style="border-top:solid 10px #000000;border-bottom:solid 10px #000000;background-color:#777777;color:#ffffff;text-align:center;width:50%;"><strong>Testing Site</strong></td>';
+            $html .= '	     <td style="border-top:solid 10px #000000;border-bottom:solid 10px #000000;background-color:#777777;color:#ffffff;text-align:center;width:15%;"><strong>PT-ID Number</strong></td>';
+            $html .= '	     <td style="border-top:solid 10px #000000;border-bottom:solid 10px #000000;background-color:#777777;color:#ffffff;text-align:center;width:15%;"><strong>Page Number</strong></td>';
+            $html .= '    </tr>';
+            $html .= '    <tr>';
+            $html .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.$this->result['country_name'].'</td>';
+            $html .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.$this->result['lab_name'];
+            if ($this->result['is_excluded'] == 'yes') {
+                $html .= '       <span style="color:#ff0000;">(Excluded)</span>';
             }
-
-            // Set font
-            $this->SetFont('Helvetica', '', 8);
-
-            if($this->schemeType != 'tb') {
-                $this->header = str_replace("<div", "<span", trim($this->header));
-                $this->header = str_replace("</div>", "</span><br/>", $this->header);
-            }
-
-            $html = $this->header;
-
-            if($this->schemeType != 'tb') {
-                $this->writeHTMLCell(0, 0, 25, 10, $html, 0, 0, 0, true, 'C', true);
-            }
-            if ($this->schemeType == 'vl') {
-                $html='<h3 style="font-weight: bold;text-align:center;">Proficiency Testing Program for HIV-1 Viral Load Using Dried Tube Specimen</h3>';
-            } else if($this->schemeType == 'eid') {
-                //HIV-1 Proficiency Testing Program for Early Infant Diagnosis using Dried Blood Spot.
-                $html='<h3 style="font-weight: bold;text-align:center;">HIV-1 Proficiency Testing Program for Early Infant Diagnosis using Dried Blood Spot</h3>';
-            } else if($this->schemeType == 'tb') {
-                $html = '<h3 style="background-color:#000000;color:#ffffff;font-weight: bold;text-align:center;">';
-                $html .= '<br />XPERT MTB ASSAY PROFICIENCY TEST PROGRAM PARTICIPANT’S RESULTS SUMMARY<br /></h3>';
-            } else {
-                $html='<h3 style="font-weight: bold;text-align:center;">Proficiency Testing Program for Anti-HIV Antibodies Diagnostics using '.$this->scheme_name.'</h3>';
-            }
-            if($this->schemeType != 'tb') {
-                $this->writeHTMLCell(0, 0, 35, 30, $html, 0, 0, 0, true, 'J', true);
-                $html = '<hr/>';
-                $this->writeHTMLCell(0, 0, 10, 45, $html, 0, 0, 0, true, 'J', true);
-            } else {
-                $this->writeHTMLCell(0, 10, 15, 20, $html, 0, 0, 0, true, 'J', true);
-            }
+            $html .= '       </td>';
+            $html .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.$this->result['unique_identifier'].'</td>';
+            $html .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.$this->getAliasNumPage().'/3</td>';
+            $html .= '    </tr>';
+            $html .= '</table>';
+            $this->writeHTMLCell(0, 10, 15, 20, $html, 0, 0, 0, true, 'J', true);
         }
 
         // Page footer
@@ -87,11 +62,11 @@ if (sizeof($this->result['shipment']) > 0) {
             // Position at 15 mm from bottom
             $this->SetY(-15);
             // Set font
-            $this->SetFont('Helvetica', 'I', 8);
+            $this->SetFont('Helvetica', '', 8);
             // Page number
-            $this->Cell(0, 10, 'Page ' . $this->getAliasNumPage(), 0, false, 'C', 0, '', 0, false, 'T', 'M');
+            $this->Cell(0, 10, 'Form: ILB-500-F29A', 0, false, 'L', 0, '', 0, false, 'T', 'M');
             // Generated at....
-            $this->Cell(0, 10, "  Report generated at :".date("d-M-Y H:i:s").$finalizeReport, 0, false, 'R', 0, '', 0, false, 'T', 'M');
+            $this->Cell(0, 10, "CDC/ILB is currently preparing for accreditation by A2LA to the ISO 17043 Standard", 0, false, 'R', 0, '', 0, false, 'T', 'M');
         }
 
         public function writeHTMLTogether($html, $ln=true, $fill=false, $reseth=false, $cell=false, $align='') {
@@ -153,6 +128,7 @@ if (sizeof($this->result['shipment']) > 0) {
         // create new PDF document
         $pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
+        $pdf->result = $result;
         $pdf->setSchemeName($this->header,$result['scheme_name'],
             $this->logo, $this->logoRight, $this->comingFrom, $schemeType);
 
@@ -167,28 +143,15 @@ if (sizeof($this->result['shipment']) > 0) {
         // set default monospaced font
         $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
 
-        // set margins
-        if ($schemeType == 'tb') {
-            $pdf->SetMargins(PDF_MARGIN_LEFT, 35, PDF_MARGIN_RIGHT);
-            $pdf->SetHeaderMargin(1);
-            $pdf->SetFooterMargin(1);
-        } else {
-            $pdf->SetMargins(PDF_MARGIN_LEFT, 50, PDF_MARGIN_RIGHT);
-            $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
-            $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
-        }
+        $pdf->SetMargins(PDF_MARGIN_LEFT, 50, PDF_MARGIN_RIGHT);
+        $pdf->SetHeaderMargin(1);
+        $pdf->SetFooterMargin(1);
 
         // set auto page breaks
         $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
 
         // set image scale factor
         $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
-
-        // set some language-dependent strings (optional)
-        if (@file_exists(dirname(__FILE__).'/lang/eng.php')) {
-            require_once(dirname(__FILE__).'/lang/eng.php');
-            $pdf->setLanguageArray($l);
-        }
 
         // set font
         $pdf->SetFont('Helvetica', '', 11);
@@ -234,300 +197,288 @@ if (sizeof($this->result['shipment']) > 0) {
             $shipmentTestDate = $this->dateFormat($result['responseResult'][0]['shipment_test_date']);
         }
 
-        //Comment Details
-        if ($schemeType == 'tb') {
-            $labInfo = '<h3 style="width:100%;text-align:center;">'.$result['shipment_code'].'</h3>';
-            $labInfo .= '<p style="font-size:10pt;width:100%;text-align:center;">International Laboratory Branch, Division of Global HIV and TB, Centers for Disease Control and Prevention</p>';
-            $labInfo .= '<table cellpadding="2" style="width:100%;font-size:8pt;">';
+        $labInfo = '<table cellpadding="2" style="width:100%;font-size:8pt;">';
+        $labInfo .= '    <tr>';
+        $labInfo .= '	     <td style="border-top:solid 10px #000000;border-bottom:solid 10px #000000;background-color:#777777;color:#ffffff;text-align:center;width:40%;"><strong>Instrument SN</strong></td>';
+        $labInfo .= '	     <td style="border-top:solid 10px #000000;border-bottom:solid 10px #000000;background-color:#777777;color:#ffffff;text-align:center;width:30%;"><strong>Last Calibration Date</strong></td>';
+        $labInfo .= '	     <td style="border-top:solid 10px #000000;border-bottom:solid 10px #000000;background-color:#777777;color:#ffffff;text-align:center;width:30%;"><strong>Result Submission Date</strong></td>';
+        $labInfo .= '    </tr>';
+        foreach ($result['instrumentsUsed'] as $instrumentUsed) {
             $labInfo .= '    <tr>';
-            $labInfo .= '	     <td style="width:10%;"></td>';
-            $labInfo .= '	     <td style="border-top:solid 10px #000000;border-bottom:solid 10px #000000;background-color:#777777;color:#ffffff;text-align:center;width:20%;"><strong>Country</strong></td>';
-            $labInfo .= '	     <td style="border-top:solid 10px #000000;border-bottom:solid 10px #000000;background-color:#777777;color:#ffffff;text-align:center;width:40%;"><strong>Testing Site</strong></td>';
-            $labInfo .= '	     <td style="border-top:solid 10px #000000;border-bottom:solid 10px #000000;background-color:#777777;color:#ffffff;text-align:center;width:20%;"><strong>PT-ID Number</strong></td>';
-            $labInfo .= '	     <td style="width:10%;"></td>';
+            $labInfo .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.$instrumentUsed['instrument_serial'].'</td>';
+            $labInfo .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.Pt_Commons_General::dbDateToString($instrumentUsed['instrument_last_calibrated_on']).'</td>';
+            $labInfo .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.Pt_Commons_General::dbDateToString($result['result_submission_date']).'</td>';
             $labInfo .= '    </tr>';
-            $labInfo .= '    <tr>';
-            $labInfo .= '	     <td></td>';
-            $labInfo .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.$result['country_name'].'</td>';
-            $labInfo .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.$result['first_name']." ".$result['last_name'];
-            if ($result['is_excluded'] == 'yes') {
-                $labInfo .= ' <span style="color:#ff0000;">(Excluded)</span>';
+        }
+        $labInfo .= '</table>';
+
+        $labInfo .= '<table cellpadding="3" style="width:100%;font-size:8pt;">';
+        $labInfo .= '    <tr style="background-color:#777777;color:#ffffff;">';
+        $labInfo .= '	     <td style="text-align:center;border-top:solid 10px #000000;border-bottom:solid 10px #000000;" colspan="'.(count($this->result['tbReportSummary']) + 1).'"><strong>Summary of All Reporting Sites</strong></td>';
+        $labInfo .= '    </tr>';
+        $labInfo .= '    <tr>';
+        $labInfo .= '	     <td style="width:40%;"></td>';
+        foreach ($this->result['tbReportSummary'] as $sampleSummary) {
+            $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;"><strong>'.$sampleSummary['sample_label'].'</strong>';
+            if ($sampleSummary['ref_is_excluded'] == 'yes') {
+                if ($sampleSummary['ref_is_exempt'] == 'yes') {
+                    $labInfo .= '<br /><span style="color:#ffa500;">(Exempt)</span>';
+                } else {
+                    $labInfo .= '<br /><span style="color:#ff0000;">(Excluded)</span>';
+                }
             }
             $labInfo .= '</td>';
-            $labInfo .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.$result['unique_identifier'].'</td>';
-            $labInfo .= '	     <td></td>';
-            $labInfo .= '    </tr>';
-            $labInfo .= '</table><br /><br />';
-            $labInfo .= '<table cellpadding="3" style="width:100%;font-size:8pt;">';
-            $labInfo .= '    <tr style="background-color:#777777;color:#ffffff;">';
-            $labInfo .= '	     <td style="text-align:center;border-top:solid 10px #000000;border-bottom:solid 10px #000000;" colspan="'.(count($this->result['tbReportSummary']) + 1).'"><strong>Summary of All Reporting Sites</strong></td>';
-            $labInfo .= '    </tr>';
-            $labInfo .= '    <tr>';
-            $labInfo .= '	     <td style="width:40%;"></td>';
-            foreach ($this->result['tbReportSummary'] as $sampleSummary) {
-                $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;"><strong>'.$sampleSummary['sample_label'].'</strong>';
-                if ($sampleSummary['ref_is_excluded'] == 'yes') {
-                    if ($sampleSummary['ref_is_exempt'] == 'yes') {
-                        $labInfo .= '<br /><span style="color:#ffa500;">(Exempt)</span>';
-                    } else {
-                        $labInfo .= '<br /><span style="color:#ff0000;">(Excluded)</span>';
-                    }
-                }
-                $labInfo .= '</td>';
-            }
-            $labInfo .= '    </tr>';
-            $labInfo .= '    <tr>';
-            $labInfo .= '	     <td style="width:40%;">Total number of reporting sites</td>';
-            foreach ($this->result['tbReportSummary'] as $sampleSummary) {
-                $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;">'.$sampleSummary['no_of_responses'].'</td>';
-            }
-            $labInfo .= '    </tr>';
-            $labInfo .= '    <tr>';
-            $labInfo .= '	     <td style="background-color:#cccccc;width:100%;" colspan="'.(count($this->result['tbReportSummary']) + 1).'"><strong>TB Detection</strong></td>';
-            $labInfo .= '    </tr>';
-            $labInfo .= '    <tr>';
-            $labInfo .= '	     <td style="width:40%;">Sites detecting TB (%)</td>';
-            foreach ($this->result['tbReportSummary'] as $sampleSummary) {
-                $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;">'.$sampleSummary['mtb_detected'].' ('.round(($sampleSummary['mtb_detected'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
-            }
-            $labInfo .= '    </tr>';
-            $labInfo .= '    <tr>';
-            $labInfo .= '	     <td style="width:40%;">Sites not detecting TB (%)</td>';
-            foreach ($this->result['tbReportSummary'] as $sampleSummary) {
-                $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;">'.$sampleSummary['mtb_not_detected'].' ('.round(($sampleSummary['mtb_not_detected'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
-            }
-            $labInfo .= '    </tr>';
-            $labInfo .= '    <tr>';
-            $labInfo .= '	     <td style="width:40%;">Sites reporting uninterpretable TB result*(%)</td>';
-            foreach ($this->result['tbReportSummary'] as $sampleSummary) {
-                $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;">'.$sampleSummary['mtb_uninterpretable'].' ('.round(($sampleSummary['mtb_uninterpretable'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
-            }
-            $labInfo .= '    </tr>';
-            $labInfo .= '    <tr>';
-            $labInfo .= '	     <td style="background-color:#cccccc;width:100%;" colspan="'.(count($this->result['tbReportSummary']) + 1).'"><strong>RIF Detection</strong></td>';
-            $labInfo .= '    </tr>';
-            $labInfo .= '    <tr>';
-            $labInfo .= '	     <td style="width:40%;">Sites detecting Rif resistance (%)</td>';
-            foreach ($this->result['tbReportSummary'] as $sampleSummary) {
-                $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;">'.$sampleSummary['rif_detected'].' ('.round(($sampleSummary['rif_detected'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
-            }
-            $labInfo .= '    </tr>';
-            $labInfo .= '    <tr>';
-            $labInfo .= '	     <td style="width:40%;">Sites not detecting Rif resistance (%)</td>';
-            foreach ($this->result['tbReportSummary'] as $sampleSummary) {
-                $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;">'.$sampleSummary['rif_not_detected'].' ('.round(($sampleSummary['rif_not_detected'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
-            }
-            $labInfo .= '    </tr>';
-            $labInfo .= '    <tr>';
-            $labInfo .= '	     <td style="width:40%;">Sites reporting indeterminate Rif result (%)</td>';
-            foreach ($this->result['tbReportSummary'] as $sampleSummary) {
-                $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;">'.$sampleSummary['rif_indeterminate'].' ('.round(($sampleSummary['rif_indeterminate'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
-            }
-            $labInfo .= '    </tr>';
-            $labInfo .= '    <tr>';
-            $labInfo .= '	     <td style="width:40%;">Sites reporting uninterpretable Rif result*(%)</td>';
-            foreach ($this->result['tbReportSummary'] as $sampleSummary) {
-                $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;">'.$sampleSummary['rif_uninterpretable'].' ('.round(($sampleSummary['rif_uninterpretable'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
-            }
-            $labInfo .= '    </tr>';
-            $labInfo .= '    <tr>';
-            $labInfo .= '	     <td style="width:100%;" colspan="'.(count($this->result['tbReportSummary']) + 1).'">* Uninterpretable result = invalid, error, or no result</td>';
-            $labInfo .= '    </tr>';
-            $labInfo .= '</table><br />';
-            $pdf->writeHTML($labInfo, true, false, true, false, '');
         }
+        $labInfo .= '    </tr>';
+        $labInfo .= '    <tr>';
+        $labInfo .= '	     <td style="width:40%;">Total number of reporting sites</td>';
+        foreach ($this->result['tbReportSummary'] as $sampleSummary) {
+            $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;">'.$sampleSummary['no_of_responses'].'</td>';
+        }
+        $labInfo .= '    </tr>';
+        $labInfo .= '    <tr>';
+        $labInfo .= '	     <td style="background-color:#cccccc;width:100%;" colspan="'.(count($this->result['tbReportSummary']) + 1).'"><strong>TB Detection</strong></td>';
+        $labInfo .= '    </tr>';
+        $labInfo .= '    <tr>';
+        $labInfo .= '	     <td style="width:40%;">Sites detecting TB (%)</td>';
+        foreach ($this->result['tbReportSummary'] as $sampleSummary) {
+            $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;">'.$sampleSummary['mtb_detected'].' ('.round(($sampleSummary['mtb_detected'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
+        }
+        $labInfo .= '    </tr>';
+        $labInfo .= '    <tr>';
+        $labInfo .= '	     <td style="width:40%;">Sites not detecting TB (%)</td>';
+        foreach ($this->result['tbReportSummary'] as $sampleSummary) {
+            $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;">'.$sampleSummary['mtb_not_detected'].' ('.round(($sampleSummary['mtb_not_detected'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
+        }
+        $labInfo .= '    </tr>';
+        $labInfo .= '    <tr>';
+        $labInfo .= '	     <td style="width:40%;">Sites reporting uninterpretable TB result*(%)</td>';
+        foreach ($this->result['tbReportSummary'] as $sampleSummary) {
+            $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;">'.$sampleSummary['mtb_uninterpretable'].' ('.round(($sampleSummary['mtb_uninterpretable'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
+        }
+        $labInfo .= '    </tr>';
+        $labInfo .= '    <tr>';
+        $labInfo .= '	     <td style="background-color:#cccccc;width:100%;" colspan="'.(count($this->result['tbReportSummary']) + 1).'"><strong>RIF Detection</strong></td>';
+        $labInfo .= '    </tr>';
+        $labInfo .= '    <tr>';
+        $labInfo .= '	     <td style="width:40%;">Sites detecting Rif resistance (%)</td>';
+        foreach ($this->result['tbReportSummary'] as $sampleSummary) {
+            $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;">'.$sampleSummary['rif_detected'].' ('.round(($sampleSummary['rif_detected'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
+        }
+        $labInfo .= '    </tr>';
+        $labInfo .= '    <tr>';
+        $labInfo .= '	     <td style="width:40%;">Sites not detecting Rif resistance (%)</td>';
+        foreach ($this->result['tbReportSummary'] as $sampleSummary) {
+            $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;">'.$sampleSummary['rif_not_detected'].' ('.round(($sampleSummary['rif_not_detected'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
+        }
+        $labInfo .= '    </tr>';
+        $labInfo .= '    <tr>';
+        $labInfo .= '	     <td style="width:40%;">Sites reporting indeterminate Rif result (%)</td>';
+        foreach ($this->result['tbReportSummary'] as $sampleSummary) {
+            $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;">'.$sampleSummary['rif_indeterminate'].' ('.round(($sampleSummary['rif_indeterminate'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
+        }
+        $labInfo .= '    </tr>';
+        $labInfo .= '    <tr>';
+        $labInfo .= '	     <td style="width:40%;">Sites reporting uninterpretable Rif result*(%)</td>';
+        foreach ($this->result['tbReportSummary'] as $sampleSummary) {
+            $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;">'.$sampleSummary['rif_uninterpretable'].' ('.round(($sampleSummary['rif_uninterpretable'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
+        }
+        $labInfo .= '    </tr>';
+        $labInfo .= '    <tr>';
+        $labInfo .= '	     <td style="width:100%;" colspan="'.(count($this->result['tbReportSummary']) + 1).'">* Uninterpretable result = invalid, error, or no result</td>';
+        $labInfo .= '    </tr>';
+        $labInfo .= '</table><br />';
+        $pdf->writeHTML($labInfo, true, false, true, false, '');
 
         if (isset($result['responseResult']) && sizeof($result['responseResult']) > 0) {
-            if ($schemeType == 'tb') {
-                $labRes = '<table cellpadding="1" style="width:100%;font-size:8pt;">';
-                $labRes .= '    <tr style="background-color:#777777;color:#ffffff;">';
-                $labRes .= '	     <td style="text-align:center;border-top:solid 10px #000000;border-bottom:solid 10px #000000;" colspan="4"><strong>Site Results</strong></td>';
-                $labRes .= '    </tr>';
-                $labRes .= '    <tr>';
-                $labRes .= '	     <td style="width:46%;border-bottom:solid 10px #000000;"></td>';
-                $labRes .= '	     <td style="width:22%;border-bottom:solid 10px #000000;text-align:center;"><strong>MTB Detected</strong></td>';
-                $labRes .= '	     <td style="width:22%;border-bottom:solid 10px #000000;text-align:center;"><strong>RIF Resistance</strong></td>';
-                $labRes .= '	     <td style="width:10%;border-bottom:solid 10px #000000;text-align:center;"><strong>Score</strong></td>';
-                $labRes .= '    </tr>';
-                $scoreTotal = 0;
-                $maxScoreTotal = 0;
-                $exclusionCount = 0;
-                $discrepantResultInSubmission = false;
-                $noResultOrError2127InSubmission = false;
-                foreach ($result['responseResult'] as $response) {
-                    if ($response['ref_is_excluded'] == 'yes' &&
-                        isset($response['ref_excluded_reason']) &&
-                        trim($response['ref_excluded_reason']) != "") {
-                        $exclusionCount++;
-                    }
-                    $labRes .= '    <tr>';
-                    $labRes .= '	     <td style="background-color:#cccccc;width:100%;" colspan="4"><strong>Sample ID: '.$response['sample_label'];
-                    if ($response['ref_is_excluded'] == 'yes' &&
-                        isset($response['ref_excluded_reason']) &&
-                        trim($response['ref_excluded_reason']) != "") {
-                        for ($excludedReasonIndex = 0; $excludedReasonIndex < $exclusionCount; $excludedReasonIndex++) {
-                            $labRes .= '*';
-                        }
-                    }
-                    $labRes .= '</strong></td>';
-                    $labRes .= '    </tr>';
-                    $labRes .= '    <tr>';
-                    $labRes .= '	     <td style="width:46%;">Expected Results</td>';
-                    $labRes .= '	     <td style="width:22%;text-align:center;">'.$tbResultValueMapping[$response['expected_mtb_detected']].'</td>';
-                    $labRes .= '	     <td style="width:22%;text-align:center;">'.$tbResultValueMapping[$response['expected_rif_resistance']].'</td>';
-                    $labRes .= '	     <td style="width:10%;"></td>';
-                    $labRes .= '    </tr>';
-                    $labRes .= '    <tr>';
-                    $labRes .= '	     <td style="width:46%;">Consensus Results</td>';
-                    $labRes .= '	     <td style="width:22%;text-align:center;">'.$tbResultValueMapping[$response['consensus_mtb_detected']].'</td>';
-                    $labRes .= '	     <td style="width:22%;text-align:center;">'.$tbResultValueMapping[$response['consensus_rif_resistance']].'</td>';
-                    $labRes .= '	     <td style="width:10%;">';
-                    if ($response['ref_is_excluded'] == 'yes') {
-                        if ($response['ref_is_exempt'] == 'yes') {
-                            $labRes .= '<span style="color:#ffa500;">(Exempt)</span>';
-                        } else {
-                            $labRes .= '<span style="color:#ff0000;">(Excluded)</span>';
-                        }
-                    }
-                    $labRes .= '</td>';
-                    $labRes .= '    </tr>';
-                    if ($response["discrepant_result"]) {
-                        $discrepantResultInSubmission = true;
-                        $labRes .= '    <tr style="color: #ff0000;">';
-                    } else {
-                        $labRes .= '    <tr>';
-                    }
-                    if ($tbResultValueMapping[$response['mtb_detected']] == "No Result" ||
-                        $response['error_code'] == "2127") {
-                        $noResultOrError2127InSubmission = true;
-                    }
-                    $labRes .= '	     <td style="width:46%;"><strong>'.$result['first_name']." ".$result['last_name'].'</strong></td>';
-                    if ($response['mtb_detected'] == 'error') {
-                        $labRes .= '	     <td style="width:22%;text-align:center;"><strong>Error: '.$response['error_code'].'</strong></td>';
-                        $labRes .= '	     <td style="width:22%;text-align:center;"></td>';
-                    } else {
-                        $labRes .= '	     <td style="width:22%;text-align:center;"><strong>'.$tbResultValueMapping[$response['mtb_detected']].'</strong></td>';
-                        $labRes .= '	     <td style="width:22%;text-align:center;"><strong>'.$tbResultValueMapping[$response['rif_resistance']].'</strong></td>';
-                    }
-                    $labRes .= '	     <td style="width:10%;text-align:center;"><strong>'.$response['score'].'</strong></td>';
-                    $labRes .= '    </tr>';
+            $labRes = '<table cellpadding="1" style="width:100%;font-size:8pt;">';
+            $labRes .= '    <tr style="background-color:#777777;color:#ffffff;">';
+            $labRes .= '	     <td style="text-align:center;border-top:solid 10px #000000;border-bottom:solid 10px #000000;" colspan="4"><strong>Site Results</strong></td>';
+            $labRes .= '    </tr>';
+            $labRes .= '    <tr>';
+            $labRes .= '	     <td style="width:46%;border-bottom:solid 10px #000000;"></td>';
+            $labRes .= '	     <td style="width:22%;border-bottom:solid 10px #000000;text-align:center;"><strong>MTB Detected</strong></td>';
+            $labRes .= '	     <td style="width:22%;border-bottom:solid 10px #000000;text-align:center;"><strong>RIF Resistance</strong></td>';
+            $labRes .= '	     <td style="width:10%;border-bottom:solid 10px #000000;text-align:center;"><strong>Score</strong></td>';
+            $labRes .= '    </tr>';
+            $scoreTotal = 0;
+            $maxScoreTotal = 0;
+            $exclusionCount = 0;
+            $discrepantResultInSubmission = false;
+            $noResultOrError2127InSubmission = false;
+            foreach ($result['responseResult'] as $response) {
+                if ($response['ref_is_excluded'] == 'yes' &&
+                    isset($response['ref_excluded_reason']) &&
+                    trim($response['ref_excluded_reason']) != "") {
+                    $exclusionCount++;
                 }
                 $labRes .= '    <tr>';
-                $labRes .= '	     <td style="width:46%;border-top: solid 10px #000000;"></td>';
-                $labRes .= '	     <td style="width:22%;border-top: solid 10px #000000;border-bottom: solid 10px #000000;text-align:center;"><strong>Percentage</strong></td>';
-                $labRes .= '	     <td style="width:22%;border-top: solid 10px #000000;border-bottom: solid 10px #000000;text-align:center;"><strong>Satisfactory/Unsatisfactory</strong></td>';
-                $labRes .= '	     <td style="width:10%;border-top: solid 10px #000000;"></td>';
-                $labRes .= '    </tr>';
-                $labRes .= '    <tr>';
-                $labRes .= '	     <td style="width:46%;background-color:#B6DDE8;border-bottom: solid 10px #000000;border-right: solid 10px #ffffff;"><strong>FINAL SCORE</strong></td>';
-                $labRes .= '	     <td style="width:22%;background-color:#B6DDE8;border-top: solid 10px #000000;border-bottom: solid 10px #000000;text-align:center;"><strong>'.round(($result['shipment_score'] / $result['max_shipment_score']) * 100, 1).'</strong></td>';
-                $labRes .= '	     <td style="width:22%;background-color:#B6DDE8;border-top: solid 10px #000000;border-bottom: solid 10px #000000;text-align:center;"><strong>'.($result['submission_score_status'] == 'fail' ? 'Unsatisfactory' : 'Satisfactory').'</strong></td>';
-                $labRes .= '	     <td style="width:10%;border-top: solid 10px #000000;"></td>';
-                $labRes .= '    </tr>';
-                foreach ($result['responseResult'] as $response) {
-                    if ($response['ref_is_excluded'] == 'yes' &&
-                        isset($response['ref_excluded_reason']) &&
-                        trim($response['ref_excluded_reason']) != "") {
-                        $labRes .= '    <tr>';
-                        $labRes .= '        <td colspan="4">';
-                        $labRes .= '            <strong>';
-                        for ($excludedReasonIndex = 0; $excludedReasonIndex < $exclusionCount; $excludedReasonIndex++) {
-                            $labRes .= '*';
-                        }
-                        $labRes .= '            </strong> ' . $response['ref_excluded_reason'];
-                        $labRes .= '        </td>';
-                        $labRes .= '    </tr>';
+                $labRes .= '	     <td style="background-color:#cccccc;width:100%;" colspan="4"><strong>Sample ID: '.$response['sample_label'];
+                if ($response['ref_is_excluded'] == 'yes' &&
+                    isset($response['ref_excluded_reason']) &&
+                    trim($response['ref_excluded_reason']) != "") {
+                    for ($excludedReasonIndex = 0; $excludedReasonIndex < $exclusionCount; $excludedReasonIndex++) {
+                        $labRes .= '*';
                     }
                 }
-                $labRes .= '</table>';
-                $pdf->writeHTML($labRes, true, false, true, false, '');
-                $commentsSection = null;
-                if ((isset($result['eval_comment']) && $result['eval_comment'] != '') ||
-                    (isset($result['optional_eval_comment']) && $result['optional_eval_comment'] != '') ||
-                    (isset($result['shipment_comment']) && $result['shipment_comment'] != '') ||
-                    $discrepantResultInSubmission || isset($result['cartridge_expired_on']) ||
-                    $noResultOrError2127InSubmission ||
-                    (isset($result['instrument_requires_calibration']) && $result['instrument_requires_calibration']) ||
-                    !isset($result['supervisor_approval']) || $result['supervisor_approval'] == '' || $result['supervisor_approval'] == 'no' ||
-                    !isset($result['qc_done_on_time']) || !$result['qc_done_on_time'] ||
-                    (isset($result['ptNotTestedComment']) && $result['ptNotTestedComment'] != '')) {
-                    $commentsSection = '<br />';
-                    $commentsSection .= '<table cellpadding="2" style="width:100%;font-size:8pt;">';
-                    $commentsSection .= '    <tr style="background-color:#777777;color:#ffffff;">';
-                    $commentsSection .= '	     <td style="text-align:center;border-top:solid 10px #000000;border-bottom:solid 10px #000000;"><strong>Comments</strong></td>';
+                $labRes .= '</strong></td>';
+                $labRes .= '    </tr>';
+                $labRes .= '    <tr>';
+                $labRes .= '	     <td style="width:46%;">Expected Results</td>';
+                $labRes .= '	     <td style="width:22%;text-align:center;">'.$tbResultValueMapping[$response['expected_mtb_detected']].'</td>';
+                $labRes .= '	     <td style="width:22%;text-align:center;">'.$tbResultValueMapping[$response['expected_rif_resistance']].'</td>';
+                $labRes .= '	     <td style="width:10%;"></td>';
+                $labRes .= '    </tr>';
+                $labRes .= '    <tr>';
+                $labRes .= '	     <td style="width:46%;">Consensus Results</td>';
+                $labRes .= '	     <td style="width:22%;text-align:center;">'.$tbResultValueMapping[$response['consensus_mtb_detected']].'</td>';
+                $labRes .= '	     <td style="width:22%;text-align:center;">'.$tbResultValueMapping[$response['consensus_rif_resistance']].'</td>';
+                $labRes .= '	     <td style="width:10%;">';
+                if ($response['ref_is_excluded'] == 'yes') {
+                    if ($response['ref_is_exempt'] == 'yes') {
+                        $labRes .= '<span style="color:#ffa500;">(Exempt)</span>';
+                    } else {
+                        $labRes .= '<span style="color:#ff0000;">(Excluded)</span>';
+                    }
+                }
+                $labRes .= '</td>';
+                $labRes .= '    </tr>';
+                if ($response["discrepant_result"]) {
+                    $discrepantResultInSubmission = true;
+                    $labRes .= '    <tr style="color: #ff0000;">';
+                } else {
+                    $labRes .= '    <tr>';
+                }
+                if ($tbResultValueMapping[$response['mtb_detected']] == "No Result" ||
+                    $response['error_code'] == "2127") {
+                    $noResultOrError2127InSubmission = true;
+                }
+                $labRes .= '	     <td style="width:46%;"><strong>'.$result['lab_name'].'</strong></td>';
+                if ($response['mtb_detected'] == 'error') {
+                    $labRes .= '	     <td style="width:22%;text-align:center;"><strong>Error: '.$response['error_code'].'</strong></td>';
+                    $labRes .= '	     <td style="width:22%;text-align:center;"></td>';
+                } else {
+                    $labRes .= '	     <td style="width:22%;text-align:center;"><strong>'.$tbResultValueMapping[$response['mtb_detected']].'</strong></td>';
+                    $labRes .= '	     <td style="width:22%;text-align:center;"><strong>'.$tbResultValueMapping[$response['rif_resistance']].'</strong></td>';
+                }
+                $labRes .= '	     <td style="width:10%;text-align:center;"><strong>'.$response['score'].'</strong></td>';
+                $labRes .= '    </tr>';
+            }
+            $labRes .= '    <tr>';
+            $labRes .= '	     <td style="width:46%;border-top: solid 10px #000000;"></td>';
+            $labRes .= '	     <td style="width:22%;border-top: solid 10px #000000;border-bottom: solid 10px #000000;text-align:center;"><strong>Percentage</strong></td>';
+            $labRes .= '	     <td style="width:22%;border-top: solid 10px #000000;border-bottom: solid 10px #000000;text-align:center;"><strong>Satisfactory/Unsatisfactory</strong></td>';
+            $labRes .= '	     <td style="width:10%;border-top: solid 10px #000000;"></td>';
+            $labRes .= '    </tr>';
+            $labRes .= '    <tr>';
+            $labRes .= '	     <td style="width:46%;background-color:#B6DDE8;border-bottom: solid 10px #000000;border-right: solid 10px #ffffff;"><strong>FINAL SCORE</strong></td>';
+            $labRes .= '	     <td style="width:22%;background-color:#B6DDE8;border-top: solid 10px #000000;border-bottom: solid 10px #000000;text-align:center;"><strong>'.round(($result['shipment_score'] / $result['max_shipment_score']) * 100, 1).'</strong></td>';
+            $labRes .= '	     <td style="width:22%;background-color:#B6DDE8;border-top: solid 10px #000000;border-bottom: solid 10px #000000;text-align:center;"><strong>'.($result['submission_score_status'] == 'fail' ? 'Unsatisfactory' : 'Satisfactory').'</strong></td>';
+            $labRes .= '	     <td style="width:10%;border-top: solid 10px #000000;"></td>';
+            $labRes .= '    </tr>';
+            foreach ($result['responseResult'] as $response) {
+                if ($response['ref_is_excluded'] == 'yes' &&
+                    isset($response['ref_excluded_reason']) &&
+                    trim($response['ref_excluded_reason']) != "") {
+                    $labRes .= '    <tr>';
+                    $labRes .= '        <td colspan="4">';
+                    $labRes .= '            <strong>';
+                    for ($excludedReasonIndex = 0; $excludedReasonIndex < $exclusionCount; $excludedReasonIndex++) {
+                        $labRes .= '*';
+                    }
+                    $labRes .= '            </strong> ' . $response['ref_excluded_reason'];
+                    $labRes .= '        </td>';
+                    $labRes .= '    </tr>';
+                }
+            }
+            $labRes .= '</table>';
+            $pdf->writeHTML($labRes, true, false, true, false, '');
+            $commentsSection = null;
+            if ((isset($result['eval_comment']) && $result['eval_comment'] != '') ||
+                (isset($result['optional_eval_comment']) && $result['optional_eval_comment'] != '') ||
+                (isset($result['shipment_comment']) && $result['shipment_comment'] != '') ||
+                $discrepantResultInSubmission || isset($result['cartridge_expired_on']) ||
+                $noResultOrError2127InSubmission ||
+                (isset($result['instrument_requires_calibration']) && $result['instrument_requires_calibration']) ||
+                !isset($result['supervisor_approval']) || $result['supervisor_approval'] == '' || $result['supervisor_approval'] == 'no' ||
+                !isset($result['qc_done_on_time']) || !$result['qc_done_on_time'] ||
+                (isset($result['ptNotTestedComment']) && $result['ptNotTestedComment'] != '')) {
+                $commentsSection = '<br />';
+                $commentsSection .= '<table cellpadding="2" style="width:100%;font-size:8pt;">';
+                $commentsSection .= '    <tr style="background-color:#777777;color:#ffffff;">';
+                $commentsSection .= '	     <td style="text-align:center;border-top:solid 10px #000000;border-bottom:solid 10px #000000;"><strong>Comments</strong></td>';
+                $commentsSection .= '    </tr>';
+                $allComments = array();
+                if (isset($result['eval_comment']) && $result['eval_comment'] !== '') {
+                    array_push($allComments, $result['eval_comment']);
+                }
+                if (isset($result['optional_eval_comment']) && $result['optional_eval_comment'] !== '') {
+                    array_push($allComments, $result['optional_eval_comment']);
+                }
+                if (isset($result['shipment_comment']) && $result['shipment_comment'] !== '') {
+                    array_push($allComments, $result['shipment_comment']);
+                }
+                if (isset($result['ptNotTestedComment']) && $result['ptNotTestedComment'] != '') {
+                    array_push($allComments, $result['ptNotTestedComment']);
+                } else {
+                    if ($discrepantResultInSubmission) {
+                        array_push($allComments, 'Red highlighted results represent discrepancies between actual and expected results.');
+                    }
+                    if ($result['cartridge_expired_on']) {
+                        array_push($allComments, 'Xpert cartridge kit expired '.Pt_Commons_General::dbDateToString($result['cartridge_expired_on']).'. Use of expired reagents could lead to incorrect reporting of clinical results.'.$result['tests_done_on_expired_cartridges']);
+                    }
+                    if ($noResultOrError2127InSubmission) {
+                        array_push($allComments, 'Check computer software GeneXpert Dx to ensure software is not freezing during testing. Check uninterrupted power supply (UPS) to ensure it is capable of sustaining power to GeneXpert for a minimum of 2 hours should an electrical power outage occur. If UPS is unable to sustain GeneXpert instrument for 2 hours request sufficient UPS that will provide power to GeneXpert instrument for no less than 2 hours to enable current run completion in the event of a power outage.');
+                    }
+                    if ($result['instrument_requires_calibration']) {
+                        array_push($allComments, 'Calibration is an important maintenance procedure to ensure GeneXpert instruments are functioning properly and yielding accurate results. '.$result['tests_done_after_calibration_due'].'Instrument calibration should take place each year or after every 2,000 runs on each instrument module (whichever comes first). Entered data suggest your GeneXpert Instrument is due for calibration. Request an XpertCheck module calibration kit and perform calibration as instructed. Details on how to perform GeneXpert Instrument calibration can be found at <a href="http://www.stoptb.org/wg/gli/TrainingPackage_Xpert_MTB_RIF.asp">http://www.stoptb.org/wg/gli/TrainingPackage_Xpert_MTB_RIF.asp</a> module 10 MAINTENANCE.');
+                    }
+                    if (!isset($result['qc_done_on_time']) || !$result['qc_done_on_time']) {
+                        array_push($allComments, 'Entered data suggest monthly maintenance needs to be performed.  Proper and timely monthly maintenance helps to ensure the longevity and accuracy of the GeneXpert Instrument. Details on how to perform GeneXpert Instrument monthly maintenance can be found at <a href="http://www.stoptb.org/wg/gli/TrainingPackage_Xpert_MTB_RIF.asp">http://www.stoptb.org/wg/gli/TrainingPackage_Xpert_MTB_RIF.asp</a> module 10 MAINTENANCE.');
+                    }
+                    if (!isset($result['supervisor_approval']) || $result['supervisor_approval'] == '' || $result['supervisor_approval'] == 'no') {
+                        array_push($allComments, 'Entered data suggest submitted results were not cross checked by a supervisor or designee.  Supervisory report review is an important step in quality assurance of laboratory testing results and must be incorporated into the workflow of all laboratories to ensure accuracy of all reported results.');
+                    }
+                }
+                if (count($allComments) > 0) {
+                    $commentsSection .= '    <tr>';
+                    $commentsSection .= '	     <td>';
+                    if (count($allComments) > 1) {
+                        $commentsSection .= '	         <ul>';
+                    }
+                    foreach ($allComments as $comment) {
+                        if (count($allComments) > 1) {
+                            $commentsSection .= '	             <li>';
+                        }
+                        $commentsSection .= $comment;
+                        if (count($allComments) > 1) {
+                            $commentsSection .= '	             </li>';
+                        }
+                    }
+                    if (count($allComments) > 1) {
+                        $commentsSection .= '             </ul>';
+                    }
+                    $commentsSection .= '        </td>';
                     $commentsSection .= '    </tr>';
-                    $allComments = array();
-                    if (isset($result['eval_comment']) && $result['eval_comment'] !== '') {
-                        array_push($allComments, $result['eval_comment']);
-                    }
-                    if (isset($result['optional_eval_comment']) && $result['optional_eval_comment'] !== '') {
-                        array_push($allComments, $result['optional_eval_comment']);
-                    }
-                    if (isset($result['shipment_comment']) && $result['shipment_comment'] !== '') {
-                        array_push($allComments, $result['shipment_comment']);
-                    }
-                    if (isset($result['ptNotTestedComment']) && $result['ptNotTestedComment'] != '') {
-                        array_push($allComments, $result['ptNotTestedComment']);
-                    } else {
-                        if ($discrepantResultInSubmission) {
-                            array_push($allComments, 'Red highlighted results represent discrepancies between actual and expected results.');
-                        }
-                        if ($result['cartridge_expired_on']) {
-                            array_push($allComments, 'Xpert cartridge kit expired '.Pt_Commons_General::dbDateToString($result['cartridge_expired_on']).'. Use of expired reagents could lead to incorrect reporting of clinical results.'.$result['tests_done_on_expired_cartridges']);
-                        }
-                        if ($noResultOrError2127InSubmission) {
-                            array_push($allComments, 'Check computer software GeneXpert Dx to ensure software is not freezing during testing. Check uninterrupted power supply (UPS) to ensure it is capable of sustaining power to GeneXpert for a minimum of 2 hours should an electrical power outage occur. If UPS is unable to sustain GeneXpert instrument for 2 hours request sufficient UPS that will provide power to GeneXpert instrument for no less than 2 hours to enable current run completion in the event of a power outage.');
-                        }
-                        if ($result['instrument_requires_calibration']) {
-                            array_push($allComments, 'Calibration is an important maintenance procedure to ensure GeneXpert instruments are functioning properly and yielding accurate results. '.$result['tests_done_after_calibration_due'].'Instrument calibration should take place each year or after every 2,000 runs on each instrument module (whichever comes first). Entered data suggest your GeneXpert Instrument is due for calibration. Request an XpertCheck module calibration kit and perform calibration as instructed. Details on how to perform GeneXpert Instrument calibration can be found at <a href="http://www.stoptb.org/wg/gli/TrainingPackage_Xpert_MTB_RIF.asp">http://www.stoptb.org/wg/gli/TrainingPackage_Xpert_MTB_RIF.asp</a> module 10 MAINTENANCE.');
-                        }
-                        if (!isset($result['qc_done_on_time']) || !$result['qc_done_on_time']) {
-                            array_push($allComments, 'Entered data suggest monthly maintenance needs to be performed.  Proper and timely monthly maintenance helps to ensure the longevity and accuracy of the GeneXpert Instrument. Details on how to perform GeneXpert Instrument monthly maintenance can be found at <a href="http://www.stoptb.org/wg/gli/TrainingPackage_Xpert_MTB_RIF.asp">http://www.stoptb.org/wg/gli/TrainingPackage_Xpert_MTB_RIF.asp</a> module 10 MAINTENANCE.');
-                        }
-                        if (!isset($result['supervisor_approval']) || $result['supervisor_approval'] == '' || $result['supervisor_approval'] == 'no') {
-                            array_push($allComments, 'Entered data suggest submitted results were not cross checked by a supervisor or designee.  Supervisory report review is an important step in quality assurance of laboratory testing results and must be incorporated into the workflow of all laboratories to ensure accuracy of all reported results.');
-                        }
-                    }
-                    if (count($allComments) > 0) {
-                        $commentsSection .= '    <tr>';
-                        $commentsSection .= '	     <td>';
-                        if (count($allComments) > 1) {
-                            $commentsSection .= '	         <ul>';
-                        }
-                        foreach ($allComments as $comment) {
-                            if (count($allComments) > 1) {
-                                $commentsSection .= '	             <li>';
-                            }
-                            $commentsSection .= $comment;
-                            if (count($allComments) > 1) {
-                                $commentsSection .= '	             </li>';
-                            }
-                        }
-                        if (count($allComments) > 1) {
-                            $commentsSection .= '             </ul>';
-                        }
-                        $commentsSection .= '        </td>';
-                        $commentsSection .= '    </tr>';
-                    }
-                    $commentsSection .= '</table>';
-                    $pdf->writeHTMLTogether($commentsSection, true, false, true, false, '');
                 }
-                $correctiveActionsSection = null;
-                if (isset($result['corrective_actions']) && count($result['corrective_actions'])  > 0) {
-                    $correctiveActionsSection = '<br />';
-                    $correctiveActionsSection .= '<table cellspacing="1" cellpadding="2" style="width:100%;font-size:8pt;">';
-                    $correctiveActionsSection .= '    <tr style="background-color:#777777;color:#ffffff;">';
-                    $correctiveActionsSection .= '	     <td style="text-align:center;border-top:solid 10px #000000;border-bottom:solid 10px #000000;" colspan="2"><strong>Corrective Actions Checklist</strong></td>';
+                $commentsSection .= '</table>';
+                $pdf->writeHTMLTogether($commentsSection, true, false, true, false, '');
+            }
+            $correctiveActionsSection = null;
+            if (isset($result['corrective_actions']) && count($result['corrective_actions'])  > 0) {
+                $correctiveActionsSection = '<br />';
+                $correctiveActionsSection .= '<table cellspacing="1" cellpadding="2" style="width:100%;font-size:8pt;">';
+                $correctiveActionsSection .= '    <tr style="background-color:#777777;color:#ffffff;">';
+                $correctiveActionsSection .= '	     <td style="text-align:center;border-top:solid 10px #000000;border-bottom:solid 10px #000000;" colspan="2"><strong>Corrective Actions Checklist</strong></td>';
+                $correctiveActionsSection .= '    </tr>';
+                foreach ($result['corrective_actions'] as $correctiveAction) {
+                    $correctiveActionsSection .= '    <tr>';
+                    $correctiveActionsSection .= '	     <td style="border:solid 10px #000000;width:17px;"></td>';
+                    $correctiveActionsSection .= '	     <td>'.$correctiveAction.'</td>';
                     $correctiveActionsSection .= '    </tr>';
-                    foreach ($result['corrective_actions'] as $correctiveAction) {
-                        $correctiveActionsSection .= '    <tr>';
-                        $correctiveActionsSection .= '	     <td style="border:solid 10px #000000;width:17px;"></td>';
-                        $correctiveActionsSection .= '	     <td>'.$correctiveAction.'</td>';
-                        $correctiveActionsSection .= '    </tr>';
-                    }
-                    $correctiveActionsSection .= '</table>';
-                    $pdf->writeHTMLTogether($correctiveActionsSection, true, false, true, false, '');
                 }
+                $correctiveActionsSection .= '</table>';
+                $pdf->writeHTMLTogether($correctiveActionsSection, true, false, true, false, '');
             }
         }
 
@@ -578,12 +529,8 @@ if (sizeof($this->result['shipment']) > 0) {
         if (ob_get_contents()) {
             ob_end_clean();
         }
-        //Close and output PDF document
-        if (isset($result['last_name']) && trim($result['last_name'])!="") {
-            $result['last_name']="_".$result['last_name'];
-        }
 
-        $fileName = $result['first_name'].$result['last_name']."-".$result['map_id'].".pdf";
+        $fileName = $result['lab_name']."-".$result['map_id'].".pdf";
         $fileName = preg_replace('/[^A-Za-z0-9.]/', '-', $fileName);
         $fileName = str_replace(" ", "-", $fileName);
 

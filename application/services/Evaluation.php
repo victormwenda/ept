@@ -1197,7 +1197,7 @@ class Application_Service_Evaluation {
                 'sp.shipment_test_date',
                 'sp.shipment_receipt_date',
                 'sp.shipment_test_report_date',
-                'IFNULL(sp.date_submitted, sp.shipment_test_report_date) AS result_submission_date,',
+                'result_submission_date' => new Zend_Db_Expr('IFNULL(sp.date_submitted, sp.shipment_test_report_date)'),
                 'sp.final_result',
                 'sp.failure_reason',
                 'sp.shipment_score',

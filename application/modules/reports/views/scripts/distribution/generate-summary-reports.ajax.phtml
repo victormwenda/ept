@@ -389,7 +389,7 @@ if ($this->result['shipment'] != "") {
             $labInfo .= '    <tr>';
             $labInfo .= '	     <td></td>';
             $labInfo .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.$tbReportParticipant['country_name'].'</td>';
-            $labInfo .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.$tbReportParticipant['first_name']." ".$tbReportParticipant['last_name'];
+            $labInfo .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.$tbReportParticipant['lab_name'];
             if ($tbReportParticipant['is_excluded'] == 'yes') {
                 $labInfo .= ' <span style="color:#ff0000;">(Excluded)</span>';
             }
