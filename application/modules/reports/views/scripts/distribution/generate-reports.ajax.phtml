@@ -17,8 +17,10 @@ if (sizeof($this->result['shipment']) > 0) {
     }
     class MYPDF extends TCPDF {
         public $scheme_name = '';
-        public function setSchemeName($header, $schemeName, $logo, $logoRight, $comingFrom, $schemeType) {
+        public $result = array();
+        public function setSchemeName($header, $schemeName, $result, $logo, $logoRight, $comingFrom, $schemeType) {
             $this->scheme_name = $schemeName;
+            $this->result = $result;
             $this->header = $header;
             $this->logo = $logo;
             $this->logoRight = $logoRight;

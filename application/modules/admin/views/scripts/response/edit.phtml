@@ -19,7 +19,7 @@ $reportDate = explode(" ", $this->responseData['shipment']['shipment_test_report
     <tr>
         <td style="width:25%;">
             <h4 class="text-info">Participant Name</h4>&nbsp;
-            <?php echo ($this->responseData['participant']['first_name'].' '.$this->responseData['participant']['last_name']);?>
+            <?php echo $this->responseData['participant']['lab_name'];?>
         </td>
         <td style="width:25%;">
             <h4 class="text-info">Participant Code</h4>&nbsp;

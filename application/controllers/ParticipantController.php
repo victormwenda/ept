@@ -207,7 +207,7 @@ class ParticipantController extends Zend_Controller_Action {
             $this->view->result = $db->fetchRow($db->select()
                 ->from(array('spm' => 'shipment_participant_map'), array('spm.map_id'))
                 ->join(array('s' => 'shipment'), 's.shipment_id=spm.shipment_id', array('s.shipment_code'))
-                ->join(array('p' => 'participant'), 'p.participant_id=spm.participant_id', array('p.first_name', 'p.last_name'))
+                ->join(array('p' => 'participant'), 'p.participant_id=spm.participant_id', array('p.lab_name'))
                 ->where("spm.map_id = ?", $id));
         } else {
             $this->_redirect("/participant/dashboard");

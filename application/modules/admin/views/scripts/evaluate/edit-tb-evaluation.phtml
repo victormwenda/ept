@@ -695,7 +695,7 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
     }?>
 </table>
 <script>
-  var analyteLables = {
+  var analyteLabels = {
   <?php foreach ($this->assays as $id => $definition) {
   echo "    \"".$id."\": {\n";
   echo "      \"analyte1Label\": \"".$definition['analyte1Label']."\",\n";
@@ -712,9 +712,9 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
   function setAssay() {
     var selectedAssayId = $("#assay").val();
     if (!selectedAssayId) {
-      selectedAssayId = Object.keys(analyteLables)[0];
+      selectedAssayId = Object.keys(analyteLabels)[0];
     }
-    var selectedAssayDefinition = analyteLables[selectedAssayId];
+    var selectedAssayDefinition = analyteLabels[selectedAssayId];
     $(".probe1Header").text(selectedAssayDefinition['analyte1Label']);
     $(".probe2Header").text(selectedAssayDefinition['analyte2Label']);
     $(".probe3Header").text(selectedAssayDefinition['analyte3Label']);

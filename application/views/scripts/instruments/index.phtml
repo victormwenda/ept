@@ -49,14 +49,7 @@ $dtFormat = $dateHelper->getDateFormat();
                                     }
                                     foreach ($this->participants as $participant_details) { ?>
                                         <option value="<?php echo $participant_details['participant_id']; ?>" <?php echo ($instrument_details['participant_id'] == $participant_details['participant_id'] ? "selected='selected'" : ""); ?>>
-                                            <?php
-                                            echo $participant_details['first_name'];
-                                            if (isset($participant_details['last_name']) &&
-                                                $participant_details['last_name'] != ""
-                                            ) {
-                                                echo " " . $participant_details['last_name'];
-                                            }
-                                            ?>
+                                            <?php echo $participant_details['lab_name']; ?>
                                         </option>
                                         <?php
                                     }
@@ -126,10 +119,7 @@ $dtFormat = $dateHelper->getDateFormat();
         }
         foreach ($this->participants as $participant_details) {
             echo "\n        participantOptions += '\\n                    <option value=\"" . $participant_details['participant_id'] . "\">';";
-            echo "\n        participantOptions += '\\n                        ".$participant_details['first_name']."';";
-            if (isset($participant_details['last_name']) && $participant_details['last_name'] != "") {
-                echo "\n        participantOptions += ' ".$participant_details['last_name']."';";
-            }
+            echo "\n        participantOptions += '\\n                        ".$participant_details['lab_name']."';";
             echo "\n        participantOptions += '\\n                    </option>';";
         }
         ?>

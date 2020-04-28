@@ -24,7 +24,7 @@ $reportDate = explode(" ", $this->evaluateData['shipment']['shipment_test_report
   &nbsp;&nbsp;&nbsp;&nbsp;
 </span>
 <span class="pull-left">
-    <strong>Participant/Lab Name:</strong> <?php echo $this->evaluateData['participant']['first_name'] . " " . $this->evaluateData['participant']['last_name']; ?>
+    <strong>Participant/Lab Name:</strong> <?php echo $this->evaluateData['participant']['lab_name']; ?>
 </span>
 <span class="pull-right">
     <strong>Reported on:</strong> <?php echo $this->dateFormat($reportDate[0]); ?>

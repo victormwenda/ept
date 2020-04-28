@@ -5,7 +5,7 @@ class Application_Model_DbTable_Enrollments extends Zend_Db_Table_Abstract
 
     protected $_name = 'enrollments';
     protected $_primary = array('scheme_id','participant_id');
-    
+
     public function getAllEnrollments($parameters)
     {
 
@@ -13,8 +13,8 @@ class Application_Model_DbTable_Enrollments extends Zend_Db_Table_Abstract
          * you want to insert a non-database field (for example a counter or static image)
          */
 
-        $aColumns = array('p.unique_identifier','p.first_name','iso_name','s.scheme_name', "DATE_FORMAT(e.enrolled_on,'%d-%b-%Y')");
-	
+        $aColumns = array('p.unique_identifier','p.lab_name','iso_name','s.scheme_name', "DATE_FORMAT(e.enrolled_on,'%d-%b-%Y')");
+
         /*
          * Paging
          */
@@ -86,7 +86,7 @@ class Application_Model_DbTable_Enrollments extends Zend_Db_Table_Abstract
          * SQL queries
          * Get data to display
          */
-	
+
 	$sQuery = $this->getAdapter()->select()->from(array('p' => 'participant'))
 	                             ->join(array('c'=>'countries'),'c.id=p.country')
                                      ->joinLeft(array('e'=>'enrollments'),'p.participant_id = e.participant_id')
@@ -127,7 +127,7 @@ class Application_Model_DbTable_Enrollments extends Zend_Db_Table_Abstract
 					    ->joinLeft(array('s'=>'scheme_list'),'e.scheme_id = s.scheme_id',array())
 					    ->where("p.status='active'")
 					    ->group("p.participant_id");
-	
+
         $aResultTotal = $this->getAdapter()->fetchAll($sQuery);
         $iTotal = sizeof($aResultTotal);
 
@@ -141,11 +141,11 @@ class Application_Model_DbTable_Enrollments extends Zend_Db_Table_Abstract
             "aaData" => array()
         );
 
-        
+
         foreach ($rResult as $aRow) {
             $row = array();
             $row[] = $aRow['unique_identifier'];
-            $row[] = $aRow['first_name']. " " .$aRow['last_name'];
+            $row[] = $aRow['lab_name'];
             $row[] = $aRow['iso_name'];
             $row[] = $aRow['scheme_name'];
             $row[] = Application_Service_Common::ParseDateHumanFormat($aRow['enrolled_on']);
@@ -159,25 +159,25 @@ class Application_Model_DbTable_Enrollments extends Zend_Db_Table_Abstract
 
         echo json_encode($output);
     }
-    
+
     public function enrollParticipants($params) {
 	    $this->delete("scheme_id='".$params['schemeId']."'");
         foreach($params['participants'] as $participant){
             $data = array('participant_id'=>$participant,'scheme_id'=>$params['schemeId'],'status'=>'enrolled','enrolled_on'=>new Zend_Db_Expr('now()'));
             $this->insert($data);
         }
-		
+
     }
-    
+
     public function enrollParticipantToSchemes($participantId,$schemes){
-		
+
 		$this->delete("participant_id=".$participantId);
-		
+
         foreach($schemes as $scheme){
             $data = array('participant_id'=>$participantId,'scheme_id'=>$scheme,'status'=>'enrolled','enrolled_on'=>new Zend_Db_Expr('now()'));
             $this->insert($data);
         }
-		
+
     }
 
 

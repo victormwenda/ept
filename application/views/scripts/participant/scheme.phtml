@@ -25,24 +25,24 @@
 				?>
 						<tr <?php echo $class; ?>>
 								<td><?php echo $ps['unique_identifier'] ?></td>
-								<td><?php echo $ps['first_name'] . ' '.$ps['last_name'] ?></td>
+								<td><?php echo $ps['lab_name'] ?></td>
 								<td><?php echo $ps['scheme_name'] ?></td>
 						</tr>
 				<?php
 				$count++;
 				}
 				?>
-							
+
 			</table>
-			
+
 </div>
 </div>
 </div>
 </section>
 <script type="text/javascript">
-		
-	
-	
+
+
+
 	$(document).ready(function(){
 		$('#participantsTable').dataTable({
 			"oLanguage": {
@@ -53,9 +53,9 @@
 			"bInfo": true,
 			"bScrollCollapse": true,
 			"sPaginationType": "full_numbers",
-			"bRetrieve": true,                        
-			
+			"bRetrieve": true,
+
 		});
 	});
-	
+
 </script>

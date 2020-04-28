@@ -1147,7 +1147,7 @@ class Application_Service_Reports {
         $dbAdapter = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sQuery = $dbAdapter->select()->from(array('res' => 'response_result_dts'), array('totalTest' => new Zend_Db_Expr("CAST((COUNT('shipment_map_id')/s.number_of_samples) as UNSIGNED)")))
                 ->joinLeft(array('sp' => 'shipment_participant_map'), 'sp.map_id=res.shipment_map_id', array())
-                ->joinLeft(array('p' => 'participant'), 'sp.participant_id=p.participant_id', array('p.lab_name', 'participantName' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT p.first_name,\" \",p.last_name ORDER BY p.first_name SEPARATOR ', ')")))
+                ->joinLeft(array('p' => 'participant'), 'sp.participant_id=p.participant_id', array('p.lab_name', 'participantName' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT p.lab_name ORDER BY p.lab_name SEPARATOR ', ')")))
                 ->joinLeft(array('s' => 'shipment'), 's.shipment_id=sp.shipment_id', array());
         //  ->group("p.participant_id");
 
@@ -1442,7 +1442,7 @@ class Application_Service_Reports {
 
 			$sql = $db->select()->from(array('s' => 'shipment'), array('s.shipment_id', 's.shipment_code', 's.number_of_samples'))
 					->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array('sp.map_id', 'sp.participant_id', 'sp.attributes', 'sp.shipment_test_date', 'sp.shipment_receipt_date', 'sp.shipment_test_report_date', 'sp.supervisor_approval','sp.participant_supervisor', 'sp.shipment_score', 'sp.documentation_score', 'sp.user_comment'))
-					->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array('p.unique_identifier', 'p.institute_name', 'p.department_name', 'p.region', 'p.first_name', 'p.last_name', 'p.address', 'p.city', 'p.mobile', 'p.email', 'p.status'))
+					->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array('p.unique_identifier', 'p.institute_name', 'p.department_name', 'p.region', 'p.lab_name', 'p.address', 'p.city', 'p.mobile', 'p.email', 'p.status'))
 					->joinLeft(array('pmp' => 'participant_manager_map'), 'pmp.participant_id=p.participant_id', array('pmp.dm_id'))
 					->joinLeft(array('dm' => 'data_manager'), 'dm.dm_id=pmp.dm_id', array('dm.institute', 'dataManagerFirstName' => 'dm.first_name', 'dataManagerLastName' => 'dm.last_name'))
 					->joinLeft(array('st' => 'r_site_type'), 'st.r_stid=p.site_type', array('st.site_type'))
@@ -1486,7 +1486,7 @@ class Application_Service_Reports {
 
 
 					$sheet->getCellByColumnAndRow(0, $currentRow)->setValueExplicit(ucwords($aRow['unique_identifier']), PHPExcel_Cell_DataType::TYPE_STRING);
-					$sheet->getCellByColumnAndRow(1, $currentRow)->setValueExplicit($aRow['first_name'] . $aRow['last_name'], PHPExcel_Cell_DataType::TYPE_STRING);
+					$sheet->getCellByColumnAndRow(1, $currentRow)->setValueExplicit($aRow['lab_name'], PHPExcel_Cell_DataType::TYPE_STRING);
 					$sheet->getCellByColumnAndRow(2, $currentRow)->setValueExplicit($aRow['region'], PHPExcel_Cell_DataType::TYPE_STRING);
 					$sheet->getCellByColumnAndRow(3, $currentRow)->setValueExplicit($aRow['department_name'], PHPExcel_Cell_DataType::TYPE_STRING);
 					$sheet->getCellByColumnAndRow(4, $currentRow)->setValueExplicit($aRow['site_type'], PHPExcel_Cell_DataType::TYPE_STRING);
@@ -1755,7 +1755,7 @@ class Application_Service_Reports {
 					$colCellObj = $sheet->getCellByColumnAndRow($r++, $currentRow);
 					$colCellObj->setValueExplicit(ucwords($aRow['unique_identifier']), PHPExcel_Cell_DataType::TYPE_STRING);
 					$cellName = $colCellObj->getColumn();
-					$sheet->getCellByColumnAndRow($r++, $currentRow)->setValueExplicit($aRow['first_name'] . $aRow['last_name'], PHPExcel_Cell_DataType::TYPE_STRING);
+					$sheet->getCellByColumnAndRow($r++, $currentRow)->setValueExplicit($aRow['lab_name'], PHPExcel_Cell_DataType::TYPE_STRING);
 					$sheet->getCellByColumnAndRow($r++, $currentRow)->setValueExplicit($aRow['dataManagerFirstName'] . $aRow['dataManagerLastName'], PHPExcel_Cell_DataType::TYPE_STRING);
 					$sheet->getCellByColumnAndRow($r++, $currentRow)->setValueExplicit($aRow['region'], PHPExcel_Cell_DataType::TYPE_STRING);
 					$shipmentReceiptDate = Application_Service_Common::ParseDateExcel($aRow['shipment_receipt_date']);
@@ -1774,12 +1774,12 @@ class Application_Service_Reports {
 
 
 					$sheetThree->getCellByColumnAndRow($sheetThreeCol++, $sheetThreeRow)->setValueExplicit(ucwords($aRow['unique_identifier']), PHPExcel_Cell_DataType::TYPE_STRING);
-					$sheetThree->getCellByColumnAndRow($sheetThreeCol++, $sheetThreeRow)->setValueExplicit($aRow['first_name'] . $aRow['last_name'], PHPExcel_Cell_DataType::TYPE_STRING);
+					$sheetThree->getCellByColumnAndRow($sheetThreeCol++, $sheetThreeRow)->setValueExplicit($aRow['lab_name'], PHPExcel_Cell_DataType::TYPE_STRING);
 
 					//<-------------Document score sheet------------
 
 					$docScoreSheet->getCellByColumnAndRow($docScoreCol++, $docScoreRow)->setValueExplicit(ucwords($aRow['unique_identifier']), PHPExcel_Cell_DataType::TYPE_STRING);
-					$docScoreSheet->getCellByColumnAndRow($docScoreCol++, $docScoreRow)->setValueExplicit($aRow['first_name'] . $aRow['last_name'], PHPExcel_Cell_DataType::TYPE_STRING);
+					$docScoreSheet->getCellByColumnAndRow($docScoreCol++, $docScoreRow)->setValueExplicit($aRow['lab_name'], PHPExcel_Cell_DataType::TYPE_STRING);
 
 					if (isset($shipmentReceiptDate) && trim($shipmentReceiptDate) != "") {
 						$docScoreSheet->getCellByColumnAndRow($docScoreCol++, $docScoreRow)->setValueExplicit($documentationScorePerItem, PHPExcel_Cell_DataType::TYPE_STRING);
@@ -1832,7 +1832,7 @@ class Application_Service_Reports {
 					//<------------ Total score sheet ------------
 
 					$totalScoreSheet->getCellByColumnAndRow($totScoreCol++, $totScoreRow)->setValueExplicit(ucwords($aRow['unique_identifier']), PHPExcel_Cell_DataType::TYPE_STRING);
-					$totalScoreSheet->getCellByColumnAndRow($totScoreCol++, $totScoreRow)->setValueExplicit($aRow['first_name'] . $aRow['last_name'], PHPExcel_Cell_DataType::TYPE_STRING);
+					$totalScoreSheet->getCellByColumnAndRow($totScoreCol++, $totScoreRow)->setValueExplicit($aRow['lab_name'], PHPExcel_Cell_DataType::TYPE_STRING);
 
 					//------------ Total score sheet ------------>
 					//Zend_Debug::dump($aRow['response']);
@@ -2495,7 +2495,7 @@ class Application_Service_Reports {
 
 
 				$firstSheet->getCellByColumnAndRow(0, $row)->setValueExplicit(html_entity_decode($rowOverAll['unique_identifier'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
-				$firstSheet->getCellByColumnAndRow(1, $row)->setValueExplicit(html_entity_decode($rowOverAll['first_name']." ".$rowOverAll['last_name'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+				$firstSheet->getCellByColumnAndRow(1, $row)->setValueExplicit(html_entity_decode($rowOverAll['lab_name'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 				$firstSheet->getCellByColumnAndRow(2, $row)->setValueExplicit(html_entity_decode($rowOverAll['department_name'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 				$firstSheet->getCellByColumnAndRow(3, $row)->setValueExplicit(html_entity_decode($rowOverAll['region'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
 				$firstSheet->getCellByColumnAndRow(4, $row)->setValueExplicit(html_entity_decode($rowOverAll['site_type'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
@@ -3178,18 +3178,18 @@ class Application_Service_Reports {
 
     // Results Per Site
     public function getResultsPerSiteReport($parameters) {
-        $aColumns = array('map_id', 'unique_identifier', 'first_name', 'iso_name', 'region',
+        $aColumns = array('map_id', 'unique_identifier', 'lab_name', 'iso_name', 'region',
             'final_result', 'shipment_score', 'documentation_score');
 
         $searchColumns = array('p.unique_identifier',
-            'p.first_name',
+            'p.lab_name',
             'c.iso_name',
             'p.region'
         );
 
         $orderColumns = array(
             'p.unique_identifier',
-            'p.first_name',
+            'p.lab_name',
             'c.iso_name',
             'p.region',
             'spm.shipment_score',
@@ -3268,7 +3268,7 @@ class Application_Service_Reports {
             ->from(array('spm' => 'shipment_participant_map'),
                 array('map_id', 'final_result', 'shipment_score', 'documentation_score'))
             ->join(array('p' => 'participant'), 'spm.participant_id=p.participant_id',
-                array('unique_identifier', 'first_name', 'region'))
+                array('unique_identifier', 'lab_name', 'region'))
             ->join(array('c' => 'countries'), 'p.country=c.id', array('iso_name'))
             ->where('spm.shipment_id = '.$parameters['shipmentId'])
             ->order(new Zend_Db_Expr("CASE WHEN p.unique_identifier REGEXP '\d*' THEN CAST(CAST(p.unique_identifier AS DECIMAL) AS CHAR) ELSE TRIM(LEADING '0' FROM p.unique_identifier) END"));
@@ -3313,7 +3313,7 @@ class Application_Service_Reports {
 
         foreach ($rResult as $aRow) {
             $row = array();
-            $row[] = $aRow['first_name'].' ('.$aRow['unique_identifier'].')';
+            $row[] = $aRow['lab_name'].' ('.$aRow['unique_identifier'].')';
             $row[] = $aRow['iso_name'];
             $row[] = $aRow['region'];
             $row[] = $aRow['shipment_score'] + $aRow['documentation_score'];
@@ -3834,13 +3834,13 @@ class Application_Service_Reports {
          */
 
         if (isset($parameters['reportType']) && $parameters['reportType'] == "network") {
-            $aColumns = array('p.first_name', 'network_name');
+            $aColumns = array('p.lab_name', 'network_name');
         } else if (isset($parameters['reportType']) && $parameters['reportType'] == "affiliation") {
-            $aColumns = array('p.first_name', 'affiliate');
+            $aColumns = array('p.lab_name', 'affiliate');
         } else if (isset($parameters['reportType']) && $parameters['reportType'] == "region") {
-            $aColumns = array('p.first_name', 'region');
+            $aColumns = array('p.lab_name', 'region');
         } else {
-            $aColumns = array('p.first_name');
+            $aColumns = array('p.lab_name');
         }
 
         $sLimit = "";
@@ -3916,7 +3916,7 @@ class Application_Service_Reports {
         $dbAdapter = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sQuery = $dbAdapter->select()->from(array('res' => 'response_result_dts'), array())
                 ->joinLeft(array('sp' => 'shipment_participant_map'), 'sp.map_id=res.shipment_map_id', array())
-                ->joinLeft(array('p' => 'participant'), 'sp.participant_id=p.participant_id', array('p.first_name', 'p.last_name', 'p.region', 'p.affiliation'))
+                ->joinLeft(array('p' => 'participant'), 'sp.participant_id=p.participant_id', array('p.lab_name', 'p.region', 'p.affiliation'))
                 ->joinLeft(array('s' => 'shipment'), 's.shipment_id=sp.shipment_id', array())
                 ->group("p.participant_id");
 
@@ -3999,7 +3999,7 @@ class Application_Service_Reports {
 
         foreach ($rResult as $aRow) {
             $row = array();
-            $row[] = $aRow['first_name'] . ' ' . $aRow['last_name'];
+            $row[] = $aRow['lab_name'];
             if (isset($parameters['reportType']) && $parameters['reportType'] == "network") {
                 $row[] = $aRow['network_name'];
             } else if (isset($parameters['reportType']) && $parameters['reportType'] == "affiliation") {
@@ -4023,7 +4023,7 @@ class Application_Service_Reports {
         if (isset($parameters['testkitId']) && $parameters['testkitId'] != '') {
             $sQuery = $dbAdapter->select()->from(array('res' => 'response_result_dts'), array())
                     ->joinLeft(array('sp' => 'shipment_participant_map'), 'sp.map_id=res.shipment_map_id', array())
-                    ->joinLeft(array('p' => 'participant'), 'sp.participant_id=p.participant_id', array('p.first_name', 'p.last_name', 'p.region', 'p.affiliation'))
+                    ->joinLeft(array('p' => 'participant'), 'sp.participant_id=p.participant_id', array('p.lab_name', 'p.region', 'p.affiliation'))
                     ->joinLeft(array('s' => 'shipment'), 's.shipment_id=sp.shipment_id', array())
                     ->group("p.participant_id");
 
@@ -4275,110 +4275,6 @@ class Application_Service_Reports {
         echo json_encode($output);
     }
 
-    //vl assay particpant count pie chart
-    public function getAllVlAssayParticipantCount($params) {
-	    $db = Zend_Db_Table_Abstract::getDefaultAdapter();
-	    $shipmentId = $params['shipmentId'];
-	    $vlQuery = $db->select()->from(array('vl' => 'r_vl_assay'),
-            array('vl.id','vl.name','vl.short_name'));
-	    $assayResult = $db->fetchAll($vlQuery);
-	    $i = 0;
-	    $vlParticipantCount = array();
-	    foreach ($assayResult as $assayRow) {
-	        $cQuery = $db->select()
-                ->from(array('sp' => 'shipment_participant_map'),
-                    array('sp.map_id', 'sp.attributes'))
-				->where("sp.shipment_id = '".$shipmentId."'");
-	        $cResult = $db->fetchAll($cQuery);
-	        $k = 0;
-	        foreach($cResult as $val){
-	            $valAttributes = json_decode($val['attributes'], true);
-	            if($assayRow['id'] == $valAttributes['vl_assay']) {
-	                $k = $k + 1;
-	            }
-	        }
-	        $vlParticipantCount[$i]['count']  = $k;
-            $vlParticipantCount[$i]['name']  = $assayRow['short_name'];
-            $i++;
-	    }
-	    return $vlParticipantCount;
-    }
-
-    public function getAllVlSampleResult($params)
-    {
-	$db = Zend_Db_Table_Abstract::getDefaultAdapter();
-	$totalResult = array();
-	if($params['shipmentId']!=''){
-	    $shipmentId = $params['shipmentId'];
-	    $shQuery=$db->select()->from(array('s' => 'shipment'))->where("s.shipment_id='".$shipmentId."'");
-	    $shimentResult=$db->fetchAll($shQuery);
-	}else{
-	    $shQuery=$db->select()->from(array('s' => 'shipment'))->where("s.scheme_type='vl'");
-	    if (isset($params['start']) && $params['start'] != "" && isset($params['end']) && $params['end'] != "") {
-		$shQuery = $shQuery->where("DATE(s.shipment_date) >= ?", $params['start']);
-		$shQuery = $shQuery->where("DATE(s.shipment_date) <= ?", $params['end']);
-	    }
-	    $shimentResult=$db->fetchAll($shQuery);
-	}
-	if($shimentResult){
-	    $vlQuery=$db->select()->from(array('vl' => 'r_vl_assay'),array('vl.id','vl.name','vl.short_name'));
-	    $assayResult=$db->fetchAll($vlQuery);
-	    $s = 0;
-	    foreach($shimentResult as $shipData){
-		$shipmentId = $shipData['shipment_id'];
-		$i = 0;
-		$totalResult = array();
-		foreach ($assayResult as $assayRow) {
-		    $a = 0;
-		    $f = 0;
-		    $e = 0;
-		    $cQuery = $db->select()->from(array('sp' => 'shipment_participant_map'),array('sp.map_id','sp.attributes'))
-					->where("sp.shipment_id='".$shipmentId."'");
-		    $cResult=$db->fetchAll($cQuery);
-		    foreach($cResult as $val){
-			$valAttributes = json_decode($val['attributes'], true);
-			if($assayRow['id']==$valAttributes['vl_assay']){
-			    //check pass result
-			    $pQuery = $db->select()->from(array('rrv' => 'response_result_vl'),array('passResult' => new Zend_Db_Expr("SUM(IF(rrv.calculated_score='pass',1,0))"),'failResult' => new Zend_Db_Expr("SUM(IF(rrv.calculated_score='fail',1,0))"),'exResult' => new Zend_Db_Expr("SUM(IF(rrv.calculated_score='excluded',1,0))")))
-					->where("rrv.shipment_map_id='".$val['map_id']."'")
-					->group("rrv.shipment_map_id");
-			    $pResult=$db->fetchRow($pQuery);
-			    if($pResult){
-			    $a = $a + $pResult['passResult'];
-			    $f = $f + $pResult['failResult'];
-			    $e = $e + $pResult['exResult'];
-			    }
-			}
-		    }
-		    $totalResult[$s][$i]['accept'] = $a;
-		    $totalResult[$s][$i]['fail'] = $f;
-		    $totalResult[$s][$i]['excluded'] = $e;
-		    $totalResult[$s][$i]['name']  = $assayRow['short_name'];
-		    $i++;
-		}
-	    }
-	    $resultAccept = array();
-	    $resultFail = array();
-	    $resultEx = array();
-	    foreach($totalResult as $result){
-		foreach($result as $data){
-		array_push($resultAccept,$data['accept']);
-		array_push($resultFail,$data['fail']);
-		array_push($resultEx,$data['excluded']);
-		}
-	    }
-	    $resultAcc[] = $resultAccept;
-	    $resultFa[] = $resultFail;
-	    $resultExe[] = $resultEx;
-
-	    $resultAcc['name'] = 'accept';
-	    $resultFa['name'] = 'fail';
-	    $resultExe['name'] = 'excluded';
-	    $totalResult = array($resultAcc,$resultFa,$resultExe,'nameList'=>$totalResult);
-	}
-	return $totalResult;
-    }
-
 	public function getShipmentsByDate($schemeType,$startDate,$endDate) {
         $resultArray = array();
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
@@ -4431,7 +4327,7 @@ class Application_Service_Reports {
 
 			$sQuery = $db->select()->from(array('spm' => 'shipment_participant_map'), array('spm.map_id','spm.shipment_id','spm.participant_id','spm.shipment_score','spm.final_result'))
 									->join(array('s' => 'shipment'),'s.shipment_id=spm.shipment_id',array('shipment_code','scheme_type'))
-									->join(array('p' => 'participant'),'p.participant_id=spm.participant_id',array('unique_identifier','first_name','last_name','email','city','state','address','institute_name'))
+									->join(array('p' => 'participant'),'p.participant_id=spm.participant_id',array('unique_identifier','lab_name','email','city','state','address','institute_name'))
 									->joinLeft(array('c' => 'countries'),'c.id=p.country',array('iso_name'));
 
 			if(isset($params['shipmentId']) && count($params['shipmentId'])>0) {
@@ -4506,7 +4402,7 @@ class Application_Service_Reports {
 			if($shipment['final_result']==1){
 				$firstSheetRow[]=$shipment['shipment_code'];
 				$firstSheetRow[]=$shipment['unique_identifier'];
-				$firstSheetRow[]=$shipment['first_name']." ".$shipment['last_name'];
+				$firstSheetRow[]=$shipment['lab_name'];
 				$firstSheetRow[]=$shipment['institute_name'];
 				$firstSheetRow[]=$shipment['address'];
 				$firstSheetRow[]=$shipment['iso_name'];
@@ -4518,7 +4414,7 @@ class Application_Service_Reports {
 			if($shipment['final_result']==4){
 				$secondSheetRow[]=$shipment['shipment_code'];
 				$secondSheetRow[]=$shipment['unique_identifier'];
-				$secondSheetRow[]=$shipment['first_name']." ".$shipment['last_name'];
+				$secondSheetRow[]=$shipment['lab_name'];
 				$secondSheetRow[]=$shipment['institute_name'];
 				$secondSheetRow[]=$shipment['address'];
 				$secondSheetRow[]=$shipment['iso_name'];
@@ -4530,7 +4426,7 @@ class Application_Service_Reports {
 			if($shipment['final_result']==2 || $shipment['final_result']==0){
 				$thirdSheetRow[]=$shipment['shipment_code'];
 				$thirdSheetRow[]=$shipment['unique_identifier'];
-				$thirdSheetRow[]=$shipment['first_name']." ".$shipment['last_name'];
+				$thirdSheetRow[]=$shipment['lab_name'];
 				$thirdSheetRow[]=$shipment['institute_name'];
 				$thirdSheetRow[]=$shipment['address'];
 				$thirdSheetRow[]=$shipment['iso_name'];
@@ -4689,10 +4585,7 @@ class Application_Service_Reports {
 FROM (
 SELECT countries.iso_name AS `Country`,
     participant.participant_id AS `Site No.`,
-    CONCAT(
-      COALESCE(participant.lab_name,
-               CONCAT(participant.first_name, ' ', participant.last_name),
-               participant.first_name),
+    CONCAT(participant.lab_name,
       COALESCE(CONCAT(' - ', CASE WHEN participant.state = '' THEN NULL ELSE participant.state END),
                CONCAT(' - ', CASE WHEN participant.city = '' THEN NULL ELSE participant.city END), '')) AS `Site Name/Location`,
     participant.unique_identifier AS `PT-ID`,
@@ -5115,7 +5008,7 @@ ORDER BY FlattenedEvaluationResults.`PT-ID` * 1 ASC;", array($shipmentId));
         $sQuery = $db->select()->from(array('p' => 'participant'), array(
                 "sorting_unique_identifier" => new Zend_Db_Expr("LPAD(p.unique_identifier, 10, '0')"),
                 "PT ID" => "p.unique_identifier",
-                "Participant" => new Zend_Db_Expr("COALESCE(p.lab_name, CONCAT(p.first_name, ' ', p.last_name), p.first_name)")
+                "Participant" => new Zend_Db_Expr("p.lab_name")
             ))
             ->join(array('c' => 'countries'),'p.country = c.id', array("Country" => "c.iso_name"))
             ->join(array('pmi' => 'participant_monthly_indicators'),'p.participant_id = pmi.participant_id', array(
@@ -5736,7 +5629,7 @@ ORDER BY mtb_rif_detection_results.country_name ASC;";
   LPAD(p.unique_identifier, 10, '0') AS sorting_unique_identifier,
   p.unique_identifier,
   c.iso_name AS country,
-  CONCAT(COALESCE(p.lab_name, CONCAT(p.first_name, ' ', p.last_name), p.first_name), COALESCE(CONCAT(' - ', CASE WHEN p.state = '' THEN NULL ELSE p.state END), CONCAT(' - ', CASE WHEN p.city = '' THEN NULL ELSE p.city END), '')) AS participant_name,
+  CONCAT(p.lab_name, COALESCE(CONCAT(' - ', CASE WHEN p.state = '' THEN NULL ELSE p.state END), CONCAT(' - ', CASE WHEN p.city = '' THEN NULL ELSE p.city END), '')) AS participant_name,
   a.name AS assay,
   ref.sample_id,
   ref.sample_label,
@@ -6172,7 +6065,7 @@ ORDER BY stability_mtb_rif.sample_id;", array($params['shipmentId'], $mtbRifAssa
   LPAD(p.unique_identifier, 10, '0') AS sorting_unique_identifier,
   p.unique_identifier,
   c.iso_name AS country,
-  CONCAT(COALESCE(p.lab_name, CONCAT(p.first_name, ' ', p.last_name), p.first_name), COALESCE(CONCAT(' - ', CASE WHEN p.state = '' THEN NULL ELSE p.state END), CONCAT(' - ', CASE WHEN p.city = '' THEN NULL ELSE p.city END), '')) AS participant_name,
+  CONCAT(p.lab_name, COALESCE(CONCAT(' - ', CASE WHEN p.state = '' THEN NULL ELSE p.state END), CONCAT(' - ', CASE WHEN p.city = '' THEN NULL ELSE p.city END), '')) AS participant_name,
   a.name AS assay,
   ref.sample_id,
   ref.sample_label,

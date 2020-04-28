@@ -10,14 +10,14 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
             ->where("pmm.dm_id = ?", $userSystemId)
             ->group('p.participant_id'));
     }
-	
+
 	public function checkParticipantAccess($participantId){
 		$authNameSpace =  new Zend_Session_Namespace('datamanagers');
 		$row = $this->getAdapter()->fetchRow($this->getAdapter()->select()
 								->from(array('pmm' => 'participant_manager_map'))
                                 ->where("pmm.participant_id = ?", $participantId)
                                 ->where("pmm.dm_id = ?", $authNameSpace->dm_id));
-		
+
 		if ($row == false) {
 			return false;
 		} else {
@@ -51,7 +51,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
          * you want to insert a non-database field (for example a counter or static image)
          */
 
-        $aColumns = array('sorting_unique_identifier', 'unique_identifier', 'first_name', 'iso_name', 'mobile', 'phone', 'affiliation', 'email', 'status');
+        $aColumns = array('sorting_unique_identifier', 'unique_identifier', 'lab_name', 'iso_name', 'mobile', 'phone', 'affiliation', 'email', 'status');
 
         /* Indexed column (used for fast and accurate table cardinality) */
         $sIndexColumn = "participant_id";
@@ -135,7 +135,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
             'p.affiliation',
             'p.email',
             'p.status',
-            'participantName' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT p.first_name,\" \",p.last_name ORDER BY p.first_name SEPARATOR ', ')")
+            'participantName' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT p.lab_name ORDER BY p.lab_name SEPARATOR ', ')")
             ))
             ->join(array('c' => 'countries'), 'c.id=p.country')
             ->group("p.participant_id");
@@ -219,8 +219,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
             'long' => $params['long'],
             'lat' => $params['lat'],
             'shipping_address' => $params['shippingAddress'],
-            'first_name' => $params['pfname'],
-            'last_name' => $params['plname'],
+            'lab_name' => $params['pname'],
             'mobile' => $params['pphone2'],
             'phone' => $params['pphone1'],
             'email' => $params['pemail'],
@@ -233,13 +232,8 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
             'region' => $params['region'],
             'updated_on' => new Zend_Db_Expr('now()')
         );
-		
-		if (isset($params['individualParticipant']) && $params['individualParticipant']=='on') {
-		   $data['individual']='yes';
-		} else {
-			$data['individual']='no';
-            $data['lab_name']=$params['pfname'];
-		}
+
+        $data['lab_name']=$params['pname'];
 
         if (isset($params['status']) && $params['status'] != "" && $params['status'] != null) {
             $data['status'] = $params['status'];
@@ -256,14 +250,14 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
 
         $noOfRows = $this->update($data, "participant_id = " . $params['participantId']);
 		$db = Zend_Db_Table_Abstract::getAdapter();
-		
+
 		if (isset($params['enrolledProgram']) && $params['enrolledProgram'] != "") {
             $db->delete('participant_enrolled_programs_map', "participant_id = " . $params['participantId']);
             foreach ($params['enrolledProgram'] as $epId) {
                 $db->insert('participant_enrolled_programs_map', array('ep_id' => $epId, 'participant_id' => $params['participantId']));
             }
 		}
-		
+
         if (isset($params['dataManager']) && $params['dataManager'] != "") {
             $db->delete('participant_manager_map', "participant_id = " . $params['participantId']);
             foreach ($params['dataManager'] as $dataManager) {
@@ -294,8 +288,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
             'long' => $params['long'],
             'lat' => $params['lat'],
             'shipping_address' => $params['shippingAddress'],
-            'first_name' => $params['pfname'],
-            'last_name' => $params['plname'],
+            'lab_name' => $params['pname'],
             'mobile' => $params['pphone2'],
             'phone' => $params['pphone1'],
             'email' => $params['pemail'],
@@ -310,12 +303,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
             'created_by' => $authNameSpace->primary_email,
             'status' => $params['status']
         );
-		if (isset($params['individualParticipant']) && $params['individualParticipant']=='on') {
-		   $data['individual']='yes';
-		} else {
-			$data['individual']='no';
-            $data['lab_name']=$params['pfname'];
-		}
+        $data['lab_name']=$params['pname'];
 
         $participantId = $this->insert($data);
 
@@ -348,8 +336,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
             'long' => $params['long'],
             'lat' => $params['lat'],
             'shipping_address' => $params['shippingAddress'],
-            'first_name' => $params['pfname'],
-            'last_name' => $params['plname'],
+            'lab_name' => $params['pname'],
             'mobile' => $params['pphone2'],
             'phone' => $params['pphone1'],
 			'contact_name' => $params['contactname'],
@@ -364,12 +351,6 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
             'created_on' => new Zend_Db_Expr('now()'),
             'created_by' => $authNameSpace->UserID,
         );
-		
-		if (isset($params['individualParticipant']) && $params['individualParticipant']=='on') {
-		   $data['individual']='yes';
-		} else {
-			$data['individual']='no';
-		}
 
         $participantId = $this->insert($data);
 
@@ -380,7 +361,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
 			    $db->insert('participant_enrolled_programs_map', array('ep_id' => $epId, 'participant_id' => $participantId));
 			}
 		}
-		
+
         if (isset($params['scheme']) && $params['scheme'] != "") {
             $enrollDb = new Application_Model_DbTable_Enrollments();
             $enrollDb->enrollParticipantToSchemes($participantId, $params['scheme']);
@@ -389,12 +370,12 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
         $db = Zend_Db_Table_Abstract::getAdapter();
         $db->insert('participant_manager_map', array('dm_id' => $authNameSpace->dm_id, 'participant_id' => $participantId));
 
-        $participantName = $params['pfname'] . " " . $params['plname'];
+        $participantName = $params['pname'];
         $dataManager = $authNameSpace->first_name . " " . $authNameSpace->last_name;
         $common = new Application_Service_Common();
         $message = "Hi,<br/>  A new participant ($participantName) was added by $dataManager <br/><small>This is a system generated email. Please do not reply.</small>";
         $toMail = Application_Service_Common::getConfig('admin_email');
-        //$fromName = Application_Service_Common::getConfig('admin-name');			
+        //$fromName = Application_Service_Common::getConfig('admin-name');
         $common->sendMail($toMail, null, null, "New Participant Registered  ($participantName)", $message, $fromMail, "ePT Admin");
 
         return $participantId;
@@ -414,7 +395,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
         $authNameSpace = new Zend_Session_Namespace('administrators');
         if ($schemeType != "all") {
             $sql = $this->getAdapter()->select()
-                ->from(array('p' => $this->_name), array('p.address', 'p.long', 'p.lat', 'p.first_name', 'p.last_name'))
+                ->from(array('p' => $this->_name), array('p.address', 'p.long', 'p.lat', 'p.lab_name'))
                 ->join(array('e' => 'enrollments'), 'e.participant_id=p.participant_id')
                 ->where("e.scheme_id = ?", $schemeType)
                 ->where("p.status='active'");
@@ -438,7 +419,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
          * you want to insert a non-database field (for example a counter or static image)
          */
 
-        $aColumns = array('first_name', 'iso_name', 'mobile', 'email', 'p.status');
+        $aColumns = array('lab_name', 'iso_name', 'mobile', 'email', 'p.status');
 
         /* Indexed column (used for fast and accurate table cardinality) */
         $sIndexColumn = "participant_id";
@@ -576,7 +557,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
 
         foreach ($rResult as $aRow) {
             $row = array();
-            $row[] = ucwords($aRow['first_name'] . " " . $aRow['last_name']);
+            $row[] = ucwords($aRow['lab_name']);
             $row[] = ucwords($aRow['iso_name']);
             $row[] = $aRow['mobile'];
             $row[] = $aRow['email'];
@@ -598,7 +579,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
          * you want to insert a non-database field (for example a counter or static image)
          */
-        $aColumns = array('first_name', 'iso_name', 'mobile', 'email', 'p.status');
+        $aColumns = array('lab_name', 'iso_name', 'mobile', 'email', 'p.status');
 
         /* Indexed column (used for fast and accurate table cardinality) */
         $sIndexColumn = "participant_id";
@@ -741,7 +722,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
         foreach ($rResult as $aRow) {
             $row = array();
             $row[] = '<input type="checkbox" class="isRequired" name="participants[]" id="' . $aRow['participant_id'] . '" value="' . base64_encode($aRow['participant_id']) . '" onclick="checkParticipantName(' . $aRow['participant_id'] . ',this)" title="Select atleast one participant">';
-            $row[] = ucwords($aRow['first_name'] . " " . $aRow['last_name']);
+            $row[] = ucwords($aRow['lab_name']);
             $row[] = ucwords($aRow['iso_name']);
             $row[] = $aRow['mobile'];
             $row[] = $aRow['email'];
@@ -766,12 +747,12 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
              }
          }
 	}
-    
+
     public function echoShipmentRespondedParticipants($parameters) {
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
          * you want to insert a non-database field (for example a counter or static image)
         */
-        $aColumns = array('unique_identifier', 'first_name', 'iso_name', 'mobile', 'phone', 'affiliation', 'email', 'RESPONSE');
+        $aColumns = array('unique_identifier', 'lab_name', 'iso_name', 'mobile', 'phone', 'affiliation', 'email', 'RESPONSE');
 
         /*
          * Paging
@@ -868,7 +849,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
                      'p.affiliation',
                      'p.email',
                      'p.status',
-                     'participantName' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT p.first_name, \" \", p.last_name ORDER BY p.first_name SEPARATOR ', ')")
+                     'participantName' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT p.lab_name ORDER BY p.lab_name SEPARATOR ', ')")
                  ))
              ->joinLeft(array('c' => 'countries'), 'c.id = p.country')
              ->where("substr(spm.evaluation_status, 3, 1) = 1")
@@ -958,7 +939,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
          * you want to insert a non-database field (for example a counter or static image)
          */
 
-        $aColumns = array('unique_identifier', 'first_name', 'iso_name', 'mobile', 'phone', 'affiliation', 'email', 'RESPONSE');
+        $aColumns = array('unique_identifier', 'lab_name', 'iso_name', 'mobile', 'phone', 'affiliation', 'email', 'RESPONSE');
 
         /*
          * Paging
@@ -1053,7 +1034,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
                 'p.affiliation',
                 'p.email',
                 'p.status',
-                'participantName' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT p.first_name,\" \",p.last_name ORDER BY p.first_name SEPARATOR ', ')")))
+                'participantName' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT p.lab_name ORDER BY p.lab_name SEPARATOR ', ')")))
             ->joinLeft(array('c' => 'countries'), 'c.id = p.country')
             ->where("substr(spm.evaluation_status, 3, 1) <> 1")
             ->where("spm.shipment_id = ?", $parameters['shipmentId'])
@@ -1129,12 +1110,12 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
 
         echo json_encode($output);
     }
-    
+
     public function getShipmentNotEnrolledParticipants($parameters) {
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
          * you want to insert a non-database field (for example a counter or static image)
          */
-        $aColumns = array('first_name','unique_identifier', 'first_name', 'iso_name', 'mobile', 'phone', 'affiliation', 'email', 'p.status');
+        $aColumns = array('unique_identifier', 'lab_name', 'iso_name', 'mobile', 'phone', 'affiliation', 'email', 'p.status');
 
         /* Indexed column (used for fast and accurate table cardinality) */
         //  $sIndexColumn = "participant_id";
@@ -1211,11 +1192,11 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
         $subSql = $this->getAdapter()->select()->from(array('sp' => 'shipment_participant_map'), array('sp.participant_id'))
             ->where("sp.shipment_id = ?", $parameters['shipmentId'])
             ->group("sp.participant_id");
-     
+
         $sQuery = $this->getAdapter()->select()->from(array('e'=>'enrollments'), array('e.participant_id'))
-            ->joinLeft(array('p' => 'participant'), 'p.participant_id=e.participant_id',array('p.unique_identifier', 'p.country', 'p.mobile', 'p.phone', 'p.affiliation', 'p.email', 'p.status', 'participantName' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT p.first_name,\" \",p.last_name ORDER BY p.first_name SEPARATOR ', ')")))
+            ->joinLeft(array('p' => 'participant'), 'p.participant_id=e.participant_id',array('p.unique_identifier', 'p.country', 'p.mobile', 'p.phone', 'p.affiliation', 'p.email', 'p.status', 'participantName' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT p.lab_name ORDER BY p.lab_name SEPARATOR ', ')")))
             ->joinLeft(array('c' => 'countries'), 'c.id=p.country')
-            ->where("e.participant_id NOT IN ?", $subSql)->where("p.status='active'")->order('first_name')
+            ->where("e.participant_id NOT IN ?", $subSql)->where("p.status='active'")->order('lab_name')
             ->group("e.participant_id");
 
         $authNameSpace = new Zend_Session_Namespace('administrators');
@@ -1245,9 +1226,9 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
 
         /* Total data set length */
         $sQuery = $this->getAdapter()->select()->from(array('e'=>'enrollments'), array('e.participant_id'))
-            ->joinLeft(array('p' => 'participant'), 'p.participant_id=e.participant_id',array('p.unique_identifier', 'p.country', 'p.mobile', 'p.phone', 'p.affiliation', 'p.email', 'p.status', 'participantName' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT p.first_name,\" \",p.last_name ORDER BY p.first_name SEPARATOR ', ')")))
+            ->joinLeft(array('p' => 'participant'), 'p.participant_id=e.participant_id',array('p.unique_identifier', 'p.country', 'p.mobile', 'p.phone', 'p.affiliation', 'p.email', 'p.status', 'participantName' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT p.lab_name ORDER BY p.lab_name SEPARATOR ', ')")))
             ->joinLeft(array('c' => 'countries'), 'c.id=p.country')
-            ->where("e.participant_id NOT IN ?", $subSql)->where("p.status='active'")->order('first_name')
+            ->where("e.participant_id NOT IN ?", $subSql)->where("p.status='active'")->order('lab_name')
             ->group("e.participant_id");
 
         if($authNameSpace->is_ptcc_coordinator) {
@@ -1269,7 +1250,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
 
         foreach ($rResult as $aRow) {
             $row = array();
-          
+
             $row[]='<input type="checkbox" class="checkParticipants" id="chk' . base64_encode($aRow['participant_id']). '"  value="' . base64_encode($aRow['participant_id']) . '" onclick="toggleSelect(this);"  />';
             $row[] = $aRow['unique_identifier'];
             $row[] = $aRow['participantName'];

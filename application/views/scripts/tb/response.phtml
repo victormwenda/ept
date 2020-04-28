@@ -55,7 +55,7 @@ foreach ($this->allSamples as $sample) {
     <tr>
         <td style="width:20%;">
             <h4 class="text-info"> Participant Name </h4>&nbsp;
-            <?php echo ( $this->participant['first_name'] . ' ' . $this->participant['last_name'] );?>
+            <?php echo ( $this->participant['lab_name'] );?>
         </td>
         <td style="width:20%;">
             <h4 class="text-info"> Participant Code </h4>&nbsp;
@@ -637,7 +637,7 @@ $dtFormat = $genderHelper->getDateFormat();
       $("#submissionFooter").find("input,select,textarea").not(".datepicker").attr("readonly", "");
     }
   }
-  var analyteLables = {
+  var analyteLabels = {
   <?php foreach ($this->assays as $id => $definition) {
       echo "    \"".$id."\": {\n";
       echo "      \"analyte1Label\": \"".$definition['analyte1Label']."\",\n";
@@ -653,9 +653,9 @@ $dtFormat = $genderHelper->getDateFormat();
   function setAssay() {
     var selectedAssayId = $("#assay").val();
     if (!selectedAssayId) {
-      selectedAssayId = Object.keys(analyteLables)[0];
+      selectedAssayId = Object.keys(analyteLabels)[0];
     }
-    var selectedAssayDefinition = analyteLables[selectedAssayId];
+    var selectedAssayDefinition = analyteLabels[selectedAssayId];
     $(".probe1Header").text(selectedAssayDefinition['analyte1Label']);
     $(".probe2Header").text(selectedAssayDefinition['analyte2Label']);
     $(".probe3Header").text(selectedAssayDefinition['analyte3Label']);

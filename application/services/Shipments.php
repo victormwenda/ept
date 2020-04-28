@@ -1269,7 +1269,7 @@ class Application_Service_Shipments {
                 ->join(array('p' => 'participant'), 'p.participant_id = spm.participant_id',
                     array(
                         "country" => "p.country",
-                        "participant_name" => new Zend_Db_Expr("COALESCE(p.lab_name, CONCAT(p.first_name, ' ', p.last_name), p.first_name)"),
+                        "participant_name" => "p.lab_name",
                         "pt_id" => "p.unique_identifier"
                     ))
                 ->joinLeft(array('pmm' => 'participant_manager_map'), 'pmm.participant_id = spm.participant_id', array())
@@ -1840,7 +1840,7 @@ class Application_Service_Shipments {
         $sQuery = $db->select()->from(array('sp' => 'shipment_participant_map'), array('sp.participant_id','sp.map_id','sp.new_shipment_mail_count'))
             ->join(array('s' => 'shipment'), 's.shipment_id=sp.shipment_id', array('s.shipment_code','s.shipment_code'))
             ->join(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id', array('distribution_code', 'distribution_date'))
-            ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array('p.email','participantName' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT p.unique_identifier,\" - \",p.first_name,\" \",p.last_name ORDER BY p.first_name SEPARATOR ', ')")))
+            ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array('p.email','participantName' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT p.unique_identifier,\" - \",p.lab_name ORDER BY p.lab_name SEPARATOR ', ')")))
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('SCHEME' => 'sl.scheme_name'))
             ->where("sp.shipment_id = ?", $sid)
             ->group("p.participant_id");
@@ -1940,7 +1940,7 @@ class Application_Service_Shipments {
         $sQuery = $db->select()->from(array('sp' => 'shipment_participant_map'), array('sp.participant_id','sp.map_id','sp.last_not_participated_mail_count','sp.final_result'))
             ->joinLeft(array('s' => 'shipment'), 's.shipment_id=sp.shipment_id', array('s.shipment_code','s.shipment_code'))
             ->joinLeft(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id', array('distribution_code', 'distribution_date'))
-            ->joinLeft(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array('p.email','participantName' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT p.unique_identifier,\" - \",p.first_name,\" \",p.last_name ORDER BY p.first_name SEPARATOR ', ')")))
+            ->joinLeft(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array('p.email','participantName' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT p.unique_identifier,\" - \",p.lab_name ORDER BY p.lab_name SEPARATOR ', ')")))
             ->joinLeft(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('SCHEME' => 'sl.scheme_name'))
             ->where("(sp.shipment_receipt_date = '0000-00-00' OR sp.shipment_receipt_date IS NULL)")
             ->where("sp.shipment_id = ?", $sid)
@@ -2048,7 +2048,7 @@ class Application_Service_Shipments {
         $sQuery = $db->select()->from(array('sp' => 'shipment_participant_map'), array('sp.participant_id','sp.map_id','sp.new_shipment_mail_count'))
             ->join(array('s' => 'shipment'), 's.shipment_id=sp.shipment_id', array('s.shipment_code','s.shipment_code'))
             ->join(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id', array('distribution_code', 'distribution_date'))
-            ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array('p.email','participantName' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT p.first_name,\" \",p.last_name ORDER BY p.first_name SEPARATOR ', ')")))
+            ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array('p.email','participantName' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT p.lab_name ORDER BY p.lab_name SEPARATOR ', ')")))
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('SCHEME' => 'sl.scheme_name'))
             ->where("sp.shipment_id = ?", $params["shipmentId"]);
         if ($params["sendTo"] == "notSubmitted") {
@@ -2129,7 +2129,7 @@ class Application_Service_Shipments {
             ->join(array('p' => 'participant'), 'p.participant_id = spm.participant_id', array(
                 'country_id' => 'p.country',
                 'pt_id' => 'p.unique_identifier',
-                'participant_name' => new Zend_Db_Expr("COALESCE(p.lab_name, CONCAT(p.first_name, IFNULL(p.last_name, '')))")
+                'participant_name' => 'p.lab_name'
             ))
             ->join(array('s' => 'shipment'), 's.shipment_id = spm.shipment_id', array('s.shipment_code'))
             ->joinLeft(array('rntr' => 'response_not_tested_reason'), 'rntr.not_tested_reason_id = spm.not_tested_reason', array('rntr.not_tested_reason'))
@@ -2142,7 +2142,7 @@ class Application_Service_Shipments {
             $recipientsSql = $db->select()
                 ->from(array('spm' => 'shipment_participant_map'), array())
                 ->join(array('p' => 'participant'), 'p.participant_id = spm.participant_id', array(
-                    'participant_name' => new Zend_Db_Expr("COALESCE(p.lab_name, CONCAT(p.first_name, IFNULL(p.last_name, '')))"),
+                    'participant_name' => 'p.lab_name',
                     'participant_email' => 'p.email'
                 ))
                 ->join(array('pmm' => 'participant_manager_map'),'pmm.participant_id = p.participant_id', array())

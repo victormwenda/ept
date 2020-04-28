@@ -1161,8 +1161,6 @@ class Application_Service_Evaluation {
             ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id')
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('scheme_name'))
             ->join(array('p' => 'participant'), 'p.participant_id = sp.participant_id', array(
-                'first_name',
-                'last_name',
                 'lab_name',
                 'unique_identifier',
                 'sorting_unique_identifier' => new Zend_Db_Expr("LPAD(p.unique_identifier, 10, '0')")
@@ -1199,6 +1197,7 @@ class Application_Service_Evaluation {
                 'sp.shipment_test_date',
                 'sp.shipment_receipt_date',
                 'sp.shipment_test_report_date',
+                'IFNULL(sp.date_submitted, sp.shipment_test_report_date) AS result_submission_date,',
                 'sp.final_result',
                 'sp.failure_reason',
                 'sp.shipment_score',
@@ -1218,8 +1217,7 @@ class Application_Service_Evaluation {
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('sl.scheme_id', 'sl.scheme_name'))
             ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array(
                 'p.unique_identifier',
-                'p.first_name',
-                'p.last_name',
+                'p.lab_name',
                 'p.status',
                 'sorting_unique_identifier' => new Zend_Db_Expr("LPAD(p.unique_identifier, 10, '0')")
             ))
@@ -1240,7 +1238,7 @@ class Application_Service_Evaluation {
         $tbReportSummary = array();
         $tbResultsExpected = array();
         $tbResultsConsensus = array();
-        if (count($shipmentResult) > 0 && $shipmentResult[0]['scheme_type'] == 'tb') {
+        if (count($shipmentResult) > 0) {
             $summaryQuery = $db->select()->from(array('spm' => 'shipment_participant_map'), array())
                 ->join(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id',
                     array('mtb_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') THEN 1 ELSE 0 END)",
@@ -1376,11 +1374,8 @@ class Application_Service_Evaluation {
                 ->where("pmm.participant_id = " . $res['participant_id']);
 
             $dmResult = $db->fetchAll($dmSql);
-            if (isset($res['last_name']) && trim($res['last_name']) != "") {
-                $res['last_name'] = "_" . $res['last_name'];
-            }
             foreach ($dmResult as $dmRes) {
-                $participantFileName = preg_replace('/[^A-Za-z0-9.]/', '-', $res['first_name'] . $res['last_name'] . "-" . $res['map_id']);
+                $participantFileName = preg_replace('/[^A-Za-z0-9.]/', '-', $res['lab_name'] . "-" . $res['map_id']);
 				$participantFileName = str_replace(" ", "-", $participantFileName);
                 if (count($mapRes) == 0) {
                     $mapRes[$dmRes['dm_id']] = $dmRes['institute'] . "#" . $dmRes['participant_id'] . "#" . $participantFileName;
@@ -1390,201 +1385,216 @@ class Application_Service_Evaluation {
                     $mapRes[$dmRes['dm_id']] = $dmRes['institute'] . "#" . $dmRes['participant_id'] . "#" . $participantFileName;
                 }
             }
-            if ($res['scheme_type'] == 'tb') {
-                $attributes = json_decode($res['attributes'], true);
-                $sql = $db->select()->from(array('ref' => 'reference_result_tb'),
-                    array(
-                        'sample_id', 'sample_label', 'sample_score',
-                        'ref_is_excluded' => 'ref.is_excluded',
-                        'ref_is_exempt' => 'ref.is_exempt',
-                        'ref_excluded_reason' => 'ref.excluded_reason'))
-                    ->join(array('spm' => 'shipment_participant_map'),
-                        'spm.shipment_id = ref.shipment_id', array())
-                    ->joinLeft(array('res' => 'response_result_tb'),
-                        'res.shipment_map_id = spm.map_id and res.sample_id = ref.sample_id', array(
-                            'mtb_detected',
-                            'rif_resistance',
-                            'error_code',
-                            'date_tested',
-                            'cartridge_expiration_date',
-                            'probe_1',
-                            'probe_2',
-                            'probe_3',
-                            'probe_4',
-                            'probe_5',
-                            'probe_6'))
-                    ->joinLeft('instrument',
-                        'instrument.participant_id = spm.participant_id and instrument.instrument_serial = res.instrument_serial', array(
-                            'years_since_last_calibrated' =>
-                                new Zend_Db_Expr("DATEDIFF(COALESCE(res.date_tested, spm.shipment_test_date, spm.shipment_test_report_date), COALESCE(res.instrument_last_calibrated_on, instrument.instrument_last_calibrated_on, res.instrument_installed_on, instrument.instrument_installed_on, CAST('1990-01-01' AS DATE))) / 365"),
-                            'instrument_serial' => new Zend_Db_Expr("COALESCE(CASE WHEN res.instrument_serial = '' THEN NULL ELSE res.instrument_serial END, CASE WHEN instrument.instrument_serial = '' THEN NULL ELSE instrument.instrument_serial END, 'NO SERIAL ENTERED')"),
-                            'instrument_installed_on' =>
-                                new Zend_Db_Expr("COALESCE(res.instrument_installed_on, instrument.instrument_installed_on)"),
-                            'instrument_last_calibrated_on' =>
-                                new Zend_Db_Expr("COALESCE(res.instrument_last_calibrated_on, instrument.instrument_last_calibrated_on)")))
-                    ->where('ref.shipment_id = ? ', $shipmentId)
-                    ->where('spm.participant_id = ?', $res['participant_id'])
-                    ->order('ref.sample_id ASC');
-                $tbResults = $db->fetchAll($sql);
+            $attributes = json_decode($res['attributes'], true);
+            $sql = $db->select()->from(array('ref' => 'reference_result_tb'),
+                array(
+                    'sample_id', 'sample_label', 'sample_score',
+                    'ref_is_excluded' => 'ref.is_excluded',
+                    'ref_is_exempt' => 'ref.is_exempt',
+                    'ref_excluded_reason' => 'ref.excluded_reason'))
+                ->join(array('spm' => 'shipment_participant_map'),
+                    'spm.shipment_id = ref.shipment_id', array())
+                ->joinLeft(array('res' => 'response_result_tb'),
+                    'res.shipment_map_id = spm.map_id and res.sample_id = ref.sample_id', array(
+                        'mtb_detected',
+                        'rif_resistance',
+                        'error_code',
+                        'date_tested',
+                        'cartridge_expiration_date',
+                        'probe_1',
+                        'probe_2',
+                        'probe_3',
+                        'probe_4',
+                        'probe_5',
+                        'probe_6'))
+                ->joinLeft('instrument',
+                    'instrument.participant_id = spm.participant_id and instrument.instrument_serial = res.instrument_serial', array(
+                        'years_since_last_calibrated' =>
+                            new Zend_Db_Expr("DATEDIFF(COALESCE(res.date_tested, spm.shipment_test_date, spm.shipment_test_report_date), COALESCE(res.instrument_last_calibrated_on, instrument.instrument_last_calibrated_on, res.instrument_installed_on, instrument.instrument_installed_on, CAST('1990-01-01' AS DATE))) / 365"),
+                        'instrument_serial' => new Zend_Db_Expr("COALESCE(CASE WHEN res.instrument_serial = '' THEN NULL ELSE res.instrument_serial END, CASE WHEN instrument.instrument_serial = '' THEN NULL ELSE instrument.instrument_serial END, 'NO SERIAL ENTERED')"),
+                        'instrument_installed_on' =>
+                            new Zend_Db_Expr("COALESCE(res.instrument_installed_on, instrument.instrument_installed_on)"),
+                        'instrument_last_calibrated_on' =>
+                            new Zend_Db_Expr("COALESCE(res.instrument_last_calibrated_on, instrument.instrument_last_calibrated_on)")))
+                ->where('ref.shipment_id = ? ', $shipmentId)
+                ->where('spm.participant_id = ?', $res['participant_id'])
+                ->order('ref.sample_id ASC');
+            $tbResults = $db->fetchAll($sql);
 
-                $counter = 0;
-                $toReturn = array();
-                $shipmentScore = 0;
-                $maxShipmentScore = 0;
-                $sampleStatuses = array();
-                $cartridgeExpiredOn = null;
-                $instrumentRequiresCalibration = false;
-                $testsDoneAfterCalibrationDue = array();
-                $testsDoneAfterCartridgeExpired = array();
-                $qcDoneOnTime = $shipmentResult[$i]['qc_done'] == 'yes' && isset($shipmentResult[$i]['qc_date']);
-                $lastTestDate = null;
-                foreach ($tbResults as $tbResult) {
-                    if (in_array($tbResult['mtb_detected'], array("notDetected", "noResult", "invalid", "error")) &&
-                        $tbResult['rif_resistance'] == null) {
-                        $tbResult['rif_resistance'] = "na";
+            $counter = 0;
+            $toReturn = array();
+            $shipmentScore = 0;
+            $maxShipmentScore = 0;
+            $sampleStatuses = array();
+            $instrumentsUsed = array();
+            $cartridgeExpiredOn = null;
+            $instrumentRequiresCalibration = false;
+            $testsDoneAfterCalibrationDue = array();
+            $testsDoneAfterCartridgeExpired = array();
+            $qcDoneOnTime = $shipmentResult[$i]['qc_done'] == 'yes' && isset($shipmentResult[$i]['qc_date']);
+            $lastTestDate = null;
+            foreach ($tbResults as $tbResult) {
+                if (in_array($tbResult['mtb_detected'], array("notDetected", "noResult", "invalid", "error")) &&
+                    $tbResult['rif_resistance'] == null) {
+                    $tbResult['rif_resistance'] = "na";
+                }
+                $sampleScoreStatus = $scoringService->calculateTbSamplePassStatus(
+                    $tbResultsExpected[$tbResult['sample_id']]['mtb_detected'],
+                    $tbResult['mtb_detected'],
+                    $tbResultsExpected[$tbResult['sample_id']]['rif_resistance'],
+                    $tbResult['rif_resistance'],
+                    $tbResult['probe_1'], $tbResult['probe_2'], $tbResult['probe_3'], $tbResult['probe_4'],
+                    $tbResult['probe_5'], $tbResult['probe_6'], $tbResult['ref_is_excluded'],
+                    $tbResult['ref_is_exempt']);
+                array_push($sampleStatuses, $sampleScoreStatus);
+                $sampleScore = $scoringService->calculateTbSampleScore(
+                    $sampleScoreStatus,
+                    $tbResult['sample_score']);
+                $shipmentScore += $sampleScore;
+                if ($tbResult['ref_is_excluded'] == 'no' || $tbResult['ref_is_exempt'] == 'yes') {
+                    $maxShipmentScore += $tbResult['sample_score'];
+                }
+                $consensusTbMtbDetected = $tbResultsExpected[$tbResult['sample_id']]['mtb_detected'];
+                $consensusTbRifResistance = $tbResultsExpected[$tbResult['sample_id']]['rif_resistance'];
+                if (isset($tbResultsConsensus[$tbResult['sample_id']])) {
+                    if (isset($tbResultsConsensus[$tbResult['sample_id']]['mtb_detected']) &&
+                        trim($tbResultsConsensus[$tbResult['sample_id']]['mtb_detected']) != "") {
+                        $consensusTbMtbDetected = $tbResultsConsensus[$tbResult['sample_id']]['mtb_detected'];
                     }
-                    $sampleScoreStatus = $scoringService->calculateTbSamplePassStatus(
-                        $tbResultsExpected[$tbResult['sample_id']]['mtb_detected'],
-                        $tbResult['mtb_detected'],
-                        $tbResultsExpected[$tbResult['sample_id']]['rif_resistance'],
-                        $tbResult['rif_resistance'],
-                        $tbResult['probe_1'], $tbResult['probe_2'], $tbResult['probe_3'], $tbResult['probe_4'],
-                        $tbResult['probe_5'], $tbResult['probe_6'], $tbResult['ref_is_excluded'],
-                        $tbResult['ref_is_exempt']);
-                    array_push($sampleStatuses, $sampleScoreStatus);
-                    $sampleScore = $scoringService->calculateTbSampleScore(
-                        $sampleScoreStatus,
-                        $tbResult['sample_score']);
-                    $shipmentScore += $sampleScore;
-                    if ($tbResult['ref_is_excluded'] == 'no' || $tbResult['ref_is_exempt'] == 'yes') {
-                        $maxShipmentScore += $tbResult['sample_score'];
+                    if (isset($tbResultsConsensus[$tbResult['sample_id']]['rif_resistance']) &&
+                        trim($tbResultsConsensus[$tbResult['sample_id']]['rif_resistance']) != "") {
+                        $consensusTbRifResistance = $tbResultsConsensus[$tbResult['sample_id']]['rif_resistance'];
                     }
-                    $consensusTbMtbDetected = $tbResultsExpected[$tbResult['sample_id']]['mtb_detected'];
-                    $consensusTbRifResistance = $tbResultsExpected[$tbResult['sample_id']]['rif_resistance'];
-                    if (isset($tbResultsConsensus[$tbResult['sample_id']])) {
-                        if (isset($tbResultsConsensus[$tbResult['sample_id']]['mtb_detected']) &&
-                            trim($tbResultsConsensus[$tbResult['sample_id']]['mtb_detected']) != "") {
-                            $consensusTbMtbDetected = $tbResultsConsensus[$tbResult['sample_id']]['mtb_detected'];
-                        }
-                        if (isset($tbResultsConsensus[$tbResult['sample_id']]['rif_resistance']) &&
-                            trim($tbResultsConsensus[$tbResult['sample_id']]['rif_resistance']) != "") {
-                            $consensusTbRifResistance = $tbResultsConsensus[$tbResult['sample_id']]['rif_resistance'];
-                        }
+                }
+                if ($tbResult['cartridge_expiration_date'] < $tbResult['date_tested']) {
+                    $cartridgeExpiredOn = $tbResult['cartridge_expiration_date'];
+                    array_push($testsDoneAfterCartridgeExpired, array(
+                        "sample_label" => $tbResult['sample_label'],
+                        "date_tested" => $tbResult['date_tested']
+                    ));
+                }
+                $instrumentInArray = false;
+                foreach ($instrumentsUsed as $instrumentUsed) {
+                    if ($instrumentUsed["instrument_serial"] == $tbResult['instrument_serial']) {
+                        $instrumentInArray = true;
                     }
-                    if ($tbResult['cartridge_expiration_date'] < $tbResult['date_tested']) {
-                        $cartridgeExpiredOn = $tbResult['cartridge_expiration_date'];
-                        array_push($testsDoneAfterCartridgeExpired, array(
-                            "sample_label" => $tbResult['sample_label'],
-                            "date_tested" => $tbResult['date_tested']
-                        ));
-                    }
-                    if ((!isset($tbResult['instrument_last_calibrated_on']) &&
+                }
+                if (!$instrumentInArray) {
+                    array_push(
+                        $instrumentsUsed,
+                        array (
+                            "instrument_last_calibrated_on" => $tbResult['instrument_last_calibrated_on'],
+                            "instrument_serial" => $tbResult['instrument_serial']
+                        )
+                    );
+                }
+                if ((!isset($tbResult['instrument_last_calibrated_on']) &&
                         !isset($tbResult['instrument_installed_on'])) ||
-                        (isset($tbResult['years_since_last_calibrated']) &&
-                            $tbResult['years_since_last_calibrated'] >= 1)) {
-                        $instrumentRequiresCalibration = true;
-                        array_push($testsDoneAfterCalibrationDue, array(
-                            "sample_label" => $tbResult['sample_label'],
-                            "date_tested" => $tbResult['date_tested'],
-                            "instrument_serial" => $tbResult['instrument_serial'],
-                            "instrument_last_calibrated_on" => $tbResult['instrument_last_calibrated_on']
-                        ));
-                    }
-                    if ($lastTestDate == null || $lastTestDate < $tbResult['date_tested']) {
-                        $lastTestDate = $tbResult['date_tested'];
-                    }
-                    $toReturn[$counter] = array(
-                        'sample_id' => $tbResult['sample_id'],
-                        'sample_label' => $tbResult['sample_label'],
-                        'mtb_detected' => $tbResult['mtb_detected'],
-                        'discrepant_result' => $tbResult['ref_is_exempt'] != 'yes' &&
-                            $tbResult['ref_is_excluded'] != 'yes' &&
-                            $sampleScore == 0,
-                        'rif_resistance' => $tbResult['rif_resistance'],
-                        'error_code' => $tbResult['error_code'],
-                        'probe_1' => $tbResult['probe_1'],
-                        'probe_2' => $tbResult['probe_2'],
-                        'probe_3' => $tbResult['probe_3'],
-                        'probe_4' => $tbResult['probe_4'],
-                        'probe_5' => $tbResult['probe_5'],
-                        'probe_6' => $tbResult['probe_6'],
-                        'expected_mtb_detected' => $tbResultsExpected[$tbResult['sample_id']]['mtb_detected'],
-                        'expected_rif_resistance' => $tbResultsExpected[$tbResult['sample_id']]['rif_resistance'],
-                        'consensus_mtb_detected' => $consensusTbMtbDetected,
-                        'consensus_rif_resistance' => $consensusTbRifResistance,
-                        'ref_is_excluded' => $tbResult['ref_is_excluded'],
-                        'ref_is_exempt' => $tbResult['ref_is_exempt'],
-                        'ref_excluded_reason' => $tbResult['ref_excluded_reason'],
-                        'max_score' => $tbResult['sample_score'],
-                        'score' => $sampleScore,
-                        'score_status' => $sampleScoreStatus);
-                    $counter++;
+                    (isset($tbResult['years_since_last_calibrated']) &&
+                        $tbResult['years_since_last_calibrated'] >= 1)) {
+                    $instrumentRequiresCalibration = true;
+                    array_push($testsDoneAfterCalibrationDue, array(
+                        "sample_label" => $tbResult['sample_label'],
+                        "date_tested" => $tbResult['date_tested'],
+                        "instrument_serial" => $tbResult['instrument_serial'],
+                        "instrument_last_calibrated_on" => $tbResult['instrument_last_calibrated_on']
+                    ));
                 }
-                if ($qcDoneOnTime) {
-                    $secondsSinceQcDoneToLastTest = strtotime(Pt_Commons_General::dbDateToString($lastTestDate)) - strtotime(Pt_Commons_General::dbDateToString($shipmentResult[$i]['qc_date']));
-                    $qcDoneOnTime = round($secondsSinceQcDoneToLastTest / (60 * 60 * 24)) < 62;
+                if ($lastTestDate == null || $lastTestDate < $tbResult['date_tested']) {
+                    $lastTestDate = $tbResult['date_tested'];
                 }
-                $shipmentResult[$i]['qc_done_on_time'] = $qcDoneOnTime;
-                $shipmentResult[$i]['shipment_score'] = $shipmentScore;
-                $shipmentResult[$i]['max_shipment_score'] = $maxShipmentScore;
-                if(!isset($attributes['shipment_date'])) {
-                    $attributes['shipment_date'] = '';
+                $toReturn[$counter] = array(
+                    'sample_id' => $tbResult['sample_id'],
+                    'sample_label' => $tbResult['sample_label'],
+                    'mtb_detected' => $tbResult['mtb_detected'],
+                    'discrepant_result' => $tbResult['ref_is_exempt'] != 'yes' &&
+                        $tbResult['ref_is_excluded'] != 'yes' &&
+                        $sampleScore == 0,
+                    'rif_resistance' => $tbResult['rif_resistance'],
+                    'error_code' => $tbResult['error_code'],
+                    'probe_1' => $tbResult['probe_1'],
+                    'probe_2' => $tbResult['probe_2'],
+                    'probe_3' => $tbResult['probe_3'],
+                    'probe_4' => $tbResult['probe_4'],
+                    'probe_5' => $tbResult['probe_5'],
+                    'probe_6' => $tbResult['probe_6'],
+                    'expected_mtb_detected' => $tbResultsExpected[$tbResult['sample_id']]['mtb_detected'],
+                    'expected_rif_resistance' => $tbResultsExpected[$tbResult['sample_id']]['rif_resistance'],
+                    'consensus_mtb_detected' => $consensusTbMtbDetected,
+                    'consensus_rif_resistance' => $consensusTbRifResistance,
+                    'ref_is_excluded' => $tbResult['ref_is_excluded'],
+                    'ref_is_exempt' => $tbResult['ref_is_exempt'],
+                    'ref_excluded_reason' => $tbResult['ref_excluded_reason'],
+                    'max_score' => $tbResult['sample_score'],
+                    'score' => $sampleScore,
+                    'score_status' => $sampleScoreStatus);
+                $counter++;
+            }
+            if ($qcDoneOnTime) {
+                $secondsSinceQcDoneToLastTest = strtotime(Pt_Commons_General::dbDateToString($lastTestDate)) - strtotime(Pt_Commons_General::dbDateToString($shipmentResult[$i]['qc_date']));
+                $qcDoneOnTime = round($secondsSinceQcDoneToLastTest / (60 * 60 * 24)) < 62;
+            }
+            $shipmentResult[$i]['qc_done_on_time'] = $qcDoneOnTime;
+            $shipmentResult[$i]['shipment_score'] = $shipmentScore;
+            $shipmentResult[$i]['max_shipment_score'] = $maxShipmentScore;
+            if(!isset($attributes['shipment_date'])) {
+                $attributes['shipment_date'] = '';
+            }
+            if(!isset($attributes['expiry_date'])) {
+                $attributes['expiry_date'] = '';
+            }
+            $shipmentResult[$i]['documentation_score'] = $scoringService->calculateTbDocumentationScore(
+                $res['shipment_date'], $attributes['expiry_date'], $res['shipment_receipt_date'],
+                $res['supervisor_approval'], $res['participant_supervisor'], $res['lastdate_response']);
+            $shipmentResult[$i]['submission_score_status'] = $scoringService->calculateSubmissionPassStatus(
+                $shipmentScore, $shipmentResult[$i]['documentation_score'], $maxShipmentScore,
+                $sampleStatuses);
+            $shipmentResult[$i]['eval_comment'] = $res['evaluationComments'];
+            $shipmentResult[$i]['optional_eval_comment'] = $res['optional_eval_comment'];
+            $shipmentResult[$i]['corrective_actions'] = isset($attributes['corrective_actions']) ? $attributes['corrective_actions'] : array();
+            $shipmentResult[$i]['responseResult'] = $toReturn;
+            $shipmentResult[$i]['instrumentsUsed'] = $instrumentsUsed;
+            $shipmentResult[$i]['cartridge_expired_on'] = $cartridgeExpiredOn;
+            $shipmentResult[$i]['tests_done_on_expired_cartridges'] = "";
+            if ($cartridgeExpiredOn && count($testsDoneAfterCartridgeExpired) < $counter) {
+                $shipmentResult[$i]['tests_done_on_expired_cartridges'] = " The following samples were tested using expired cartridges:";
+                foreach ($testsDoneAfterCartridgeExpired as $testDoneAfterCartridgeExpired) {
+                    $shipmentResult[$i]['tests_done_on_expired_cartridges'] .= "<br/>".$testDoneAfterCartridgeExpired["sample_label"] . " was tested on " . Pt_Commons_General::dbDateToString($testDoneAfterCartridgeExpired['date_tested']);
                 }
-                if(!isset($attributes['expiry_date'])) {
-                    $attributes['expiry_date'] = '';
-                }
-                $shipmentResult[$i]['documentation_score'] = $scoringService->calculateTbDocumentationScore(
-                    $res['shipment_date'], $attributes['expiry_date'], $res['shipment_receipt_date'],
-                    $res['supervisor_approval'], $res['participant_supervisor'], $res['lastdate_response']);
-                $shipmentResult[$i]['submission_score_status'] = $scoringService->calculateSubmissionPassStatus(
-                    $shipmentScore, $shipmentResult[$i]['documentation_score'], $maxShipmentScore,
-                    $sampleStatuses);
-                $shipmentResult[$i]['eval_comment'] = $res['evaluationComments'];
-                $shipmentResult[$i]['optional_eval_comment'] = $res['optional_eval_comment'];
-                $shipmentResult[$i]['corrective_actions'] = isset($attributes['corrective_actions']) ? $attributes['corrective_actions'] : array();
-                $shipmentResult[$i]['responseResult'] = $toReturn;
-                $shipmentResult[$i]['cartridge_expired_on'] = $cartridgeExpiredOn;
-                $shipmentResult[$i]['tests_done_on_expired_cartridges'] = "";
-                if ($cartridgeExpiredOn && count($testsDoneAfterCartridgeExpired) < $counter) {
-                    $shipmentResult[$i]['tests_done_on_expired_cartridges'] = " The following samples were tested using expired cartridges:";
-                    foreach ($testsDoneAfterCartridgeExpired as $testDoneAfterCartridgeExpired) {
-                        $shipmentResult[$i]['tests_done_on_expired_cartridges'] .= "<br/>".$testDoneAfterCartridgeExpired["sample_label"] . " was tested on " . Pt_Commons_General::dbDateToString($testDoneAfterCartridgeExpired['date_tested']);
-                    }
-                }
-                $shipmentResult[$i]['instrument_requires_calibration'] = $instrumentRequiresCalibration;
-                $shipmentResult[$i]['tests_done_after_calibration_due'] = "";
-                if ($instrumentRequiresCalibration) {
-                    if (count($testsDoneAfterCalibrationDue) < $counter) {
-                        $shipmentResult[$i]['tests_done_after_calibration_due'] = " The following samples were tested on instruments that were due for calibration or had no calibration information:";
-                        foreach ($testsDoneAfterCalibrationDue as $testDoneAfterCalibrationDue) {
-                            if (!isset($testDoneAfterCalibrationDue['instrument_last_calibrated_on'])) {
-                                $shipmentResult[$i]['tests_done_after_calibration_due'] .= "<br/>".$testDoneAfterCalibrationDue["sample_label"] .
-                                    " was tested on " . Pt_Commons_General::dbDateToString($testDoneAfterCalibrationDue['date_tested']) .
-                                    " using an instrument that has no calibration date specified.";
-                            } else {
-                                $shipmentResult[$i]['tests_done_after_calibration_due'] .= "<br/>".$testDoneAfterCalibrationDue["sample_label"] .
-                                    " was tested on " . Pt_Commons_General::dbDateToString($testDoneAfterCalibrationDue['date_tested']) .
-                                    " using ".$testDoneAfterCalibrationDue['instrument_serial'] .
-                                    " which was last calibrated on " .
-                                    Pt_Commons_General::dbDateToString($testDoneAfterCalibrationDue['instrument_last_calibrated_on']) . ".";
-                            }
+            }
+            $shipmentResult[$i]['instrument_requires_calibration'] = $instrumentRequiresCalibration;
+            $shipmentResult[$i]['tests_done_after_calibration_due'] = "";
+            if ($instrumentRequiresCalibration) {
+                if (count($testsDoneAfterCalibrationDue) < $counter) {
+                    $shipmentResult[$i]['tests_done_after_calibration_due'] = " The following samples were tested on instruments that were due for calibration or had no calibration information:";
+                    foreach ($testsDoneAfterCalibrationDue as $testDoneAfterCalibrationDue) {
+                        if (!isset($testDoneAfterCalibrationDue['instrument_last_calibrated_on'])) {
+                            $shipmentResult[$i]['tests_done_after_calibration_due'] .= "<br/>".$testDoneAfterCalibrationDue["sample_label"] .
+                                " was tested on " . Pt_Commons_General::dbDateToString($testDoneAfterCalibrationDue['date_tested']) .
+                                " using an instrument that has no calibration date specified.";
+                        } else {
+                            $shipmentResult[$i]['tests_done_after_calibration_due'] .= "<br/>".$testDoneAfterCalibrationDue["sample_label"] .
+                                " was tested on " . Pt_Commons_General::dbDateToString($testDoneAfterCalibrationDue['date_tested']) .
+                                " using ".$testDoneAfterCalibrationDue['instrument_serial'] .
+                                " which was last calibrated on " .
+                                Pt_Commons_General::dbDateToString($testDoneAfterCalibrationDue['instrument_last_calibrated_on']) . ".";
                         }
-                    } else {
-                        $shipmentResult[$i]['tests_done_after_calibration_due'] = " All samples in this submission were tested on instruments that were due for calibration or had no calibration information.";
                     }
-                    $shipmentResult[$i]['tests_done_after_calibration_due'] .= "<br/>";
+                } else {
+                    $shipmentResult[$i]['tests_done_after_calibration_due'] = " All samples in this submission were tested on instruments that were due for calibration or had no calibration information.";
                 }
-                if (isset($res['is_pt_test_not_performed']) && $res['is_pt_test_not_performed'] == 'yes') {
-                    $ptNotTestedComment = null;
-                    if (isset($res['not_tested_reason']) && $res['not_tested_reason'] != '') {
-                        $ptNotTestedComment = $res['not_tested_reason'];
-                    } else if (isset($res['pt_test_not_performed_comments']) && $res['pt_test_not_performed_comments'] != '') {
-                        $ptNotTestedComment = $res['pt_test_not_performed_comments'];
-                    }
-                    $shipmentResult[$i]['ptNotTestedComment'] = 'Xpert testing site was unable to participate in '.$shipmentResult[0]['shipment_code'];
-                    if (isset($ptNotTestedComment)) {
-                        $shipmentResult[$i]['ptNotTestedComment'] .= ' due to the following reason(s): '.$ptNotTestedComment.'.';
-                    }
+                $shipmentResult[$i]['tests_done_after_calibration_due'] .= "<br/>";
+            }
+            if (isset($res['is_pt_test_not_performed']) && $res['is_pt_test_not_performed'] == 'yes') {
+                $ptNotTestedComment = null;
+                if (isset($res['not_tested_reason']) && $res['not_tested_reason'] != '') {
+                    $ptNotTestedComment = $res['not_tested_reason'];
+                } else if (isset($res['pt_test_not_performed_comments']) && $res['pt_test_not_performed_comments'] != '') {
+                    $ptNotTestedComment = $res['pt_test_not_performed_comments'];
+                }
+                $shipmentResult[$i]['ptNotTestedComment'] = 'Xpert testing site was unable to participate in '.$shipmentResult[0]['shipment_code'];
+                if (isset($ptNotTestedComment)) {
+                    $shipmentResult[$i]['ptNotTestedComment'] .= ' due to the following reason(s): '.$ptNotTestedComment.'.';
                 }
             }
             $i++;
@@ -1775,8 +1785,7 @@ class Application_Service_Evaluation {
                     ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('sl.scheme_id', 'sl.scheme_name'))
                     ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array(
                         'p.unique_identifier',
-                        'p.first_name',
-                        'p.last_name',
+                        'p.lab_name',
                         'p.status',
                         'sorting_unique_identifier' => new Zend_Db_Expr("LPAD(p.unique_identifier, 10, '0')")
                     ))
