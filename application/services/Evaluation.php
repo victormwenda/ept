@@ -1235,35 +1235,9 @@ class Application_Service_Evaluation {
 		}
         $shipmentResult = $db->fetchAll($sql);
 
-        $tbReportSummary = array();
         $tbResultsExpected = array();
         $tbResultsConsensus = array();
         if (count($shipmentResult) > 0) {
-            $summaryQuery = $db->select()->from(array('spm' => 'shipment_participant_map'), array())
-                ->join(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id',
-                    array('mtb_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') THEN 1 ELSE 0 END)",
-                        'mtb_not_detected' => "SUM(CASE WHEN `res`.`mtb_detected` = 'notDetected' THEN 1 ELSE 0 END)",
-                        'mtb_uninterpretable' => new Zend_Db_Expr("SUM(CASE WHEN IFNULL(`res`.`mtb_detected`, '') IN ('noResult', 'invalid', 'error') THEN 1 ELSE 0 END)"),
-                        'rif_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow') AND `res`.`rif_resistance` = 'detected' THEN 1 ELSE 0 END)",
-                        'rif_not_detected' => new Zend_Db_Expr("SUM(CASE WHEN `res`.`mtb_detected` IN ('notDetected', 'detected', 'high', 'medium', 'low', 'veryLow') AND IFNULL(`res`.`rif_resistance`, '') IN ('notDetected', 'na', '') THEN 1 ELSE 0 END)"),
-                        'rif_indeterminate' => "SUM(CASE WHEN `res`.`rif_resistance` = 'indeterminate' THEN 1 ELSE 0 END)",
-                        'rif_uninterpretable' => new Zend_Db_Expr("SUM(CASE WHEN IFNULL(`res`.`mtb_detected`, '') IN ('noResult', 'invalid', 'error', '') THEN 1 ELSE 0 END)"),
-                        'no_of_responses' => 'COUNT(*)'))
-                ->join(array('ref' => 'reference_result_tb'),
-                    'ref.shipment_id = spm.shipment_id AND ref.sample_id = res.sample_id', array(
-                        'sample_label' => 'ref.sample_label',
-                        'ref_is_excluded' => 'ref.is_excluded',
-                        'ref_is_exempt' => 'ref.is_exempt',
-                        'ref_excluded_reason' => 'ref.excluded_reason'
-                    ))
-                ->where("spm.shipment_id = ?", $shipmentId)
-                ->where("substring(spm.evaluation_status,4,1) != '0'")
-                ->where("spm.is_excluded = 'no'")
-                ->where("IFNULL(spm.is_pt_test_not_performed, 'no') = 'no'")
-                ->group('ref.sample_label')
-                ->order("ref.sample_id");
-            $tbReportSummary = $db->fetchAll($summaryQuery);
-
             $expectedResultsQuery = $db->select()->from(array('ref' => 'reference_result_tb'),
                 array('sample_id', 'sample_label', 'mtb_detected', 'rif_resistance',
                     'ref_is_excluded' => 'ref.is_excluded',
@@ -1604,8 +1578,7 @@ class Application_Service_Evaluation {
 
         $result = array(
             'shipment' => $shipmentResult,
-            'dmResult' => $mapRes,
-            'tbReportSummary' => $tbReportSummary);
+            'dmResult' => $mapRes);
         return $result;
     }
 
