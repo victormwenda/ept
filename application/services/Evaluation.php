@@ -1337,6 +1337,15 @@ class Application_Service_Evaluation {
             }
         }
 
+        $assays = array();
+        $defaultAssayId = '';
+        $assayRecords = $db->fetchAll($db->select()->from('r_tb_assay'));
+        foreach ($assayRecords as $assayRecord) {
+            if ($defaultAssayId == '') {
+                $defaultAssayId = $assayRecord['id'];
+            }
+            $assays[$assayRecord['id']] = $assayRecord['short_name'];
+        }
         $i = 0;
         $mapRes = array();
         $scoringService = new Application_Service_EvaluationScoring();
@@ -1517,6 +1526,9 @@ class Application_Service_Evaluation {
             if(!isset($attributes['expiry_date'])) {
                 $attributes['expiry_date'] = '';
             }
+            if (!isset($attributes['assay'])) {
+                $attributes['assay'] = $defaultAssayId;
+            }
             $shipmentResult[$i]['documentation_score'] = $scoringService->calculateTbDocumentationScore(
                 $res['shipment_date'], $attributes['expiry_date'], $res['shipment_receipt_date'],
                 $res['supervisor_approval'], $res['participant_supervisor'], $res['lastdate_response']);
@@ -1571,6 +1583,7 @@ class Application_Service_Evaluation {
                     $shipmentResult[$i]['ptNotTestedComment'] .= ' due to the following reason(s): '.$ptNotTestedComment.'.';
                 }
             }
+            $shipmentResult[$i]['assay_name'] = $assays[$attributes['assay']];
             $i++;
             $db->update('shipment_participant_map', array('report_generated' => 'yes'), "map_id=" . $res['map_id']);
             $db->update('shipment', array('status' => 'evaluated'), "shipment_id=" . $shipmentId);
