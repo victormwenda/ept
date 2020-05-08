@@ -20,12 +20,6 @@ enter the following jobs
 */2 * * * * php -f /var/www/ept-2.4/cron/SendMailAlerts.php
 ```
 
-
-### Next Steps ###
-
-* Once you have the software set up, you can visit the admin panel http://ept/admin and log in with the credentials eptmanager@gmail.com and 123
-* Now you can start adding Participants, Participant logins, PE Surveys, Shipments etc.
-
 ### Who do I talk to? ###
 
 * You can reach us at brichards@systemone.id
