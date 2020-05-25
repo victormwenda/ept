@@ -58,17 +58,10 @@ class Reports_DistributionController extends Zend_Controller_Action {
             $this->view->header = $reportService->getReportConfigValue('report-header');
             $this->view->logo = $reportService->getReportConfigValue('logo');
             $this->view->logoRight = $reportService->getReportConfigValue('logo-right');
+
             $evalService = new Application_Service_Evaluation();
             $this->view->result = $evalService->getEvaluateReportsInPdf($id, $sLimit, $sOffset);
-            $commonService = new Application_Service_Common();
-            $schemeService = new Application_Service_Schemes();
-            $this->view->possibleDtsResults = $schemeService->getPossibleResults('dts');
-            $this->view->passPercentage = $commonService->getConfig('pass_percentage');
             $this->view->comingFrom = $comingFrom;
-            $globalConfigDb = new Application_Model_DbTable_GlobalConfig();
-            $this->view->customField1 = $globalConfigDb->getValue('custom_field_1');
-            $this->view->customField2 = $globalConfigDb->getValue('custom_field_2');
-            $this->view->haveCustom = $globalConfigDb->getValue('custom_field_needed');
         }
     }
 

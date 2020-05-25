@@ -1109,14 +1109,16 @@ class Application_Service_Shipments {
                         'shipment_id' => $lastId,
                         'sample_id' => ($i + 1),
                         'sample_label' => $params['sampleName'][$i],
-                        'mtb_detected' => $params['mtbDetected'][$i],
-                        'rif_resistance' => $params['rifResistance'][$i],
+                        'mtb_rif_mtb_detected' => $params['mtbDetectedMtbRif'][$i],
+                        'mtb_rif_rif_resistance' => $params['rifResistanceMtbRif'][$i],
                         'mtb_rif_probe_d' => $params['probeMtbRifD'][$i],
                         'mtb_rif_probe_c' => $params['probeMtbRifC'][$i],
                         'mtb_rif_probe_e' => $params['probeMtbRifE'][$i],
                         'mtb_rif_probe_b' => $params['probeMtbRifB'][$i],
                         'mtb_rif_probe_spc' => $params['probeMtbRifSpc'][$i],
                         'mtb_rif_probe_a' => $params['probeMtbRifA'][$i],
+                        'ultra_mtb_detected' => $params['mtbDetectedUltra'][$i],
+                        'ultra_rif_resistance' => $params['rifResistanceUltra'][$i],
                         'ultra_probe_spc' => $params['probeUltraSpc'][$i],
                         'ultra_probe_is1081_is6110' => $params['probeUltraIS1081IS6110'][$i],
                         'ultra_probe_rpo_b1' => $params['probeUltraRpoB1'][$i],
@@ -1293,8 +1295,10 @@ class Application_Service_Shipments {
         $existingSampleMap = array();
         foreach ($existingSamples as $existingResult) {
             $existingSampleMap[$existingResult['sample_id']] = array(
-                'mtb_detected' => $existingResult['mtb_detected'],
-                'rif_resistance' => $existingResult['rif_resistance'],
+                'mtb_rif_mtb_detected' => $existingResult['mtb_rif_mtb_detected'],
+                'mtb_rif_rif_resistance' => $existingResult['mtb_rif_rif_resistance'],
+                'ultra_mtb_detected' => $existingResult['ultra_mtb_detected'],
+                'ultra_rif_resistance' => $existingResult['ultra_rif_resistance'],
                 'is_excluded' => $existingResult['is_excluded'],
                 'is_exempt' => $existingResult['is_exempt'],
                 'excluded_reason' => $existingResult['excluded_reason']
@@ -1307,15 +1311,19 @@ class Application_Service_Shipments {
         for ($i = 0; $i < $size; $i++) {
             $sampleId = strval($i + 1);
             $newSampleMap[$sampleId] = array(
-                'mtb_detected' => $params['mtbDetected'][$i],
-                'rif_resistance' => $params['rifResistance'][$i],
+                'mtb_rif_mtb_detected' => $params['mtbDetectedMtbRif'][$i],
+                'mtb_rif_rif_resistance' => $params['rifResistanceMtbRif'][$i],
+                'ultra_mtb_detected' => $params['mtbDetectedUltra'][$i],
+                'ultra_rif_resistance' => $params['rifResistanceUltra'][$i],
                 'is_excluded' => $params['excluded'][$i] == 'yes_not_exempt' || $params['excluded'][$i] == 'yes_exempt' ? 'yes' : 'no',
                 'is_exempt' => $params['excluded'][$i] == 'yes_exempt' ? 'yes' : 'no',
                 'excluded_reason' => $params['excludedReason'][$i]
             );
             if (!isset($existingSampleMap[$sampleId]) ||
-                $existingSampleMap[$sampleId]['mtb_detected'] != $newSampleMap[$sampleId]['mtb_detected'] ||
-                $existingSampleMap[$sampleId]['rif_resistance'] != $newSampleMap[$sampleId]['rif_resistance'] ||
+                $existingSampleMap[$sampleId]['mtb_rif_mtb_detected'] != $newSampleMap[$sampleId]['mtb_rif_mtb_detected'] ||
+                $existingSampleMap[$sampleId]['mtb_rif_rif_resistance'] != $newSampleMap[$sampleId]['mtb_rif_rif_resistance'] ||
+                $existingSampleMap[$sampleId]['ultra_mtb_detected'] != $newSampleMap[$sampleId]['ultra_mtb_detected'] ||
+                $existingSampleMap[$sampleId]['ultra_rif_resistance'] != $newSampleMap[$sampleId]['ultra_rif_resistance'] ||
                 $existingSampleMap[$sampleId]['is_excluded'] != $newSampleMap[$sampleId]['is_excluded'] ||
                 $existingSampleMap[$sampleId]['is_exempt'] != $newSampleMap[$sampleId]['is_exempt'] ||
                 $existingSampleMap[$sampleId]['excluded_reason'] != $newSampleMap[$sampleId]['excluded_reason']) {
@@ -1326,14 +1334,16 @@ class Application_Service_Shipments {
                 'sample_id' => $sampleId,
                 'sample_label' => $params['sampleName'][$i],
                 'sample_content' => $params['sampleContent'][$i],
-                'mtb_detected' => $newSampleMap[$sampleId]['mtb_detected'],
-                'rif_resistance' => $newSampleMap[$sampleId]['rif_resistance'],
+                'mtb_rif_mtb_detected' => $newSampleMap[$sampleId]['mtb_rif_mtb_detected'],
+                'mtb_rif_rif_resistance' => $newSampleMap[$sampleId]['mtb_rif_rif_resistance'],
                 'mtb_rif_probe_d' => $params['probeMtbRifD'][$i],
                 'mtb_rif_probe_c' => $params['probeMtbRifC'][$i],
                 'mtb_rif_probe_e' => $params['probeMtbRifE'][$i],
                 'mtb_rif_probe_b' => $params['probeMtbRifB'][$i],
                 'mtb_rif_probe_spc' => $params['probeMtbRifSpc'][$i],
                 'mtb_rif_probe_a' => $params['probeMtbRifA'][$i],
+                'ultra_mtb_detected' => $newSampleMap[$sampleId]['ultra_mtb_detected'],
+                'ultra_rif_resistance' => $newSampleMap[$sampleId]['ultra_rif_resistance'],
                 'ultra_probe_spc' => $params['probeUltraSpc'][$i],
                 'ultra_probe_is1081_is6110' => $params['probeUltraIS1081IS6110'][$i],
                 'ultra_probe_rpo_b1' => $params['probeUltraRpoB1'][$i],
@@ -1415,8 +1425,9 @@ class Application_Service_Shipments {
             'number_of_samples' => $size - $controlCount,
             'number_of_controls' => $controlCount,
 			'shipment_code' => $params['shipmentCode'],
-			'lastdate_response' => Application_Service_Common::ParseDate($params['lastDate'])),
-			'shipment_id = ' . $params['shipmentId']);
+			'lastdate_response' => Application_Service_Common::ParseDate($params['lastDate']),
+            'is_official' => $params['isOfficial'] == 'yes' ? 1 : 0
+        ), 'shipment_id = ' . $params['shipmentId']);
     }
 
     public function receiveShipment($params) {

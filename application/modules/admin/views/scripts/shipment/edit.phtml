@@ -48,50 +48,110 @@ $dtFormat=  $vHelper->getDateFormat(); ?>
                            title="Please choose the last response date" />
                 </div>
             </div>
+            <div class="form-group">
+                <label class="col-lg-3 control-label">Is Official</label>
+                <div class="col-lg-5">
+                    <select name="isOfficial" class="isRequired form-control"
+                            title="Official?"
+                            placeholder="Official?">
+                        <option value="yes" <?php echo ($shipmentData['shipment']['is_official'] == "1" ? "selected='selected'" : ""); ?>>
+                            Yes
+                        </option>
+                        <option value="no" <?php echo ($shipmentData['shipment']['is_official'] == "0" ? "selected='selected'" : ""); ?>>
+                            No
+                        </option>
+                    </select>
+                </div>
+            </div>
             <div class="form-group" id="sampleFormFragment">
                 <table style="width: 1050px;margin: 0 auto;" border="1" class="table table-bordered table-striped clearfix">
                     <tbody>
                     <?php $counter = 1;
                     foreach ($shipmentData['reference'] as $reference) { ?>
                         <tr align="center">
-                            <th style="text-align: center;vertical-align:middle;" colspan="10">Sample <?php echo $counter; ?></th>
+                            <th style="text-align: center;vertical-align:middle;" colspan="11">Sample <?php echo $counter; ?></th>
                         </tr>
                         <tr align="center">
                             <th style="width:10%;text-align: center;vertical-align:middle;">Name</th>
-                            <th style="width:16%;text-align: center;vertical-align:middle;">Content</th>
-                            <th style="width:7%;vertical-align:middle;" rowspan="2">MTB/RIF</th>
-                            <th style="width:6%;text-align: center;vertical-align:middle;">Probe D</th>
-                            <th style="width:10%;text-align: center;vertical-align:middle;">Probe C</th>
-                            <th style="width:6%;text-align: center;vertical-align:middle;">Probe E</th>
-                            <th style="width:6%;text-align: center;vertical-align:middle;">Probe B</th>
-                            <th style="width:6%;text-align: center;vertical-align:middle;">SPC</th>
-                            <th style="width:6%;text-align: center;vertical-align:middle;">Probe A</th>
                             <th style="width:8%;text-align: center;vertical-align:middle;">Excluded</th>
+                            <th style="width:9%;vertical-align:middle;" rowspan="2">MTB/RIF</th>
+                            <th style="width:12%;vertical-align:middle;">MTB Detected</th>
+                            <th style="width:14%;vertical-align:middle;">Rif Resistance</th>
+                            <th style="width:7%;text-align: center;vertical-align:middle;">Probe D</th>
+                            <th style="width:12%;text-align: center;vertical-align:middle;">Probe C</th>
+                            <th style="width:7%;text-align: center;vertical-align:middle;">Probe E</th>
+                            <th style="width:7%;text-align: center;vertical-align:middle;">Probe B</th>
+                            <th style="width:7%;text-align: center;vertical-align:middle;">SPC</th>
+                            <th style="width:7%;text-align: center;vertical-align:middle;">Probe A</th>
                         </tr>
                         <tr>
-                            <td style="text-align: center">
+                            <td>
                                 <input type="text" name="sampleName[]" class="isRequired input-sm form-control"
                                        value="<?php echo $reference['sample_label']; ?>" />
                             </td>
-                            <td style="text-align: center">
-                                <select name="sampleContent[]" class="form-control input-sm"
-                                        title="Please enter the organism used for this sample"
-                                        placeholder="Please enter the organism used for this sample">
+                            <td>
+                                <select name="excluded[]" class="isRequired form-control input-sm"
+                                        title="Do you wish to exclude this sample from evaluation and scoring?"
+                                        placeholder="Do you wish to exclude this sample from evaluation and scoring?"
+                                        onChange="changeExcluded(this, '<?php echo $counter; ?>')">
+                                    <option value="yes_not_exempt" <?php echo ($reference['is_excluded'] == 'yes' && $reference['is_exempt'] == 'no' ? "selected='selected'" : ""); ?>>
+                                        Yes, Exclude from Evaluation Entirely
+                                    </option>
+                                    <option value="yes_exempt" <?php echo ($reference['is_excluded'] == 'yes' && $reference['is_exempt'] == 'yes' ? "selected='selected'" : ""); ?>>
+                                        Yes, Score 100% for all Submissions
+                                    </option>
+                                    <option value="no" <?php echo ($reference['is_excluded'] == 'no' ? "selected='selected'" : ""); ?>>
+                                        No
+                                    </option>
+                                </select>
+                            </td>
+                            <td>
+                                <select name="mtbDetectedMtbRif[]" class="isRequired form-control input-sm"
+                                        title="Please enter the MTB Detected for this sample"
+                                        placeholder="Please enter the MTB Detected for this sample">
                                     <option value="">-- Select --</option>
-                                    <option value="H37Rv M. tuberculosis parent strain with laboratory derived mutation in the rpoB gene (S531L)" <?php echo ($reference['sample_content'] == 'H37Rv M. tuberculosis parent strain with laboratory derived mutation in the rpoB gene (S531L)' ? "selected='selected'" : ""); ?>>
-                                        H37Rv M. tuberculosis parent strain with laboratory derived mutation in the rpoB gene (S531L)
+                                    <option value="high" <?php echo ($reference['mtb_rif_mtb_detected'] == 'high' ? "selected='selected'" : ""); ?>>
+                                        High
                                     </option>
-                                    <option value="Pan-susceptible M. tuberculosis, ATCC 35811" <?php echo ($reference['sample_content'] == 'Pan-susceptible M. tuberculosis, ATCC 35811' ? "selected='selected'" : ""); ?>>
-                                        Pan-susceptible M. tuberculosis, ATCC 35811
+                                    <option value="medium" <?php echo ($reference['mtb_rif_mtb_detected'] == 'medium' ? "selected='selected'" : ""); ?>>
+                                        Medium
                                     </option>
-                                    <option value="M. intracellularae, ATCC 13950" <?php echo ($reference['sample_content'] == 'M. intracellularae, ATCC 13950' ? "selected='selected'" : ""); ?>>
-                                        M. intracellularae, ATCC 13950
+                                    <option value="low" <?php echo ($reference['mtb_rif_mtb_detected'] == 'low' ? "selected='selected'" : ""); ?>>
+                                        Low
                                     </option>
-                                    <option value="H37Rv M. tuberculosis parent strain with laboratory derived mutation in the rpoB gene (H526Y)" <?php echo ($reference['sample_content'] == 'H37Rv M. tuberculosis parent strain with laboratory derived mutation in the rpoB gene (H526Y)' ? "selected='selected'" : ""); ?>>
-                                        H37Rv M. tuberculosis parent strain with laboratory derived mutation in the rpoB gene (H526Y)
+                                    <option value="veryLow" <?php echo ($reference['mtb_rif_mtb_detected'] == 'veryLow' ? "selected='selected'" : ""); ?>>
+                                        Very Low
                                     </option>
-                                    <option value="H37Rv M. tuberculosis ATCC 27294" <?php echo ($reference['sample_content'] == 'H37Rv M. tuberculosis ATCC 27294' ? "selected='selected'" : ""); ?>>
-                                        H37Rv M. tuberculosis ATCC 27294
+                                    <option value="notDetected" <?php echo ($reference['mtb_rif_mtb_detected'] == 'notDetected' ? "selected='selected'" : ""); ?>>
+                                        Not Detected
+                                    </option>
+                                    <option value="noResult" <?php echo ($reference['mtb_rif_mtb_detected'] == 'noResult' ? "selected='selected'" : ""); ?>>
+                                        No Result
+                                    </option>
+                                    <option value="invalid" <?php echo ($reference['mtb_rif_mtb_detected'] == 'invalid' ? "selected='selected'" : ""); ?>>
+                                        Invalid
+                                    </option>
+                                    <option value="error" <?php echo ($reference['mtb_rif_mtb_detected'] == 'error' ? "selected='selected'" : ""); ?>>
+                                        Error
+                                    </option>
+                                </select>
+                            </td>
+                            <td>
+                                <select name="rifResistanceMtbRif[]" class="isRequired form-control input-sm"
+                                        title="Please enter the Rif Resistance for this sample"
+                                        placeholder="Please enter the Rif Resistance for this sample">
+                                    <option value="">-- Select --</option>
+                                    <option value="detected" <?php echo ($reference['mtb_rif_rif_resistance'] == 'detected' ? "selected='selected'" : ""); ?>>
+                                        Detected
+                                    </option>
+                                    <option value="notDetected"  <?php echo ($reference['mtb_rif_rif_resistance'] == 'notDetected' ? "selected='selected'" : ""); ?>>
+                                        Not Detected
+                                    </option>
+                                    <option value="indeterminate"  <?php echo ($reference['mtb_rif_rif_resistance'] == 'indeterminate' ? "selected='selected'" : ""); ?>>
+                                        RIF Indeterminate
+                                    </option>
+                                    <option value="na"  <?php echo ($reference['mtb_rif_rif_resistance'] == 'na' ? "selected='selected'" : ""); ?>>
+                                        N/A
                                     </option>
                                 </select>
                             </td>
@@ -131,27 +191,12 @@ $dtFormat=  $vHelper->getDateFormat(); ?>
                                        placeholder="Please enter all Ct values for each sample"
                                        value="<?php echo $reference['mtb_rif_probe_a']; ?>" />
                             </td>
-                            <td rowspan="3">
-                                <select name="excluded[]" class="isRequired form-control input-sm"
-                                        title="Do you wish to exclude this sample from evaluation and scoring?"
-                                        placeholder="Do you wish to exclude this sample from evaluation and scoring?"
-                                        onChange="changeExcluded(this, '<?php echo $counter; ?>')">
-                                    <option value="yes_not_exempt" <?php echo ($reference['is_excluded'] == 'yes' && $reference['is_exempt'] == 'no' ? "selected='selected'" : ""); ?>>
-                                        Yes, Exclude from Evaluation Entirely
-                                    </option>
-                                    <option value="yes_exempt" <?php echo ($reference['is_excluded'] == 'yes' && $reference['is_exempt'] == 'yes' ? "selected='selected'" : ""); ?>>
-                                        Yes, Score 100% for all Submissions
-                                    </option>
-                                    <option value="no" <?php echo ($reference['is_excluded'] == 'no' ? "selected='selected'" : ""); ?>>
-                                        No
-                                    </option>
-                                </select>
-                            </td>
                         </tr>
                         <tr>
-                            <th style="text-align: center;vertical-align:middle;">MTB Detected</th>
-                            <th style="text-align: center;vertical-align:middle;">Rif Resistance</th>
+                            <th style="text-align: center;vertical-align:middle;" colspan="2">Content</th>
                             <th style="vertical-align:middle;" rowspan="2">MTB Ultra</th>
+                            <th style="vertical-align:middle;">MTB Detected</th>
+                            <th style="vertical-align:middle;">Rif Resistance</th>
                             <th style="text-align: center;vertical-align:middle;">SPC</th>
                             <th style="text-align: center;vertical-align:middle;">IS1081-IS6110</th>
                             <th style="text-align: center;vertical-align:middle;">rpoB1</th>
@@ -160,55 +205,77 @@ $dtFormat=  $vHelper->getDateFormat(); ?>
                             <th style="text-align: center;vertical-align:middle;">rpoB4</th>
                         </tr>
                         <tr>
+                            <td colspan="2">
+                                <select name="sampleContent[]" class="form-control input-sm"
+                                        title="Please enter the organism used for this sample"
+                                        placeholder="Please enter the organism used for this sample">
+                                    <option value="">-- Select --</option>
+                                    <option value="H37Rv M. tuberculosis parent strain with laboratory derived mutation in the rpoB gene (S531L)" <?php echo ($reference['sample_content'] == 'H37Rv M. tuberculosis parent strain with laboratory derived mutation in the rpoB gene (S531L)' ? "selected='selected'" : ""); ?>>
+                                        H37Rv M. tuberculosis parent strain with laboratory derived mutation in the rpoB gene (S531L)
+                                    </option>
+                                    <option value="Pan-susceptible M. tuberculosis, ATCC 35811" <?php echo ($reference['sample_content'] == 'Pan-susceptible M. tuberculosis, ATCC 35811' ? "selected='selected'" : ""); ?>>
+                                        Pan-susceptible M. tuberculosis, ATCC 35811
+                                    </option>
+                                    <option value="M. intracellularae, ATCC 13950" <?php echo ($reference['sample_content'] == 'M. intracellularae, ATCC 13950' ? "selected='selected'" : ""); ?>>
+                                        M. intracellularae, ATCC 13950
+                                    </option>
+                                    <option value="H37Rv M. tuberculosis parent strain with laboratory derived mutation in the rpoB gene (H526Y)" <?php echo ($reference['sample_content'] == 'H37Rv M. tuberculosis parent strain with laboratory derived mutation in the rpoB gene (H526Y)' ? "selected='selected'" : ""); ?>>
+                                        H37Rv M. tuberculosis parent strain with laboratory derived mutation in the rpoB gene (H526Y)
+                                    </option>
+                                    <option value="H37Rv M. tuberculosis ATCC 27294" <?php echo ($reference['sample_content'] == 'H37Rv M. tuberculosis ATCC 27294' ? "selected='selected'" : ""); ?>>
+                                        H37Rv M. tuberculosis ATCC 27294
+                                    </option>
+                                </select>
+                            </td>
                             <td>
-                                <select name="mtbDetected[]" class="isRequired form-control input-sm"
+                                <select name="mtbDetectedUltra[]" class="isRequired form-control input-sm"
                                         title="Please enter the MTB Detected for this sample"
                                         placeholder="Please enter the MTB Detected for this sample">
                                     <option value="">-- Select --</option>
-                                    <option value="high" <?php echo ($reference['mtb_detected'] == 'high' ? "selected='selected'" : ""); ?>>
+                                    <option value="high" <?php echo ($reference['ultra_mtb_detected'] == 'high' ? "selected='selected'" : ""); ?>>
                                         High
                                     </option>
-                                    <option value="medium" <?php echo ($reference['mtb_detected'] == 'medium' ? "selected='selected'" : ""); ?>>
+                                    <option value="medium" <?php echo ($reference['ultra_mtb_detected'] == 'medium' ? "selected='selected'" : ""); ?>>
                                         Medium
                                     </option>
-                                    <option value="low" <?php echo ($reference['mtb_detected'] == 'low' ? "selected='selected'" : ""); ?>>
+                                    <option value="low" <?php echo ($reference['ultra_mtb_detected'] == 'low' ? "selected='selected'" : ""); ?>>
                                         Low
                                     </option>
-                                    <option value="veryLow" <?php echo ($reference['mtb_detected'] == 'veryLow' ? "selected='selected'" : ""); ?>>
+                                    <option value="veryLow" <?php echo ($reference['ultra_mtb_detected'] == 'veryLow' ? "selected='selected'" : ""); ?>>
                                         Very Low
                                     </option>
-                                    <option value="trace" <?php echo ($reference['mtb_detected'] == 'trace' ? "selected='selected'" : ""); ?>>
+                                    <option value="trace" <?php echo ($reference['ultra_mtb_detected'] == 'trace' ? "selected='selected'" : ""); ?>>
                                         Trace
                                     </option>
-                                    <option value="notDetected" <?php echo ($reference['mtb_detected'] == 'notDetected' ? "selected='selected'" : ""); ?>>
+                                    <option value="notDetected" <?php echo ($reference['ultra_mtb_detected'] == 'notDetected' ? "selected='selected'" : ""); ?>>
                                         Not Detected
                                     </option>
-                                    <option value="noResult" <?php echo ($reference['mtb_detected'] == 'noResult' ? "selected='selected'" : ""); ?>>
+                                    <option value="noResult" <?php echo ($reference['ultra_mtb_detected'] == 'noResult' ? "selected='selected'" : ""); ?>>
                                         No Result
                                     </option>
-                                    <option value="invalid" <?php echo ($reference['mtb_detected'] == 'invalid' ? "selected='selected'" : ""); ?>>
+                                    <option value="invalid" <?php echo ($reference['ultra_mtb_detected'] == 'invalid' ? "selected='selected'" : ""); ?>>
                                         Invalid
                                     </option>
-                                    <option value="error" <?php echo ($reference['mtb_detected'] == 'error' ? "selected='selected'" : ""); ?>>
+                                    <option value="error" <?php echo ($reference['ultra_mtb_detected'] == 'error' ? "selected='selected'" : ""); ?>>
                                         Error
                                     </option>
                                 </select>
                             </td>
                             <td>
-                                <select name="rifResistance[]" class="isRequired form-control input-sm"
+                                <select name="rifResistanceUltra[]" class="isRequired form-control input-sm"
                                         title="Please enter the Rif Resistance for this sample"
                                         placeholder="Please enter the Rif Resistance for this sample">
                                     <option value="">-- Select --</option>
-                                    <option value="detected" <?php echo ($reference['rif_resistance'] == 'detected' ? "selected='selected'" : ""); ?>>
+                                    <option value="detected" <?php echo ($reference['ultra_rif_resistance'] == 'detected' ? "selected='selected'" : ""); ?>>
                                         Detected
                                     </option>
-                                    <option value="notDetected"  <?php echo ($reference['rif_resistance'] == 'notDetected' ? "selected='selected'" : ""); ?>>
+                                    <option value="notDetected"  <?php echo ($reference['ultra_rif_resistance'] == 'notDetected' ? "selected='selected'" : ""); ?>>
                                         Not Detected
                                     </option>
-                                    <option value="indeterminate"  <?php echo ($reference['rif_resistance'] == 'indeterminate' ? "selected='selected'" : ""); ?>>
+                                    <option value="indeterminate"  <?php echo ($reference['ultra_rif_resistance'] == 'indeterminate' ? "selected='selected'" : ""); ?>>
                                         RIF Indeterminate
                                     </option>
-                                    <option value="na"  <?php echo ($reference['rif_resistance'] == 'na' ? "selected='selected'" : ""); ?>>
+                                    <option value="na"  <?php echo ($reference['ultra_rif_resistance'] == 'na' ? "selected='selected'" : ""); ?>>
                                         N/A
                                     </option>
                                 </select>
@@ -251,7 +318,7 @@ $dtFormat=  $vHelper->getDateFormat(); ?>
                             </td>
                         </tr>
                         <tr id="excludedReasonRow<?php echo $counter; ?>" style="display: <?php echo ($reference['is_excluded'] == 'yes' || $reference['is_exempt'] == 'yes') ? 'table-row' : 'none'?>;">
-                            <td>
+                            <td colspan="2">
                                 <label for="excludedReason[]">Excluded Reason</label>
                             </td>
                             <td colspan="9">
