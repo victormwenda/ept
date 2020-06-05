@@ -219,208 +219,7 @@ class Application_Service_Evaluation {
             ->order('sorting_unique_identifier');
         $shipmentResult = $db->fetchAll($sql);
 
-        $schemeService = new Application_Service_Schemes();
-
-        if ($shipmentResult[0]['scheme_type'] == 'eid') {
-			$shipmentResult =  $this->evaluateEid($shipmentResult,$shipmentId);
-        } else if ($shipmentResult[0]['scheme_type'] == 'dbs') {
-            $counter = 0;
-            $maxScore = 0;
-            foreach ($shipmentResult as $shipment) {
-                $createdOnUser = explode(" ", $shipment['created_on_user']);
-                $createdOn = Application_Service_Common::ParseDateISO8601OrYYYYMMDDOrMin($createdOnUser[0]);
-                $lastDate = Application_Service_Common::ParseDateISO8601OrYYYYMMDD($shipment['lastdate_response']);
-                if ($createdOn->isEarlier($lastDate)) {
-
-                    $results = $schemeService->getDbsSamples($shipmentId, $shipment['participant_id']);
-                    $totalScore = 0;
-                    $maxScore = 0;
-                    $mandatoryResult = "";
-                    $lotResult = "";
-                    $testKit1 = "";
-                    $testKit2 = "";
-                    $testKit3 = "";
-                    $testKitRepeatResult = "";
-                    $testKitExpiryResult = "";
-                    $lotResult = "";
-                    $scoreResult = "";
-                    $failureReason = array();
-
-                    $attributes = json_decode($shipment['attributes'], true);
-
-                    foreach ($results as $result) {
-
-                        // matching reported and reference results
-                        if (isset($result['reported_result']) && $result['reported_result'] != null) {
-                            if ($result['reference_result'] == $result['reported_result']) {
-                                $totalScore += $result['sample_score'];
-                            } else {
-                                if ($result['sample_score'] > 0) {
-                                    $failureReason[]['warning'] = "Sample <strong>" . $result['sample_label'] . "</strong> was reported wrongly";
-                                }
-                            }
-                        }
-                        $maxScore += $result['sample_score'];
-
-                        // checking if mandatory fields were entered and were entered right
-                        if ($result['mandatory'] == 1) {
-                            if ((!isset($result['reported_result']) || $result['reported_result'] == "" || $result['reported_result'] == null)) {
-                                $mandatoryResult = 'Fail';
-                                $failureReason[]['warning'] = "Mandatory Sample <strong>" . $result['sample_label'] . "</strong> was not reported";
-                            }
-                        }
-                    }
-
-                    // checking if all LOT details were entered
-                    if (!isset($results[0]['lot_no_1']) || $results[0]['lot_no_1'] == "" || $results[0]['lot_no_1'] == null) {
-                        $lotResult = 'Fail';
-                        $failureReason[]['warning'] = "<strong>Lot No. 1</strong> was not reported";
-                    }
-                    if (!isset($results[0]['lot_no_2']) || $results[0]['lot_no_2'] == "" || $results[0]['lot_no_2'] == null) {
-                        $lotResult = 'Fail';
-                        $failureReason[]['warning'] = "<strong>Lot No. 2</strong> was not reported";
-                    }
-                    if (!isset($results[0]['lot_no_3']) || $results[0]['lot_no_3'] == "" || $results[0]['lot_no_3'] == null) {
-                        $lotResult = 'Fail';
-                        $failureReason[]['warning'] = "<strong>Lot No. 3</strong> was not reported";
-                    }
-
-                    // checking test kit expiry dates
-                    $testedOn = Application_Service_Common::ParseDateISO8601OrYYYYMMDD($results[0]['shipment_test_date']);
-                    $testDate = $testedOn->toString('dd-MMM-YYYY');
-                    $expDate1 = "";
-                    if (trim(strtotime($results[0]['exp_date_1'])) != "") {
-                        $expDate1 = Application_Service_Common::ParseDateISO8601OrYYYYMMDD($results[0]['exp_date_1']);
-                    }
-                    $expDate2 = "";
-                    if (trim(strtotime($results[0]['exp_date_2'])) != "") {
-                        $expDate2 = Application_Service_Common::ParseDateISO8601OrYYYYMMDD($results[0]['exp_date_2']);
-                    }
-
-                    $expDate3 = "";
-                    if (trim(strtotime($results[0]['exp_date_3'])) != "") {
-                        $expDate3 = Application_Service_Common::ParseDateISO8601OrYYYYMMDD($results[0]['exp_date_3']);
-                    }
-
-
-                    $testKitName = $db->fetchCol($db->select()->from('r_dbs_eia', 'eia_name')->where("eia_id = '" . $results[0]['eia_1'] . "'"));
-                    $testKit1 = $testKitName[0];
-                    $testKit2 = "";
-                    if (trim($results[0]['eia_2']) != 0) {
-                        $testKitName = $db->fetchCol($db->select()->from('r_dbs_eia', 'eia_name')->where("eia_id = '" . $results[0]['eia_2'] . "'"));
-                        $testKit2 = $testKitName[0];
-                    }
-
-                    $testKit3 = "";
-                    if (trim($results[0]['eia_3']) != 0) {
-                        $testKitName = $db->fetchCol($db->select()->from('r_dbs_eia', 'eia_name')->where("eia_id = '" . $results[0]['eia_3'] . "'"));
-                        $testKit3 = $testKitName[0];
-                    }
-                    if ($expDate1 != "") {
-                        if ($testedOn->isLater($expDate1)) {
-                            $difference = $testedOn->sub($expDate1);
-
-                            $measure = new Zend_Measure_Time($difference->toValue(), Zend_Measure_Time::SECOND);
-                            $measure->convertTo(Zend_Measure_Time::DAY);
-
-                            $testKitExpiryResult = 'Fail';
-                            $failureReason[]['warning'] = "EIA 1 (<strong>" . $testKit1 . "</strong>) expired " . round($measure->getValue()) . " days before the test date " . $testDate;
-                        }
-                    }
-                    $testedOn = Application_Service_Common::ParseDateISO8601OrYYYYMMDD($results[0]['shipment_test_date']);
-                    $testDate = $testedOn->toString('dd-MMM-YYYY');
-                    if ($expDate2 != "") {
-                        if ($testedOn->isLater($expDate2)) {
-                            $difference = $testedOn->sub($expDate2);
-
-                            $measure = new Zend_Measure_Time($difference->toValue(), Zend_Measure_Time::SECOND);
-                            $measure->convertTo(Zend_Measure_Time::DAY);
-
-                            $testKitExpiryResult = 'Fail';
-                            $failureReason[]['warning'] = "EIA 2 (<strong>" . $testKit2 . "</strong>) expired " . round($measure->getValue()) . " days before the test date " . $testDate;
-                        }
-                    }
-
-                    $testedOn = Application_Service_Common::ParseDateISO8601OrYYYYMMDD($results[0]['shipment_test_date']);
-                    $testDate = $testedOn->toString('dd-MMM-YYYY');
-                    if ($expDate3 != "") {
-                        if ($testedOn->isLater($expDate3)) {
-                            $difference = $testedOn->sub($expDate3);
-
-                            $measure = new Zend_Measure_Time($difference->toValue(), Zend_Measure_Time::SECOND);
-                            $measure->convertTo(Zend_Measure_Time::DAY);
-
-                            $testKitExpiryResult = 'Fail';
-                            $failureReason[]['warning'] = "EIA 3 (<strong>" . $testKit3 . "</strong>) expired " . round($measure->getValue()) . " days before the test date " . $testDate;
-                        }
-                    }
-                    //checking if testkits were repeated
-                    if (($testKit1 == $testKit2) && ($testKit2 == $testKit3)) {
-                        //$testKitRepeatResult = 'Fail';
-                        $failureReason[]['warning'] = "<strong>$testKit1</strong> repeated for all three EIA";
-                    } else {
-                        if (($testKit1 == $testKit2) && $testKit1 != "" && $testKit2 != "") {
-                            //$testKitRepeatResult = 'Fail';
-                            $failureReason[]['warning'] = "<strong>$testKit1</strong> repeated as EIA 1 and EIA 2";
-                        }
-                        if (($testKit2 == $testKit3) && $testKit2 != "" && $testKit3 != "") {
-                            //$testKitRepeatResult = 'Fail';
-                            $failureReason[]['warning'] = "<strong>$testKit2</strong> repeated as EIA 2 and EIA 3";
-                        }
-                        if (($testKit1 == $testKit3) && $testKit1 != "" && $testKit3 != "") {
-                            //$testKitRepeatResult = 'Fail';
-                            $failureReason[]['warning'] = "<strong>$testKit1</strong> repeated as EIA 1 and EIA 3";
-                        }
-                    }
-
-                    // checking if total score and maximum scores are the same
-                    if ($totalScore != $maxScore) {
-                        $scoreResult = 'Fail';
-                        $failureReason[]['warning'] = "Participant did not meet the score criteria (Participant Score - <strong>$totalScore</strong> and Required Score - <strong>$maxScore</strong>)";
-                    } else {
-                        $scoreResult = 'Pass';
-                    }
-
-                    // if any of the results have failed, then the final result is fail
-                    if ($scoreResult == 'Fail' || $mandatoryResult == 'Fail' || $lotResult == 'Fail' ||
-                        $testKitExpiryResult == 'Fail') {
-                        $finalResult = 2;
-                    } else {
-                        $finalResult = 1;
-                    }
-                    $shipmentResult[$counter]['shipment_score'] = $totalScore;
-                    $shipmentResult[$counter]['max_score'] = $maxScore;
-
-                    $fRes = $db->fetchCol($db->select()
-                        ->from('r_results', array('result_name'))
-                        ->where('result_id = ' . $finalResult));
-
-                    $shipmentResult[$counter]['display_result'] = $fRes[0];
-                    $shipmentResult[$counter]['failure_reason'] = $failureReason = json_encode($failureReason);
-
-                    // let us update the total score in DB
-                    $db->update('shipment_participant_map', array(
-                        'shipment_score' => $totalScore,
-                        'final_result' => $finalResult,
-                        'failure_reason' => $failureReason),
-                        "map_id = " . $shipment['map_id']
-                    );
-                    $counter++;
-                } else {
-                    $failureReason = array('warning' => "Response was submitted after the last response date.");
-                    $db->update('shipment_participant_map', array('failure_reason' => json_encode($failureReason)), "map_id = " . $shipment['map_id']);
-                }
-            }
-            $db->update('shipment', array('max_score' => $maxScore), "shipment_id = " . $shipmentId);
-        } else if ($shipmentResult[0]['scheme_type'] == 'dts') {
-			$shipmentResult = $this->evaluateDtsHivSerology($shipmentResult,$shipmentId);
-        } else if ($shipmentResult[0]['scheme_type'] == 'vl') {
-            $shipmentResult = $this->evaluateDtsViralLoad($shipmentResult,$shipmentId, $reEvaluate);
-        } else if ($shipmentResult[0]['scheme_type'] == 'tb') {
-            $shipmentResult = $this->evaluateTb($shipmentResult,$shipmentId);
-        }
-
-        return $shipmentResult;
+        return $this->evaluateTb($shipmentResult,$shipmentId);
     }
 
     public function editEvaluation($shipmentId, $participantId, $scheme) {
@@ -430,18 +229,7 @@ class Application_Service_Evaluation {
         $shipmentData = $schemeService->getShipmentData($shipmentId, $participantId);
         $possibleResults = $schemeService->getPossibleResults($scheme);
         $evalComments = $schemeService->getSchemeEvaluationComments($scheme);
-        if ($scheme == 'eid') {
-            $results = $schemeService->getEidSamples($shipmentId, $participantId);
-        } else if ($scheme == 'vl') {
-            $possibleResults = "";
-            $results = $schemeService->getVlSamples($shipmentId, $participantId);
-        } else if ($scheme == 'dts') {
-            $results = $schemeService->getDtsSamples($shipmentId, $participantId);
-        } else if ($scheme == 'dbs') {
-            $results = $schemeService->getDbsSamples($shipmentId, $participantId);
-        } else if ($scheme == 'tb') {
-            $results = $schemeService->getTbSamples($shipmentId, $participantId);
-        }
+        $results = $schemeService->getTbSamples($shipmentId, $participantId);
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sql = $db->select()
             ->from(array('s' => 'shipment'))
@@ -466,36 +254,39 @@ class Application_Service_Evaluation {
                 }
             }
         }
-        if ($scheme == 'tb') {
-            $submissionShipmentScore = 0;
-            $scoringService = new Application_Service_EvaluationScoring();
-            $samplePassStatuses = array();
-            $maxShipmentScore = 0;
-            for ($i = 0; $i < count($sampleRes); $i++) {
-                $sampleRes[$i]['calculated_score'] = $scoringService->calculateTbSamplePassStatus($sampleRes[$i]['ref_mtb_detected'],
-                    $sampleRes[$i]['res_mtb_detected'], $sampleRes[$i]['ref_rif_resistance'], $sampleRes[$i]['res_rif_resistance'],
-                    $sampleRes[$i]['res_probe_1'], $sampleRes[$i]['res_probe_2'], $sampleRes[$i]['res_probe_3'],
-                    $sampleRes[$i]['res_probe_4'], $sampleRes[$i]['res_probe_5'], $sampleRes[$i]['res_probe_6'],
-                    $sampleRes[$i]['ref_is_excluded'], $sampleRes[$i]['ref_is_exempt']);
-                $submissionShipmentScore += $scoringService->calculateTbSampleScore(
-                    $sampleRes[$i]['calculated_score'],
-                    $sampleRes[$i]['ref_sample_score']);
-                if ($sampleRes[$i]['ref_is_excluded'] == 'no' || $sampleRes[$i]['ref_is_exempt'] == 'yes') {
-                    $maxShipmentScore += $sampleRes[$i]['ref_sample_score'];
-                }
-                array_push($samplePassStatuses, $sampleRes[$i]['calculated_score']);
-            }
-            $attributes = json_decode($shipmentData['attributes'],true);
-            $shipmentData['shipment_score'] = $submissionShipmentScore;
-            $shipmentData['documentation_score'] = $scoringService->calculateTbDocumentationScore($shipmentData['shipment_date'],
-                $attributes['expiry_date'], $shipmentData['shipment_receipt_date'], $shipmentData['supervisor_approval'],
-                $shipmentData['participant_supervisor'], $shipmentData['lastdate_response']);
-            $shipmentData['calculated_score'] = $scoringService->calculateSubmissionPassStatus(
-                $submissionShipmentScore, $shipmentData['documentation_score'], $maxShipmentScore,
-                $samplePassStatuses);
-            $shipmentData['max_documentation_score'] = Application_Service_EvaluationScoring::MAX_DOCUMENTATION_SCORE;
-            $shipmentData['max_shipment_score'] = $maxShipmentScore;
+        $submissionShipmentScore = 0;
+        $scoringService = new Application_Service_EvaluationScoring();
+        $samplePassStatuses = array();
+        $maxShipmentScore = 0;
+        $attributes = json_decode($shipmentData['attributes'],true);
+        $assayRecords = $db->fetchAll($db->select()->from('r_tb_assay'));
+        foreach ($assayRecords as $assayRecord) {
+            $assays[$assayRecord['id']] = $assayRecord['short_name'];
         }
+        $assayName = $assays[$attributes['assay']];
+        for ($i = 0; $i < count($sampleRes); $i++) {
+            $sampleRes[$i]['calculated_score'] = $scoringService->calculateTbSamplePassStatus($sampleRes[$i][$assayName == 'MTB Ultra' ? 'ref_ultra_mtb_detected' : 'ref_mtb_rif_mtb_detected'],
+                $sampleRes[$i]['res_mtb_detected'], $sampleRes[$i][$assayName == 'MTB Ultra' ? 'ref_ultra_rif_resistance' : 'ref_mtb_rif_rif_resistance'], $sampleRes[$i]['res_rif_resistance'],
+                $sampleRes[$i]['res_probe_1'], $sampleRes[$i]['res_probe_2'], $sampleRes[$i]['res_probe_3'],
+                $sampleRes[$i]['res_probe_4'], $sampleRes[$i]['res_probe_5'], $sampleRes[$i]['res_probe_6'],
+                $sampleRes[$i]['ref_is_excluded'], $sampleRes[$i]['ref_is_exempt']);
+            $submissionShipmentScore += $scoringService->calculateTbSampleScore(
+                $sampleRes[$i]['calculated_score'],
+                $sampleRes[$i]['ref_sample_score']);
+            if ($sampleRes[$i]['ref_is_excluded'] == 'no' || $sampleRes[$i]['ref_is_exempt'] == 'yes') {
+                $maxShipmentScore += $sampleRes[$i]['ref_sample_score'];
+            }
+            array_push($samplePassStatuses, $sampleRes[$i]['calculated_score']);
+        }
+        $shipmentData['shipment_score'] = $submissionShipmentScore;
+        $shipmentData['documentation_score'] = $scoringService->calculateTbDocumentationScore($shipmentData['shipment_date'],
+            $attributes['expiry_date'], $shipmentData['shipment_receipt_date'], $shipmentData['supervisor_approval'],
+            $shipmentData['participant_supervisor'], $shipmentData['lastdate_response']);
+        $shipmentData['calculated_score'] = $scoringService->calculateSubmissionPassStatus(
+            $submissionShipmentScore, $shipmentData['documentation_score'], $maxShipmentScore,
+            $samplePassStatuses);
+        $shipmentData['max_documentation_score'] = Application_Service_EvaluationScoring::MAX_DOCUMENTATION_SCORE;
+        $shipmentData['max_shipment_score'] = $maxShipmentScore;
         return array(
             'participant' => $participantData,
             'shipment' => $shipmentData,
@@ -516,17 +307,7 @@ class Application_Service_Evaluation {
         $shipmentData = $schemeService->getShipmentData($shipmentId, $participantId);
         $possibleResults = $schemeService->getPossibleResults($scheme);
         $evalComments = $schemeService->getSchemeEvaluationComments($scheme);
-        if ($scheme == 'eid') {
-            $results = $schemeService->getEidSamples($shipmentId, $participantId);
-        } else if ($scheme == 'vl') {
-            $results = $schemeService->getVlSamples($shipmentId, $participantId);
-        } else if ($scheme == 'dts') {
-            $results = $schemeService->getDtsSamples($shipmentId, $participantId);
-        } else if ($scheme == 'dbs') {
-            $results = $schemeService->getDtsSamples($shipmentId, $participantId);
-        } else if ($scheme == 'tb') {
-            $results = $schemeService->getTbSamples($shipmentId, $participantId);
-        }
+        $results = $schemeService->getTbSamples($shipmentId, $participantId);
         $controlRes = array();
         $sampleRes = array();
 
@@ -558,36 +339,39 @@ class Application_Service_Evaluation {
             $numScoredFull += $shipment['fullscore'];
         }
 
-        if ($scheme == 'tb') {
-            $submissionShipmentScore = 0;
-            $scoringService = new Application_Service_EvaluationScoring();
-            $samplePassStatuses = array();
-            $maxShipmentScore = 0;
-            for ($i=0; $i < count($sampleRes); $i++) {
-                $sampleRes[$i]['calculated_score'] = $scoringService->calculateTbSamplePassStatus($sampleRes[$i]['ref_mtb_detected'],
-                    $sampleRes[$i]['res_mtb_detected'], $sampleRes[$i]['ref_rif_resistance'], $sampleRes[$i]['res_rif_resistance'],
-                    $sampleRes[$i]['res_probe_1'], $sampleRes[$i]['res_probe_2'], $sampleRes[$i]['res_probe_3'],
-                    $sampleRes[$i]['res_probe_4'], $sampleRes[$i]['res_probe_5'], $sampleRes[$i]['res_probe_6'],
-                    $sampleRes[$i]['ref_is_excluded'], $sampleRes[$i]['ref_is_exempt']);
-                $submissionShipmentScore += $scoringService->calculateTbSampleScore(
-                    $sampleRes[$i]['calculated_score'],
-                    $sampleRes[$i]['ref_sample_score']);
-                if ($sampleRes[$i]['ref_is_excluded'] == 'no' || $sampleRes[$i]['ref_is_exempt'] == 'yes') {
-                    $maxShipmentScore += $sampleRes[$i]['ref_sample_score'];
-                }
-                array_push($samplePassStatuses, $sampleRes[$i]['calculated_score']);
-            }
-            $attributes = json_decode($shipmentData['attributes'],true);
-            $shipmentData['shipment_score'] = $submissionShipmentScore;
-            $shipmentData['documentation_score'] = $scoringService->calculateTbDocumentationScore($shipmentData['shipment_date'],
-                $attributes['expiry_date'], $shipmentData['shipment_receipt_date'], $shipmentData['supervisor_approval'],
-                $shipmentData['participant_supervisor'], $shipmentData['lastdate_response']);
-            $shipmentData['calculated_score'] = $scoringService->calculateSubmissionPassStatus(
-                $submissionShipmentScore, $shipmentData['documentation_score'], $maxShipmentScore,
-                $samplePassStatuses);
-            $shipmentData['max_documentation_score'] = Application_Service_EvaluationScoring::MAX_DOCUMENTATION_SCORE;
-            $shipmentData['max_shipment_score'] = $maxShipmentScore;
+        $submissionShipmentScore = 0;
+        $scoringService = new Application_Service_EvaluationScoring();
+        $samplePassStatuses = array();
+        $maxShipmentScore = 0;
+        $attributes = json_decode($shipmentData['attributes'],true);
+        $assayRecords = $db->fetchAll($db->select()->from('r_tb_assay'));
+        foreach ($assayRecords as $assayRecord) {
+            $assays[$assayRecord['id']] = $assayRecord['short_name'];
         }
+        $assayName = $assays[$attributes['assay']];
+        for ($i=0; $i < count($sampleRes); $i++) {
+            $sampleRes[$i]['calculated_score'] = $scoringService->calculateTbSamplePassStatus($sampleRes[$i][$assayName == 'MTB Ultra' ? 'ref_ultra_mtb_detected' : 'ref_mtb_rif_mtb_detected'],
+                $sampleRes[$i]['res_mtb_detected'], $sampleRes[$i][$assayName == 'MTB Ultra' ? 'ref_ultra_rif_resistance' : 'ref_mtb_rif_rif_resistance'], $sampleRes[$i]['res_rif_resistance'],
+                $sampleRes[$i]['res_probe_1'], $sampleRes[$i]['res_probe_2'], $sampleRes[$i]['res_probe_3'],
+                $sampleRes[$i]['res_probe_4'], $sampleRes[$i]['res_probe_5'], $sampleRes[$i]['res_probe_6'],
+                $sampleRes[$i]['ref_is_excluded'], $sampleRes[$i]['ref_is_exempt']);
+            $submissionShipmentScore += $scoringService->calculateTbSampleScore(
+                $sampleRes[$i]['calculated_score'],
+                $sampleRes[$i]['ref_sample_score']);
+            if ($sampleRes[$i]['ref_is_excluded'] == 'no' || $sampleRes[$i]['ref_is_exempt'] == 'yes') {
+                $maxShipmentScore += $sampleRes[$i]['ref_sample_score'];
+            }
+            array_push($samplePassStatuses, $sampleRes[$i]['calculated_score']);
+        }
+        $shipmentData['shipment_score'] = $submissionShipmentScore;
+        $shipmentData['documentation_score'] = $scoringService->calculateTbDocumentationScore($shipmentData['shipment_date'],
+            $attributes['expiry_date'], $shipmentData['shipment_receipt_date'], $shipmentData['supervisor_approval'],
+            $shipmentData['participant_supervisor'], $shipmentData['lastdate_response']);
+        $shipmentData['calculated_score'] = $scoringService->calculateSubmissionPassStatus(
+            $submissionShipmentScore, $shipmentData['documentation_score'], $maxShipmentScore,
+            $samplePassStatuses);
+        $shipmentData['max_documentation_score'] = Application_Service_EvaluationScoring::MAX_DOCUMENTATION_SCORE;
+        $shipmentData['max_shipment_score'] = $maxShipmentScore;
 
         return array(
             'participant' => $participantData,
@@ -606,468 +390,278 @@ class Application_Service_Evaluation {
         $authNameSpace = new Zend_Session_Namespace('administrators');
         $admin = $authNameSpace->primary_email;
         if ($params['unableToSubmit'] == "yes") {
-            if ($params['scheme'] == 'tb') {
-                $correctiveActions = array();
-                if (isset($params['correctiveActions']) && $params['correctiveActions'] != "") {
-                    if (is_array($params['correctiveActions'])) {
-                        foreach ($params['correctiveActions'] as $correctiveAction) {
-                            if($correctiveAction != null && trim($correctiveAction) != "") {
-                                array_push($correctiveActions, $correctiveAction);
-                            }
-                        }
-                    } else {
-                        array_push($correctiveActions, $params['correctiveActions']);
-                    }
-                }
-
-                $schemeService = new Application_Service_Schemes();
-                $shipmentData = $schemeService->getShipmentData($params['shipmentId'], $params['participantId']);
-                $attributes = json_decode($shipmentData['attributes'], true);
-
-                if (isset($shipmentData['follows_up_from']) && $shipmentData['follows_up_from'] > 0) {
-                    $previousShipmentData = $schemeService->getShipmentData($shipmentData['follows_up_from'], $params['participantId']);
-                    $previousShipmentAttributes = json_decode($previousShipmentData['attributes'], true);
-
-                    $correctiveActionsFromPreviousRound = array();
-                    $correctiveActionsCheckedOff = array();
-                    if (isset($params['correctiveActionsFromPreviousRound'])) {
-                        if ($params['correctiveActionsFromPreviousRound'] == "") {
-                            array_push($correctiveActionsCheckedOff, $params['correctiveActionsFromPreviousRound']);
-                        } else {
-                            $correctiveActionsCheckedOff = $params['correctiveActionsFromPreviousRound'];
+            $correctiveActions = array();
+            if (isset($params['correctiveActions']) && $params['correctiveActions'] != "") {
+                if (is_array($params['correctiveActions'])) {
+                    foreach ($params['correctiveActions'] as $correctiveAction) {
+                        if($correctiveAction != null && trim($correctiveAction) != "") {
+                            array_push($correctiveActions, $correctiveAction);
                         }
                     }
-
-                    if (isset($previousShipmentAttributes['corrective_actions'])) {
-                        foreach ($previousShipmentAttributes['corrective_actions'] as $correctiveActionFromPreviousRound) {
-                            array_push($correctiveActionsFromPreviousRound, array(
-                                'checked_off' => in_array($correctiveActionFromPreviousRound,
-                                    $correctiveActionsCheckedOff),
-                                'corrective_action' => $correctiveActionFromPreviousRound
-                            ));
-                        }
-                    }
-                    $attributes['corrective_actions_from_previous_round'] = $correctiveActionsFromPreviousRound;
+                } else {
+                    array_push($correctiveActions, $params['correctiveActions']);
                 }
-
-                $attributes = array_merge($attributes, array(
-                    "corrective_actions" => $correctiveActions));
-
-                $attributes = json_encode($attributes);
-                $mapData = array(
-                    "attributes" => $attributes,
-                    "updated_by_admin" => $admin,
-                    "updated_on_admin" => new Zend_Db_Expr('now()')
-                );
-                if (isset($params["userComments"])) {
-                    $mapData["user_comment"] = $params['userComments'];
-                }
-
-                if (isset($params['customField1']) && trim($params['customField1']) != "") {
-                    $mapData['custom_field_1'] = $params['customField1'];
-                }
-
-                if (isset($params['customField2']) && trim($params['customField2']) != "") {
-                    $mapData['custom_field_2'] = $params['customField2'];
-                }
-
-                $mapData['shipment_score'] = 0;
-                $mapData['documentation_score'] = 0;
-                $db->update('shipment_participant_map', $mapData, "map_id = " . $params['smid']);
-            } else {
-                $attributes = array();
-
-                if (isset($params['otherAssay']) && $params['otherAssay'] != "") {
-                    $attributes['other_assay'] = $params['otherAssay'];
-                }
-                if (isset($params['uploadedFilePath']) && $params['uploadedFilePath'] != "") {
-                    $attributes['uploadedFilePath'] = $params['uploadedFilePath'];
-                }
-
-                $attributes = json_encode($attributes);
-                $mapData = array(
-                    "attributes" => $attributes,
-                    "user_comment" => $params['userComments'],
-                    "updated_by_admin" => $admin,
-                    "updated_on_admin" => new Zend_Db_Expr('now()')
-                );
-
-                if (isset($params['customField1']) && trim($params['customField1']) != "") {
-                    $mapData['custom_field_1'] = $params['customField1'];
-                }
-
-                if (isset($params['customField2']) && trim($params['customField2']) != "") {
-                    $mapData['custom_field_2'] = $params['customField2'];
-                }
-
-                $db->update('shipment_participant_map', $mapData, "map_id = " . $params['smid']);
             }
+
+            $schemeService = new Application_Service_Schemes();
+            $shipmentData = $schemeService->getShipmentData($params['shipmentId'], $params['participantId']);
+            $attributes = json_decode($shipmentData['attributes'], true);
+
+            if (isset($shipmentData['follows_up_from']) && $shipmentData['follows_up_from'] > 0) {
+                $previousShipmentData = $schemeService->getShipmentData($shipmentData['follows_up_from'], $params['participantId']);
+                $previousShipmentAttributes = json_decode($previousShipmentData['attributes'], true);
+
+                $correctiveActionsFromPreviousRound = array();
+                $correctiveActionsCheckedOff = array();
+                if (isset($params['correctiveActionsFromPreviousRound'])) {
+                    if ($params['correctiveActionsFromPreviousRound'] == "") {
+                        array_push($correctiveActionsCheckedOff, $params['correctiveActionsFromPreviousRound']);
+                    } else {
+                        $correctiveActionsCheckedOff = $params['correctiveActionsFromPreviousRound'];
+                    }
+                }
+
+                if (isset($previousShipmentAttributes['corrective_actions'])) {
+                    foreach ($previousShipmentAttributes['corrective_actions'] as $correctiveActionFromPreviousRound) {
+                        array_push($correctiveActionsFromPreviousRound, array(
+                            'checked_off' => in_array($correctiveActionFromPreviousRound,
+                                $correctiveActionsCheckedOff),
+                            'corrective_action' => $correctiveActionFromPreviousRound
+                        ));
+                    }
+                }
+                $attributes['corrective_actions_from_previous_round'] = $correctiveActionsFromPreviousRound;
+            }
+
+            $attributes = array_merge($attributes, array(
+                "corrective_actions" => $correctiveActions));
+
+            $attributes = json_encode($attributes);
+            $mapData = array(
+                "attributes" => $attributes,
+                "updated_by_admin" => $admin,
+                "updated_on_admin" => new Zend_Db_Expr('now()')
+            );
+            if (isset($params["userComments"])) {
+                $mapData["user_comment"] = $params['userComments'];
+            }
+
+            if (isset($params['customField1']) && trim($params['customField1']) != "") {
+                $mapData['custom_field_1'] = $params['customField1'];
+            }
+
+            if (isset($params['customField2']) && trim($params['customField2']) != "") {
+                $mapData['custom_field_2'] = $params['customField2'];
+            }
+
+            $mapData['shipment_score'] = 0;
+            $mapData['documentation_score'] = 0;
+            $db->update('shipment_participant_map', $mapData, "map_id = " . $params['smid']);
         } else {
             $size = count($params['sampleId']);
-            if ($params['scheme'] == 'eid') {
-                $attributes = array("sample_rehydration_date" => Application_Service_Common::ParseDate($params['sampleRehydrationDate']),
-                    "extraction_assay" => $params['extractionAssay'],
-                    "detection_assay" => $params['detectionAssay'],
-                    "extraction_assay_expiry_date" => Application_Service_Common::ParseDate($params['extractionAssayExpiryDate']),
-                    "detection_assay_expiry_date" => Application_Service_Common::ParseDate($params['detectionAssayExpiryDate']),
-                    "extraction_assay_lot_no" => $params['extractionAssayLotNo'],
-                    "detection_assay_lot_no" => $params['detectionAssayLotNo'],
-                );
-
-                if(isset($params['otherAssay']) && $params['otherAssay'] != ""){
-                    $attributes['other_assay'] = $params['otherAssay'];
-                }
-                if(isset($params['uploadedFilePath']) && $params['uploadedFilePath'] != ""){
-                    $attributes['uploadedFilePath'] = $params['uploadedFilePath'];
-                }
-
-                $attributes = json_encode($attributes);
-                $mapData = array(
-                    "shipment_receipt_date" => Application_Service_Common::ParseDate($params['receiptDate']),
-                    "shipment_test_date" => Application_Service_Common::ParseDate($params['testDate']),
-                    "attributes" => $attributes,
-                    "supervisor_approval" => $params['supervisorApproval'],
-                    "participant_supervisor" => $params['participantSupervisor'],
-                    "user_comment" => $params['userComments'],
-                    "updated_by_admin" => $admin,
-                    "updated_on_admin" => new Zend_Db_Expr('now()')
-                );
-
-                if(isset($params['customField1']) && trim($params['customField1']) != ""){
-                    $mapData['custom_field_1'] = $params['customField1'];
-                }
-
-                if(isset($params['customField2']) && trim($params['customField2']) != ""){
-                    $mapData['custom_field_2'] = $params['customField2'];
-                }
-
-                $db->update('shipment_participant_map', $mapData, "map_id = " . $params['smid']);
-
-                for ($i = 0; $i < $size; $i++) {
-                    $db->update('response_result_eid', array('reported_result' => $params['reported'][$i], 'updated_by' => $admin, 'updated_on' => new Zend_Db_Expr('now()')), "shipment_map_id = " . $params['smid'] . " AND sample_id = " . $params['sampleId'][$i]);
-                }
-            } else if ($params['scheme'] == 'dts') {
-                $attributes["sample_rehydration_date"] = Application_Service_Common::ParseDate($params['rehydrationDate']);
-                $attributes["algorithm"] = $params['algorithm'];
-                $attributes = json_encode($attributes);
-
-                $mapdata = array(
-                    "shipment_receipt_date" => Application_Service_Common::ParseDate($params['receivedOn']),
-                    "shipment_test_date" => Application_Service_Common::ParseDate($params['testedOn']),
-                    "attributes" => $attributes,
-                    "supervisor_approval" => $params['supervisorApproval'],
-                    "participant_supervisor" => $params['participantSupervisor'],
-                    "user_comment" => $params['userComments'],
-                    "updated_by_admin" => $admin,
-                    "updated_on_admin" => new Zend_Db_Expr('now()')
-                );
-                if(isset($params['customField1']) && trim($params['customField1']) != ""){
-                    $mapdata['custom_field_1'] = $params['customField1'];
-                }
-
-                if(isset($params['customField2']) && trim($params['customField2']) != ""){
-                    $mapdata['custom_field_2'] = $params['customField2'];
-                }
-                $db->update('shipment_participant_map', $mapdata, "map_id = " . $params['smid']);
-
-                for ($i = 0; $i < $size; $i++) {
-                    $db->update('response_result_dts', array(
-                        'test_kit_name_1' => $params['test_kit_name_1'],
-                        'lot_no_1' => $params['lot_no_1'],
-                        'exp_date_1' => Application_Service_Common::ParseDate($params['exp_date_1']),
-                        'test_result_1' => $params['test_result_1'][$i],
-                        'test_kit_name_2' => $params['test_kit_name_2'],
-                        'lot_no_2' => $params['lot_no_2'],
-                        'exp_date_2' => Application_Service_Common::ParseDate($params['exp_date_2']),
-                        'test_result_2' => $params['test_result_2'][$i],
-                        'test_kit_name_3' => $params['test_kit_name_3'],
-                        'lot_no_3' => $params['lot_no_3'],
-                        'exp_date_3' => Application_Service_Common::ParseDate($params['exp_date_3']),
-                        'test_result_3' => $params['test_result_3'][$i],
-                        'reported_result' => $params['reported_result'][$i],
-                        'updated_by' => $admin,
-                        'updated_on' => new Zend_Db_Expr('now()')), "shipment_map_id = " . $params['smid'] . " AND sample_id = " . $params['sampleId'][$i]);
-                }
-            } else if ($params['scheme'] == 'vl') {
-                $attributes = array(
-                    "sample_rehydration_date" => Application_Service_Common::ParseDate($params['sampleRehydrationDate']),
-                    "vl_assay" => $params['vlAssay'],
-                    "assay_lot_number" => $params['assayLotNumber'],
-                    "assay_expiration_date" => Application_Service_Common::ParseDate($params['assayExpirationDate']),
-                    "specimen_volume" => $params['specimenVolume']
-                );
-
-                if (isset($params['otherAssay']) && $params['otherAssay'] != "") {
-                    $attributes['other_assay'] = $params['otherAssay'];
-                }
-                if (isset($params['uploadedFilePath']) && $params['uploadedFilePath'] != "") {
-                    $attributes['uploadedFilePath'] = $params['uploadedFilePath'];
-                }
-
-                $attributes = json_encode($attributes);
-                $mapData = array(
-                    "shipment_receipt_date" => Application_Service_Common::ParseDate($params['receiptDate']),
-                    "shipment_test_date" => Application_Service_Common::ParseDate($params['testDate']),
-                    "attributes" => $attributes,
-                    "supervisor_approval" => $params['supervisorApproval'],
-                    "participant_supervisor" => $params['participantSupervisor'],
-                    "user_comment" => $params['userComments'],
-                    "updated_by_admin" => $admin,
-                    "updated_on_admin" => new Zend_Db_Expr('now()')
-                );
-
-                if (isset($params['customField1']) && trim($params['customField1']) != "") {
-                    $mapData['custom_field_1'] = $params['customField1'];
-                }
-
-                if (isset($params['customField2']) && trim($params['customField2']) != "") {
-                    $mapData['custom_field_2'] = $params['customField2'];
-                }
-
-                $db->update('shipment_participant_map', $mapData, "map_id = " . $params['smid']);
-
-                for ($i = 0; $i < $size; $i++) {
-
-                    $db->update('response_result_vl', array(
-                        'reported_viral_load' => $params['reported'][$i],
-                        'updated_by' => $admin,
-                        'updated_on' => new Zend_Db_Expr('now()')), "shipment_map_id = " . $params['smid'] . " AND sample_id = " . $params['sampleId'][$i]);
-                }
-            } else if ($params['scheme'] == 'dbs') {
-                for ($i = 0; $i < $size; $i++) {
-                    $db->update('response_result_dbs', array(
-                        'eia_1' => $params['eia_1'],
-                        'lot_no_1' => $params['lot_no_1'],
-                        'exp_date_1' => Application_Service_Common::ParseDate($params['exp_date_1']),
-                        'od_1' => $params['od_1'][$i],
-                        'cutoff_1' => $params['cutoff_1'][$i],
-                        'eia_2' => $params['eia_2'],
-                        'lot_no_2' => $params['lot_no_2'],
-                        'exp_date_2' => Application_Service_Common::ParseDate($params['exp_date_2']),
-                        'od_2' => $params['od_2'][$i],
-                        'cutoff_2' => $params['cutoff_2'][$i],
-                        'eia_3' => $params['eia_3'],
-                        'lot_no_3' => $params['lot_no_3'],
-                        'exp_date_3' => Application_Service_Common::ParseDate($params['exp_date_3']),
-                        'od_3' => $params['od_3'][$i],
-                        'cutoff_3' => $params['cutoff_3'][$i],
-                        'wb' => $params['wb'],
-                        'wb_lot' => $params['wb_lot'],
-                        'wb_exp_date' => Application_Service_Common::ParseDate($params['wb_exp_date']),
-                        'wb_160' => $params['wb_160'][$i],
-                        'wb_120' => $params['wb_120'][$i],
-                        'wb_66' => $params['wb_66'][$i],
-                        'wb_55' => $params['wb_55'][$i],
-                        'wb_51' => $params['wb_51'][$i],
-                        'wb_41' => $params['wb_41'][$i],
-                        'wb_31' => $params['wb_31'][$i],
-                        'wb_24' => $params['wb_24'][$i],
-                        'wb_17' => $params['wb_17'][$i],
-                        'reported_result' => $params['reported_result'][$i],
-                        'updated_by' => $admin,
-                        'updated_on' => new Zend_Db_Expr('now()')), "shipment_map_id = " . $params['smid'] . " AND sample_id = " . $params['sampleId'][$i]);
-                }
-            } else if ($params['scheme'] == 'tb') {
-                $correctiveActions = array();
-                if (isset($params['correctiveActions']) && $params['correctiveActions'] != "") {
-                    if (is_array($params['correctiveActions'])) {
-                        foreach ($params['correctiveActions'] as $correctiveAction) {
-                            if($correctiveAction != null && trim($correctiveAction) != "") {
-                                array_push($correctiveActions, $correctiveAction);
-                            }
-                        }
-                    } else {
-                        array_push($correctiveActions, $params['correctiveActions']);
-                    }
-                }
-
-                $schemeService = new Application_Service_Schemes();
-                $shipmentData = $schemeService->getShipmentData($params['shipmentId'], $params['participantId']);
-                $attributes = json_decode($shipmentData['attributes'], true);
-
-                if (isset($shipmentData['follows_up_from']) && $shipmentData['follows_up_from'] > 0) {
-                    $previousShipmentData = $schemeService->getShipmentData($shipmentData['follows_up_from'], $params['participantId']);
-                    $previousShipmentAttributes = json_decode($previousShipmentData['attributes'], true);
-
-                    $correctiveActionsFromPreviousRound = array();
-                    $correctiveActionsCheckedOff = array();
-                    if (isset($params['correctiveActionsFromPreviousRound'])) {
-                        if ($params['correctiveActionsFromPreviousRound'] == "") {
-                            array_push($correctiveActionsCheckedOff, $params['correctiveActionsFromPreviousRound']);
-                        } else {
-                            $correctiveActionsCheckedOff = $params['correctiveActionsFromPreviousRound'];
+            $correctiveActions = array();
+            if (isset($params['correctiveActions']) && $params['correctiveActions'] != "") {
+                if (is_array($params['correctiveActions'])) {
+                    foreach ($params['correctiveActions'] as $correctiveAction) {
+                        if($correctiveAction != null && trim($correctiveAction) != "") {
+                            array_push($correctiveActions, $correctiveAction);
                         }
                     }
-
-                    if (isset($previousShipmentAttributes['corrective_actions'])) {
-                        foreach ($previousShipmentAttributes['corrective_actions'] as $correctiveActionFromPreviousRound) {
-                            array_push($correctiveActionsFromPreviousRound, array(
-                                'checked_off' => in_array($correctiveActionFromPreviousRound,
-                                    $correctiveActionsCheckedOff),
-                                'corrective_action' => $correctiveActionFromPreviousRound
-                            ));
-                        }
-                    }
-                    $attributes['corrective_actions_from_previous_round'] = $correctiveActionsFromPreviousRound;
-                }
-
-                $attributes = array_merge($attributes, array(
-                    "cartridge_lot_no" => isset($params['cartridgeLotNo']) ? $params['cartridgeLotNo'] : $params['mtbRifKitLotNo'],
-                    "expiry_date" => Application_Service_Common::ParseDate($params['expiryDate']),
-                    "assay" => $params['assay'],
-                    "count_tests_conducted_over_month" => $params['countTestsConductedOverMonth'],
-                    "count_errors_encountered_over_month" => $params['countErrorsEncounteredOverMonth'],
-                    "error_codes_encountered_over_month" => $params['errorCodesEncounteredOverMonth'],
-                    "corrective_actions" => $correctiveActions));
-
-                $attributes = json_encode($attributes);
-                $mapData = array(
-                    "shipment_receipt_date" => Application_Service_Common::ParseDate($params['receiptDate']),
-                    "shipment_test_report_date" => Application_Service_Common::ParseDate($params['testReceiptDate']),
-                    "attributes" => $attributes,
-                    "supervisor_approval" => $params['supervisorApproval'],
-                    "participant_supervisor" => $params['participantSupervisor'],
-                    "user_comment" => $params['userComments'],
-                    "updated_by_admin" => $admin,
-                    "updated_on_admin" => new Zend_Db_Expr('now()')
-                );
-                if (isset($params['testDate'])) {
-                    $mapData['shipment_test_date'] = Application_Service_Common::ParseDate($params['testDate']);
-                }
-                if (isset($params['modeOfReceipt'])) {
-                    $mapData['mode_id'] = $params['modeOfReceipt'];
-                }
-
-                $mapData['qc_done'] = $params['qcDone'];
-                if (isset($mapData['qc_done']) && trim($mapData['qc_done']) == "yes") {
-                    $mapData['qc_date'] = Application_Service_Common::ParseDate($params['qcDate']);
-                    $mapData['qc_done_by'] = trim($params['qcDoneBy']);
-                    $mapData['qc_created_on'] = new Zend_Db_Expr('now()');
                 } else {
-                    $mapData['qc_date'] = null;
-                    $mapData['qc_done_by'] = null;
-                    $mapData['qc_created_on'] = null;
+                    array_push($correctiveActions, $params['correctiveActions']);
                 }
+            }
 
-                if (isset($params['customField1']) && trim($params['customField1']) != "") {
-                    $mapData['custom_field_1'] = $params['customField1'];
-                }
+            $schemeService = new Application_Service_Schemes();
+            $shipmentData = $schemeService->getShipmentData($params['shipmentId'], $params['participantId']);
+            $attributes = json_decode($shipmentData['attributes'], true);
 
-                if (isset($params['customField2']) && trim($params['customField2']) != "") {
-                    $mapData['custom_field_2'] = $params['customField2'];
-                }
+            if (isset($shipmentData['follows_up_from']) && $shipmentData['follows_up_from'] > 0) {
+                $previousShipmentData = $schemeService->getShipmentData($shipmentData['follows_up_from'], $params['participantId']);
+                $previousShipmentAttributes = json_decode($previousShipmentData['attributes'], true);
 
-                $instrumentsDb = new Application_Model_DbTable_Instruments();
-                $headerInstrumentSerials = $params['headerInstrumentSerial'];
-                $instrumentDetails = array();
-                foreach ($headerInstrumentSerials as $key => $headerInstrumentSerial) {
-                    if (isset($headerInstrumentSerial) &&
-                        $headerInstrumentSerial != "") {
-                        $headerInstrumentDetails = array(
-                            'instrument_serial' => $headerInstrumentSerial,
-                            'instrument_installed_on' => $params['headerInstrumentInstalledOn'][$key],
-                            'instrument_last_calibrated_on' => $params['headerInstrumentLastCalibratedOn'][$key]
-                        );
-                        $instrumentsDb->upsertInstrument($params['participantId'], $headerInstrumentDetails);
-                        $instrumentDetails[$headerInstrumentSerial] = array(
-                            'instrument_installed_on' => $params['headerInstrumentInstalledOn'][$key],
-                            'instrument_last_calibrated_on' => $params['headerInstrumentLastCalibratedOn'][$key]
-                        );
-                    }
-                }
-                $scoringService = new Application_Service_EvaluationScoring();
-                $shipmentScore = 0;
-                $shipmentTestDate = null;
-                for ($i = 0; $i < $size; $i++) {
-                    $dateTested = Application_Service_Common::ParseDate($params['dateTested'][$i]);
-                    if ($dateTested > $shipmentTestDate) {
-                        $shipmentTestDate = $dateTested;
-                    }
-                    if (!isset($params['dateTested'][$i]) ||
-                        $params['dateTested'][$i] == "") {
-                        $dateTested = null;
-                    }
-                    $instrumentInstalledOn = null;
-                    $instrumentLastCalibratedOn = null;
-                    if (isset($params['instrumentSerial'][$i]) &&
-                        isset($instrumentDetails[$params['instrumentSerial'][$i]])) {
-                        if (isset($instrumentDetails[$params['instrumentSerial'][$i]]['instrument_installed_on'])) {
-                            $instrumentInstalledOn = Application_Service_Common::ParseDate(
-                                $instrumentDetails[$params['instrumentSerial'][$i]]['instrument_installed_on']
-                            );
-                        }
-                        if (isset($instrumentDetails[$params['instrumentSerial'][$i]]['instrument_last_calibrated_on'])) {
-                            $instrumentLastCalibratedOn = Application_Service_Common::ParseDate(
-                                $instrumentDetails[$params['instrumentSerial'][$i]]['instrument_last_calibrated_on']
-                            );
-                        }
-                    }
-                    $cartridgeExpirationDate = Application_Service_Common::ParseDate($params['expiryDate']);
-
-                    $db = Zend_Db_Table_Abstract::getDefaultAdapter();
-                    $sql = $db->select()->from(array('reference_result_tb'))
-                        ->where('shipment_id = ? ', $params['shipmentId'])
-                        ->where('sample_id = ?', $params['sampleId'][$i]);
-                    $referenceSample = $db->fetchRow($sql);
-                    $calculatedScorePassStatus = $scoringService->calculateTbSamplePassStatus($referenceSample['mtb_detected'],
-                        $params['mtbDetected'][$i], $referenceSample['rif_resistance'], $params['rifResistance'][$i],
-                        $params['probe1'][$i], $params['probe2'][$i], $params['probe3'][$i], $params['probe4'][$i],
-                        $params['probe5'][$i], $params['probe6'][$i], $referenceSample['is_excluded'],
-                        $referenceSample['is_exempt']);
-                    $shipmentScore += $scoringService->calculateTbSampleScore(
-                        $calculatedScorePassStatus,
-                        $referenceSample['sample_score']);
-
-                    $mtbDetected = $params['mtbDetected'][$i];
-                    $rifResistance = isset($params['rifResistance'][$i]) ? $params['rifResistance'][$i] : null;
-                    $errorCode = isset($params['errorCode'][$i]) ? $params['errorCode'][$i] : null;
-                    if ($mtbDetected != "error") {
-                        $errorCode = null;
-                        if(!in_array($mtbDetected, array("detected", "high", "medium", "low", "veryLow")) && ($rifResistance == null || $rifResistance == "")) {
-                            $rifResistance = "na";
-                        }
+                $correctiveActionsFromPreviousRound = array();
+                $correctiveActionsCheckedOff = array();
+                if (isset($params['correctiveActionsFromPreviousRound'])) {
+                    if ($params['correctiveActionsFromPreviousRound'] == "") {
+                        array_push($correctiveActionsCheckedOff, $params['correctiveActionsFromPreviousRound']);
                     } else {
+                        $correctiveActionsCheckedOff = $params['correctiveActionsFromPreviousRound'];
+                    }
+                }
+
+                if (isset($previousShipmentAttributes['corrective_actions'])) {
+                    foreach ($previousShipmentAttributes['corrective_actions'] as $correctiveActionFromPreviousRound) {
+                        array_push($correctiveActionsFromPreviousRound, array(
+                            'checked_off' => in_array($correctiveActionFromPreviousRound,
+                                $correctiveActionsCheckedOff),
+                            'corrective_action' => $correctiveActionFromPreviousRound
+                        ));
+                    }
+                }
+                $attributes['corrective_actions_from_previous_round'] = $correctiveActionsFromPreviousRound;
+            }
+
+            $attributes = array_merge($attributes, array(
+                "cartridge_lot_no" => isset($params['cartridgeLotNo']) ? $params['cartridgeLotNo'] : $params['mtbRifKitLotNo'],
+                "expiry_date" => Application_Service_Common::ParseDate($params['expiryDate']),
+                "assay" => $params['assay'],
+                "count_tests_conducted_over_month" => $params['countTestsConductedOverMonth'],
+                "count_errors_encountered_over_month" => $params['countErrorsEncounteredOverMonth'],
+                "error_codes_encountered_over_month" => $params['errorCodesEncounteredOverMonth'],
+                "corrective_actions" => $correctiveActions));
+            $attributes = json_encode($attributes);
+            $assayRecords = $db->fetchAll($db->select()->from('r_tb_assay'));
+            foreach ($assayRecords as $assayRecord) {
+                $assays[$assayRecord['id']] = $assayRecord['short_name'];
+            }
+            $assayName = $assays[$attributes['assay']];
+            $mapData = array(
+                "shipment_receipt_date" => Application_Service_Common::ParseDate($params['receiptDate']),
+                "shipment_test_report_date" => Application_Service_Common::ParseDate($params['testReceiptDate']),
+                "attributes" => $attributes,
+                "supervisor_approval" => $params['supervisorApproval'],
+                "participant_supervisor" => $params['participantSupervisor'],
+                "user_comment" => $params['userComments'],
+                "updated_by_admin" => $admin,
+                "updated_on_admin" => new Zend_Db_Expr('now()')
+            );
+            if (isset($params['testDate'])) {
+                $mapData['shipment_test_date'] = Application_Service_Common::ParseDate($params['testDate']);
+            }
+            if (isset($params['modeOfReceipt'])) {
+                $mapData['mode_id'] = $params['modeOfReceipt'];
+            }
+
+            $mapData['qc_done'] = $params['qcDone'];
+            if (isset($mapData['qc_done']) && trim($mapData['qc_done']) == "yes") {
+                $mapData['qc_date'] = Application_Service_Common::ParseDate($params['qcDate']);
+                $mapData['qc_done_by'] = trim($params['qcDoneBy']);
+                $mapData['qc_created_on'] = new Zend_Db_Expr('now()');
+            } else {
+                $mapData['qc_date'] = null;
+                $mapData['qc_done_by'] = null;
+                $mapData['qc_created_on'] = null;
+            }
+
+            if (isset($params['customField1']) && trim($params['customField1']) != "") {
+                $mapData['custom_field_1'] = $params['customField1'];
+            }
+
+            if (isset($params['customField2']) && trim($params['customField2']) != "") {
+                $mapData['custom_field_2'] = $params['customField2'];
+            }
+
+            $instrumentsDb = new Application_Model_DbTable_Instruments();
+            $headerInstrumentSerials = $params['headerInstrumentSerial'];
+            $instrumentDetails = array();
+            foreach ($headerInstrumentSerials as $key => $headerInstrumentSerial) {
+                if (isset($headerInstrumentSerial) &&
+                    $headerInstrumentSerial != "") {
+                    $headerInstrumentDetails = array(
+                        'instrument_serial' => $headerInstrumentSerial,
+                        'instrument_installed_on' => $params['headerInstrumentInstalledOn'][$key],
+                        'instrument_last_calibrated_on' => $params['headerInstrumentLastCalibratedOn'][$key]
+                    );
+                    $instrumentsDb->upsertInstrument($params['participantId'], $headerInstrumentDetails);
+                    $instrumentDetails[$headerInstrumentSerial] = array(
+                        'instrument_installed_on' => $params['headerInstrumentInstalledOn'][$key],
+                        'instrument_last_calibrated_on' => $params['headerInstrumentLastCalibratedOn'][$key]
+                    );
+                }
+            }
+            $scoringService = new Application_Service_EvaluationScoring();
+            $shipmentScore = 0;
+            $shipmentTestDate = null;
+            for ($i = 0; $i < $size; $i++) {
+                $dateTested = Application_Service_Common::ParseDate($params['dateTested'][$i]);
+                if ($dateTested > $shipmentTestDate) {
+                    $shipmentTestDate = $dateTested;
+                }
+                if (!isset($params['dateTested'][$i]) ||
+                    $params['dateTested'][$i] == "") {
+                    $dateTested = null;
+                }
+                $instrumentInstalledOn = null;
+                $instrumentLastCalibratedOn = null;
+                if (isset($params['instrumentSerial'][$i]) &&
+                    isset($instrumentDetails[$params['instrumentSerial'][$i]])) {
+                    if (isset($instrumentDetails[$params['instrumentSerial'][$i]]['instrument_installed_on'])) {
+                        $instrumentInstalledOn = Application_Service_Common::ParseDate(
+                            $instrumentDetails[$params['instrumentSerial'][$i]]['instrument_installed_on']
+                        );
+                    }
+                    if (isset($instrumentDetails[$params['instrumentSerial'][$i]]['instrument_last_calibrated_on'])) {
+                        $instrumentLastCalibratedOn = Application_Service_Common::ParseDate(
+                            $instrumentDetails[$params['instrumentSerial'][$i]]['instrument_last_calibrated_on']
+                        );
+                    }
+                }
+                $cartridgeExpirationDate = Application_Service_Common::ParseDate($params['expiryDate']);
+
+                $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+                $sql = $db->select()->from(array('reference_result_tb'))
+                    ->where('shipment_id = ? ', $params['shipmentId'])
+                    ->where('sample_id = ?', $params['sampleId'][$i]);
+                $referenceSample = $db->fetchRow($sql);
+                $calculatedScorePassStatus = $scoringService->calculateTbSamplePassStatus($referenceSample[$assayName == 'MTB Ultra' ? 'ultra_mtb_detected' : 'mtb_rif_mtb_detected'],
+                    $params['mtbDetected'][$i], $referenceSample[$assayName == 'MTB Ultra' ? 'ultra_rif_resistance' : 'mtb_rif_rif_resistance'], $params['rifResistance'][$i],
+                    $params['probe1'][$i], $params['probe2'][$i], $params['probe3'][$i], $params['probe4'][$i],
+                    $params['probe5'][$i], $params['probe6'][$i], $referenceSample['is_excluded'],
+                    $referenceSample['is_exempt']);
+                $shipmentScore += $scoringService->calculateTbSampleScore(
+                    $calculatedScorePassStatus,
+                    $referenceSample['sample_score']);
+
+                $mtbDetected = $params['mtbDetected'][$i];
+                $rifResistance = isset($params['rifResistance'][$i]) ? $params['rifResistance'][$i] : null;
+                $errorCode = isset($params['errorCode'][$i]) ? $params['errorCode'][$i] : null;
+                if ($mtbDetected != "error") {
+                    $errorCode = null;
+                    if(!in_array($mtbDetected, array("detected", "high", "medium", "low", "veryLow")) && ($rifResistance == null || $rifResistance == "")) {
                         $rifResistance = "na";
                     }
-                    $params['rifResistance'][$i] = $rifResistance;
-                    $params['errorCode'][$i] = $errorCode;
+                } else {
+                    $rifResistance = "na";
+                }
+                $params['rifResistance'][$i] = $rifResistance;
+                $params['errorCode'][$i] = $errorCode;
 
-                    $db->update('response_result_tb', array(
-                        'date_tested' => $dateTested,
-                        'mtb_detected' => $params['mtbDetected'][$i],
-                        'rif_resistance' => $params['rifResistance'][$i],
-                        'probe_1' => $params['probe1'][$i],
-                        'probe_2' => $params['probe2'][$i],
-                        'probe_3' => $params['probe3'][$i],
-                        'probe_4' => $params['probe4'][$i],
-                        'probe_5' => $params['probe5'][$i],
-                        'probe_6' => $params['probe6'][$i],
-                        'calculated_score' => $calculatedScorePassStatus,
-                        'instrument_serial' => $params['instrumentSerial'][$i],
-                        'instrument_installed_on' => $instrumentInstalledOn,
-                        'instrument_last_calibrated_on' => $instrumentLastCalibratedOn,
-                        'module_name' => $params['moduleName'][$i],
-                        'instrument_user' => $params['instrumentUser'][$i],
-                        'cartridge_expiration_date' => $cartridgeExpirationDate,
-                        'reagent_lot_id' => isset($params['cartridgeLotNo']) ? $params['cartridgeLotNo'] : $params['mtbRifKitLotNo'],
-                        'error_code' => $params['errorCode'][$i],
-                        'updated_by' => $admin,
-                        'updated_on' => new Zend_Db_Expr('now()')
-                    ), "shipment_map_id = " . $params['smid'] . " and sample_id = " . $params['sampleId'][$i]);
-                }
-                if (isset($shipmentTestDate)) {
-                    $mapData['shipment_test_date'] = $shipmentTestDate;
-                }
-                $mapData['shipment_score'] = $shipmentScore;
-                $mapData['documentation_score'] = $scoringService->calculateTbDocumentationScore(
-                    Application_Service_Common::ParseDate($params['shipmentDate']),
-                    Application_Service_Common::ParseDate($params['expiryDate']),
-                    Application_Service_Common::ParseDate($params['receiptDate']),
-                    $params['supervisorApproval'],
-                    $params['participantSupervisor'],
-                    Application_Service_Common::ParseDate($params['responseDeadlineDate']));
-                $db->update('shipment_participant_map', $mapData, "map_id = " . $params['smid']);
+                $db->update('response_result_tb', array(
+                    'date_tested' => $dateTested,
+                    'mtb_detected' => $params['mtbDetected'][$i],
+                    'rif_resistance' => $params['rifResistance'][$i],
+                    'probe_1' => $params['probe1'][$i],
+                    'probe_2' => $params['probe2'][$i],
+                    'probe_3' => $params['probe3'][$i],
+                    'probe_4' => $params['probe4'][$i],
+                    'probe_5' => $params['probe5'][$i],
+                    'probe_6' => $params['probe6'][$i],
+                    'calculated_score' => $calculatedScorePassStatus,
+                    'instrument_serial' => $params['instrumentSerial'][$i],
+                    'instrument_installed_on' => $instrumentInstalledOn,
+                    'instrument_last_calibrated_on' => $instrumentLastCalibratedOn,
+                    'module_name' => $params['moduleName'][$i],
+                    'instrument_user' => $params['instrumentUser'][$i],
+                    'cartridge_expiration_date' => $cartridgeExpirationDate,
+                    'reagent_lot_id' => isset($params['cartridgeLotNo']) ? $params['cartridgeLotNo'] : $params['mtbRifKitLotNo'],
+                    'error_code' => $params['errorCode'][$i],
+                    'updated_by' => $admin,
+                    'updated_on' => new Zend_Db_Expr('now()')
+                ), "shipment_map_id = " . $params['smid'] . " and sample_id = " . $params['sampleId'][$i]);
             }
+            if (isset($shipmentTestDate)) {
+                $mapData['shipment_test_date'] = $shipmentTestDate;
+            }
+            $mapData['shipment_score'] = $shipmentScore;
+            $mapData['documentation_score'] = $scoringService->calculateTbDocumentationScore(
+                Application_Service_Common::ParseDate($params['shipmentDate']),
+                Application_Service_Common::ParseDate($params['expiryDate']),
+                Application_Service_Common::ParseDate($params['receiptDate']),
+                $params['supervisorApproval'],
+                $params['participantSupervisor'],
+                Application_Service_Common::ParseDate($params['responseDeadlineDate']));
+            $db->update('shipment_participant_map', $mapData, "map_id = " . $params['smid']);
         }
 
         $params['isFollowUp'] = (isset($params['isFollowUp']) && $params['isFollowUp'] != "" ) ?
@@ -1161,8 +755,6 @@ class Application_Service_Evaluation {
             ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id')
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('scheme_name'))
             ->join(array('p' => 'participant'), 'p.participant_id = sp.participant_id', array(
-                'first_name',
-                'last_name',
                 'lab_name',
                 'unique_identifier',
                 'sorting_unique_identifier' => new Zend_Db_Expr("LPAD(p.unique_identifier, 10, '0')")
@@ -1176,6 +768,131 @@ class Application_Service_Evaluation {
         $sql = $sql->order('sorting_unique_identifier');
         $shipmentResult = $db->fetchAll($sql);
         return $shipmentResult;
+    }
+
+    private function getExpectedResults($shipmentId) {
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $tbResultsExpected = array();
+        $expectedResultsQuery = $db->select()->from(array('ref' => 'reference_result_tb'),
+            array(
+                'sample_id',
+                'sample_label',
+                'mtb_rif_mtb_detected',
+                'mtb_rif_rif_resistance',
+                'ultra_mtb_detected',
+                'ultra_rif_resistance',
+                'ref_is_excluded' => 'ref.is_excluded',
+                'ref_is_exempt' => 'ref.is_exempt'
+            ))
+            ->where("ref.shipment_id = ?", $shipmentId);
+        $tbResultsExpectedResults = $db->fetchAll($expectedResultsQuery);
+        foreach ($tbResultsExpectedResults as $tbResultsExpectedResult) {
+            $tbResultsExpected[$tbResultsExpectedResult['sample_id']] = array(
+                'mtb_rif_mtb_detected' => $tbResultsExpectedResult['mtb_rif_mtb_detected'],
+                'mtb_rif_rif_resistance' => $tbResultsExpectedResult['mtb_rif_rif_resistance'],
+                'ultra_mtb_detected' => $tbResultsExpectedResult['ultra_mtb_detected'],
+                'ultra_rif_resistance' => $tbResultsExpectedResult['ultra_rif_resistance'],
+                'ref_is_excluded' => $tbResultsExpectedResult['ref_is_excluded'],
+                'ref_is_exempt' => $tbResultsExpectedResult['ref_is_exempt']
+            );
+        }
+        return $tbResultsExpected;
+    }
+
+    private function getConsensusResults($shipmentId, $assayShortName) {
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $tbResultsConsensus = array();
+        $consensusResultsQueryMtbDetected = $db->select()->from(array('spm' => 'shipment_participant_map'), array())
+            ->joinLeft(array('a' => 'r_tb_assay'),
+                'a.id = CASE WHEN JSON_VALID(spm.attributes) = 1 THEN JSON_UNQUOTE(JSON_EXTRACT(spm.attributes, "$.assay")) ELSE 0 END')
+            ->join(array('ref' => 'reference_result_tb'),
+                'ref.shipment_id = spm.shipment_id', array('sample_id'))
+            ->joinLeft(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id AND res.sample_id = ref.sample_id', array(
+                'mtb_detected',
+                'occurrences' => 'COUNT(*)',
+                'matches_reference_result' => 'SUM(CASE WHEN `res`.`mtb_detected` = `ref`.`'.($assayShortName == 'MTB Ultra' ? 'ultra' : 'mtb_rif').'_mtb_detected` THEN 1 ELSE 0 END)'))
+            ->where("spm.shipment_id = ?", $shipmentId)
+            ->where("substring(spm.evaluation_status,4,1) != '0'")
+            ->where("spm.is_excluded = 'no'")
+            ->where("a.short_name = ?", $assayShortName)
+            ->group('ref.sample_id')
+            ->group('res.mtb_detected')
+            ->order('ref.sample_id ASC')
+            ->order('occurrences DESC')
+            ->order('matches_reference_result DESC');
+        $tbResultsConsensusMtbDetected = $db->fetchAll($consensusResultsQueryMtbDetected);
+        foreach ($tbResultsConsensusMtbDetected as $tbResultsConsensusMtbDetectedItem) {
+            if (isset($tbResultsConsensusMtbDetectedItem['mtb_detected']) &&
+                !trim($tbResultsConsensusMtbDetectedItem['mtb_detected']) != "" &&
+                isset($tbResultsConsensusMtbDetectedItem['occurrences']) &&
+                $tbResultsConsensusMtbDetectedItem['occurrences'] > 0) {
+                if (!isset($tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']])) {
+                    $tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']] = array(
+                        'mtb_detected' => $tbResultsConsensusMtbDetectedItem['mtb_detected'],
+                        'mtb_occurrences' => $tbResultsConsensusMtbDetectedItem['occurrences'],
+                        'mtb_matches_reference_result' => $tbResultsConsensusMtbDetectedItem['matches_reference_result'],
+                        'rif_resistance' => '',
+                        'rif_occurrences' => 0,
+                        'rif_matches_reference_result' => 0
+                    );
+                } else if ($tbResultsConsensusMtbDetectedItem['occurrences'] >
+                    $tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']]['mtb_occurrences'] ||
+                    ($tbResultsConsensusMtbDetectedItem['occurrences'] ==
+                        $tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']]['mtb_occurrences'] &&
+                        $tbResultsConsensusMtbDetectedItem['matches_reference_result'] == 1)) {
+                    $tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']]['mtb_detected'] = $tbResultsConsensusMtbDetectedItem['mtb_detected'];
+                    $tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']]['mtb_occurrences'] = $tbResultsConsensusMtbDetectedItem['occurrences'];
+                    $tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']]['mtb_matches_reference_result'] = $tbResultsConsensusMtbDetectedItem['matches_reference_result'];
+                }
+            }
+        }
+
+        $consensusResultsQueryRifDetected = $db->select()->from(array('spm' => 'shipment_participant_map'), array())
+            ->joinLeft(array('a' => 'r_tb_assay'),
+                'a.id = CASE WHEN JSON_VALID(spm.attributes) = 1 THEN JSON_UNQUOTE(JSON_EXTRACT(spm.attributes, "$.assay")) ELSE 0 END')
+            ->join(array('ref' => 'reference_result_tb'),
+                'ref.shipment_id = spm.shipment_id', array('sample_id'))
+            ->joinLeft(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id AND res.sample_id = ref.sample_id', array(
+                'rif_resistance',
+                'occurrences' => 'COUNT(*)',
+                'matches_reference_result' => 'SUM(CASE WHEN `res`.`rif_resistance` = `ref`.`'.($assayShortName == 'MTB Ultra' ? 'ultra' : 'mtb_rif').'_rif_resistance` THEN 1 ELSE 0 END)'))
+            ->where("spm.shipment_id = ?", $shipmentId)
+            ->where("substring(spm.evaluation_status,4,1) != '0'")
+            ->where("spm.is_excluded = 'no'")
+            ->where("a.short_name = ?", $assayShortName)
+            ->group('ref.sample_id')
+            ->group('res.rif_resistance')
+            ->order('ref.sample_id ASC')
+            ->order('occurrences DESC')
+            ->order('matches_reference_result DESC');
+        $tbResultsConsensusRifDetected = $db->fetchAll($consensusResultsQueryRifDetected);
+
+        foreach ($tbResultsConsensusRifDetected as $tbResultsConsensusRifDetectedItem) {
+            if (isset($tbResultsConsensusRifDetectedItem['rif_resistance']) &&
+                !trim($tbResultsConsensusRifDetectedItem['rif_resistance']) != "" &&
+                isset($tbResultsConsensusRifDetectedItem['occurrences']) &&
+                $tbResultsConsensusRifDetectedItem['occurrences'] > 0) {
+                if (!isset($tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']])) {
+                    $tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']] = array(
+                        'mtb_detected' => '',
+                        'mtb_occurrences' => 0,
+                        'mtb_matches_reference_result' => 0,
+                        'rif_resistance' => $tbResultsConsensusRifDetectedItem['rif_resistance'],
+                        'rif_occurrences' => $tbResultsConsensusRifDetectedItem['occurrences'],
+                        'rif_matches_reference_result' => $tbResultsConsensusRifDetectedItem['matches_reference_result']
+                    );
+                } else if ($tbResultsConsensusRifDetectedItem['occurrences'] >
+                    $tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']]['rif_occurrences'] ||
+                    ($tbResultsConsensusRifDetectedItem['occurrences'] ==
+                        $tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']]['rif_occurrences'] &&
+                        $tbResultsConsensusRifDetectedItem['matches_reference_result'] == 1)) {
+                    $tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']]['rif_resistance'] = $tbResultsConsensusRifDetectedItem['rif_resistance'];
+                    $tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']]['rif_occurrences'] = $tbResultsConsensusRifDetectedItem['occurrences'];
+                    $tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']]['rif_matches_reference_result'] = $tbResultsConsensusRifDetectedItem['matches_reference_result'];
+                }
+            }
+        }
+        return $tbResultsConsensus;
     }
 
     public function getEvaluateReportsInPdf ($shipmentId, $sLimit, $sOffset) {
@@ -1199,6 +916,7 @@ class Application_Service_Evaluation {
                 'sp.shipment_test_date',
                 'sp.shipment_receipt_date',
                 'sp.shipment_test_report_date',
+                'result_submission_date' => new Zend_Db_Expr('IFNULL(sp.date_submitted, sp.shipment_test_report_date)'),
                 'sp.final_result',
                 'sp.failure_reason',
                 'sp.shipment_score',
@@ -1218,12 +936,11 @@ class Application_Service_Evaluation {
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('sl.scheme_id', 'sl.scheme_name'))
             ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array(
                 'p.unique_identifier',
-                'p.first_name',
-                'p.last_name',
+                'p.lab_name',
                 'p.status',
                 'sorting_unique_identifier' => new Zend_Db_Expr("LPAD(p.unique_identifier, 10, '0')")
             ))
-            ->join(array('c' => 'countries'), 'c.id=p.country', array('country_name' => 'c.iso_name'))
+            ->join(array('c' => 'countries'), 'c.id=p.country', array('country_name' => 'c.iso_name', 'country_id' => 'c.id'))
             ->joinLeft(array('res' => 'r_results'), 'res.result_id=sp.final_result', array('result_name'))
             ->joinLeft(array('ec' => 'r_evaluation_comments'), 'ec.comment_id=sp.evaluation_comment', array(
                 'evaluationComments' => 'comment'))
@@ -1236,135 +953,37 @@ class Application_Service_Evaluation {
             $sql = $sql->limit($sLimit, $sOffset);
 		}
         $shipmentResult = $db->fetchAll($sql);
-
-        $tbReportSummary = array();
+        $previousSixShipmentsSql = $sql = $db->select()
+            ->from(array('s' => 'shipment'), array(
+                's.shipment_id',
+                's.shipment_code',
+                's.shipment_date'))
+            ->join(array('spm' => 'shipment_participant_map'), 's.shipment_id=spm.shipment_id', array('mean_shipment_score' => new Zend_Db_Expr("AVG(IFNULL(spm.shipment_score, 0) + IFNULL(spm.documentation_score, 0))")))
+            ->where("s.is_official = 1")
+            ->where("s.shipment_id <= ".$shipmentId)
+            ->group('s.shipment_id')
+            ->order("s.shipment_date DESC")
+            ->limit(6);
+        $previousSixShipments = $db->fetchAll($previousSixShipmentsSql);
+        $countryPtccs = array();
         $tbResultsExpected = array();
-        $tbResultsConsensus = array();
-        if (count($shipmentResult) > 0 && $shipmentResult[0]['scheme_type'] == 'tb') {
-            $summaryQuery = $db->select()->from(array('spm' => 'shipment_participant_map'), array())
-                ->join(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id',
-                    array('mtb_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') THEN 1 ELSE 0 END)",
-                        'mtb_not_detected' => "SUM(CASE WHEN `res`.`mtb_detected` = 'notDetected' THEN 1 ELSE 0 END)",
-                        'mtb_uninterpretable' => new Zend_Db_Expr("SUM(CASE WHEN IFNULL(`res`.`mtb_detected`, '') IN ('noResult', 'invalid', 'error') THEN 1 ELSE 0 END)"),
-                        'rif_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow') AND `res`.`rif_resistance` = 'detected' THEN 1 ELSE 0 END)",
-                        'rif_not_detected' => new Zend_Db_Expr("SUM(CASE WHEN `res`.`mtb_detected` IN ('notDetected', 'detected', 'high', 'medium', 'low', 'veryLow') AND IFNULL(`res`.`rif_resistance`, '') IN ('notDetected', 'na', '') THEN 1 ELSE 0 END)"),
-                        'rif_indeterminate' => "SUM(CASE WHEN `res`.`rif_resistance` = 'indeterminate' THEN 1 ELSE 0 END)",
-                        'rif_uninterpretable' => new Zend_Db_Expr("SUM(CASE WHEN IFNULL(`res`.`mtb_detected`, '') IN ('noResult', 'invalid', 'error', '') THEN 1 ELSE 0 END)"),
-                        'no_of_responses' => 'COUNT(*)'))
-                ->join(array('ref' => 'reference_result_tb'),
-                    'ref.shipment_id = spm.shipment_id AND ref.sample_id = res.sample_id', array(
-                        'sample_label' => 'ref.sample_label',
-                        'ref_is_excluded' => 'ref.is_excluded',
-                        'ref_is_exempt' => 'ref.is_exempt',
-                        'ref_excluded_reason' => 'ref.excluded_reason'
-                    ))
-                ->where("spm.shipment_id = ?", $shipmentId)
-                ->where("substring(spm.evaluation_status,4,1) != '0'")
-                ->where("spm.is_excluded = 'no'")
-                ->where("IFNULL(spm.is_pt_test_not_performed, 'no') = 'no'")
-                ->group('ref.sample_label')
-                ->order("ref.sample_id");
-            $tbReportSummary = $db->fetchAll($summaryQuery);
-
-            $expectedResultsQuery = $db->select()->from(array('ref' => 'reference_result_tb'),
-                array('sample_id', 'sample_label', 'mtb_detected', 'rif_resistance',
-                    'ref_is_excluded' => 'ref.is_excluded',
-                    'ref_is_exempt' => 'ref.is_exempt'))
-                ->where("ref.shipment_id = ?", $shipmentId);
-            $tbResultsExpectedResults = $db->fetchAll($expectedResultsQuery);
-            foreach ($tbResultsExpectedResults as $tbResultsExpectedResult) {
-                $tbResultsExpected[$tbResultsExpectedResult['sample_id']] = array(
-                  'mtb_detected' => $tbResultsExpectedResult['mtb_detected'],
-                  'rif_resistance' => $tbResultsExpectedResult['rif_resistance']
-                );
-            }
-
-            $consensusResultsQueryMtbDetected = $db->select()->from(array('spm' => 'shipment_participant_map'), array())
-                ->join(array('ref' => 'reference_result_tb'),
-                    'ref.shipment_id = spm.shipment_id', array('sample_id'))
-                ->joinLeft(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id AND res.sample_id = ref.sample_id', array(
-                    'mtb_detected',
-                    'occurrences' => 'COUNT(*)',
-                    'matches_reference_result' => 'SUM(CASE WHEN `res`.`mtb_detected` = `ref`.`mtb_detected` THEN 1 ELSE 0 END)'))
-                ->where("spm.shipment_id = ?", $shipmentId)
-                ->where("substring(spm.evaluation_status,4,1) != '0'")
-                ->where("spm.is_excluded = 'no'")
-                ->group('ref.sample_id')
-                ->group('res.mtb_detected')
-                ->order('ref.sample_id ASC')
-                ->order('occurrences DESC')
-                ->order('matches_reference_result DESC');
-            $tbResultsConsensusMtbDetected = $db->fetchAll($consensusResultsQueryMtbDetected);
-            foreach ($tbResultsConsensusMtbDetected as $tbResultsConsensusMtbDetectedItem) {
-                if (isset($tbResultsConsensusMtbDetectedItem['mtb_detected']) &&
-                    !trim($tbResultsConsensusMtbDetectedItem['mtb_detected']) != "" &&
-                    isset($tbResultsConsensusMtbDetectedItem['occurrences']) &&
-                    $tbResultsConsensusMtbDetectedItem['occurrences'] > 0) {
-                    if (!isset($tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']])) {
-                        $tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']] = array(
-                            'mtb_detected' => $tbResultsConsensusMtbDetectedItem['mtb_detected'],
-                            'mtb_occurrences' => $tbResultsConsensusMtbDetectedItem['occurrences'],
-                            'mtb_matches_reference_result' => $tbResultsConsensusMtbDetectedItem['matches_reference_result'],
-                            'rif_resistance' => '',
-                            'rif_occurrences' => 0,
-                            'rif_matches_reference_result' => 0
-                        );
-                    } else if ($tbResultsConsensusMtbDetectedItem['occurrences'] >
-                        $tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']]['mtb_occurrences'] ||
-                        ($tbResultsConsensusMtbDetectedItem['occurrences'] ==
-                            $tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']]['mtb_occurrences'] &&
-                            $tbResultsConsensusMtbDetectedItem['matches_reference_result'] == 1)) {
-                        $tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']]['mtb_detected'] = $tbResultsConsensusMtbDetectedItem['mtb_detected'];
-                        $tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']]['mtb_occurrences'] = $tbResultsConsensusMtbDetectedItem['occurrences'];
-                        $tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']]['mtb_matches_reference_result'] = $tbResultsConsensusMtbDetectedItem['matches_reference_result'];
-                    }
-                }
-            }
-
-            $consensusResultsQueryRifDetected = $db->select()->from(array('spm' => 'shipment_participant_map'), array())
-                ->join(array('ref' => 'reference_result_tb'),
-                    'ref.shipment_id = spm.shipment_id', array('sample_id'))
-                ->joinLeft(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id AND res.sample_id = ref.sample_id', array(
-                    'rif_resistance',
-                    'occurrences' => 'COUNT(*)',
-                    'matches_reference_result' => 'SUM(CASE WHEN `res`.`rif_resistance` = `ref`.`rif_resistance` THEN 1 ELSE 0 END)'))
-                ->where("spm.shipment_id = ?", $shipmentId)
-                ->where("substring(spm.evaluation_status,4,1) != '0'")
-                ->where("spm.is_excluded = 'no'")
-                ->group('ref.sample_id')
-                ->group('res.rif_resistance')
-                ->order('ref.sample_id ASC')
-                ->order('occurrences DESC')
-                ->order('matches_reference_result DESC');
-            $tbResultsConsensusRifDetected = $db->fetchAll($consensusResultsQueryRifDetected);
-
-            foreach ($tbResultsConsensusRifDetected as $tbResultsConsensusRifDetectedItem) {
-                if (isset($tbResultsConsensusRifDetectedItem['rif_resistance']) &&
-                    !trim($tbResultsConsensusRifDetectedItem['rif_resistance']) != "" &&
-                    isset($tbResultsConsensusRifDetectedItem['occurrences']) &&
-                    $tbResultsConsensusRifDetectedItem['occurrences'] > 0) {
-                    if (!isset($tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']])) {
-                        $tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']] = array(
-                            'mtb_detected' => '',
-                            'mtb_occurrences' => 0,
-                            'mtb_matches_reference_result' => 0,
-                            'rif_resistance' => $tbResultsConsensusRifDetectedItem['rif_resistance'],
-                            'rif_occurrences' => $tbResultsConsensusRifDetectedItem['occurrences'],
-                            'rif_matches_reference_result' => $tbResultsConsensusRifDetectedItem['matches_reference_result']
-                        );
-                    } else if ($tbResultsConsensusRifDetectedItem['occurrences'] >
-                        $tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']]['rif_occurrences'] ||
-                        ($tbResultsConsensusRifDetectedItem['occurrences'] ==
-                            $tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']]['rif_occurrences'] &&
-                            $tbResultsConsensusRifDetectedItem['matches_reference_result'] == 1)) {
-                        $tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']]['rif_resistance'] = $tbResultsConsensusRifDetectedItem['rif_resistance'];
-                        $tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']]['rif_occurrences'] = $tbResultsConsensusRifDetectedItem['occurrences'];
-                        $tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']]['rif_matches_reference_result'] = $tbResultsConsensusRifDetectedItem['matches_reference_result'];
-                    }
-                }
-            }
+        $tbResultsConsensusMtbRif = array();
+        $tbResultsConsensusUltra = array();
+        if (count($shipmentResult) > 0) {
+            $tbResultsExpected = $this->getExpectedResults($shipmentId);
+            $tbResultsConsensusMtbRif = $this->getConsensusResults($shipmentId, 'MTB/RIF');
+            $tbResultsConsensusUltra = $this->getConsensusResults($shipmentId, 'MTB Ultra');
         }
 
+        $assays = array();
+        $defaultAssayId = '';
+        $assayRecords = $db->fetchAll($db->select()->from('r_tb_assay'));
+        foreach ($assayRecords as $assayRecord) {
+            if ($defaultAssayId == '') {
+                $defaultAssayId = $assayRecord['id'];
+            }
+            $assays[$assayRecord['id']] = $assayRecord['short_name'];
+        }
         $i = 0;
         $mapRes = array();
         $scoringService = new Application_Service_EvaluationScoring();
@@ -1376,11 +995,47 @@ class Application_Service_Evaluation {
                 ->where("pmm.participant_id = " . $res['participant_id']);
 
             $dmResult = $db->fetchAll($dmSql);
-            if (isset($res['last_name']) && trim($res['last_name']) != "") {
-                $res['last_name'] = "_" . $res['last_name'];
+            if (!isset($countryPtccs[$res['country_id']])) {
+                $ptccSql = $db->select()
+                    ->from(array('pcm' => 'ptcc_country_map'))
+                    ->join(array('sa' => 'system_admin'), 'sa.admin_id = pcm.admin_id')
+                    ->where("pcm.country_id = " . $res['country_id'])
+                    ->where("pcm.show_details_on_report = 1")
+                    ->limit(2);
+
+                $countryPtccs[$res['country_id']] = $db->fetchAll($ptccSql);
+            }
+            $shipmentResult[$i]['ptcc_profiles'] = $countryPtccs[$res['country_id']];
+            $participantPreviousSixShipments = array();
+            if (count($previousSixShipments) > 0) {
+                $participantPreviousSixShipmentsSql = $db->select()
+                    ->from(array('spm' => 'shipment_participant_map'), array('shipment_id' => 'spm.shipment_id', 'shipment_score' => new Zend_Db_Expr("IFNULL(spm.shipment_score, 0) + IFNULL(spm.documentation_score, 0)")))
+                    ->where("spm.participant_id = " . $res['participant_id'])
+                    ->where("spm.shipment_id IN (" . implode(",", array_column($previousSixShipments, "shipment_id")) . ")");
+
+                $participantPreviousSixShipmentRecords = $db->fetchAll($participantPreviousSixShipmentsSql);
+                foreach ($participantPreviousSixShipmentRecords as $participantPreviousSixShipmentRecord) {
+                    $participantPreviousSixShipments[$participantPreviousSixShipmentRecord['shipment_id']] = $participantPreviousSixShipmentRecord;
+                }
+            }
+            $shipmentResult[$i]['previous_six_shipments'] = array();
+            for($participantPreviousSixShipmentIndex = 5; $participantPreviousSixShipmentIndex >= 0; $participantPreviousSixShipmentIndex--) {
+                $previousShipmentData = array(
+                    'shipment_code' => 'XXXX',
+                    'mean_shipment_score' => null,
+                    'shipment_score' => null,
+                );
+                if (count($previousSixShipments) > $participantPreviousSixShipmentIndex) {
+                    $previousShipmentData['shipment_code'] = $previousSixShipments[$participantPreviousSixShipmentIndex]['shipment_code'];
+                    $previousShipmentData['mean_shipment_score'] = $previousSixShipments[$participantPreviousSixShipmentIndex]['mean_shipment_score'];
+                    if (isset($participantPreviousSixShipments[$previousSixShipments[$participantPreviousSixShipmentIndex]['shipment_id']])) {
+                        $previousShipmentData['shipment_score'] = $participantPreviousSixShipments[$previousSixShipments[$participantPreviousSixShipmentIndex]['shipment_id']]['shipment_score'];
+                    }
+                }
+                $shipmentResult[$i]['previous_six_shipments'][5 - $participantPreviousSixShipmentIndex] = $previousShipmentData;
             }
             foreach ($dmResult as $dmRes) {
-                $participantFileName = preg_replace('/[^A-Za-z0-9.]/', '-', $res['first_name'] . $res['last_name'] . "-" . $res['map_id']);
+                $participantFileName = preg_replace('/[^A-Za-z0-9.]/', '-', $res['lab_name'] . "-" . $res['map_id']);
 				$participantFileName = str_replace(" ", "-", $participantFileName);
                 if (count($mapRes) == 0) {
                     $mapRes[$dmRes['dm_id']] = $dmRes['institute'] . "#" . $dmRes['participant_id'] . "#" . $participantFileName;
@@ -1390,203 +1045,241 @@ class Application_Service_Evaluation {
                     $mapRes[$dmRes['dm_id']] = $dmRes['institute'] . "#" . $dmRes['participant_id'] . "#" . $participantFileName;
                 }
             }
-            if ($res['scheme_type'] == 'tb') {
-                $attributes = json_decode($res['attributes'], true);
-                $sql = $db->select()->from(array('ref' => 'reference_result_tb'),
-                    array(
-                        'sample_id', 'sample_label', 'sample_score',
-                        'ref_is_excluded' => 'ref.is_excluded',
-                        'ref_is_exempt' => 'ref.is_exempt',
-                        'ref_excluded_reason' => 'ref.excluded_reason'))
-                    ->join(array('spm' => 'shipment_participant_map'),
-                        'spm.shipment_id = ref.shipment_id', array())
-                    ->joinLeft(array('res' => 'response_result_tb'),
-                        'res.shipment_map_id = spm.map_id and res.sample_id = ref.sample_id', array(
-                            'mtb_detected',
-                            'rif_resistance',
-                            'error_code',
-                            'date_tested',
-                            'cartridge_expiration_date',
-                            'probe_1',
-                            'probe_2',
-                            'probe_3',
-                            'probe_4',
-                            'probe_5',
-                            'probe_6'))
-                    ->joinLeft('instrument',
-                        'instrument.participant_id = spm.participant_id and instrument.instrument_serial = res.instrument_serial', array(
-                            'years_since_last_calibrated' =>
-                                new Zend_Db_Expr("DATEDIFF(COALESCE(res.date_tested, spm.shipment_test_date, spm.shipment_test_report_date), COALESCE(res.instrument_last_calibrated_on, instrument.instrument_last_calibrated_on, res.instrument_installed_on, instrument.instrument_installed_on, CAST('1990-01-01' AS DATE))) / 365"),
-                            'instrument_serial' => new Zend_Db_Expr("COALESCE(CASE WHEN res.instrument_serial = '' THEN NULL ELSE res.instrument_serial END, CASE WHEN instrument.instrument_serial = '' THEN NULL ELSE instrument.instrument_serial END, 'NO SERIAL ENTERED')"),
-                            'instrument_installed_on' =>
-                                new Zend_Db_Expr("COALESCE(res.instrument_installed_on, instrument.instrument_installed_on)"),
-                            'instrument_last_calibrated_on' =>
-                                new Zend_Db_Expr("COALESCE(res.instrument_last_calibrated_on, instrument.instrument_last_calibrated_on)")))
-                    ->where('ref.shipment_id = ? ', $shipmentId)
-                    ->where('spm.participant_id = ?', $res['participant_id'])
-                    ->order('ref.sample_id ASC');
-                $tbResults = $db->fetchAll($sql);
+            $attributes = json_decode($res['attributes'], true);
+            $sql = $db->select()->from(array('ref' => 'reference_result_tb'),
+                array(
+                    'sample_id', 'sample_label', 'sample_score',
+                    'ref_is_excluded' => 'ref.is_excluded',
+                    'ref_is_exempt' => 'ref.is_exempt',
+                    'ref_excluded_reason' => 'ref.excluded_reason'))
+                ->join(array('spm' => 'shipment_participant_map'),
+                    'spm.shipment_id = ref.shipment_id', array())
+                ->joinLeft(array('a' => 'r_tb_assay'),
+                    'a.id = CASE WHEN JSON_VALID(spm.attributes) = 1 THEN JSON_UNQUOTE(JSON_EXTRACT(spm.attributes, "$.assay")) ELSE 0 END', array('assay_short_name' => 'a.short_name'))
+                ->joinLeft(array('res' => 'response_result_tb'),
+                    'res.shipment_map_id = spm.map_id and res.sample_id = ref.sample_id', array(
+                        'mtb_detected',
+                        'rif_resistance',
+                        'error_code',
+                        'date_tested',
+                        'cartridge_expiration_date',
+                        'probe_1',
+                        'probe_2',
+                        'probe_3',
+                        'probe_4',
+                        'probe_5',
+                        'probe_6'))
+                ->joinLeft('instrument',
+                    'instrument.participant_id = spm.participant_id and instrument.instrument_serial = res.instrument_serial', array(
+                        'years_since_last_calibrated' =>
+                            new Zend_Db_Expr("DATEDIFF(COALESCE(res.date_tested, spm.shipment_test_date, spm.shipment_test_report_date), COALESCE(res.instrument_last_calibrated_on, instrument.instrument_last_calibrated_on, res.instrument_installed_on, instrument.instrument_installed_on, CAST('1990-01-01' AS DATE))) / 365"),
+                        'instrument_serial' => new Zend_Db_Expr("COALESCE(CASE WHEN res.instrument_serial = '' THEN NULL ELSE res.instrument_serial END, CASE WHEN instrument.instrument_serial = '' THEN NULL ELSE instrument.instrument_serial END, 'NO SERIAL ENTERED')"),
+                        'instrument_installed_on' =>
+                            new Zend_Db_Expr("COALESCE(res.instrument_installed_on, instrument.instrument_installed_on)"),
+                        'instrument_last_calibrated_on' =>
+                            new Zend_Db_Expr("COALESCE(res.instrument_last_calibrated_on, instrument.instrument_last_calibrated_on)")))
+                ->where('ref.shipment_id = ? ', $shipmentId)
+                ->where('spm.participant_id = ?', $res['participant_id'])
+                ->order('ref.sample_id ASC');
+            $tbResults = $db->fetchAll($sql);
 
-                $counter = 0;
-                $toReturn = array();
-                $shipmentScore = 0;
-                $maxShipmentScore = 0;
-                $sampleStatuses = array();
-                $cartridgeExpiredOn = null;
-                $instrumentRequiresCalibration = false;
-                $testsDoneAfterCalibrationDue = array();
-                $testsDoneAfterCartridgeExpired = array();
-                $qcDoneOnTime = $shipmentResult[$i]['qc_done'] == 'yes' && isset($shipmentResult[$i]['qc_date']);
-                $lastTestDate = null;
-                foreach ($tbResults as $tbResult) {
-                    if (in_array($tbResult['mtb_detected'], array("notDetected", "noResult", "invalid", "error")) &&
-                        $tbResult['rif_resistance'] == null) {
-                        $tbResult['rif_resistance'] = "na";
+            $counter = 0;
+            $toReturn = array();
+            $shipmentScore = 0;
+            $maxShipmentScore = 0;
+            $sampleStatuses = array();
+            $instrumentsUsed = array();
+            $cartridgeExpiredOn = null;
+            $instrumentRequiresCalibration = false;
+            $testsDoneAfterCalibrationDue = array();
+            $testsDoneAfterCartridgeExpired = array();
+            $qcDoneOnTime = $shipmentResult[$i]['qc_done'] == 'yes' && isset($shipmentResult[$i]['qc_date']);
+            $lastTestDate = null;
+            foreach ($tbResults as $tbResult) {
+                if (in_array($tbResult['mtb_detected'], array("notDetected", "noResult", "invalid", "error")) &&
+                    $tbResult['rif_resistance'] == null) {
+                    $tbResult['rif_resistance'] = "na";
+                }
+                $sampleScoreStatus = $scoringService->calculateTbSamplePassStatus(
+                    $tbResultsExpected[$tbResult['sample_id']][$tbResult['assay_short_name'] == 'MTB Ultra' ? 'ultra_mtb_detected' : 'mtb_rif_mtb_detected'],
+                    $tbResult['mtb_detected'],
+                    $tbResultsExpected[$tbResult['sample_id']][$tbResult['assay_short_name'] == 'MTB Ultra' ? 'ultra_rif_resistance' : 'mtb_rif_rif_resistance'],
+                    $tbResult['rif_resistance'],
+                    $tbResult['probe_1'], $tbResult['probe_2'], $tbResult['probe_3'], $tbResult['probe_4'],
+                    $tbResult['probe_5'], $tbResult['probe_6'], $tbResult['ref_is_excluded'],
+                    $tbResult['ref_is_exempt']);
+                array_push($sampleStatuses, $sampleScoreStatus);
+                $sampleScore = $scoringService->calculateTbSampleScore(
+                    $sampleScoreStatus,
+                    $tbResult['sample_score']);
+                $shipmentScore += $sampleScore;
+                if ($tbResult['ref_is_excluded'] == 'no' || $tbResult['ref_is_exempt'] == 'yes') {
+                    $maxShipmentScore += $tbResult['sample_score'];
+                }
+                $consensusTbMtbDetectedMtbRif = $tbResultsExpected[$tbResult['sample_id']]['mtb_rif_mtb_detected'];
+                $consensusTbRifResistanceMtbRif = $tbResultsExpected[$tbResult['sample_id']]['mtb_rif_rif_resistance'];
+                if (isset($tbResultsConsensusMtbRif[$tbResult['sample_id']])) {
+                    if (isset($tbResultsConsensusMtbRif[$tbResult['sample_id']]['mtb_detected']) &&
+                        trim($tbResultsConsensusMtbRif[$tbResult['sample_id']]['mtb_detected']) != "") {
+                        $consensusTbMtbDetectedMtbRif = $tbResultsConsensusMtbRif[$tbResult['sample_id']]['mtb_detected'];
                     }
-                    $sampleScoreStatus = $scoringService->calculateTbSamplePassStatus(
-                        $tbResultsExpected[$tbResult['sample_id']]['mtb_detected'],
-                        $tbResult['mtb_detected'],
-                        $tbResultsExpected[$tbResult['sample_id']]['rif_resistance'],
-                        $tbResult['rif_resistance'],
-                        $tbResult['probe_1'], $tbResult['probe_2'], $tbResult['probe_3'], $tbResult['probe_4'],
-                        $tbResult['probe_5'], $tbResult['probe_6'], $tbResult['ref_is_excluded'],
-                        $tbResult['ref_is_exempt']);
-                    array_push($sampleStatuses, $sampleScoreStatus);
-                    $sampleScore = $scoringService->calculateTbSampleScore(
-                        $sampleScoreStatus,
-                        $tbResult['sample_score']);
-                    $shipmentScore += $sampleScore;
-                    if ($tbResult['ref_is_excluded'] == 'no' || $tbResult['ref_is_exempt'] == 'yes') {
-                        $maxShipmentScore += $tbResult['sample_score'];
+                    if (isset($tbResultsConsensusMtbRif[$tbResult['sample_id']]['rif_resistance']) &&
+                        trim($tbResultsConsensusMtbRif[$tbResult['sample_id']]['rif_resistance']) != "") {
+                        $consensusTbRifResistanceMtbRif = $tbResultsConsensusMtbRif[$tbResult['sample_id']]['rif_resistance'];
                     }
-                    $consensusTbMtbDetected = $tbResultsExpected[$tbResult['sample_id']]['mtb_detected'];
-                    $consensusTbRifResistance = $tbResultsExpected[$tbResult['sample_id']]['rif_resistance'];
-                    if (isset($tbResultsConsensus[$tbResult['sample_id']])) {
-                        if (isset($tbResultsConsensus[$tbResult['sample_id']]['mtb_detected']) &&
-                            trim($tbResultsConsensus[$tbResult['sample_id']]['mtb_detected']) != "") {
-                            $consensusTbMtbDetected = $tbResultsConsensus[$tbResult['sample_id']]['mtb_detected'];
-                        }
-                        if (isset($tbResultsConsensus[$tbResult['sample_id']]['rif_resistance']) &&
-                            trim($tbResultsConsensus[$tbResult['sample_id']]['rif_resistance']) != "") {
-                            $consensusTbRifResistance = $tbResultsConsensus[$tbResult['sample_id']]['rif_resistance'];
-                        }
+                }
+                $consensusTbMtbDetectedUltra = $tbResultsExpected[$tbResult['sample_id']]['ultra_mtb_detected'];
+                $consensusTbRifResistanceUltra = $tbResultsExpected[$tbResult['sample_id']]['ultra_rif_resistance'];
+                if (isset($tbResultsConsensusUltra[$tbResult['sample_id']])) {
+                    if (isset($tbResultsConsensusUltra[$tbResult['sample_id']]['mtb_detected']) &&
+                        trim($tbResultsConsensusUltra[$tbResult['sample_id']]['mtb_detected']) != "") {
+                        $consensusTbMtbDetectedUltra = $tbResultsConsensusUltra[$tbResult['sample_id']]['mtb_detected'];
                     }
-                    if ($tbResult['cartridge_expiration_date'] < $tbResult['date_tested']) {
-                        $cartridgeExpiredOn = $tbResult['cartridge_expiration_date'];
-                        array_push($testsDoneAfterCartridgeExpired, array(
-                            "sample_label" => $tbResult['sample_label'],
-                            "date_tested" => $tbResult['date_tested']
-                        ));
+                    if (isset($tbResultsConsensusUltra[$tbResult['sample_id']]['rif_resistance']) &&
+                        trim($tbResultsConsensusUltra[$tbResult['sample_id']]['rif_resistance']) != "") {
+                        $consensusTbRifResistanceUltra = $tbResultsConsensusUltra[$tbResult['sample_id']]['rif_resistance'];
                     }
-                    if ((!isset($tbResult['instrument_last_calibrated_on']) &&
+                }
+
+                if ($tbResult['cartridge_expiration_date'] < $tbResult['date_tested']) {
+                    $cartridgeExpiredOn = $tbResult['cartridge_expiration_date'];
+                    array_push($testsDoneAfterCartridgeExpired, array(
+                        "sample_label" => $tbResult['sample_label'],
+                        "date_tested" => $tbResult['date_tested']
+                    ));
+                }
+                $instrumentInArray = false;
+                foreach ($instrumentsUsed as $instrumentUsed) {
+                    if ($instrumentUsed["instrument_serial"] == $tbResult['instrument_serial']) {
+                        $instrumentInArray = true;
+                    }
+                }
+                if (!$instrumentInArray) {
+                    array_push(
+                        $instrumentsUsed,
+                        array (
+                            "instrument_last_calibrated_on" => $tbResult['instrument_last_calibrated_on'],
+                            "instrument_serial" => $tbResult['instrument_serial']
+                        )
+                    );
+                }
+                if ((!isset($tbResult['instrument_last_calibrated_on']) &&
                         !isset($tbResult['instrument_installed_on'])) ||
-                        (isset($tbResult['years_since_last_calibrated']) &&
-                            $tbResult['years_since_last_calibrated'] >= 1)) {
-                        $instrumentRequiresCalibration = true;
-                        array_push($testsDoneAfterCalibrationDue, array(
-                            "sample_label" => $tbResult['sample_label'],
-                            "date_tested" => $tbResult['date_tested'],
-                            "instrument_serial" => $tbResult['instrument_serial'],
-                            "instrument_last_calibrated_on" => $tbResult['instrument_last_calibrated_on']
-                        ));
-                    }
-                    if ($lastTestDate == null || $lastTestDate < $tbResult['date_tested']) {
-                        $lastTestDate = $tbResult['date_tested'];
-                    }
-                    $toReturn[$counter] = array(
-                        'sample_id' => $tbResult['sample_id'],
-                        'sample_label' => $tbResult['sample_label'],
-                        'mtb_detected' => $tbResult['mtb_detected'],
-                        'discrepant_result' => $tbResult['ref_is_exempt'] != 'yes' &&
-                            $tbResult['ref_is_excluded'] != 'yes' &&
-                            $sampleScore == 0,
-                        'rif_resistance' => $tbResult['rif_resistance'],
-                        'error_code' => $tbResult['error_code'],
-                        'probe_1' => $tbResult['probe_1'],
-                        'probe_2' => $tbResult['probe_2'],
-                        'probe_3' => $tbResult['probe_3'],
-                        'probe_4' => $tbResult['probe_4'],
-                        'probe_5' => $tbResult['probe_5'],
-                        'probe_6' => $tbResult['probe_6'],
-                        'expected_mtb_detected' => $tbResultsExpected[$tbResult['sample_id']]['mtb_detected'],
-                        'expected_rif_resistance' => $tbResultsExpected[$tbResult['sample_id']]['rif_resistance'],
-                        'consensus_mtb_detected' => $consensusTbMtbDetected,
-                        'consensus_rif_resistance' => $consensusTbRifResistance,
-                        'ref_is_excluded' => $tbResult['ref_is_excluded'],
-                        'ref_is_exempt' => $tbResult['ref_is_exempt'],
-                        'ref_excluded_reason' => $tbResult['ref_excluded_reason'],
-                        'max_score' => $tbResult['sample_score'],
-                        'score' => $sampleScore,
-                        'score_status' => $sampleScoreStatus);
-                    $counter++;
+                    (isset($tbResult['years_since_last_calibrated']) &&
+                        $tbResult['years_since_last_calibrated'] >= 1)) {
+                    $instrumentRequiresCalibration = true;
+                    array_push($testsDoneAfterCalibrationDue, array(
+                        "sample_label" => $tbResult['sample_label'],
+                        "date_tested" => $tbResult['date_tested'],
+                        "instrument_serial" => $tbResult['instrument_serial'],
+                        "instrument_last_calibrated_on" => $tbResult['instrument_last_calibrated_on']
+                    ));
                 }
-                if ($qcDoneOnTime) {
-                    $secondsSinceQcDoneToLastTest = strtotime(Pt_Commons_General::dbDateToString($lastTestDate)) - strtotime(Pt_Commons_General::dbDateToString($shipmentResult[$i]['qc_date']));
-                    $qcDoneOnTime = round($secondsSinceQcDoneToLastTest / (60 * 60 * 24)) < 62;
+                if ($lastTestDate == null || $lastTestDate < $tbResult['date_tested']) {
+                    $lastTestDate = $tbResult['date_tested'];
                 }
-                $shipmentResult[$i]['qc_done_on_time'] = $qcDoneOnTime;
-                $shipmentResult[$i]['shipment_score'] = $shipmentScore;
-                $shipmentResult[$i]['max_shipment_score'] = $maxShipmentScore;
-                if(!isset($attributes['shipment_date'])) {
-                    $attributes['shipment_date'] = '';
-                }
-                if(!isset($attributes['expiry_date'])) {
-                    $attributes['expiry_date'] = '';
-                }
-                $shipmentResult[$i]['documentation_score'] = $scoringService->calculateTbDocumentationScore(
-                    $res['shipment_date'], $attributes['expiry_date'], $res['shipment_receipt_date'],
-                    $res['supervisor_approval'], $res['participant_supervisor'], $res['lastdate_response']);
-                $shipmentResult[$i]['submission_score_status'] = $scoringService->calculateSubmissionPassStatus(
-                    $shipmentScore, $shipmentResult[$i]['documentation_score'], $maxShipmentScore,
-                    $sampleStatuses);
-                $shipmentResult[$i]['eval_comment'] = $res['evaluationComments'];
-                $shipmentResult[$i]['optional_eval_comment'] = $res['optional_eval_comment'];
-                $shipmentResult[$i]['corrective_actions'] = isset($attributes['corrective_actions']) ? $attributes['corrective_actions'] : array();
-                $shipmentResult[$i]['responseResult'] = $toReturn;
-                $shipmentResult[$i]['cartridge_expired_on'] = $cartridgeExpiredOn;
-                $shipmentResult[$i]['tests_done_on_expired_cartridges'] = "";
-                if ($cartridgeExpiredOn && count($testsDoneAfterCartridgeExpired) < $counter) {
-                    $shipmentResult[$i]['tests_done_on_expired_cartridges'] = " The following samples were tested using expired cartridges:";
-                    foreach ($testsDoneAfterCartridgeExpired as $testDoneAfterCartridgeExpired) {
-                        $shipmentResult[$i]['tests_done_on_expired_cartridges'] .= "<br/>".$testDoneAfterCartridgeExpired["sample_label"] . " was tested on " . Pt_Commons_General::dbDateToString($testDoneAfterCartridgeExpired['date_tested']);
-                    }
-                }
-                $shipmentResult[$i]['instrument_requires_calibration'] = $instrumentRequiresCalibration;
-                $shipmentResult[$i]['tests_done_after_calibration_due'] = "";
-                if ($instrumentRequiresCalibration) {
-                    if (count($testsDoneAfterCalibrationDue) < $counter) {
-                        $shipmentResult[$i]['tests_done_after_calibration_due'] = " The following samples were tested on instruments that were due for calibration or had no calibration information:";
-                        foreach ($testsDoneAfterCalibrationDue as $testDoneAfterCalibrationDue) {
-                            if (!isset($testDoneAfterCalibrationDue['instrument_last_calibrated_on'])) {
-                                $shipmentResult[$i]['tests_done_after_calibration_due'] .= "<br/>".$testDoneAfterCalibrationDue["sample_label"] .
-                                    " was tested on " . Pt_Commons_General::dbDateToString($testDoneAfterCalibrationDue['date_tested']) .
-                                    " using an instrument that has no calibration date specified.";
-                            } else {
-                                $shipmentResult[$i]['tests_done_after_calibration_due'] .= "<br/>".$testDoneAfterCalibrationDue["sample_label"] .
-                                    " was tested on " . Pt_Commons_General::dbDateToString($testDoneAfterCalibrationDue['date_tested']) .
-                                    " using ".$testDoneAfterCalibrationDue['instrument_serial'] .
-                                    " which was last calibrated on " .
-                                    Pt_Commons_General::dbDateToString($testDoneAfterCalibrationDue['instrument_last_calibrated_on']) . ".";
-                            }
-                        }
-                    } else {
-                        $shipmentResult[$i]['tests_done_after_calibration_due'] = " All samples in this submission were tested on instruments that were due for calibration or had no calibration information.";
-                    }
-                    $shipmentResult[$i]['tests_done_after_calibration_due'] .= "<br/>";
-                }
-                if (isset($res['is_pt_test_not_performed']) && $res['is_pt_test_not_performed'] == 'yes') {
-                    $ptNotTestedComment = null;
-                    if (isset($res['not_tested_reason']) && $res['not_tested_reason'] != '') {
-                        $ptNotTestedComment = $res['not_tested_reason'];
-                    } else if (isset($res['pt_test_not_performed_comments']) && $res['pt_test_not_performed_comments'] != '') {
-                        $ptNotTestedComment = $res['pt_test_not_performed_comments'];
-                    }
-                    $shipmentResult[$i]['ptNotTestedComment'] = 'Xpert testing site was unable to participate in '.$shipmentResult[0]['shipment_code'];
-                    if (isset($ptNotTestedComment)) {
-                        $shipmentResult[$i]['ptNotTestedComment'] .= ' due to the following reason(s): '.$ptNotTestedComment.'.';
-                    }
+                $toReturn[$counter] = array(
+                    'sample_id' => $tbResult['sample_id'],
+                    'sample_label' => $tbResult['sample_label'],
+                    'mtb_detected' => $tbResult['mtb_detected'],
+                    'discrepant_result' => $tbResult['ref_is_exempt'] != 'yes' &&
+                        $tbResult['ref_is_excluded'] != 'yes' &&
+                        $sampleScore == 0,
+                    'rif_resistance' => $tbResult['rif_resistance'],
+                    'error_code' => $tbResult['error_code'],
+                    'probe_1' => $tbResult['probe_1'],
+                    'probe_2' => $tbResult['probe_2'],
+                    'probe_3' => $tbResult['probe_3'],
+                    'probe_4' => $tbResult['probe_4'],
+                    'probe_5' => $tbResult['probe_5'],
+                    'probe_6' => $tbResult['probe_6'],
+                    'expected_mtb_rif_mtb_detected' => $tbResultsExpected[$tbResult['sample_id']]['mtb_rif_mtb_detected'],
+                    'expected_mtb_rif_rif_resistance' => $tbResultsExpected[$tbResult['sample_id']]['mtb_rif_rif_resistance'],
+                    'expected_ultra_mtb_detected' => $tbResultsExpected[$tbResult['sample_id']]['ultra_mtb_detected'],
+                    'expected_ultra_rif_resistance' => $tbResultsExpected[$tbResult['sample_id']]['ultra_rif_resistance'],
+                    'consensus_mtb_rif_mtb_detected' => $consensusTbMtbDetectedMtbRif,
+                    'consensus_mtb_rif_rif_resistance' => $consensusTbRifResistanceMtbRif,
+                    'consensus_ultra_mtb_detected' => $consensusTbMtbDetectedUltra,
+                    'consensus_ultra_rif_resistance' => $consensusTbRifResistanceUltra,
+                    'ref_is_excluded' => $tbResult['ref_is_excluded'],
+                    'ref_is_exempt' => $tbResult['ref_is_exempt'],
+                    'ref_excluded_reason' => $tbResult['ref_excluded_reason'],
+                    'max_score' => $tbResult['sample_score'],
+                    'score' => $sampleScore,
+                    'score_status' => $sampleScoreStatus);
+                $counter++;
+            }
+            if ($qcDoneOnTime) {
+                $secondsSinceQcDoneToLastTest = strtotime(Pt_Commons_General::dbDateToString($lastTestDate)) - strtotime(Pt_Commons_General::dbDateToString($shipmentResult[$i]['qc_date']));
+                $qcDoneOnTime = round($secondsSinceQcDoneToLastTest / (60 * 60 * 24)) < 62;
+            }
+            $shipmentResult[$i]['qc_done_on_time'] = $qcDoneOnTime;
+            $shipmentResult[$i]['shipment_score'] = $shipmentScore;
+            $shipmentResult[$i]['max_shipment_score'] = $maxShipmentScore;
+            if(!isset($attributes['shipment_date'])) {
+                $attributes['shipment_date'] = '';
+            }
+            if(!isset($attributes['expiry_date'])) {
+                $attributes['expiry_date'] = '';
+            }
+            if (!isset($attributes['assay'])) {
+                $attributes['assay'] = $defaultAssayId;
+            }
+            $shipmentResult[$i]['documentation_score'] = $scoringService->calculateTbDocumentationScore(
+                $res['shipment_date'], $attributes['expiry_date'], $res['shipment_receipt_date'],
+                $res['supervisor_approval'], $res['participant_supervisor'], $res['lastdate_response']);
+            $shipmentResult[$i]['submission_score_status'] = $scoringService->calculateSubmissionPassStatus(
+                $shipmentScore, $shipmentResult[$i]['documentation_score'], $maxShipmentScore,
+                $sampleStatuses);
+            $shipmentResult[$i]['eval_comment'] = $res['evaluationComments'];
+            $shipmentResult[$i]['optional_eval_comment'] = $res['optional_eval_comment'];
+            $shipmentResult[$i]['corrective_actions'] = isset($attributes['corrective_actions']) ? $attributes['corrective_actions'] : array();
+            $shipmentResult[$i]['responseResult'] = $toReturn;
+            $shipmentResult[$i]['instrumentsUsed'] = $instrumentsUsed;
+            $shipmentResult[$i]['cartridge_expired_on'] = $cartridgeExpiredOn;
+            $shipmentResult[$i]['tests_done_on_expired_cartridges'] = "";
+            if ($cartridgeExpiredOn && count($testsDoneAfterCartridgeExpired) < $counter) {
+                $shipmentResult[$i]['tests_done_on_expired_cartridges'] = " The following samples were tested using expired cartridges:";
+                foreach ($testsDoneAfterCartridgeExpired as $testDoneAfterCartridgeExpired) {
+                    $shipmentResult[$i]['tests_done_on_expired_cartridges'] .= "<br/>".$testDoneAfterCartridgeExpired["sample_label"] . " was tested on " . Pt_Commons_General::dbDateToString($testDoneAfterCartridgeExpired['date_tested']);
                 }
             }
+            $shipmentResult[$i]['instrument_requires_calibration'] = $instrumentRequiresCalibration;
+            $shipmentResult[$i]['tests_done_after_calibration_due'] = "";
+            if ($instrumentRequiresCalibration) {
+                if (count($testsDoneAfterCalibrationDue) < $counter) {
+                    $shipmentResult[$i]['tests_done_after_calibration_due'] = " The following samples were tested on instruments that were due for calibration or had no calibration information:";
+                    foreach ($testsDoneAfterCalibrationDue as $testDoneAfterCalibrationDue) {
+                        if (!isset($testDoneAfterCalibrationDue['instrument_last_calibrated_on'])) {
+                            $shipmentResult[$i]['tests_done_after_calibration_due'] .= "<br/>".$testDoneAfterCalibrationDue["sample_label"] .
+                                " was tested on " . Pt_Commons_General::dbDateToString($testDoneAfterCalibrationDue['date_tested']) .
+                                " using an instrument that has no calibration date specified.";
+                        } else {
+                            $shipmentResult[$i]['tests_done_after_calibration_due'] .= "<br/>".$testDoneAfterCalibrationDue["sample_label"] .
+                                " was tested on " . Pt_Commons_General::dbDateToString($testDoneAfterCalibrationDue['date_tested']) .
+                                " using ".$testDoneAfterCalibrationDue['instrument_serial'] .
+                                " which was last calibrated on " .
+                                Pt_Commons_General::dbDateToString($testDoneAfterCalibrationDue['instrument_last_calibrated_on']) . ".";
+                        }
+                    }
+                } else {
+                    $shipmentResult[$i]['tests_done_after_calibration_due'] = " All samples in this submission were tested on instruments that were due for calibration or had no calibration information.";
+                }
+                $shipmentResult[$i]['tests_done_after_calibration_due'] .= "<br/>";
+            }
+            if (isset($res['is_pt_test_not_performed']) && $res['is_pt_test_not_performed'] == 'yes') {
+                $ptNotTestedComment = null;
+                if (isset($res['not_tested_reason']) && $res['not_tested_reason'] != '') {
+                    $ptNotTestedComment = $res['not_tested_reason'];
+                } else if (isset($res['pt_test_not_performed_comments']) && $res['pt_test_not_performed_comments'] != '') {
+                    $ptNotTestedComment = $res['pt_test_not_performed_comments'];
+                }
+                $shipmentResult[$i]['ptNotTestedComment'] = 'Xpert testing site was unable to participate in '.$shipmentResult[0]['shipment_code'];
+                if (isset($ptNotTestedComment)) {
+                    $shipmentResult[$i]['ptNotTestedComment'] .= ' due to the following reason(s): '.$ptNotTestedComment.'.';
+                }
+            }
+            $shipmentResult[$i]['assay_name'] = $assays[$attributes['assay']];
             $i++;
             $db->update('shipment_participant_map', array('report_generated' => 'yes'), "map_id=" . $res['map_id']);
             $db->update('shipment', array('status' => 'evaluated'), "shipment_id=" . $shipmentId);
@@ -1595,213 +1288,115 @@ class Application_Service_Evaluation {
         $result = array(
             'shipment' => $shipmentResult,
             'dmResult' => $mapRes,
-            'tbReportSummary' => $tbReportSummary);
+            'previousSixShipments' => $previousSixShipments);
         return $result;
     }
 
     public function getSummaryReportsInPdf($shipmentId) {
-		$vlCalculation = "";
-		$penResult = "";
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
-        $sql = $db->select()->from(array('s' => 'shipment'), array(
-            's.shipment_id',
-            's.shipment_code',
-            's.scheme_type',
-            's.shipment_date',
-            's.lastdate_response',
-            's.max_score'))
+        $sql = $db->select()
+            ->from(array('s' => 'shipment'), array(
+                's.shipment_id',
+                's.shipment_code',
+                's.scheme_type',
+                's.shipment_date',
+                's.lastdate_response',
+                's.max_score',
+                's.shipment_comment'))
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('sl.scheme_name'))
             ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id', array('d.distribution_code'))
             ->where("s.shipment_id = ?", $shipmentId);
         $shipmentResult = $db->fetchRow($sql);
 
-
-        $tbReportSummary = array();
-        $tbReportParticipants = array();
-        $tbResultsExpected = array();
-        $tbResultsConsensus = array();
-
-        $i = 0;
+        $aggregates = array();
+        $mtbRifReportSummary = array();
+        $mtbRifUltraReportSummary = array();
+        $referenceResults = array();
         if ($shipmentResult != "") {
             $db->update('shipment', array('status' => 'evaluated'), "shipment_id = " . $shipmentId);
-            if ($shipmentResult['scheme_type'] == 'tb') {
-                $summaryQuery = $db->select()->from(array('spm' => 'shipment_participant_map'), array())
-                    ->join(array('ref' => 'reference_result_tb'),
-                        'ref.shipment_id = spm.shipment_id', array(
-                            'sample_label' => 'ref.sample_label',
-                            'ref_is_excluded' => 'ref.is_excluded',
-                            'ref_is_exempt' => 'ref.is_exempt'
-                        ))
-                    ->joinLeft(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id AND res.sample_id = ref.sample_id',
-                        array('mtb_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') THEN 1 ELSE 0 END)",
-                            'mtb_not_detected' => "SUM(CASE WHEN `res`.`mtb_detected` = 'notDetected' THEN 1 ELSE 0 END)",
-                            'mtb_uninterpretable' => new Zend_Db_Expr("SUM(CASE WHEN IFNULL(`res`.`mtb_detected`, '') IN ('noResult', 'invalid', 'error') THEN 1 ELSE 0 END)"),
-                            'rif_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow') AND `res`.`rif_resistance` = 'detected' THEN 1 ELSE 0 END)",
-                            'rif_not_detected' => new Zend_Db_Expr("SUM(CASE WHEN `res`.`mtb_detected` IN ('notDetected', 'detected', 'high', 'medium', 'low', 'veryLow') AND IFNULL(`res`.`rif_resistance`, '') IN ('notDetected', 'na', '') THEN 1 ELSE 0 END)"),
-                            'rif_indeterminate' => "SUM(CASE WHEN `res`.`rif_resistance` = 'indeterminate' THEN 1 ELSE 0 END)",
-                            'rif_uninterpretable' => new Zend_Db_Expr("SUM(CASE WHEN IFNULL(`res`.`mtb_detected`, '') IN ('noResult', 'invalid', 'error', '') THEN 1 ELSE 0 END)"),
-                            'no_of_responses' => 'COUNT(*)'))
-                    ->where("spm.shipment_id = ?", $shipmentId)
-                    ->where("substring(spm.evaluation_status,4,1) != '0'")
-                    ->where("spm.is_excluded = 'no'")
-                    ->where("IFNULL(spm.is_pt_test_not_performed, 'no') = 'no'")
-                    ->group("ref.sample_label")
-                    ->order("ref.sample_id");
-                $tbReportSummary = $db->fetchAll($summaryQuery);
+            $aggregatesQuery = $db->select()->from(array('spm' => 'shipment_participant_map'), array(
+                'enrolled' => 'COUNT(map_id)',
+                'participated' => "SUM(CASE WHEN SUBSTR(spm.evaluation_status, 3, 1) = '1' AND is_pt_test_not_performed <> 'yes' THEN 1 ELSE 0 END)",
+                'scored_100_percent' => 'SUM(CASE WHEN IFNULL(spm.shipment_score, 0) + IFNULL(spm.documentation_score, 0) = 100 THEN 1 ELSE 0 END)'
+            ))
+                ->joinLeft(array('a' => 'r_tb_assay'),
+                    'a.id = CASE WHEN JSON_VALID(spm.attributes) = 1 THEN JSON_UNQUOTE(JSON_EXTRACT(spm.attributes, "$.assay")) ELSE 0 END', array(
+                        'mtb_rif' => "SUM(CASE WHEN a.short_name = 'MTB/RIF' THEN 1 ELSE 0 END)",
+                        'mtb_rif_ultra' => "SUM(CASE WHEN a.short_name = 'MTB Ultra' THEN 1 ELSE 0 END)"
+                    ))
+                ->where("spm.shipment_id = ?", $shipmentId);
+            $aggregates = $db->fetchRow($aggregatesQuery);
 
-                $expectedResultsQuery = $db->select()->from(array('ref' => 'reference_result_tb'),
-                    array('sample_id', 'sample_label', 'mtb_detected', 'rif_resistance',
+            $mtbRifSummaryQuery = $db->select()->from(array('spm' => 'shipment_participant_map'), array())
+                ->join(array('ref' => 'reference_result_tb'),
+                    'ref.shipment_id = spm.shipment_id', array(
+                        'sample_label' => 'ref.sample_label',
                         'ref_is_excluded' => 'ref.is_excluded',
-                        'ref_is_exempt' => 'ref.is_exempt'))
-                    ->where("ref.shipment_id = ?", $shipmentId);
-                $tbResultsExpectedResults = $db->fetchAll($expectedResultsQuery);
-                foreach ($tbResultsExpectedResults as $tbResultsExpectedResult) {
-                    $tbResultsExpected[$tbResultsExpectedResult['sample_id']] = array(
-                        'mtb_detected' => $tbResultsExpectedResult['mtb_detected'],
-                        'rif_resistance' => $tbResultsExpectedResult['rif_resistance'],
-                        'ref_is_excluded' => $tbResultsExpectedResult['ref_is_excluded'],
-                        'ref_is_exempt' => $tbResultsExpectedResult['ref_is_exempt']
-                    );
-                }
-
-                $consensusResultsQueryMtbDetected = $db->select()->from(array('spm' => 'shipment_participant_map'), array())
-                    ->join(array('ref' => 'reference_result_tb'),
-                        'ref.shipment_id = spm.shipment_id', array('sample_id'))
-                    ->joinLeft(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id AND res.sample_id = ref.sample_id', array(
-                        'mtb_detected',
-                        'occurrences' => 'COUNT(*)',
-                        'matches_reference_result' => 'SUM(CASE WHEN `res`.`mtb_detected` = `ref`.`mtb_detected` THEN 1 ELSE 0 END)'))
-                    ->where("spm.shipment_id = ?", $shipmentId)
-                    ->where("substring(spm.evaluation_status,4,1) != '0'")
-                    ->where("IFNULL(spm.is_pt_test_not_performed, 'no') = 'no'")
-                    ->where("spm.is_excluded = 'no'")
-                    ->group('ref.sample_id')
-                    ->group('res.mtb_detected')
-                    ->order('ref.sample_id ASC')
-                    ->order('occurrences DESC')
-                    ->order('matches_reference_result DESC');
-                $tbResultsConsensusMtbDetected = $db->fetchAll($consensusResultsQueryMtbDetected);
-                foreach ($tbResultsConsensusMtbDetected as $tbResultsConsensusMtbDetectedItem) {
-                    if (!isset($tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']])) {
-                        $tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']] = array(
-                            'mtb_detected' => $tbResultsConsensusMtbDetectedItem['mtb_detected'],
-                            'mtb_occurrences' => $tbResultsConsensusMtbDetectedItem['occurrences'],
-                            'mtb_matches_reference_result' => $tbResultsConsensusMtbDetectedItem['matches_reference_result'],
-                            'rif_resistance' => '',
-                            'rif_occurrences' => 0,
-                            'rif_matches_reference_result' => 0
-                        );
-                    } else if ($tbResultsConsensusMtbDetectedItem['occurrences'] >
-                        $tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']]['mtb_occurrences'] ||
-                        ($tbResultsConsensusMtbDetectedItem['occurrences'] ==
-                            $tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']]['mtb_occurrences'] &&
-                            $tbResultsConsensusMtbDetectedItem['matches_reference_result'] == 1)) {
-                        $tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']]['mtb_detected'] = $tbResultsConsensusMtbDetectedItem['mtb_detected'];
-                        $tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']]['mtb_occurrences'] = $tbResultsConsensusMtbDetectedItem['occurrences'];
-                        $tbResultsConsensus[$tbResultsConsensusMtbDetectedItem['sample_id']]['mtb_matches_reference_result'] = $tbResultsConsensusMtbDetectedItem['matches_reference_result'];
-                    }
-                }
-
-                $consensusResultsQueryRifDetected = $db->select()->from(array('spm' => 'shipment_participant_map'), array())
-                    ->join(array('ref' => 'reference_result_tb'),
-                        'ref.shipment_id = spm.shipment_id', array('sample_id'))
-                    ->joinLeft(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id AND res.sample_id = ref.sample_id', array(
-                        'rif_resistance',
-                        'occurrences' => 'COUNT(*)',
-                        'matches_reference_result' => 'SUM(CASE WHEN `res`.`rif_resistance` = `ref`.`rif_resistance` THEN 1 ELSE 0 END)'))
-                    ->where("spm.shipment_id = ?", $shipmentId)
-                    ->where("substring(spm.evaluation_status,4,1) != '0'")
-                    ->where("spm.is_excluded = 'no'")
-                    ->where("IFNULL(spm.is_pt_test_not_performed, 'no') = 'no'")
-                    ->group('ref.sample_id')
-                    ->group('res.rif_resistance')
-                    ->order('ref.sample_id ASC')
-                    ->order('occurrences DESC')
-                    ->order('matches_reference_result DESC');
-                $tbResultsConsensusRifDetected = $db->fetchAll($consensusResultsQueryRifDetected);
-
-                foreach ($tbResultsConsensusRifDetected as $tbResultsConsensusRifDetectedItem) {
-                    if (!isset($tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']])) {
-                        $tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']] = array(
-                            'mtb_detected' => '',
-                            'mtb_occurrences' => 0,
-                            'mtb_matches_reference_result' => 0,
-                            'rif_resistance' => $tbResultsConsensusRifDetectedItem['rif_resistance'],
-                            'rif_occurrences' => $tbResultsConsensusRifDetectedItem['occurrences'],
-                            'rif_matches_reference_result' => $tbResultsConsensusRifDetectedItem['matches_reference_result']
-                        );
-                    } else if ($tbResultsConsensusRifDetectedItem['occurrences'] >
-                        $tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']]['rif_occurrences'] ||
-                        ($tbResultsConsensusRifDetectedItem['occurrences'] ==
-                            $tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']]['rif_occurrences'] &&
-                            $tbResultsConsensusRifDetectedItem['matches_reference_result'] == 1)) {
-                        $tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']]['rif_resistance'] = $tbResultsConsensusRifDetectedItem['rif_resistance'];
-                        $tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']]['rif_occurrences'] = $tbResultsConsensusRifDetectedItem['occurrences'];
-                        $tbResultsConsensus[$tbResultsConsensusRifDetectedItem['sample_id']]['rif_matches_reference_result'] = $tbResultsConsensusRifDetectedItem['matches_reference_result'];
-                    }
-                }
-
-                $participantsSql = $db->select()->from(array('s' => 'shipment'), array(
-                    's.shipment_id',
-                    's.shipment_code',
-                    's.scheme_type',
-                    's.shipment_date',
-                    's.lastdate_response',
-                    's.max_score',
-                    's.shipment_comment'))
-                    ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id', array(
-                        'd.distribution_id',
-                        'd.distribution_code',
-                        'd.distribution_date'
+                        'ref_is_exempt' => 'ref.is_exempt'
                     ))
-                    ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array(
-                        'sp.map_id',
-                        'sp.participant_id',
-                        'sp.shipment_test_date',
-                        'sp.shipment_receipt_date',
-                        'sp.shipment_test_report_date',
-                        'sp.final_result',
-                        'sp.failure_reason',
-                        'sp.shipment_score',
-                        'sp.final_result',
-                        'sp.attributes',
-                        'sp.is_followup',
-                        'sp.is_excluded',
-                        'sp.optional_eval_comment',
-                        'sp.evaluation_comment',
-                        'sp.documentation_score',
-                        'sp.supervisor_approval',
-                        'sp.participant_supervisor'))
-                    ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('sl.scheme_id', 'sl.scheme_name'))
-                    ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array(
-                        'p.unique_identifier',
-                        'p.first_name',
-                        'p.last_name',
-                        'p.status',
-                        'sorting_unique_identifier' => new Zend_Db_Expr("LPAD(p.unique_identifier, 10, '0')")
+                ->joinLeft(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id AND res.sample_id = ref.sample_id',
+                    array('mtb_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') THEN 1 ELSE 0 END)",
+                        'mtb_not_detected' => "SUM(CASE WHEN `res`.`mtb_detected` = 'notDetected' THEN 1 ELSE 0 END)",
+                        'mtb_uninterpretable' => new Zend_Db_Expr("SUM(CASE WHEN IFNULL(`res`.`mtb_detected`, '') IN ('noResult', 'invalid', 'error') THEN 1 ELSE 0 END)"),
+                        'rif_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow') AND `res`.`rif_resistance` = 'detected' THEN 1 ELSE 0 END)",
+                        'rif_not_detected' => new Zend_Db_Expr("SUM(CASE WHEN `res`.`mtb_detected` IN ('notDetected', 'detected', 'high', 'medium', 'low', 'veryLow') AND IFNULL(`res`.`rif_resistance`, '') IN ('notDetected', 'na', '') THEN 1 ELSE 0 END)"),
+                        'rif_indeterminate' => "SUM(CASE WHEN `res`.`rif_resistance` = 'indeterminate' THEN 1 ELSE 0 END)",
+                        'rif_uninterpretable' => new Zend_Db_Expr("SUM(CASE WHEN IFNULL(`res`.`mtb_detected`, '') IN ('noResult', 'invalid', 'error', '') THEN 1 ELSE 0 END)"),
+                        'no_of_responses' => 'COUNT(*)'))
+                ->joinLeft(array('a' => 'r_tb_assay'),
+                    'a.id = CASE WHEN JSON_VALID(spm.attributes) = 1 THEN JSON_UNQUOTE(JSON_EXTRACT(spm.attributes, "$.assay")) ELSE 0 END')
+                ->where("spm.shipment_id = ?", $shipmentId)
+                ->where("substring(spm.evaluation_status,4,1) != '0'")
+                ->where("spm.is_excluded = 'no'")
+                ->where("IFNULL(spm.is_pt_test_not_performed, 'no') = 'no'")
+                ->where("a.short_name = 'MTB/RIF'")
+                ->group("ref.sample_label")
+                ->order("ref.sample_id");
+            $mtbRifReportSummary = $db->fetchAll($mtbRifSummaryQuery);
+            $mtbRifUltraSummaryQuery = $db->select()->from(array('spm' => 'shipment_participant_map'), array())
+                ->join(array('ref' => 'reference_result_tb'),
+                    'ref.shipment_id = spm.shipment_id', array(
+                        'sample_label' => 'ref.sample_label',
+                        'ref_is_excluded' => 'ref.is_excluded',
+                        'ref_is_exempt' => 'ref.is_exempt'
                     ))
-                    ->join(array('c' => 'countries'), 'c.id=p.country', array('country_name' => 'c.iso_name'))
-                    ->joinLeft(array('res' => 'r_results'), 'res.result_id=sp.final_result', array('result_name'))
-                    ->joinLeft(array('ec' => 'r_evaluation_comments'), 'ec.comment_id=sp.evaluation_comment', array(
-                        'evaluationComments' => 'comment'))
-                    ->where("s.shipment_id = ?", $shipmentId)
-                    ->where("substring(sp.evaluation_status,4,1) != '0'")
-                    ->where("sp.is_excluded = 'no'")
-                    ->where("IFNULL(sp.is_pt_test_not_performed, 'no') = 'no'")
-                    ->order('country_name ASC')
-                    ->order("sorting_unique_identifier ASC");
-
-                $tbReportParticipants = $db->fetchAll($participantsSql);
-            }
-            $i++;
+                ->joinLeft(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id AND res.sample_id = ref.sample_id',
+                    array('mtb_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') THEN 1 ELSE 0 END)",
+                        'mtb_not_detected' => "SUM(CASE WHEN `res`.`mtb_detected` = 'notDetected' THEN 1 ELSE 0 END)",
+                        'mtb_uninterpretable' => new Zend_Db_Expr("SUM(CASE WHEN IFNULL(`res`.`mtb_detected`, '') IN ('noResult', 'invalid', 'error') THEN 1 ELSE 0 END)"),
+                        'rif_detected' => "SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow') AND `res`.`rif_resistance` = 'detected' THEN 1 ELSE 0 END)",
+                        'rif_not_detected' => new Zend_Db_Expr("SUM(CASE WHEN `res`.`mtb_detected` IN ('notDetected', 'detected', 'high', 'medium', 'low', 'veryLow') AND IFNULL(`res`.`rif_resistance`, '') IN ('notDetected', 'na', '') THEN 1 ELSE 0 END)"),
+                        'rif_indeterminate' => "SUM(CASE WHEN `res`.`rif_resistance` = 'indeterminate' THEN 1 ELSE 0 END)",
+                        'rif_uninterpretable' => new Zend_Db_Expr("SUM(CASE WHEN IFNULL(`res`.`mtb_detected`, '') IN ('noResult', 'invalid', 'error', '') THEN 1 ELSE 0 END)"),
+                        'no_of_responses' => 'COUNT(*)'))
+                ->joinLeft(array('a' => 'r_tb_assay'),
+                    'a.id = CASE WHEN JSON_VALID(spm.attributes) = 1 THEN JSON_UNQUOTE(JSON_EXTRACT(spm.attributes, "$.assay")) ELSE 0 END')
+                ->where("spm.shipment_id = ?", $shipmentId)
+                ->where("substring(spm.evaluation_status,4,1) != '0'")
+                ->where("spm.is_excluded = 'no'")
+                ->where("IFNULL(spm.is_pt_test_not_performed, 'no') = 'no'")
+                ->where("a.short_name = 'MTB Ultra'")
+                ->group("ref.sample_label")
+                ->order("ref.sample_id");
+            $mtbRifUltraReportSummary = $db->fetchAll($mtbRifUltraSummaryQuery);
+            $referenceResultsSql = $db->select()->from(array('ref' => 'reference_result_tb'), array(
+                'ref.sample_label',
+                'ref.sample_content',
+                'expected_tb_detection_result' => new Zend_Db_Expr("CASE WHEN ref.mtb_rif_mtb_detected IN ('high', 'medium', 'low', 'veryLow', 'trace') THEN 'Detected at any semi-quantitative level' ELSE 'Not Detected' END"),
+                'expected_rif_detection_result' => new Zend_Db_Expr("CASE WHEN ref.mtb_rif_rif_resistance = 'detected' THEN 'Detected' WHEN ref.mtb_rif_rif_resistance <> 'detected' AND ref.mtb_rif_mtb_detected IN ('high', 'medium', 'low', 'veryLow', 'trace') THEN 'Not Detected' ELSE 'N/A' END")
+            ))
+                ->where("ref.shipment_id = ?", $shipmentId)
+                ->order("ref.sample_id");
+            $referenceResults = $db->fetchAll($referenceResultsSql);
         }
 
 		$result = array(
 		    'shipment' => $shipmentResult,
-            'vlCalculation' => $vlCalculation,
-            'pendingAssay'=>$penResult,
-            'tbReportSummary' => $tbReportSummary,
-            'tbReportParticipants' => $tbReportParticipants);
+            'mtbRifReportSummary' => $mtbRifReportSummary,
+            'mtbRifUltraReportSummary' => $mtbRifUltraReportSummary,
+            'referenceResults' => $referenceResults,
+            'aggregates' => $aggregates
+        );
         return $result;
     }
 
@@ -1949,6 +1544,15 @@ class Application_Service_Evaluation {
         $scoringService = new Application_Service_EvaluationScoring();
         $maxTotalScore = 0;
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $assays = array();
+        $defaultAssayId = '';
+        $assayRecords = $db->fetchAll($db->select()->from('r_tb_assay'));
+        foreach ($assayRecords as $assayRecord) {
+            if ($defaultAssayId == '') {
+                $defaultAssayId = $assayRecord['id'];
+            }
+            $assays[$assayRecord['id']] = $assayRecord['short_name'];
+        }
         foreach ($shipmentResult as $shipment) {
             $createdOnUser = explode(" ", $shipment['shipment_test_report_date']);
             $results = $schemeService->getTbSamples($shipmentId, $shipment['participant_id']);
@@ -1962,9 +1566,14 @@ class Application_Service_Evaluation {
             if ($createdOn->compare($lastDate,Zend_date::DATES) <= 0) {
                 $failureReason['warning'] = "Response was submitted after the last response date.";
             }
+            $attributes = json_decode($shipment['attributes'], true);
+            $assayName = $assays[$defaultAssayId];
+            if (isset($attributes['assay']) && array_key_exists($attributes['assay'], $assays)) {
+                $assayName = $assays[$attributes['assay']];
+            }
             foreach ($results as $result) {
-                $calculatedScorePassStatus = $scoringService->calculateTbSamplePassStatus($result['ref_mtb_detected'],
-                    $result['res_mtb_detected'], $result['ref_rif_resistance'], $result['res_rif_resistance'],
+                $calculatedScorePassStatus = $scoringService->calculateTbSamplePassStatus($result[$assayName == 'MTB Ultra' ? 'ref_ultra_mtb_detected' : 'ref_mtb_rif_mtb_detected'],
+                    $result['res_mtb_detected'], $result[$assayName == 'MTB Ultra' ? 'ref_ultra_rif_resistance' : 'ref_mtb_rif_rif_resistance'], $result['res_rif_resistance'],
                     $result['res_probe_1'], $result['res_probe_2'], $result['res_probe_3'], $result['res_probe_4'],
                     $result['res_probe_5'], $result['res_probe_6'], $result['ref_is_excluded'], $result['ref_is_exempt']);
 

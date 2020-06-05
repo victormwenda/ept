@@ -540,8 +540,9 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
                         <tr>
                             <td style="vertical-align: top;text-align: right;">Reference Values:</td>
                             <td style="vertical-align: top;text-align: center;">
+                                <span class="mtbRifReferenceProbe">
                                 <?php
-                                switch ($result['ref_mtb_detected']) {
+                                switch ($result['ref_mtb_rif_mtb_detected']) {
                                     case "high":
                                         echo "High";
                                         break;
@@ -573,11 +574,48 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
                                         echo "Unknown";
                                 }
                                 ?>
+                                </span>
+                                <span class="ultraReferenceProbe">
+                                <?php
+                                switch ($result['ref_ultra_mtb_detected']) {
+                                    case "high":
+                                        echo "High";
+                                        break;
+                                    case "medium":
+                                        echo "Medium";
+                                        break;
+                                    case "low":
+                                        echo "Low";
+                                        break;
+                                    case "veryLow":
+                                        echo "Very Low";
+                                        break;
+                                    case "trace":
+                                        echo "Trace";
+                                        break;
+                                    case "notDetected":
+                                        echo "Not Detected";
+                                        break;
+                                    case "noResult":
+                                        echo "No Result";
+                                        break;
+                                    case "invalid":
+                                        echo "Invalid";
+                                        break;
+                                    case "error":
+                                        echo "Error";
+                                        break;
+                                    default:
+                                        echo "Unknown";
+                                }
+                                ?>
+                                </span>
                             </td>
                             <td></td>
                             <td style="vertical-align: top;text-align:center;">
+                                <span class="mtbRifReferenceProbe">
                                 <?php
-                                switch ($result['ref_rif_resistance']) {
+                                switch ($result['ref_mtb_rif_rif_resistance']) {
                                     case "detected":
                                         echo "Detected";
                                         break;
@@ -591,6 +629,24 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
                                         echo "Unknown";
                                 }
                                 ?>
+                                </span>
+                                <span class="ultraReferenceProbe">
+                                <?php
+                                switch ($result['ref_ultra_rif_resistance']) {
+                                    case "detected":
+                                        echo "Detected";
+                                        break;
+                                    case "notDetected":
+                                        echo "Not Detected";
+                                        break;
+                                    case "na":
+                                        echo "N/A";
+                                        break;
+                                    default:
+                                        echo "Unknown";
+                                }
+                                ?>
+                                </span>
                             </td>
                             <td style="vertical-align: top;text-align: right;">
                                 <span class="mtbRifReferenceProbe">
@@ -695,7 +751,7 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
     }?>
 </table>
 <script>
-  var analyteLables = {
+  var analyteLabels = {
   <?php foreach ($this->assays as $id => $definition) {
   echo "    \"".$id."\": {\n";
   echo "      \"analyte1Label\": \"".$definition['analyte1Label']."\",\n";
@@ -712,9 +768,9 @@ if (isset($this->evaluateData['shipment']["shipment_test_report_date"]) &&
   function setAssay() {
     var selectedAssayId = $("#assay").val();
     if (!selectedAssayId) {
-      selectedAssayId = Object.keys(analyteLables)[0];
+      selectedAssayId = Object.keys(analyteLabels)[0];
     }
-    var selectedAssayDefinition = analyteLables[selectedAssayId];
+    var selectedAssayDefinition = analyteLabels[selectedAssayId];
     $(".probe1Header").text(selectedAssayDefinition['analyte1Label']);
     $(".probe2Header").text(selectedAssayDefinition['analyte2Label']);
     $(".probe3Header").text(selectedAssayDefinition['analyte3Label']);

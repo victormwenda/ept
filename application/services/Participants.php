@@ -10,7 +10,7 @@ class Application_Service_Participants {
 		$participantDb = new Application_Model_DbTable_Participants();
 		return $participantDb->getParticipantsByUserSystemId($userSystemId);
 	}
-	
+
 	public function getParticipantDetails($partSysId) {
 		$participantDb = new Application_Model_DbTable_Participants();
 		return $participantDb->getParticipant($partSysId);
@@ -25,12 +25,12 @@ class Application_Service_Participants {
 		$participantDb = new Application_Model_DbTable_Participants();
 		return $participantDb->addParticipant($params);
 	}
-	
+
 	public function addParticipantForDataManager($params) {
 		$participantDb = new Application_Model_DbTable_Participants();
 		return $participantDb->addParticipantForDataManager($params);
 	}
-	
+
 	public function updateParticipant($params) {
 		$participantDb = new Application_Model_DbTable_Participants();
 		return $participantDb->updateParticipant($params);
@@ -40,7 +40,7 @@ class Application_Service_Participants {
 		$participantDb = new Application_Model_DbTable_Participants();
 		return $participantDb->getAllParticipants($params);
 	}
-	
+
 	public function getAllEnrollments($params) {
 		$enrollments = new Application_Model_DbTable_Enrollments();
 		return $enrollments->getAllEnrollments($params);
@@ -74,7 +74,7 @@ class Application_Service_Participants {
                 'sorting_unique_identifier' => new Zend_Db_Expr("LPAD(p.unique_identifier, 10, '0')"),
                 'p.participant_id',
                 'p.unique_identifier',
-                'participantName' => new Zend_Db_Expr("COALESCE(p.lab_name, CONCAT(p.first_name, ' ', p.last_name), p.first_name)")
+                'p.lab_name'
             ))
             ->join(array('pmm' => 'participant_manager_map'),'p.participant_id = pmm.participant_id', array())
             ->join(array('c' => 'countries'),'p.country = c.id', array())
@@ -246,7 +246,7 @@ class Application_Service_Participants {
 		$db = Zend_Db_Table_Abstract::getDefaultAdapter();
 		$sql = $db->select()->from(array('p'=>'participant'),array())
 				       ->joinLeft(array('e'=>'enrollments'),'e.participant_id=p.participant_id',array())
-				       ->joinLeft(array('sl'=>'scheme_list'),'sl.scheme_id=e.scheme_id',array('scheme_id'))					   
+				       ->joinLeft(array('sl'=>'scheme_list'),'sl.scheme_id=e.scheme_id',array('scheme_id'))
 				       ->where("p.participant_id = ?", $pid)
 				       ->order(new Zend_Db_Expr("CASE WHEN p.unique_identifier REGEXP '\d*' THEN CAST(CAST(p.unique_identifier AS DECIMAL) AS CHAR) ELSE TRIM(LEADING '0' FROM p.unique_identifier) END"));
 

@@ -81,7 +81,7 @@ if (count($this->shipment) > 0) { ?>
 			} ?>
 		</table>
     </div>
-</div>	
+</div>
 <h4 style="width:100%;height:50px;border-bottom:1px solid #777;">
 	<div style="font-size:22.5px;line-height:36px;color:#333;float:left;">
         You are currently evaluating Shipment&nbsp;
@@ -174,7 +174,7 @@ if (count($this->shipment) > 0) { ?>
                     <i class="icon-plus"></i>
                 </a>
             </td>
-			<td style="vertical-align:middle;"><?php echo $shipment['unique_identifier'] . " - " . $shipment['first_name'] . " " .$shipment['last_name'] ?></td>
+			<td style="vertical-align:middle;"><?php echo $shipment['unique_identifier'] . " - " . $shipment['lab_name'] ?></td>
             <?php if($shipment['scheme_type'] != 'tb') { ?>
             <td style="text-align:center;vertical-align:middle;"><?php echo $shipment['shipment_score'] ?></td>
             <td style="text-align:center;vertical-align:middle;"><?php echo $shipment['documentation_score'] ?></td>
@@ -256,7 +256,7 @@ if (count($this->shipment) > 0) { ?>
 		    "bProcessing": true
         });
 	});
-	
+
 	function fnFormatDetails (oTable, nTr) {
 		var aData = oTable.fnGetData(nTr);
 		var sOut = "";
@@ -269,7 +269,7 @@ if (count($this->shipment) > 0) { ?>
 		}
 		return sOut;
 	}
-	
+
 	function updateComment(sid) {
 		if ($.trim($("#shipmentComment").val()) == "") {
 			alert("Please enter comment to proceed");
@@ -283,7 +283,7 @@ if (count($this->shipment) > 0) { ?>
                 format: "html"
             }, function (data) {
 			    $.unblockUI({  onUnblock: function(){ alert(data); }  });
-			});		
+			});
 	}
 
 	function removeSchemes(schemeType,mid){

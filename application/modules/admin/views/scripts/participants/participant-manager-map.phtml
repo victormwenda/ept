@@ -13,7 +13,7 @@
                         <?php
                         foreach ($this->participants as $participant) {
                             ?>
-                            <option value="<?php echo $participant['participant_id']; ?>"><?php echo $participant['first_name'] . " " . $participant['last_name']; ?>(<?php echo $participant['unique_identifier']; ?>)</option>
+                            <option value="<?php echo $participant['participant_id']; ?>"><?php echo $participant['lab_name']; ?>(<?php echo $participant['unique_identifier']; ?>)</option>
                             <?php
                         }
                         ?>

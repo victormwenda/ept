@@ -94,6 +94,20 @@ $authNameSpace = new Zend_Session_Namespace('administrators');
                            class="form-control isEmail" onblur="checkEmailId()" />
         		</div>
             </div>
+            <div class="form-group">
+                <label class="col-lg-3 control-label">Show Details on Report <span class="mandatory">*</span></label>
+                <div class="col-lg-5">
+                    <select type="text" id="showDetailsOnReport" name="showDetailsOnReport" class="isRequired form-control"
+                            title="Show details on report">
+                        <option value="yes" <?php echo ($this->ptccProfile['show_details_on_report'] == "1") ? "selected='selected'" : ""; ?>>
+                            Yes
+                        </option>
+                        <option value="no" <?php echo ($this->ptccProfile['show_details_on_report'] == "0") ? "selected='selected'" : ""; ?>>
+                            No
+                        </option>
+                    </select>
+                </div>
+            </div>
             <?php
             if ($authNameSpace->is_ptcc_coordinator == 0 && $this->idParam != "me") {
             ?>
@@ -178,7 +192,7 @@ $authNameSpace = new Zend_Session_Namespace('administrators');
 		    document.getElementById('editPtccProfileForm').submit();
 	    }
     }
-    
+
     function checkEmailId(){
         primaryEmail = document.getElementById("primaryEmail").value;
 	    secondaryEmail = document.getElementById("secondaryEmail").value;

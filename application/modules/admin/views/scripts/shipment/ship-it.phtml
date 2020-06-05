@@ -32,7 +32,7 @@ if (isset($this->previouslySelectedCountry) && $this->previouslySelectedCountry 
 <?php
         foreach ($country["enrolled_participants"] as $participant) { ?>
 	                <option value="<?php echo $participant['participant_id']; ?>" selected>
-                        <?php echo $participant['first_name'] . " " .$participant['last_name'] ; ?>
+                        <?php echo $participant['lab_name']; ?>
                         (<?php echo $participant['unique_identifier']; ?>)
                     </option>
 <?php
@@ -45,7 +45,7 @@ if (isset($this->previouslySelectedCountry) && $this->previouslySelectedCountry 
 <?php
         foreach ($country["unenrolled_participants"] as $participant) { ?>
 	                <option value="<?php echo $participant['participant_id']; ?>">
-                        <?php echo $participant['first_name'] . " " .$participant['last_name'] ; ?>
+                        <?php echo $participant['lab_name']; ?>
                         (<?php echo $participant['unique_identifier']; ?>)
                     </option>
 <?php
@@ -59,7 +59,7 @@ if (isset($this->previouslySelectedCountry) && $this->previouslySelectedCountry 
  <?php
         foreach ($country["enrolled_participants"] as $participant) { ?>
 	    		    <option value="<?php echo $participant['participant_id']; ?>" selected>
-                        <?php echo $participant['first_name'] . " " .$participant['last_name'] ; ?>
+                        <?php echo $participant['lab_name']; ?>
                         (<?php echo $participant['unique_identifier']; ?>)
                     </option>
 <?php
@@ -72,7 +72,7 @@ if (isset($this->previouslySelectedCountry) && $this->previouslySelectedCountry 
 <?php
         foreach ($country["unenrolled_participants"] as $participant) { ?>
 			        <option value="<?php echo $participant['participant_id']; ?>">
-                        <?php echo $participant['first_name'] . " " .$participant['last_name'] ; ?>
+                        <?php echo $participant['lab_name']; ?>
                         (<?php echo $participant['unique_identifier']; ?>)
                     </option>
 <?php
@@ -99,7 +99,7 @@ if (isset($this->previouslySelectedCountry) && $this->previouslySelectedCountry 
                    tabindex="8" value="Cancel"/>
 	    </div>
     </form>
-</fieldset>			
+</fieldset>
 <script type="text/javascript" src="<?php echo $this->baseUrl("js/jquery.multi-select.js"); ?>"></script>
 <script type="text/javascript" src="<?php echo $this->baseUrl("js/jquery.quicksearch.js"); ?>"></script>
 <script>
@@ -160,5 +160,5 @@ if (isset($this->previouslySelectedCountry) && $this->previouslySelectedCountry 
             $.blockUI();
             document.getElementById('shipForm').submit();
         }
-    }	 
+    }
 </script>

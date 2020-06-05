@@ -1,9 +1,6 @@
 <?php
 if($this->result!=""){
-    if(isset($this->result['last_name']) && trim($this->result['last_name'])!=""){
-        $this->result['last_name']="_".$this->result['last_name'];
-    }
-    $fileName=$this->result['first_name'].$this->result['last_name']."-".$this->result['map_id'].".pdf";
+    $fileName=$this->result['lab_name']."-".$this->result['map_id'].".pdf";
 
     $fileName = preg_replace('/[^A-Za-z0-9.]/', '-', $fileName);
     $fileName = str_replace(" ", "-", $fileName);

@@ -139,19 +139,7 @@ class Admin_ShipmentController extends Zend_Controller_Action {
                 $sid = (int) base64_decode($this->_getParam('sid'));
                 $shipmentService = new Application_Service_Shipments();
                 $this->view->shipmentData = $response = $shipmentService->getShipmentForEdit($sid);
-
-                $schemeService = new Application_Service_Schemes();
-                if ($response['shipment']['scheme_type'] == 'dts') {
-                    $this->view->wb = $schemeService->getDbsWb();
-                    $this->view->eia = $schemeService->getDbsEia();
-                    $this->view->dtsPossibleResults = $schemeService->getPossibleResults('dts');
-                    $this->view->allTestKits = $schemeService->getAllDtsTestKit();                    
-                } else if($response['shipment']['scheme_type'] == 'vl') {
-                    $this->view->vlAssay = $schemeService->getVlAssay();
-                }
-                
-                // oOps !! Nothing to edit....
-                if ($response== null || $response == "" || $response === false) {
+                if ($response == null || $response == "" || $response === false) {
                     $this->_redirect("/admin/shipment");
                 }
             } else {
@@ -237,12 +225,12 @@ class Admin_ShipmentController extends Zend_Controller_Action {
             $this->view->shipment = $shipmentService->getShipmentForEdit($shipmentId);
             $this->view->shipmentId = $shipmentId;
             $this->view->schemeType = $schemeType;
-        } 
+        }
     }
 
     public function shipmentRespondedParticipantsAction() {
         if ($this->getRequest()->isPost()) {
-            $params = $this->_getAllParams();            
+            $params = $this->_getAllParams();
             $clientsServices = new Application_Service_Participants();
             $clientsServices->echoShipmentRespondedParticipants($params);
         }
@@ -250,7 +238,7 @@ class Admin_ShipmentController extends Zend_Controller_Action {
 
     public function shipmentNotRespondedParticipantsAction() {
         if ($this->getRequest()->isPost()) {
-            $params = $this->_getAllParams();            
+            $params = $this->_getAllParams();
             $clientsServices = new Application_Service_Participants();
             $clientsServices->echoShipmentNotRespondedParticipants($params);
         }
@@ -258,7 +246,7 @@ class Admin_ShipmentController extends Zend_Controller_Action {
 
     public function shipmentNotEnrolledParticipantsAction() {
         if ($this->getRequest()->isPost()) {
-            $params = $this->_getAllParams();            
+            $params = $this->_getAllParams();
             $clientsServices = new Application_Service_Participants();
             $clientsServices->getShipmentNotEnrolledParticipants($params);
         }

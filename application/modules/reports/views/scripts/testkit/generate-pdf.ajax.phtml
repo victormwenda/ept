@@ -4,7 +4,7 @@
 require_once('tcpdf/tcpdf.php');
 require_once('libchart/classes/libchart.php');
 $config = new Zend_Config_Ini(APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini", APPLICATION_ENV);
-        
+
     if (!file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports') && !is_dir(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports')) {
         mkdir(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports');
     }
@@ -165,7 +165,7 @@ if (isset($this->result['testkitDtsParticipantReport']) && $this->result['testki
 
     foreach ($this->result['testkitDtsParticipantReport'] as $res) {
         $testAction.='<tr>';
-        $testAction.='<td style="text-align:left;">' . $res['first_name'] . ' ' . $res['last_name'] . '</td>';
+        $testAction.='<td style="text-align:left;">' . $res['lab_name'] . '</td>';
         if (isset($this->reportType) && $this->reportType == "network") {
             $testAction.='<td style="text-align:left;">' . $res['network_name'] . '</td>';
         } else if (isset($this->reportType) && $this->reportType == "affiliation") {
@@ -187,7 +187,7 @@ if (count($this->result['testkitChart']) > 0) {
                 $chart->getPlot()->getPalette()->setPieColor(array(new Color(237, 86, 86), new Color(80, 180, 50),new Color(5, 141, 199),  new Color(221, 223, 0), new Color(36, 203, 229), new Color(100, 229, 114), new Color(255, 150, 85), new Color(255, 242, 99), new Color(106, 249, 196), new Color(124, 181, 236), new Color(49, 128, 71), new Color(144, 237, 125), new Color(247, 163, 92),new Color(47,126,216),new Color(241,92,128),new Color(228,211,84),new Color(128,133,232),new Color(141,70,83),new Color(145,232,225),new Color(13,35,58),new Color(139,188,33),new Color(145,0,0),new Color(26,173,206),new Color(73,41,112),new Color(242,143,67),new Color(119,161,229),new Color(196,37,37),new Color(166,201,106),new Color(69,114,167),new Color(170,70,67),new Color(137,165,78),new Color(128,105,155),new Color(61,150,174),new Color(219,132,61),new Color(146,168,205),new Color(164,125,124),new Color(181,202,146)));
                 $dataSet = new XYDataSet();
                 $totaltest=0;
-                
+
                 foreach($this->result['testkitChart'] as $testkit){
 		   $totaltest+=$testkit['totalTest'];
 		}
@@ -200,9 +200,9 @@ if (count($this->result['testkitChart']) > 0) {
 
                 $chart->setTitle("Testkit Report For DTS ");
                 $chart->render($piechart);
-                
-              
-            
+
+
+
             $y = $pdf->getY()+20;
 
                 $pdf->Image($piechart, 50, $y, '', '', '', '', '', false, 300);

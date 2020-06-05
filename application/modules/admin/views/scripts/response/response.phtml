@@ -65,7 +65,7 @@ if (count($this->shipment) > 0) { ?>
 			} ?>
 		</table>
     </div><!-- /.modal-dialog -->
-</div>	
+</div>
 <h4 style="width:100%;height:50px;border-bottom:1px solid #777;">
 	<div style="margin-top:10px;">
 		<a href="<?php echo $this->url(array('module' => 'admin', 'controller' => 'evaluate', 'action' => 'index'), 'default', true); ?>" class="btn btn-primary" style="float:right;"><i class="icon-chevron-left"></i>&nbsp;&nbsp;Back</a>
@@ -134,7 +134,7 @@ if (count($this->shipment) > 0) { ?>
                 </a>
             </td>
 			<td style="vertical-align:middle;">
-                <?php echo $shipment['first_name'] . " " .$shipment['last_name']. "(".$shipment['unique_identifier'].")" ?>
+                <?php echo $shipment['lab_name']. "(".$shipment['unique_identifier'].")" ?>
             </td>
             <?php if($shipment['scheme_type'] != 'tb') { ?>
             <td style="text-align:center;vertical-align:middle;"><?php echo $shipment['shipment_score'] ?></td>

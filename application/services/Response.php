@@ -296,7 +296,7 @@ class Application_Service_Response {
                                     array(
                                         'p.email',
                                         'participantName' => new Zend_Db_Expr(
-                                            "GROUP_CONCAT(DISTINCT p.first_name,\" \",p.last_name ORDER BY p.first_name SEPARATOR ', ')"
+                                            "GROUP_CONCAT(DISTINCT p.lab_name ORDER BY p.lab_name SEPARATOR ', ')"
                                         )
                                     ))
                                 ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('SCHEME' => 'sl.scheme_name'))
@@ -511,7 +511,7 @@ class Application_Service_Response {
         $sql = $db->select()
             ->from(array('p' => 'participant'), array(
                 'participant_id' => 'p.participant_id',
-                'participant_name' => new Zend_Db_Expr("CONCAT(p.unique_identifier, ': ', COALESCE(p.lab_name, CONCAT(p.first_name, ' ', p.last_name), p.first_name), COALESCE(CONCAT(' - ', CASE WHEN p.state = '' THEN NULL ELSE p.state END), CONCAT(' - ', CASE WHEN p.city = '' THEN NULL ELSE p.city END), ''))")
+                'participant_name' => new Zend_Db_Expr("CONCAT(p.unique_identifier, ': ', p.lab_name, COALESCE(CONCAT(' - ', CASE WHEN p.state = '' THEN NULL ELSE p.state END), CONCAT(' - ', CASE WHEN p.city = '' THEN NULL ELSE p.city END), ''))")
             ))
             ->joinLeft(array('spm' => 'shipment_participant_map'), 'spm.participant_id = p.participant_id AND spm.shipment_id = '.$shipmentId, array())
             ->where("p.participant_id <> ?", $currentParticipantId);

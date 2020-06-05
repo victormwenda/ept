@@ -24,7 +24,7 @@ $reportDate = explode(" ", $this->evaluateData['shipment']['shipment_test_report
   &nbsp;&nbsp;&nbsp;&nbsp;
 </span>
 <span class="pull-left">
-    <strong>Participant/Lab Name:</strong> <?php echo $this->evaluateData['participant']['first_name'] . " " . $this->evaluateData['participant']['last_name']; ?>
+    <strong>Participant/Lab Name:</strong> <?php echo $this->evaluateData['participant']['lab_name']; ?>
 </span>
 <span class="pull-right">
     <strong>Reported on:</strong> <?php echo $this->dateFormat($reportDate[0]); ?>
@@ -387,54 +387,101 @@ $reportDate = explode(" ", $this->evaluateData['shipment']['shipment_test_report
                         <td style="vertical-align: middle;text-align: right;">Reference Values:</td>
                         <td style="vertical-align: middle;text-align: center;">
                             <?php
-                            switch ($result['ref_mtb_detected']) {
-                                case "high":
-                                    echo "High";
-                                    break;
-                                case "medium":
-                                    echo "Medium";
-                                    break;
-                                case "low":
-                                    echo "Low";
-                                    break;
-                                case "veryLow":
-                                    echo "Very Low";
-                                    break;
-                                case "trace":
-                                    echo "Trace";
-                                    break;
-                                case "notDetected":
-                                    echo "Not Detected";
-                                    break;
-                                case "noResult":
-                                    echo "No Result";
-                                    break;
-                                case "invalid":
-                                    echo "Invalid";
-                                    break;
-                                case "error":
-                                    echo "Error";
-                                    break;
-                                default:
-                                    echo "Unknown";
+                            if ($this->evaluateData['shipment']['assay_name'] == 'Xpert MTB/RIF') {
+                                switch ($result['ref_mtb_rif_mtb_detected']) {
+                                    case "high":
+                                        echo "High";
+                                        break;
+                                    case "medium":
+                                        echo "Medium";
+                                        break;
+                                    case "low":
+                                        echo "Low";
+                                        break;
+                                    case "veryLow":
+                                        echo "Very Low";
+                                        break;
+                                    case "notDetected":
+                                        echo "Not Detected";
+                                        break;
+                                    case "noResult":
+                                        echo "No Result";
+                                        break;
+                                    case "invalid":
+                                        echo "Invalid";
+                                        break;
+                                    case "error":
+                                        echo "Error";
+                                        break;
+                                    default:
+                                        echo "Unknown";
+                                }
+                            } else if ($this->evaluateData['shipment']['assay_name'] == 'Xpert MTB Ultra') {
+                                switch ($result['ref_ultra_mtb_detected']) {
+                                    case "high":
+                                        echo "High";
+                                        break;
+                                    case "medium":
+                                        echo "Medium";
+                                        break;
+                                    case "low":
+                                        echo "Low";
+                                        break;
+                                    case "veryLow":
+                                        echo "Very Low";
+                                        break;
+                                    case "trace":
+                                        echo "Trace";
+                                        break;
+                                    case "notDetected":
+                                        echo "Not Detected";
+                                        break;
+                                    case "noResult":
+                                        echo "No Result";
+                                        break;
+                                    case "invalid":
+                                        echo "Invalid";
+                                        break;
+                                    case "error":
+                                        echo "Error";
+                                        break;
+                                    default:
+                                        echo "Unknown";
+                                }
                             }
                             ?>
                         </td>
                         <td></td>
                         <td style="vertical-align: middle;text-align:center;">
                             <?php
-                            switch ($result['ref_rif_resistance']) {
-                                case "detected":
-                                    echo "Detected";
-                                    break;
-                                case "notDetected":
-                                    echo "Not Detected";
-                                    break;
-                                case "na":
-                                    echo "N/A";
-                                    break;
-                                default:
-                                    echo "Unknown";
+                            if ($this->evaluateData['shipment']['assay_name'] == 'Xpert MTB/RIF') {
+                                switch ($result['ref_mtb_rif_rif_resistance']) {
+                                    case "detected":
+                                        echo "Detected";
+                                        break;
+                                    case "notDetected":
+                                        echo "Not Detected";
+                                        break;
+                                    case "na":
+                                        echo "N/A";
+                                        break;
+                                    default:
+                                        echo "Unknown";
+                                }
+                            } else if ($this->evaluateData['shipment']['assay_name'] == 'Xpert MTB Ultra') {
+                                switch ($result['ref_ultra_rif_resistance']) {
+                                    case "detected":
+                                        echo "Detected";
+                                        break;
+                                    case "notDetected":
+                                        echo "Not Detected";
+                                        break;
+                                    case "na":
+                                        echo "N/A";
+                                        break;
+                                    default:
+                                        echo "Unknown";
+                                }
                             }
                             ?>
                         </td>
