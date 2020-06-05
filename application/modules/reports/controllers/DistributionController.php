@@ -58,7 +58,6 @@ class Reports_DistributionController extends Zend_Controller_Action {
             $this->view->header = $reportService->getReportConfigValue('report-header');
             $this->view->logo = $reportService->getReportConfigValue('logo');
             $this->view->logoRight = $reportService->getReportConfigValue('logo-right');
-
             $evalService = new Application_Service_Evaluation();
             $this->view->result = $evalService->getEvaluateReportsInPdf($id, $sLimit, $sOffset);
             $this->view->comingFrom = $comingFrom;
@@ -76,9 +75,6 @@ class Reports_DistributionController extends Zend_Controller_Action {
             $this->view->logoRight = $reportService->getReportConfigValue('logo-right');
             $evalService = new Application_Service_Evaluation();
             $this->view->result = $evalService->getSummaryReportsInPdf($id);
-            $this->view->responseResult = $evalService->getResponseReports($id);
-            $this->view->participantPerformance = $reportService->getParticipantPerformanceReportByShipmentId($id);
-            $this->view->correctiveness = $reportService->getCorrectiveActionReportByShipmentId($id);
             $this->view->comingFrom = $comingFrom;
         }
     }

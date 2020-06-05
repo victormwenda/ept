@@ -8,8 +8,6 @@ $fileSafeShipmentCode = str_replace( ' ', '-', str_replace(array_merge(
 $reportsFolderPath = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports';
 $shipmentFolderPath = $reportsFolderPath . DIRECTORY_SEPARATOR . $fileSafeShipmentCode;
 if ($this->result['shipment'] != "") {
-    require_once('libchart/classes/libchart.php');
-    $chart = new VerticalBarChart(700, 400);
     if (!file_exists($reportsFolderPath) && !is_dir($reportsFolderPath)) {
         mkdir($reportsFolderPath);
     }
@@ -18,146 +16,148 @@ if ($this->result['shipment'] != "") {
     }
 
     class MYPDF extends TCPDF {
-        public function setSchemeName($header, $schemeName, $logo,$logoRight,$comingFrom,$schemeType) {
-            $this->scheme_name = $schemeName;
+        public function setSchemeName($header, $logo,$logoRight,$comingFrom) {
             $this->header = $header;
             $this->logo = $logo;
             $this->logoRight = $logoRight;
             $this->comingFrom = $comingFrom;
-            $this->schemeType = $schemeType;
         }
 
         //Page header
         public function Header() {
-            if($this->schemeType != 'tb') {
-                $logoFolderPath = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'logo' . DIRECTORY_SEPARATOR;
-                if (trim($this->logo) != "") {
-                    if (file_exists($logoFolderPath . $this->logo)) {
-                        $image_file = $logoFolderPath . $this->logo;
-                        $this->Image($image_file, 10, 10, 25, '', 'JPG', '', 'T', false, 300, '', false, false, 0, false, false, false);
-                    }
-                }
-                if (trim($this->logoRight) != "") {
-                    if (file_exists($logoFolderPath . $this->logoRight)) {
-                        $image_file = $logoFolderPath . $this->logoRight;
-                        $this->Image($image_file, 180, 10, 20, '', 'JPG', '', 'T', false, 300, '', false, false, 0, false, false, false);
-                    }
-                }
-            }
-
-            // Set font
-            $this->SetFont('Helvetica', '', 8);
-
-            if($this->schemeType != 'tb') {
-                $this->header = str_replace("<div", "<span", trim($this->header));
-                $this->header = str_replace("</div>", "</span><br/>", $this->header);
-            }
-
-            $html = $this->header;
-
-            if($this->schemeType != 'tb') {
-                $this->writeHTMLCell(0, 0, 25, 10, $html, 0, 0, 0, true, 'C', true);
-            }
-            if ($this->schemeType == 'vl') {
-                $html='<p style="font-weight: bold;text-align:center;">Proficiency Testing Program for HIV Viral load using Dried Tube Specimen<br><strong>All participants results summary report</strong></p>';
-            } else if ($this->schemeType == 'eid') {
-                $html='<h3 style="font-weight: bold;text-align:center;">HIV-1 Proficiency Testing Program for Early Infant Diagnosis using Dried Blood Spot</h3>';
-            } else if($this->schemeType == 'tb') {
-                $html = '<h3 style="background-color:#000000;color:#ffffff;font-weight: bold;text-align:center;">';
-                $html .= '<br />XPERT MTB ASSAY PROFICIENCY TEST PROGRAM PARTICIPANT’S RESULTS SUMMARY<br /></h3>';
-            } else {
-                $html='<h3 style="font-weight: bold;text-align:center;">Proficiency Testing Program for Anti-HIV Antibodies Diagnostics using '.$this->scheme_name.'</h3>';
-            }
-
-            if($this->schemeType != 'tb') {
-                $this->writeHTMLCell(0, 0, 30, 30, $html, 0, 0, 0, true, 'J', true);
-                $html = '<hr/>';
-                $this->writeHTMLCell(0, 0, 10, 45, $html, 0, 0, 0, true, 'J', true);
-            } else {
-                $this->writeHTMLCell(0, 10, 15, 20, $html, 0, 0, 0, true, 'J', true);
-            }
+            $this->writeHTMLCell(0, 10, 15, 20, '<h3 style="background-color:#000000;color:#ffffff;font-weight: bold;text-align:center;">CDC/ILB XPERT TB PROFICIENCY TESTING PROGRAM: FINAL SUMMARY REPORT</h3>', 0, 0, 0, true, 'J', true);
         }
 
         // Page footer
         public function Footer() {
-            $finalizeReport="";
-            if (trim($this->comingFrom)=="finalize") {
-               $finalizeReport=' -FINALIZED';
-            }
             // Position at 15 mm from bottom
             $this->SetY(-15);
             // Set font
-            $this->SetFont('Helvetica', 'I', 8);
+            $this->SetFont('Helvetica', '', 8);
             // Page number
-            $this->Cell(0, 10, 'Page ' . $this->getAliasNumPage() . '/' . $this->getAliasNbPages()." - Report generated at :".date("d-M-Y H:i:s").$finalizeReport, 0, false, 'C', 0, '', 0, false, 'T', 'M');
+            $this->Cell(0, 10, 'Form: ILB-500-F29B', 0, false, 'L', 0, '', 0, false, 'T', 'M');
+            // Generated at....
+            $this->Cell(0, 10, "CDC/ILB is currently preparing for accreditation by A2LA to the ISO 17043 Standard", 0, false, 'R', 0, '', 0, false, 'T', 'M');
         }
     }
 
-    // create new PDF document
     $pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
-    // set default header data
     $pdf->SetHeaderData(PDF_HEADER_LOGO, PDF_HEADER_LOGO_WIDTH, PDF_HEADER_TITLE, PDF_HEADER_STRING);
 
-    // set header and footer fonts
     $pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
     $pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
 
-    // set default monospaced font
     $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
 
-    // set margins
-    $pdf->SetMargins(PDF_MARGIN_LEFT, 35, PDF_MARGIN_RIGHT);
+    $pdf->SetMargins(PDF_MARGIN_LEFT, 30, PDF_MARGIN_RIGHT);
     $pdf->SetHeaderMargin(1);
     $pdf->SetFooterMargin(1);
-    // set auto page breaks
-    $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
-    // set image scale factor
+
+    $pdf->SetAutoPageBreak(TRUE, 15);
+
     $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
-    // set some language-dependent strings (optional)
-    if (@file_exists(dirname(__FILE__) . '/lang/eng.php')) {
-        require_once(dirname(__FILE__) . '/lang/eng.php');
-        $pdf->setLanguageArray($l);
-    }
 
-    $pdf->setSchemeName($this->header, $this->result['shipment']['scheme_name'], $this->logo,$this->logoRight,$this->comingFrom,$this->result['shipment']['scheme_type']);
-    // add a page
+    $pdf->setSchemeName($this->header, $this->logo,$this->logoRight,$this->comingFrom);
 
-    // ---------------------------------------------------------
-    $pdf->AddPage('P', 'A4');
-    $pdf->SetFont('Helvetica', 'B', 11);
-    $labInfo = '<h3 style="width:100%;text-align:center;">'.$this->result['shipment']['shipment_code'].'</h3>';
-    $labInfo .= '<p style="font-size:10pt;width:100%;text-align:center;">International Laboratory Branch, Division of Global HIV and TB, Centers for Disease Control and Prevention</p>';
+    $pdf->AddPage();
+    $pdf->SetFont('Helvetica', '', 8);
+    $labInfo = '<h3 style="width:100%;text-align:center;margin: 0;padding:0;">'.$this->result['shipment']['distribution_code'].'</h3>';
+    $labInfo .= '<p style="width:100%;font-size:10pt;">Xpert TB Proficiency Testing (XTPT) Program Dried Tube Specimen (DTS) panels are prepared in house at the US Centers for Disease Control and Prevention (CDC), Center for Global Health, Division of Global HIV and TB, International Laboratory Branch (ILB) from known, well-characterized, heat-inactivated mycobacterial isolates. All panels are designed cover the range of possible Xpert MTB/RIF or Xpert MTB/RIF Ultra (Ultra) qualitative results but are not specific to semi-quantitative result ranges. All samples are verified to be non-viable (no growth in inactivation verification culture), 100% accurate (yielding expected test result), and precise (within 3 standard deviations (SD) of the mean for Xpert MTB/RIF Probe A cycle threshold). Verification sampling is determined using a statistical sample size collection tool and the calculated historical variance (SD).</p>';
+    $labInfo .= '<p style="font-size:10pt;"><strong style="font-size:10pt;">Expected Results</strong></p>';
     $labInfo .= '<table cellpadding="2" style="width:100%;font-size:8pt;">';
     $labInfo .= '    <tr>';
-    $labInfo .= '	     <td style="width:10%;"></td>';
-    $labInfo .= '	     <td style="border-top:solid 10px #000000;border-bottom:solid 10px #000000;background-color:#777777;color:#ffffff;text-align:center;width:20%;"><strong>Country</strong></td>';
-    $labInfo .= '	     <td style="border-top:solid 10px #000000;border-bottom:solid 10px #000000;background-color:#777777;color:#ffffff;text-align:center;width:40%;"><strong>Testing Site</strong></td>';
-    $labInfo .= '	     <td style="border-top:solid 10px #000000;border-bottom:solid 10px #000000;background-color:#777777;color:#ffffff;text-align:center;width:20%;"><strong>PT-ID Number</strong></td>';
-    $labInfo .= '	     <td style="width:10%;"></td>';
+    $labInfo .= '	     <td style="border:solid 1px #000000;width:10%;"><strong style="font-size:10pt;width:100%;text-align:center;">Sample ID</strong></td>';
+    $labInfo .= '	     <td style="border:solid 1px #000000;width:40%;"><strong style="font-size:10pt;width:100%;text-align:center;">Sample Content</strong></td>';
+    $labInfo .= '	     <td style="border:solid 1px #000000;width:25%;"><strong style="font-size:10pt;width:100%;text-align:center;">Expected TB Detection Result</strong></td>';
+    $labInfo .= '	     <td style="border:solid 1px #000000;width:25%;"><strong style="font-size:10pt;width:100%;text-align:center;">Expected Rifampicin Resistance Detection</strong></td>';
     $labInfo .= '    </tr>';
-    foreach ($this->result['tbReportParticipants'] as $tbReportParticipant) {
+    foreach ($this->result['referenceResults'] as $referenceResult) {
         $labInfo .= '    <tr>';
-        $labInfo .= '	     <td></td>';
-        $labInfo .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.$tbReportParticipant['country_name'].'</td>';
-        $labInfo .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.$tbReportParticipant['lab_name'];
-        if ($tbReportParticipant['is_excluded'] == 'yes') {
-            $labInfo .= ' <span style="color:#ff0000;">(Excluded)</span>';
-        }
-        $labInfo .= '</td>';
-        $labInfo .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.$tbReportParticipant['unique_identifier'].'</td>';
-        $labInfo .= '	     <td></td>';
+        $labInfo .= '	     <td style="border:solid 1px #000000;text-align:center;">'.$referenceResult['sample_label'].'</td>';
+        $labInfo .= '	     <td style="border:solid 1px #000000;text-align:center;">'.$referenceResult['sample_content'].'</td>';
+        $labInfo .= '	     <td style="border:solid 1px #000000;text-align:center;">'.$referenceResult['expected_tb_detection_result'].'</td>';
+        $labInfo .= '	     <td style="border:solid 1px #000000;text-align:center;">'.$referenceResult['expected_rif_detection_result'].'</td>';
         $labInfo .= '    </tr>';
     }
     $labInfo .= '</table><br /><br />';
-    $labInfo .= '<table cellpadding="3" style="width:100%;font-size:8pt;">';
+    $labInfo .= '<table cellpadding="2" style="border:none;width:100%;">';
+    $labInfo .= '    <tr>';
+    $labInfo .= '	     <td style="border:none;width:50%;"><strong style="font-size:10pt;width:100%;">Enrollment, Participation and Performance</strong></td>';
+    $labInfo .= '	     <td style="border:none;width:50%;"><strong style="font-size:10pt;width:100%;">Test Method Reported by Sites</strong></td>';
+    $labInfo .= '    </tr>';
+    $labInfo .= '</table><br />';
+    $pdf->writeHTML($labInfo, true, false, true, false, '');
+
+    $participationYAxisMultiplier = 1;
+    if ($this->result['aggregates']['enrolled'] > 10) {
+        $participationYAxisMultiplier = 10;
+    }
+    if ($this->result['aggregates']['enrolled'] > 100) {
+        $participationYAxisMultiplier = 100;
+    }
+    if ($this->result['aggregates']['enrolled'] > 1000) {
+        $participationYAxisMultiplier = 1000;
+    }
+
+    $testMethodYAxisMultiplier = 1;
+    $largerTestMethod = $this->result['aggregates']['mtb_rif'];
+    if ($this->result['aggregates']['mtb_rif_ultra'] > $largerTestMethod) {
+        $largerTestMethod = $this->result['aggregates']['mtb_rif_ultra'];
+    }
+    if ($largerTestMethod > 10) {
+        $testMethodYAxisMultiplier = 10;
+    }
+    if ($largerTestMethod > 100) {
+        $testMethodYAxisMultiplier = 100;
+    }
+    if ($largerTestMethod > 1000) {
+        $testMethodYAxisMultiplier = 1000;
+    }
+    $participationSvg = '<?xml version="1.0" encoding="UTF-8"?>';
+    $participationSvg .= '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 180">';
+    $participationSvg .= '    <rect width="190" height="180" x="0" y="0" stroke="#E4E4E4" stroke-width="1" fill="white" />';
+    $participationSvg .= '    <text x="95" y="12" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:8pt">XTPT Site Enrollment,</text>';
+    $participationSvg .= '    <text x="95" y="24" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:8pt">Participation, and Performance for</text>';
+    $participationSvg .= '    <text x="95" y="36" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:8pt">'.$this->result['shipment']['shipment_code'].'</text>';
+    for ($yAxisIncrement = 5; $yAxisIncrement >= 0; $yAxisIncrement--) {
+        $participationSvg .= '    <text x="15" y="'.(152 - ($yAxisIncrement * 20)).'" dominant-baseline="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">'.($yAxisIncrement * $participationYAxisMultiplier * 2).'</text>';
+        $participationSvg .= '    <line x1="30" x2="180" y1="'.(150 - ($yAxisIncrement * 20)).'" y2="'.(150 - ($yAxisIncrement * 20)).'" stroke="#E4E4E4" stroke-width="1" />';
+    }
+    $participationSvg .= '    <text x="10" y="100" transform="rotate(-90, 10, 100)" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">Number of sites</text>';
+    $participationSvg .= '    <rect width="30" height="' . (($this->result['aggregates']['enrolled'] / ($participationYAxisMultiplier * 10)) * 100) . '" x="40" y="'.(100 - (($this->result['aggregates']['enrolled'] / ($participationYAxisMultiplier * 10)) * 100) + 50).'" fill="#4F81BD" />';
+    $participationSvg .= '    <text x="55" y="158" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">Enrolled Sites</text>';
+    $participationSvg .= '    <rect width="30" height="' . (($this->result['aggregates']['participated'] / ($participationYAxisMultiplier * 10)) * 100) . '" x="90" y="'.(100 - (($this->result['aggregates']['participated'] / ($participationYAxisMultiplier * 10)) * 100) + 50).'" fill="#4F81BD" />';
+    $participationSvg .= '    <text x="105" y="158" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">Participating</text>';
+    $participationSvg .= '    <text x="105" y="165" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">Sites</text>';
+    $participationSvg .= '    <rect width="30" height="' . (($this->result['aggregates']['scored_100_percent'] / ($participationYAxisMultiplier * 10)) * 100) . '" x="140" y="'.(100 - (($this->result['aggregates']['scored_100_percent'] / ($participationYAxisMultiplier * 10)) * 100) + 50).'" fill="#4F81BD" />';
+    $participationSvg .= '    <text x="155" y="158" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">Sites Scoring</text>';
+    $participationSvg .= '    <text x="155" y="165" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">100%</text>';
+    $participationSvg .= '    <rect width="190" height="180" x="200" y="0" stroke="#E4E4E4" stroke-width="1" fill="white" />';
+    $participationSvg .= '    <text x="295" y="12" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:8pt">Test Method</text>';
+    for ($yAxisIncrement = 5; $yAxisIncrement >= 0; $yAxisIncrement--) {
+        $participationSvg .= '    <text x="215" y="'.(152 - ($yAxisIncrement * 20)).'" dominant-baseline="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">'.($yAxisIncrement * $testMethodYAxisMultiplier * 2).'</text>';
+        $participationSvg .= '    <line x1="230" x2="380" y1="'.(150 - ($yAxisIncrement * 20)).'" y2="'.(150 - ($yAxisIncrement * 20)).'" stroke="#E4E4E4" stroke-width="1" />';
+    }
+    $participationSvg .= '    <text x="210" y="100" transform="rotate(-90, 210, 100)" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">Number of sites</text>';
+    $participationSvg .= '    <rect width="30" height="' . (($this->result['aggregates']['mtb_rif'] / ($testMethodYAxisMultiplier * 10)) * 100) . '" x="250" y="'.(100 - (($this->result['aggregates']['mtb_rif'] / ($testMethodYAxisMultiplier * 10)) * 100) + 50).'" fill="#4F81BD" />';
+    $participationSvg .= '    <text x="265" y="158" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">Sites testing</text>';
+    $participationSvg .= '    <text x="265" y="165" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">Xpert MTB/RIF</text>';
+    $participationSvg .= '    <rect width="30" height="' . (($this->result['aggregates']['mtb_rif_ultra'] / ($testMethodYAxisMultiplier * 10)) * 100) . '" x="325" y="'.(100 - (($this->result['aggregates']['mtb_rif_ultra'] / ($testMethodYAxisMultiplier * 10)) * 100) + 50).'" fill="#4F81BD" />';
+    $participationSvg .= '    <text x="340" y="158" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">Sites testing</text>';
+    $participationSvg .= '    <text x="340" y="165" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">Xpert Ultra</text>';
+    $participationSvg .= '</svg>';
+    $pdf->ImageSVG('@' . $participationSvg, 15, 145, 180, 90, '', '', '', 0, false);
+    $pdf->AddPage();
+
+    $labInfo = '<table cellpadding="3" style="width:100%;font-size:8pt;">';
     $labInfo .= '    <tr style="background-color:#777777;color:#ffffff;">';
-    $labInfo .= '	     <td style="text-align:center;border-top:solid 10px #000000;border-bottom:solid 10px #000000;" colspan="'.(count($this->result['tbReportSummary']) + 1).'"><strong>Summary of All Reporting Sites</strong></td>';
+    $labInfo .= '	     <td style="text-align:center;border-top:solid 10px #000000;border-bottom:solid 10px #000000;" colspan="'.(count($this->result['mtbRifReportSummary']) + 1).'"><strong>Summary of All Reporting Sites Testing Xpert MTB/RIF</strong></td>';
     $labInfo .= '    </tr>';
     $labInfo .= '    <tr>';
     $labInfo .= '	     <td style="width:40%;"></td>';
-    foreach ($this->result['tbReportSummary'] as $sampleSummary) {
-        $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;"><strong>'.$sampleSummary['sample_label'].'</strong>';
+    foreach ($this->result['mtbRifReportSummary'] as $sampleSummary) {
+        $labInfo .= '	     <td style="width:'.(60 / count($this->result['mtbRifReportSummary'])).'%;text-align:center;"><strong>'.$sampleSummary['sample_label'].'</strong>';
         if ($sampleSummary['ref_is_excluded'] == 'yes') {
             if ($sampleSummary['ref_is_exempt'] == 'yes') {
                 $labInfo .= '<br /><span style="color:#ffa500;">(Exempt)</span>';
@@ -170,64 +170,245 @@ if ($this->result['shipment'] != "") {
     $labInfo .= '    </tr>';
     $labInfo .= '    <tr>';
     $labInfo .= '	     <td style="width:40%;">Total number of reporting sites</td>';
-    foreach ($this->result['tbReportSummary'] as $sampleSummary) {
-        $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;">'.$sampleSummary['no_of_responses'].'</td>';
+    foreach ($this->result['mtbRifReportSummary'] as $sampleSummary) {
+        $labInfo .= '	     <td style="width:'.(60 / count($this->result['mtbRifReportSummary'])).'%;text-align:center;">'.$sampleSummary['no_of_responses'].'</td>';
     }
     $labInfo .= '    </tr>';
     $labInfo .= '    <tr>';
-    $labInfo .= '	     <td style="background-color:#cccccc;width:100%;" colspan="'.(count($this->result['tbReportSummary']) + 1).'"><strong>TB Detection</strong></td>';
+    $labInfo .= '	     <td style="background-color:#cccccc;width:100%;" colspan="'.(count($this->result['mtbRifReportSummary']) + 1).'"><strong>TB Detection</strong></td>';
     $labInfo .= '    </tr>';
     $labInfo .= '    <tr>';
     $labInfo .= '	     <td style="width:40%;">Sites detecting TB (%)</td>';
-    foreach ($this->result['tbReportSummary'] as $sampleSummary) {
-        $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;">'.$sampleSummary['mtb_detected'].' ('.round(($sampleSummary['mtb_detected'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
+    foreach ($this->result['mtbRifReportSummary'] as $sampleSummary) {
+        $labInfo .= '	     <td style="width:'.(60 / count($this->result['mtbRifReportSummary'])).'%;text-align:center;">'.$sampleSummary['mtb_detected'].' ('.round(($sampleSummary['mtb_detected'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
     }
     $labInfo .= '    </tr>';
     $labInfo .= '    <tr>';
     $labInfo .= '	     <td style="width:40%;">Sites not detecting TB (%)</td>';
-    foreach ($this->result['tbReportSummary'] as $sampleSummary) {
-        $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;">'.$sampleSummary['mtb_not_detected'].' ('.round(($sampleSummary['mtb_not_detected'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
+    foreach ($this->result['mtbRifReportSummary'] as $sampleSummary) {
+        $labInfo .= '	     <td style="width:'.(60 / count($this->result['mtbRifReportSummary'])).'%;text-align:center;">'.$sampleSummary['mtb_not_detected'].' ('.round(($sampleSummary['mtb_not_detected'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
     }
     $labInfo .= '    </tr>';
     $labInfo .= '    <tr>';
     $labInfo .= '	     <td style="width:40%;">Sites reporting uninterpretable TB result*(%)</td>';
-    foreach ($this->result['tbReportSummary'] as $sampleSummary) {
-        $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;">'.$sampleSummary['mtb_uninterpretable'].' ('.round(($sampleSummary['mtb_uninterpretable'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
+    foreach ($this->result['mtbRifReportSummary'] as $sampleSummary) {
+        $labInfo .= '	     <td style="width:'.(60 / count($this->result['mtbRifReportSummary'])).'%;text-align:center;">'.$sampleSummary['mtb_uninterpretable'].' ('.round(($sampleSummary['mtb_uninterpretable'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
     }
     $labInfo .= '    </tr>';
     $labInfo .= '    <tr>';
-    $labInfo .= '	     <td style="background-color:#cccccc;width:100%;" colspan="'.(count($this->result['tbReportSummary']) + 1).'"><strong>RIF Detection</strong></td>';
+    $labInfo .= '	     <td style="background-color:#cccccc;width:100%;" colspan="'.(count($this->result['mtbRifReportSummary']) + 1).'"><strong>RIF Detection</strong></td>';
     $labInfo .= '    </tr>';
     $labInfo .= '    <tr>';
     $labInfo .= '	     <td style="width:40%;">Sites detecting Rif resistance (%)</td>';
-    foreach ($this->result['tbReportSummary'] as $sampleSummary) {
-        $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;">'.$sampleSummary['rif_detected'].' ('.round(($sampleSummary['rif_detected'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
+    foreach ($this->result['mtbRifReportSummary'] as $sampleSummary) {
+        $labInfo .= '	     <td style="width:'.(60 / count($this->result['mtbRifReportSummary'])).'%;text-align:center;">'.$sampleSummary['rif_detected'].' ('.round(($sampleSummary['rif_detected'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
     }
     $labInfo .= '    </tr>';
     $labInfo .= '    <tr>';
     $labInfo .= '	     <td style="width:40%;">Sites not detecting Rif resistance (%)</td>';
-    foreach ($this->result['tbReportSummary'] as $sampleSummary) {
-        $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;">'.$sampleSummary['rif_not_detected'].' ('.round(($sampleSummary['rif_not_detected'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
+    foreach ($this->result['mtbRifReportSummary'] as $sampleSummary) {
+        $labInfo .= '	     <td style="width:'.(60 / count($this->result['mtbRifReportSummary'])).'%;text-align:center;">'.$sampleSummary['rif_not_detected'].' ('.round(($sampleSummary['rif_not_detected'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
     }
     $labInfo .= '    </tr>';
     $labInfo .= '    <tr>';
     $labInfo .= '	     <td style="width:40%;">Sites reporting indeterminate Rif result (%)</td>';
-    foreach ($this->result['tbReportSummary'] as $sampleSummary) {
-        $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;">'.$sampleSummary['rif_indeterminate'].' ('.round(($sampleSummary['rif_indeterminate'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
+    foreach ($this->result['mtbRifReportSummary'] as $sampleSummary) {
+        $labInfo .= '	     <td style="width:'.(60 / count($this->result['mtbRifReportSummary'])).'%;text-align:center;">'.$sampleSummary['rif_indeterminate'].' ('.round(($sampleSummary['rif_indeterminate'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
     }
     $labInfo .= '    </tr>';
     $labInfo .= '    <tr>';
     $labInfo .= '	     <td style="width:40%;">Sites reporting uninterpretable Rif result*(%)</td>';
-    foreach ($this->result['tbReportSummary'] as $sampleSummary) {
-        $labInfo .= '	     <td style="width:'.(60 / count($this->result['tbReportSummary'])).'%;text-align:center;">'.$sampleSummary['rif_uninterpretable'].' ('.round(($sampleSummary['rif_uninterpretable'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
+    foreach ($this->result['mtbRifReportSummary'] as $sampleSummary) {
+        $labInfo .= '	     <td style="width:'.(60 / count($this->result['mtbRifReportSummary'])).'%;text-align:center;">'.$sampleSummary['rif_uninterpretable'].' ('.round(($sampleSummary['rif_uninterpretable'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
+    }
+    $labInfo .= '    </tr>';
+    $labInfo .= '</table><br /><br />';
+    $labInfo .= '<table cellpadding="3" style="width:100%;font-size:8pt;">';
+    $labInfo .= '    <tr style="background-color:#777777;color:#ffffff;">';
+    $labInfo .= '	     <td style="text-align:center;border-top:solid 10px #000000;border-bottom:solid 10px #000000;" colspan="'.(count($this->result['mtbRifUltraReportSummary']) + 1).'"><strong>Summary of All Reporting Sites Testing Xpert MTB/RIF Ultra</strong></td>';
+    $labInfo .= '    </tr>';
+    $labInfo .= '    <tr>';
+    $labInfo .= '	     <td style="width:40%;"></td>';
+    foreach ($this->result['mtbRifUltraReportSummary'] as $sampleSummary) {
+        $labInfo .= '	     <td style="width:'.(60 / count($this->result['mtbRifUltraReportSummary'])).'%;text-align:center;"><strong>'.$sampleSummary['sample_label'].'</strong>';
+        if ($sampleSummary['ref_is_excluded'] == 'yes') {
+            if ($sampleSummary['ref_is_exempt'] == 'yes') {
+                $labInfo .= '<br /><span style="color:#ffa500;">(Exempt)</span>';
+            } else {
+                $labInfo .= '<br /><span style="color:#ff0000;">(Excluded)</span>';
+            }
+        }
+        $labInfo .= '</td>';
     }
     $labInfo .= '    </tr>';
     $labInfo .= '    <tr>';
-    $labInfo .= '	     <td style="width:100%;" colspan="'.(count($this->result['tbReportSummary']) + 1).'">* Uninterpretable result = invalid, error, or no result</td>';
+    $labInfo .= '	     <td style="width:40%;">Total number of reporting sites</td>';
+    foreach ($this->result['mtbRifUltraReportSummary'] as $sampleSummary) {
+        $labInfo .= '	     <td style="width:'.(60 / count($this->result['mtbRifUltraReportSummary'])).'%;text-align:center;">'.$sampleSummary['no_of_responses'].'</td>';
+    }
+    $labInfo .= '    </tr>';
+    $labInfo .= '    <tr>';
+    $labInfo .= '	     <td style="background-color:#cccccc;width:100%;" colspan="'.(count($this->result['mtbRifUltraReportSummary']) + 1).'"><strong>TB Detection</strong></td>';
+    $labInfo .= '    </tr>';
+    $labInfo .= '    <tr>';
+    $labInfo .= '	     <td style="width:40%;">Sites detecting TB (%)</td>';
+    foreach ($this->result['mtbRifUltraReportSummary'] as $sampleSummary) {
+        $labInfo .= '	     <td style="width:'.(60 / count($this->result['mtbRifUltraReportSummary'])).'%;text-align:center;">'.$sampleSummary['mtb_detected'].' ('.round(($sampleSummary['mtb_detected'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
+    }
+    $labInfo .= '    </tr>';
+    $labInfo .= '    <tr>';
+    $labInfo .= '	     <td style="width:40%;">Sites not detecting TB (%)</td>';
+    foreach ($this->result['mtbRifUltraReportSummary'] as $sampleSummary) {
+        $labInfo .= '	     <td style="width:'.(60 / count($this->result['mtbRifUltraReportSummary'])).'%;text-align:center;">'.$sampleSummary['mtb_not_detected'].' ('.round(($sampleSummary['mtb_not_detected'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
+    }
+    $labInfo .= '    </tr>';
+    $labInfo .= '    <tr>';
+    $labInfo .= '	     <td style="width:40%;">Sites reporting uninterpretable TB result*(%)</td>';
+    foreach ($this->result['mtbRifUltraReportSummary'] as $sampleSummary) {
+        $labInfo .= '	     <td style="width:'.(60 / count($this->result['mtbRifUltraReportSummary'])).'%;text-align:center;">'.$sampleSummary['mtb_uninterpretable'].' ('.round(($sampleSummary['mtb_uninterpretable'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
+    }
+    $labInfo .= '    </tr>';
+    $labInfo .= '    <tr>';
+    $labInfo .= '	     <td style="background-color:#cccccc;width:100%;" colspan="'.(count($this->result['mtbRifUltraReportSummary']) + 1).'"><strong>RIF Detection</strong></td>';
+    $labInfo .= '    </tr>';
+    $labInfo .= '    <tr>';
+    $labInfo .= '	     <td style="width:40%;">Sites detecting Rif resistance (%)</td>';
+    foreach ($this->result['mtbRifUltraReportSummary'] as $sampleSummary) {
+        $labInfo .= '	     <td style="width:'.(60 / count($this->result['mtbRifUltraReportSummary'])).'%;text-align:center;">'.$sampleSummary['rif_detected'].' ('.round(($sampleSummary['rif_detected'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
+    }
+    $labInfo .= '    </tr>';
+    $labInfo .= '    <tr>';
+    $labInfo .= '	     <td style="width:40%;">Sites not detecting Rif resistance (%)</td>';
+    foreach ($this->result['mtbRifUltraReportSummary'] as $sampleSummary) {
+        $labInfo .= '	     <td style="width:'.(60 / count($this->result['mtbRifUltraReportSummary'])).'%;text-align:center;">'.$sampleSummary['rif_not_detected'].' ('.round(($sampleSummary['rif_not_detected'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
+    }
+    $labInfo .= '    </tr>';
+    $labInfo .= '    <tr>';
+    $labInfo .= '	     <td style="width:40%;">Sites reporting indeterminate Rif result (%)</td>';
+    foreach ($this->result['mtbRifUltraReportSummary'] as $sampleSummary) {
+        $labInfo .= '	     <td style="width:'.(60 / count($this->result['mtbRifUltraReportSummary'])).'%;text-align:center;">'.$sampleSummary['rif_indeterminate'].' ('.round(($sampleSummary['rif_indeterminate'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
+    }
+    $labInfo .= '    </tr>';
+    $labInfo .= '    <tr>';
+    $labInfo .= '	     <td style="width:40%;">Sites reporting uninterpretable Rif result*(%)</td>';
+    foreach ($this->result['mtbRifUltraReportSummary'] as $sampleSummary) {
+        $labInfo .= '	     <td style="width:'.(60 / count($this->result['mtbRifUltraReportSummary'])).'%;text-align:center;">'.$sampleSummary['rif_uninterpretable'].' ('.round(($sampleSummary['rif_uninterpretable'] / $sampleSummary['no_of_responses']) * 100, 1).'%)</td>';
+    }
+    $labInfo .= '    </tr>';
+    $labInfo .= '    <tr>';
+    $labInfo .= '	     <td style="width:100%;" colspan="'.(count($this->result['mtbRifUltraReportSummary']) + 1).'">* Uninterpretable result = invalid, error, or no result</td>';
     $labInfo .= '    </tr>';
     $labInfo .= '</table><br />';
     $pdf->writeHTML($labInfo, true, false, true, false, '');
-    //Close and output PDF document
+    $pdf->MultiCell(
+        180,
+        100,
+        $this->result['shipment']["shipment_comment"],
+        0,
+        'L',
+        false,
+        1,
+        '',
+        '',
+        true,
+        0,
+        false,
+        true,
+        100,
+        'T',
+        false
+    );
+
+    // TODO: Add Remarks
+    $pdf->AddPage();
+
+    $pdf->writeHTML('<p style="font-size:10pt;"><strong style="font-size:10pt;">Panel Performance</strong></p>', true, false, true, false, '');
+    $panelPerformanceMtbRifSvg = '<?xml version="1.0" encoding="UTF-8"?>';
+    $panelPerformanceMtbRifSvg .= '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150">';
+    $panelPerformanceMtbRifSvg .= '    <rect width="150" height="150" x="0" y="0" stroke="#E4E4E4" stroke-width="1" fill="white" />';
+    /*$panelPerformanceMtbRifSvg .= '    <text x="95" y="12" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:8pt">XTPT Site Enrollment,</text>';
+    $panelPerformanceMtbRifSvg .= '    <text x="95" y="24" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:8pt">Participation, and Performance for</text>';
+    $panelPerformanceMtbRifSvg .= '    <text x="95" y="36" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:8pt">'.$this->result['shipment']['shipment_code'].'</text>';
+    for ($yAxisIncrement = 5; $yAxisIncrement >= 0; $yAxisIncrement--) {
+        $panelPerformanceMtbRifSvg .= '    <text x="15" y="'.(152 - ($yAxisIncrement * 20)).'" dominant-baseline="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">'.($yAxisIncrement * $participationYAxisMultiplier * 2).'</text>';
+        $panelPerformanceMtbRifSvg .= '    <line x1="30" x2="180" y1="'.(150 - ($yAxisIncrement * 20)).'" y2="'.(150 - ($yAxisIncrement * 20)).'" stroke="#E4E4E4" stroke-width="1" />';
+    }
+    $panelPerformanceMtbRifSvg .= '    <text x="10" y="100" transform="rotate(-90, 10, 100)" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">Number of sites</text>';
+    $panelPerformanceMtbRifSvg .= '    <rect width="30" height="' . (($this->result['aggregates']['enrolled'] / ($participationYAxisMultiplier * 10)) * 100) . '" x="40" y="'.(100 - (($this->result['aggregates']['enrolled'] / ($participationYAxisMultiplier * 10)) * 100) + 50).'" fill="#4F81BD" />';
+    $panelPerformanceMtbRifSvg .= '    <text x="55" y="158" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">Enrolled Sites</text>';
+    $panelPerformanceMtbRifSvg .= '    <rect width="30" height="' . (($this->result['aggregates']['participated'] / ($participationYAxisMultiplier * 10)) * 100) . '" x="90" y="'.(100 - (($this->result['aggregates']['participated'] / ($participationYAxisMultiplier * 10)) * 100) + 50).'" fill="#4F81BD" />';
+    $panelPerformanceMtbRifSvg .= '    <text x="105" y="158" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">Participating</text>';
+    $panelPerformanceMtbRifSvg .= '    <text x="105" y="165" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">Sites</text>';
+    $panelPerformanceMtbRifSvg .= '    <rect width="30" height="' . (($this->result['aggregates']['scored_100_percent'] / ($participationYAxisMultiplier * 10)) * 100) . '" x="140" y="'.(100 - (($this->result['aggregates']['scored_100_percent'] / ($participationYAxisMultiplier * 10)) * 100) + 50).'" fill="#4F81BD" />';
+    $panelPerformanceMtbRifSvg .= '    <text x="155" y="158" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">Sites Scoring</text>';
+    $panelPerformanceMtbRifSvg .= '    <text x="155" y="165" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">100%</text>';
+    $panelPerformanceMtbRifSvg .= '    <rect width="190" height="180" x="200" y="0" stroke="#E4E4E4" stroke-width="1" fill="white" />';
+    $panelPerformanceMtbRifSvg .= '    <text x="295" y="12" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:8pt">Test Method</text>';
+    for ($yAxisIncrement = 5; $yAxisIncrement >= 0; $yAxisIncrement--) {
+        $panelPerformanceMtbRifSvg .= '    <text x="215" y="'.(152 - ($yAxisIncrement * 20)).'" dominant-baseline="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">'.($yAxisIncrement * $testMethodYAxisMultiplier * 2).'</text>';
+        $panelPerformanceMtbRifSvg .= '    <line x1="230" x2="380" y1="'.(150 - ($yAxisIncrement * 20)).'" y2="'.(150 - ($yAxisIncrement * 20)).'" stroke="#E4E4E4" stroke-width="1" />';
+    }
+    $panelPerformanceMtbRifSvg .= '    <text x="210" y="100" transform="rotate(-90, 210, 100)" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">Number of sites</text>';
+    $panelPerformanceMtbRifSvg .= '    <rect width="30" height="' . (($this->result['aggregates']['mtb_rif'] / ($testMethodYAxisMultiplier * 10)) * 100) . '" x="250" y="'.(100 - (($this->result['aggregates']['mtb_rif'] / ($testMethodYAxisMultiplier * 10)) * 100) + 50).'" fill="#4F81BD" />';
+    $panelPerformanceMtbRifSvg .= '    <text x="265" y="158" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">Sites testing</text>';
+    $panelPerformanceMtbRifSvg .= '    <text x="265" y="165" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">Xpert MTB/RIF</text>';
+    $panelPerformanceMtbRifSvg .= '    <rect width="30" height="' . (($this->result['aggregates']['mtb_rif_ultra'] / ($testMethodYAxisMultiplier * 10)) * 100) . '" x="325" y="'.(100 - (($this->result['aggregates']['mtb_rif_ultra'] / ($testMethodYAxisMultiplier * 10)) * 100) + 50).'" fill="#4F81BD" />';
+    $panelPerformanceMtbRifSvg .= '    <text x="340" y="158" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">Sites testing</text>';
+    $panelPerformanceMtbRifSvg .= '    <text x="340" y="165" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">Xpert Ultra</text>';*/
+    $panelPerformanceMtbRifSvg .= '</svg>';
+    $pdf->ImageSVG('@' . $panelPerformanceMtbRifSvg, 15, 35, 150, 150, '', '', '', 0, false);
+
+    $pdf->writeHTML('<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><p style="font-size:10pt;">Xpert MTB/RIF and Ultra are both real time polymerase chain reaction (RT-PCR) assays that utilize fluorescent probes to signal presence of Mycobacterium tuberculosis complex (MTBC) DNA. Each GeneXpert instrument module detects an accumulation of fluorescent signal produced by the RT-PCR reactions over time. The cycle threshold (Ct) is defined as the number of RT-PCR cycles required for the fluorescent signal to cross the threshold needed for the instrument to determine positivity. This analysis examines the Ct for Probe A for Xpert MTB/RIF, or the first rpoB probe to be detected for Ultra, comparing the mean achieved during panel verification (CDC/ILB) prior to panel dispatch to the mean calculated from results submitted by field testing sites. An increase in Ct value represents a decrease in the quantity of MTBC DNA detected, while a decrease in Ct value represents an increase in the quantity of MTBC DNA detected.</p>', true, false, true, false, '');
+    $pdf->AddPage();
+
+    $pdf->writeHTML('<p style="font-size:10pt;"><strong style="font-size:10pt;">Panel Performance (continued)</strong></p>', true, false, true, false, '');
+    $panelPerformanceMtbRifUltraSvg = '<?xml version="1.0" encoding="UTF-8"?>';
+    $panelPerformanceMtbRifUltraSvg .= '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150">';
+    $panelPerformanceMtbRifUltraSvg .= '    <rect width="150" height="150" x="0" y="0" stroke="#E4E4E4" stroke-width="1" fill="white" />';
+    $panelPerformanceMtbRifUltraSvg .= '</svg>';
+    $pdf->ImageSVG('@' . $panelPerformanceMtbRifUltraSvg, 15, 35, 150, 150, '', '', '', 0, false);
+
+    $finalisedBy = '<p style="width:100%;font-size:10pt;">Report Issued by: Patricia Hall&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Date:&nbsp;';
+    if (trim($this->comingFrom)=="finalize") {
+        $finalisedBy .= '<span style="text-decoration:underline;">'.date("d-M-Y").'</span>';
+    } else {
+        $finalisedBy .= '________________________';
+    }
+    $finalisedBy .= '</p>';
+
+    $cdcDetails = '<div style="border:solid 1px #000000;">';
+    $cdcDetails .= '    <table cellpadding="2" style="width:100%;font-size:10pt;">';
+    $cdcDetails .= '        <tr>';
+    $cdcDetails .= '    	     <td colspan="2" style="padding-top:0;margin-top:0;">';
+    $cdcDetails .= '    	         <h3 style="line-height:4em;">Contact Information</h3>';
+    $cdcDetails .= '    	         <br/><span>Xpert TB Proficiency Test Program</span>';
+    $cdcDetails .= '    	         <br/><a href="mailto:xtpt@cdc.gov">xtpt@cdc.gov</a><br/>';
+    $cdcDetails .= '    	     </td>';
+    $cdcDetails .= '        </tr>';
+    $cdcDetails .= '        <tr>';
+    $cdcDetails .= '    	     <td>';
+    $cdcDetails .= '    	         <br/><span style="text-decoration:underline;font-style:italic;">Kyle DeGruy</span>';
+    $cdcDetails .= '    	         <br/><span>Program Coordinator, TB and Clinical Monitoring Team</span>';
+    $cdcDetails .= '    	         <br/><span>International Laboratory Branch</span>';
+    $cdcDetails .= '    	         <br/><span>Division of Global HIV and TB</span>';
+    $cdcDetails .= '    	         <br/><span>Center for Global Health</span>';
+    $cdcDetails .= '    	         <br/><span>US Centers for Disease Control and Prevention</span>';
+    $cdcDetails .= '    	         <br/><a href="mailto:gsz4@cdc.gov">gsz4@cdc.gov</a>';
+    $cdcDetails .= '    	     </td>';
+    $cdcDetails .= '    	     <td>';
+    $cdcDetails .= '    	         <br/><span style="text-decoration:underline;font-style:italic;">Patricia Hall</span>';
+    $cdcDetails .= '    	         <br/><span>Team Lead, TB and Clinical Monitoring Team</span>';
+    $cdcDetails .= '    	         <br/><span>International Laboratory Branch</span>';
+    $cdcDetails .= '    	         <br/><span>Division of Global HIV and TB</span>';
+    $cdcDetails .= '    	         <br/><span>Center for Global Health</span>';
+    $cdcDetails .= '    	         <br/><span>US Centers for Disease Control and Prevention</span>';
+    $cdcDetails .= '    	         <br/><a href="mailto:igg5@cdc.gov">igg5@cdc.gov</a>';
+    $cdcDetails .= '    	     </td>';
+    $cdcDetails .= '        </tr>';
+    $cdcDetails .= '    </table>';
+    $cdcDetails .= '</div>';
+    $pdf->writeHTML('<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>'.$finalisedBy.$cdcDetails, true, false, true, false, '');
+
     $fileName = $fileSafeShipmentCode . "-summary.pdf";
     $filePath = $shipmentFolderPath . DIRECTORY_SEPARATOR . $fileName;
     $pdf->Output($filePath, "F");
