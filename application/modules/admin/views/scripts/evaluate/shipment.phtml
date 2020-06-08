@@ -271,10 +271,6 @@ if (count($this->shipment) > 0) { ?>
 	}
 
 	function updateComment(sid) {
-		if ($.trim($("#shipmentComment").val()) == "") {
-			alert("Please enter comment to proceed");
-			return;
-		}
 		$.blockUI();
         $.post("<?php echo $this->url(array('module' => 'admin', 'controller' => 'evaluate', 'action' => 'update-shipment-comment'),'default',true); ?>",
             {
