@@ -329,7 +329,6 @@ if (sizeof($this->result['shipment']) > 0) {
             $commentsSection .= '    </tr>';
             if ((isset($result['eval_comment']) && $result['eval_comment'] != '') ||
                 (isset($result['optional_eval_comment']) && $result['optional_eval_comment'] != '') ||
-                (isset($result['shipment_comment']) && $result['shipment_comment'] != '') ||
                 $discrepantResultInSubmission || isset($result['cartridge_expired_on']) ||
                 $noResultOrError2127InSubmission ||
                 (isset($result['instrument_requires_calibration']) && $result['instrument_requires_calibration']) ||
@@ -342,9 +341,6 @@ if (sizeof($this->result['shipment']) > 0) {
                 }
                 if (isset($result['optional_eval_comment']) && $result['optional_eval_comment'] !== '') {
                     array_push($allComments, $result['optional_eval_comment']);
-                }
-                if (isset($result['shipment_comment']) && $result['shipment_comment'] !== '') {
-                    array_push($allComments, $result['shipment_comment']);
                 }
                 if (isset($result['ptNotTestedComment']) && $result['ptNotTestedComment'] != '') {
                     array_push($allComments, $result['ptNotTestedComment']);

@@ -903,8 +903,7 @@ class Application_Service_Evaluation {
             's.scheme_type',
             's.shipment_date',
             's.lastdate_response',
-            's.max_score',
-            's.shipment_comment'))
+            's.max_score'))
             ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id', array(
                 'd.distribution_id',
                 'd.distribution_code',
