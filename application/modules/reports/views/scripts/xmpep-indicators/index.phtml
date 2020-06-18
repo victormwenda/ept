@@ -96,6 +96,10 @@
                             var reportLink = '<a href="<?php echo $this->baseUrl("/uploads/generated-reports/") ?>' + data["report-name"] + '" target="_BLANK">' + data["report-name"] + '</a>';
                             $("#generatedReportLink").html(reportLink);
                         }
+                    },
+                    "error": function(xhr, error) {
+                      $.unblockUI();
+                      alert(error);
                     }
                 });
             }

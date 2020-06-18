@@ -5206,22 +5206,23 @@ WHERE spm.shipment_id = ?";
     ref.sample_id,
     ref.sample_label,
     res.mtb_detected AS res_mtb,
-    ref.mtb_detected AS ref_mtb,
+    CASE WHEN a.short_name = 'MTB Ultra' THEN ref.ultra_mtb_detected ELSE ref.mtb_rif_mtb_detected END AS ref_mtb,
     res.rif_resistance AS res_rif,
-    ref.rif_resistance AS ref_rif,
+    CASE WHEN a.short_name = 'MTB Ultra' THEN ref.ultra_rif_resistance ELSE ref.mtb_rif_rif_resistance END AS ref_rif,
     CASE WHEN res.mtb_detected IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') THEN 1 ELSE 0 END AS res_mtb_detected,
-    CASE WHEN ref.mtb_detected IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') THEN 1 ELSE 0 END AS ref_mtb_detected,
+    CASE WHEN (a.short_name = 'MTB Ultra' AND ref.ultra_mtb_detected IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace')) OR (IFNULL(a.short_name, 'MTB/RIF') = 'MTB/RIF' AND ref.mtb_rif_mtb_detected IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace')) THEN 1 ELSE 0 END AS ref_mtb_detected,
     CASE WHEN res.mtb_detected = 'notDetected' THEN 1 ELSE 0 END AS res_mtb_not_detected,
-    CASE WHEN ref.mtb_detected = 'notDetected' THEN 1 ELSE 0 END AS ref_mtb_not_detected,
+    CASE WHEN (a.short_name = 'MTB Ultra' AND ref.ultra_mtb_detected = 'notDetected') OR (IFNULL(a.short_name, 'MTB/RIF') = 'MTB/RIF' AND ref.mtb_rif_mtb_detected = 'notDetected') THEN 1 ELSE 0 END AS ref_mtb_not_detected,
     CASE WHEN res.mtb_detected IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') AND res.rif_resistance = 'detected' THEN 1 ELSE 0 END AS res_rif_resistance_detected,
-    CASE WHEN ref.rif_resistance = 'detected' THEN 1 ELSE 0 END AS ref_rif_resistance_detected,
+    CASE WHEN (a.short_name = 'MTB Ultra' AND ref.ultra_rif_resistance = 'detected') OR (IFNULL(a.short_name, 'MTB/RIF') = 'MTB/RIF' AND ref.mtb_rif_rif_resistance = 'detected') THEN 1 ELSE 0 END AS ref_rif_resistance_detected,
     CASE WHEN res.mtb_detected IN ('notDetected', 'detected', 'high', 'medium', 'low', 'veryLow') AND IFNULL(res.rif_resistance, '') IN ('notDetected', 'na', '') THEN 1 ELSE 0 END AS res_rif_resistance_not_detected,
-    CASE WHEN ref.rif_resistance <> 'detected' THEN 1 ELSE 0 END AS ref_rif_resistance_not_detected
+    CASE WHEN (a.short_name = 'MTB Ultra' AND ref.ultra_rif_resistance <> 'detected') OR (IFNULL(a.short_name, 'MTB/RIF') = 'MTB/RIF' AND ref.mtb_rif_rif_resistance <> 'detected') THEN 1 ELSE 0 END AS ref_rif_resistance_not_detected
   FROM shipment_participant_map AS spm
   JOIN participant AS p ON p.participant_id = spm.participant_id
   JOIN response_result_tb AS res ON res.shipment_map_id = spm.map_id
   JOIN reference_result_tb AS ref ON ref.shipment_id = spm.shipment_id
                                   AND ref.sample_id = res.sample_id
+  LEFT JOIN r_tb_assay AS a ON a.id = JSON_UNQUOTE(JSON_EXTRACT(spm.attributes, \"$.assay\"))
   WHERE spm.shipment_id = ?
   AND SUBSTR(spm.evaluation_status, 3, 1) = '1'
   AND spm.is_pt_test_not_performed <> 'yes'";
@@ -5233,19 +5234,20 @@ FROM (
   SELECT countries.id AS country_id,
     countries.iso_name AS country_name,
     CASE WHEN res.mtb_detected IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') THEN 1 ELSE 0 END AS res_mtb_detected,
-    CASE WHEN ref.mtb_detected IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') THEN 1 ELSE 0 END AS ref_mtb_detected,
+    CASE WHEN (a.short_name = 'MTB Ultra' AND ref.ultra_mtb_detected IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace')) OR (IFNULL(a.short_name, 'MTB/RIF') = 'MTB/RIF' AND ref.mtb_rif_mtb_detected IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace')) THEN 1 ELSE 0 END AS ref_mtb_detected,
     CASE WHEN res.mtb_detected = 'notDetected' THEN 1 ELSE 0 END AS res_mtb_not_detected,
-    CASE WHEN ref.mtb_detected = 'notDetected' THEN 1 ELSE 0 END AS ref_mtb_not_detected,
+    CASE WHEN (a.short_name = 'MTB Ultra' AND ref.ultra_mtb_detected = 'notDetected') OR (IFNULL(a.short_name, 'MTB/RIF') = 'MTB/RIF' AND ref.mtb_rif_mtb_detected = 'notDetected') THEN 1 ELSE 0 END AS ref_mtb_not_detected,
     CASE WHEN res.mtb_detected IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') AND res.rif_resistance = 'detected' THEN 1 ELSE 0 END AS res_rif_resistance_detected,
-    CASE WHEN ref.rif_resistance = 'detected' THEN 1 ELSE 0 END AS ref_rif_resistance_detected,
+    CASE WHEN (a.short_name = 'MTB Ultra' AND ref.ultra_rif_resistance = 'detected') OR (IFNULL(a.short_name, 'MTB/RIF') = 'MTB/RIF' AND ref.mtb_rif_rif_resistance = 'detected') THEN 1 ELSE 0 END AS ref_rif_resistance_detected,
     CASE WHEN res.mtb_detected IN ('notDetected', 'detected', 'high', 'medium', 'low', 'veryLow') AND IFNULL(res.rif_resistance, '') IN ('notDetected', 'na', '') THEN 1 ELSE 0 END AS res_rif_resistance_not_detected,
-    CASE WHEN ref.rif_resistance <> 'detected' THEN 1 ELSE 0 END AS ref_rif_resistance_not_detected
+    CASE WHEN (a.short_name = 'MTB Ultra' AND ref.ultra_rif_resistance <> 'detected') OR (IFNULL(a.short_name, 'MTB/RIF') = 'MTB/RIF' AND ref.mtb_rif_rif_resistance <> 'detected') THEN 1 ELSE 0 END AS ref_rif_resistance_not_detected
   FROM shipment_participant_map AS spm
   JOIN participant AS p ON p.participant_id = spm.participant_id
   JOIN countries ON countries.id = p.country
   JOIN response_result_tb AS res ON res.shipment_map_id = spm.map_id
   JOIN reference_result_tb AS ref ON ref.shipment_id = spm.shipment_id
                                   AND ref.sample_id = res.sample_id
+  LEFT JOIN r_tb_assay AS a ON a.id = JSON_UNQUOTE(JSON_EXTRACT(spm.attributes, \"$.assay\"))
   WHERE spm.shipment_id = 23
   AND SUBSTR(spm.evaluation_status, 3, 1) = '1'
   AND spm.is_pt_test_not_performed <> 'yes'";
