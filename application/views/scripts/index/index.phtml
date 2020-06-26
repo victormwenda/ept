@@ -1,14 +1,12 @@
 <style>
     .circleContainer {
         position: relative;
-        width: 1075px;
-        height: 1075px;
+        width: 100%;
+        padding-top: 100%;
     }
 
     .segmentContainer {
         position: absolute;
-        height: 535px;
-        width: 535px;
         overflow: hidden;
         -webkit-transition: 0.25s ease-in-out;
         -moz-transition: 0.25s ease-in-out;
@@ -18,26 +16,30 @@
 
     .segmentContainer.left {
         left: 0;
+        right: 49.8%;
     }
 
     .segmentContainer.right {
-        left: 540px;
+        left: 50.2%;
+        right: 0;
     }
 
     .segmentContainer.top {
         top: 0;
+        bottom: 49.8%;
     }
 
     .segmentContainer.bottom {
-        top: 540px;
+        top: 50.2%;
+        bottom: 0;
     }
 
     .popOutPanel {
         border: solid 0.3em #000000;
         border-radius: 2em;
         position: absolute;
-        height: 525px;
-        width: 525px;
+        height: 49%;
+        width: 49%;
         overflow: hidden;
         padding: 1em;
         -webkit-transition: 0.25s ease-in-out;
@@ -47,19 +49,23 @@
     }
 
     .popOutPanel.top {
-        top: 0px;
+        top: 0;
+        bottom: 49%;
     }
 
     .popOutPanel.bottom {
-        top: 550px;
+        top: 51%;
+        bottom: 0;
     }
 
     .popOutPanel.left {
-        left: 0px;
+        left: 0;
+        right: 49%;
     }
 
     .popOutPanel.right {
-        left: 550px;
+        left: 51%;
+        right: 0;
     }
 
     .segmentContainer .circleSegment {
@@ -123,8 +129,8 @@
     }
 
     .segmentContainer > .circleSegment > div {
-        width: 15em;
-        height: 20em;
+        width: 22%;
+        height: 30%;
         position: relative;
     }
 
@@ -135,24 +141,26 @@
         width: 100%;
         text-align: center;
         color: #fff;
+        white-space: nowrap;
+        word-break: keep-all;
     }
 
     .segmentContainer.left > .circleSegment > div {
         float: right;
-        margin-right: 36em;
+        margin-right: 65%;
     }
 
     .segmentContainer.right > .circleSegment > div {
         float: left;
-        margin-left: 32em;
+        margin-left: 55%;
     }
 
     .segmentContainer.top > .circleSegment > div {
-        margin-top: 6em;
+        margin-top: 12%;
     }
 
     .segmentContainer.bottom > .circleSegment > div {
-        margin-top: 34em;
+        margin-top: 54%;
     }
 
     .segmentContainer.top > .circleSegment > div > h3 {
@@ -163,50 +171,73 @@
         top: 0;
     }
 
+    .segmentContainer > .circleSegment > div > img {
+        height: 80%;
+    }
+
+    .segmentContainer.top > .circleSegment > div > img {
+        margin-bottom: 10%;
+    }
+
     .segmentContainer.bottom > .circleSegment > div > img {
-        margin-top: 2em;
+        margin-top: 25%;
+    }
+
+    @media only screen and (max-width: 768px) {
+        .segmentContainer > .circleSegment > div > h3 {
+            font-size: 1em;
+            margin: 0;
+            white-space: pre-wrap;
+        }
+
+        .segmentContainer > .circleSegment > div > img {
+            height: 60%;
+        }
+
+        .segmentContainer.top > .circleSegment > div > img {
+            margin-bottom: 50%;
+        }
+
+        .segmentContainer.bottom > .circleSegment > div > img {
+            margin-top: 50%;
+        }
     }
 
     .centerCycle {
         position: absolute;
-        width: 133px;
-        height: 132px;
-        left: 476px;
-        top: 460px;
+        width: 12%;
+        height: 12%;
+        left: 44%;
+        top: 44%;
+    }
+
+    .centerCycle img {
+        width: 90%;
+        height: 40%;
+        margin: 5%;
     }
 
     .segmentContainer.active {
+        top: 50%;
+        bottom: 0;
+        right: 50%;
         left: 0;
-        top: 540px;
-    }
-
-    .segmentContainer.top.right.active {
-        left: 100px !important;
-        top: 440px !important;
-    }
-
-    .segmentContainer.top.left.active {
-        top: 440px !important;
-    }
-
-    .segmentContainer.bottom.right.active {
-        left: 100px !important;
     }
 
     .popOutPanel.active {
-        left: 125px;
-        top: 50px;
-        width: 900px;
-        height: 975px;
+        left: 12%;
+        top: 5%;
+        width: 84%;
+        height: 91%;
     }
 
     .popOutPanel .textShifter {
         border-radius: 50%;
         width: 160%;
         height: 160%;
-        background-color: rgb(249, 249, 249);
         margin: 0;
         clear: both;
+        background-color: rgb(249, 249, 249);
         visibility: hidden;
         opacity: 0;
         -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
@@ -276,6 +307,11 @@
 <div class="circleContainer">
     <div class="popOutPanel top left">
         <div class="textShifter"></div>
+        <ul>
+            <li>XMPEP DTS Testing Instructions</li>
+        </ul>
+
+
         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
         <p>Sed ut perspiciatis unde omnis.</p>
         <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
@@ -297,9 +333,27 @@
         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
         <p>Sed ut perspiciatis unde omnis.</p>
         <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+
+
     </div>
     <div class="popOutPanel top right">
         <div class="textShifter"></div>
+        <ul>
+            <li>
+                Planning for country transition to Xpert MTB RIF Ultra cartridges
+            </li>
+            <li>
+                FIND Implementation Guidance & Support
+            </li>
+            <li>
+                FIND Roadmap to GeneXpert Implementation
+            </li>
+            <li>
+                FIND Tuberculosis SOPs
+            </li>
+        </ul>
+
+
         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
         <p>Sed ut perspiciatis unde omnis.</p>
         <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
@@ -321,9 +375,30 @@
         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
         <p>Sed ut perspiciatis unde omnis.</p>
         <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+
+
     </div>
     <div class="popOutPanel bottom left">
         <div class="textShifter"></div>
+        <ul>
+            <li>
+                Corrective Action form
+            </li>
+            <li>
+                Practical Guide to Implementing a Quality Assurance System for Xpert
+            </li>
+            <li>
+                FIND TB Training Materials & Job Aids
+            </li>
+            <li>
+                GLI Training Package (Technical Modules for Xpert MTB RIF Ultra)
+            </li>
+            <li>
+                Cepheid GeneXpert Resources
+            </li>
+        </ul>
+
+
         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
         <p>Sed ut perspiciatis unde omnis.</p>
         <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
@@ -345,9 +420,16 @@
         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
         <p>Sed ut perspiciatis unde omnis.</p>
         <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+
+
     </div>
     <div class="popOutPanel bottom right">
         <div class="textShifter"></div>
+        <ul>
+            <li>How to use ePT</li>
+        </ul>
+
+
         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
         <p>Sed ut perspiciatis unde omnis.</p>
         <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
@@ -369,6 +451,8 @@
         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
         <p>Sed ut perspiciatis unde omnis.</p>
         <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+
+
     </div>
     <div class="segmentContainer top left">
         <div class="circleSegment">
@@ -382,14 +466,14 @@
         <div class="circleSegment">
             <div>
                 <img src="/images/processes_programs.png" alt="Processes/Programs" title="Processes/Programs" />
-                <h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Processes/Programs</h3>
+                <h3>Processes/&#8203;Programs</h3>
             </div>
         </div>
     </div>
     <div class="segmentContainer bottom left">
         <div class="circleSegment">
             <div>
-                <h3>Progress/Improvements</h3>
+                <h3>Progress/&#8203;Improvements</h3>
                 <img src="/images/progress_improvements.png" alt="Progress/Improvements" title="Progress/Improvements" />
             </div>
         </div>
@@ -404,8 +488,6 @@
     </div>
     <div class="centerCycle">
         <img src="/images/top_cycle.png" />
-        <br />
-        <br />
         <img src="/images/bottom_cycle.png" />
     </div>
     <!-- Add back arrow -->
