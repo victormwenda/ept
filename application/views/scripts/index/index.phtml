@@ -1,40 +1,72 @@
-<?php
-$authNameSpace = new Zend_Session_Namespace('datamanagers');
-?>
-<div class="col-lg-12">
-    <?php
-    if(isset($this->banner['image']) && trim($this->banner['image'])!= '' && file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . 'home-banner'. DIRECTORY_SEPARATOR . $this->banner['image'])){
-    ?>
-       <img src="/uploads/home-banner/<?php echo $this->banner['image']; ?>" style="width:100%;" />
-    <?php } ?>
-</div>
 <style>
-    .segmentContainer {
+    .circleContainer {
         position: relative;
-        height: 500px;
+        width: 1075px;
+        height: 1075px;
+    }
+
+    .segmentContainer {
+        position: absolute;
+        height: 535px;
+        width: 535px;
         overflow: hidden;
-        width: 49%;
-        display: inline-block;
-        margin-right: 2px;
+        -webkit-transition: 0.25s ease-in-out;
+        -moz-transition: 0.25s ease-in-out;
+        -o-transition: 0.25s ease-in-out;
+        transition: 0.25s ease-in-out;
     }
 
     .segmentContainer.left {
-        margin-right: 2px;
+        left: 0;
     }
 
     .segmentContainer.right {
-        margin-left: 2px;
+        left: 540px;
+    }
+
+    .segmentContainer.top {
+        top: 0;
     }
 
     .segmentContainer.bottom {
-        margin-top: 1px;
+        top: 540px;
+    }
+
+    .popOutPanel {
+        border: solid 0.3em #000000;
+        border-radius: 2em;
+        position: absolute;
+        height: 525px;
+        width: 525px;
+        overflow: hidden;
+        padding: 1em;
+        -webkit-transition: 0.25s ease-in-out;
+        -moz-transition: 0.25s ease-in-out;
+        -o-transition: 0.25s ease-in-out;
+        transition: 0.25s ease-in-out;
+    }
+
+    .popOutPanel.top {
+        top: 0px;
+    }
+
+    .popOutPanel.bottom {
+        top: 550px;
+    }
+
+    .popOutPanel.left {
+        left: 0px;
+    }
+
+    .popOutPanel.right {
+        left: 550px;
     }
 
     .segmentContainer .circleSegment {
         position: absolute;
         border-radius: 50%;
-        width: 150%;
-        height: 150%;
+        width: 160%;
+        height: 160%;
         border: solid 0.4em rgb(249, 249, 249);
         -webkit-transition: 0.25s ease-in-out;
         -moz-transition: 0.25s ease-in-out;
@@ -52,26 +84,42 @@ $authNameSpace = new Zend_Session_Namespace('datamanagers');
 
     .segmentContainer.top.left > .circleSegment {
         background-color: #ED7D31;
-        top: 25%;
-        right: -75%;
+        top: 20%;
+        right: -80%;
     }
 
     .segmentContainer.top.right > .circleSegment {
         background-color: #D17B5C;
-        top: 25%;
-        left: -75%;
+        top: 20%;
+        left: -80%;
     }
 
     .segmentContainer.bottom.left > .circleSegment {
         background-color: #A5A5A5;
-        top: -75%;
-        right: -75%;
+        top: -80%;
+        right: -80%;
     }
 
     .segmentContainer.bottom.right > .circleSegment {
         background-color: #B98A82;
-        top: -75%;
-        left: -75%;
+        top: -80%;
+        left: -80%;
+    }
+
+    .popOutPanel.top.left {
+        border-color: #ED7D31;
+    }
+
+    .popOutPanel.top.right {
+        border-color: #D17B5C;
+    }
+
+    .popOutPanel.bottom.left {
+        border-color: #A5A5A5;
+    }
+
+    .popOutPanel.bottom.right {
+        border-color: #B98A82;
     }
 
     .segmentContainer > .circleSegment > div {
@@ -91,7 +139,7 @@ $authNameSpace = new Zend_Session_Namespace('datamanagers');
 
     .segmentContainer.left > .circleSegment > div {
         float: right;
-        margin-right: 35em;
+        margin-right: 36em;
     }
 
     .segmentContainer.right > .circleSegment > div {
@@ -104,7 +152,7 @@ $authNameSpace = new Zend_Session_Namespace('datamanagers');
     }
 
     .segmentContainer.bottom > .circleSegment > div {
-        margin-top: 29em;
+        margin-top: 34em;
     }
 
     .segmentContainer.top > .circleSegment > div > h3 {
@@ -119,44 +167,210 @@ $authNameSpace = new Zend_Session_Namespace('datamanagers');
         margin-top: 2em;
     }
 
-    .segmentContainer > .popOutPanel {
-        border: solid 0.3em #000000;
-        border-radius: 2em;
-        width: 80%;
-        height: 80%;
+    .centerCycle {
         position: absolute;
+        width: 133px;
+        height: 132px;
+        left: 476px;
+        top: 460px;
     }
 
-    .segmentContainer.top.left > .popOutPanel {
-        border-color: #ED7D31;
-        top: 10%;
-        left: 10%;
+    .segmentContainer.active {
+        left: 0;
+        top: 540px;
     }
 
-    .segmentContainer.top.right > .popOutPanel {
-        border-color: #D17B5C;
-        top: 10%;
-        right: 10%;
+    .segmentContainer.top.right.active {
+        left: 100px !important;
+        top: 440px !important;
     }
 
-    .segmentContainer.bottom.left > .popOutPanel {
-        border-color: #A5A5A5;
-        bottom: 10%;
-        left: 10%;
+    .segmentContainer.top.left.active {
+        top: 440px !important;
     }
 
-    .segmentContainer.bottom.right > .popOutPanel {
-        border-color: #B98A82;
-        bottom: 10%;
-        right: 10%;
+    .segmentContainer.bottom.right.active {
+        left: 100px !important;
     }
 
+    .popOutPanel.active {
+        left: 125px;
+        top: 50px;
+        width: 900px;
+        height: 975px;
+    }
+
+    .popOutPanel .textShifter {
+        border-radius: 50%;
+        width: 160%;
+        height: 160%;
+        background-color: rgb(249, 249, 249);
+        margin: 0;
+        clear: both;
+        visibility: hidden;
+        opacity: 0;
+        -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+        filter: alpha(opacity=0);
+    }
+
+    .popOutPanel.left .textShifter {
+        float: right;
+        margin-right: -80%;
+    }
+
+    .popOutPanel.right .textShifter {
+        float: left;
+        margin-left: -77%;
+    }
+
+    .popOutPanel.top .textShifter {
+        vertical-align: bottom;
+        margin-top: 20%;
+    }
+
+    .popOutPanel.bottom .textShifter {
+        margin-top: -80%;
+    }
+
+    .popOutPanel.top.left .textShifter {
+        shape-outside: ellipse(50% 50% at 50% 60%);
+        -webkit-clip-path: ellipse(50% 50% at 50% 60%);
+        clip-path: ellipse(50% 50% at 50% 60%);
+        -webkit-shape-outside: ellipse(50% 50% at 50% 60%);
+    }
+
+    .popOutPanel.top.right .textShifter {
+        shape-outside: ellipse(50% 50% at 50% 60%);
+        -webkit-clip-path: ellipse(50% 50% at 50% 60%);
+        clip-path: ellipse(50% 50% at 50% 60%);
+        -webkit-shape-outside: ellipse(50% 50% at 50% 60%);
+    }
+
+    .popOutPanel.bottom.left .textShifter {
+        shape-outside: ellipse(100% 100% at 100% 0);
+        -webkit-clip-path: ellipse(100% 100% at 100% 0);
+        clip-path: ellipse(100% 100% at 100% 0);
+        -webkit-shape-outside: ellipse(100% 100% at 100% 0);
+    }
+
+    .popOutPanel.bottom.right .textShifter {
+        shape-outside: ellipse(100% 100% at 0 0);
+        -webkit-clip-path: ellipse(100% 100% at 0 0);
+        clip-path: ellipse(100% 100% at 0 0);
+        -webkit-shape-outside: ellipse(100% 100% at 0 0);
+    }
+
+    .popOutPanel.active .textShifter {
+        float: left !important;
+        vertical-align: bottom !important;
+        margin-top: 65% !important;
+        margin-bottom: 0 !important;
+        margin-left: -110% !important;
+        margin-right: 0 !important;
+        shape-outside: ellipse(50% 50% at 50% 60%) !important;
+        -webkit-clip-path: ellipse(50% 50% at 50% 60%) !important;
+        clip-path: ellipse(50% 50% at 50% 60%) !important;
+        -webkit-shape-outside: ellipse(50% 50% at 50% 60%) !important;
+    }
 </style>
-<div class="row">
+<div class="circleContainer">
+    <div class="popOutPanel top left">
+        <div class="textShifter"></div>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
+        <p>Sed ut perspiciatis unde omnis.</p>
+        <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
+        <p>Sed ut perspiciatis unde omnis.</p>
+        <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
+        <p>Sed ut perspiciatis unde omnis.</p>
+        <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
+        <p>Sed ut perspiciatis unde omnis.</p>
+        <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
+        <p>Sed ut perspiciatis unde omnis.</p>
+        <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
+        <p>Sed ut perspiciatis unde omnis.</p>
+        <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
+        <p>Sed ut perspiciatis unde omnis.</p>
+        <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+    </div>
+    <div class="popOutPanel top right">
+        <div class="textShifter"></div>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
+        <p>Sed ut perspiciatis unde omnis.</p>
+        <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
+        <p>Sed ut perspiciatis unde omnis.</p>
+        <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
+        <p>Sed ut perspiciatis unde omnis.</p>
+        <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
+        <p>Sed ut perspiciatis unde omnis.</p>
+        <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
+        <p>Sed ut perspiciatis unde omnis.</p>
+        <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
+        <p>Sed ut perspiciatis unde omnis.</p>
+        <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
+        <p>Sed ut perspiciatis unde omnis.</p>
+        <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+    </div>
+    <div class="popOutPanel bottom left">
+        <div class="textShifter"></div>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
+        <p>Sed ut perspiciatis unde omnis.</p>
+        <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
+        <p>Sed ut perspiciatis unde omnis.</p>
+        <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
+        <p>Sed ut perspiciatis unde omnis.</p>
+        <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
+        <p>Sed ut perspiciatis unde omnis.</p>
+        <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
+        <p>Sed ut perspiciatis unde omnis.</p>
+        <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
+        <p>Sed ut perspiciatis unde omnis.</p>
+        <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
+        <p>Sed ut perspiciatis unde omnis.</p>
+        <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+    </div>
+    <div class="popOutPanel bottom right">
+        <div class="textShifter"></div>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
+        <p>Sed ut perspiciatis unde omnis.</p>
+        <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
+        <p>Sed ut perspiciatis unde omnis.</p>
+        <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
+        <p>Sed ut perspiciatis unde omnis.</p>
+        <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
+        <p>Sed ut perspiciatis unde omnis.</p>
+        <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
+        <p>Sed ut perspiciatis unde omnis.</p>
+        <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
+        <p>Sed ut perspiciatis unde omnis.</p>
+        <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.</p>
+        <p>Sed ut perspiciatis unde omnis.</p>
+        <p>But I must explain to you how all this mistaken idea of denouncing pleasure</p>
+    </div>
     <div class="segmentContainer top left">
-        <div class="popOutPanel">
-
-        </div>
         <div class="circleSegment">
             <div>
                 <img src="/images/assessment.png" alt="Assessment" title="Assessment" />
@@ -165,22 +379,14 @@ $authNameSpace = new Zend_Session_Namespace('datamanagers');
         </div>
     </div>
     <div class="segmentContainer top right">
-        <div class="popOutPanel">
-
-        </div>
         <div class="circleSegment">
             <div>
                 <img src="/images/processes_programs.png" alt="Processes/Programs" title="Processes/Programs" />
-                <h3>Processes/Programs</h3>
+                <h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Processes/Programs</h3>
             </div>
         </div>
     </div>
-</div>
-<div class="row">
     <div class="segmentContainer bottom left">
-        <div class="popOutPanel">
-
-        </div>
         <div class="circleSegment">
             <div>
                 <h3>Progress/Improvements</h3>
@@ -189,9 +395,6 @@ $authNameSpace = new Zend_Session_Namespace('datamanagers');
         </div>
     </div>
     <div class="segmentContainer bottom right">
-        <div class="popOutPanel">
-
-        </div>
         <div class="circleSegment">
             <div>
                 <h3>Results</h3>
@@ -199,4 +402,40 @@ $authNameSpace = new Zend_Session_Namespace('datamanagers');
             </div>
         </div>
     </div>
+    <div class="centerCycle">
+        <img src="/images/top_cycle.png" />
+        <br />
+        <br />
+        <img src="/images/bottom_cycle.png" />
+    </div>
+    <!-- Add back arrow -->
 </div>
+<script>
+  $(document).ready(function() {
+    $('.segmentContainer').click(function () {
+      var clickedSegment = this;
+      var popOutPanelSelector = '.' + $(clickedSegment).attr('class').replace('segmentContainer', 'popOutPanel').replace(/\s/g, '.');
+      var clickedSegmentActive = $(clickedSegment).hasClass('active');
+      $('.segmentContainer').removeClass('active');
+      $('.popOutPanel').removeClass('active');
+      if (!clickedSegmentActive) {
+        $(clickedSegment).addClass('active');
+        $(popOutPanelSelector).addClass('active');
+        $('.centerCycle').hide();
+        $('.segmentContainer').each(function (index, segment) {
+          var loopPopOutPanelSelector = '.' + $(segment).attr('class').replace('segmentContainer', 'popOutPanel').replace(/\s/g, '.').replace('.active', '');
+          if (loopPopOutPanelSelector !== popOutPanelSelector) {
+            $(loopPopOutPanelSelector).hide();
+          }
+          if (segment !== clickedSegment) {
+            $(segment).hide();
+          }
+        })
+      } else {
+        $('.centerCycle').show();
+        $('.segmentContainer').show();
+        $('.popOutPanel').show();
+      }
+    })
+  })
+</script>
