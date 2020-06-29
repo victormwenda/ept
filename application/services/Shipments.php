@@ -189,6 +189,15 @@ class Application_Service_Shipments {
         echo json_encode($output);
     }
 
+    public function lastThreeShipments() {
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $sQuery = $db->select()->from(array('s' => 'shipment'))
+            ->where('s.is_official=1')
+            ->order('s.shipment_date desc')
+            ->limit(3);
+        return $db->fetchAll($sQuery);
+    }
+
     public function getShipmentsForScheme($scheme) {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sQuery = $db->select()->from(array('s' => 'shipment'))
