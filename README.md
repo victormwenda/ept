@@ -20,6 +20,13 @@ enter the following jobs
 */2 * * * * php -f /var/www/ept-2.4/cron/SendMailAlerts.php
 ```
 
+#### Renew SSL Certificate
+The SSL certificate for the website was essued by [Let's Encrypt](https://letsencrypt.org) and requested using [certbot](https://certbot.eff.org/lets-encrypt/ubuntubionic-apache)
+
+There should be a cron job or service that automatically renews the SSL certificate every 3 months but if it expires, it can be manually renewed by following these steps:
+1. Ensure that the let's encrypt config is present on the server in /etc/letsencrypt. If it isn't restore it from the relevant `etc-letsencrypt.tar.gz` archive in the [ePT Google Drive](https://drive.google.com/drive/u/1/folders/1CAYmMOAKExvfctmwJ62MpfLLCpJnEeq7)
+2. Run the [certbot client](https://certbot.eff.org/lets-encrypt/ubuntubionic-apache) `$ sudo certbot renew`
+
 ### Who do I talk to? ###
 
 * You can reach us at brichards@systemone.id
