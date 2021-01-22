@@ -158,7 +158,7 @@ foreach($this->allNotTestedReason as $reason) { ?>
                 <?php
                 foreach ($this->assays as $id => $definition) { ?>
                     <option value="<?php echo $id; ?>"
-                        <?php if (isset($this->shipment['attributes']['assay'])) { echo ($this->shipment['attributes']['assay'] == $id) ? 'select="selected"' : ''; } ?>>
+                        <?php if (isset($this->shipment['attributes']['assay'])) { echo ($this->shipment['attributes']['assay'] == $id) ? 'selected="selected"' : ''; } ?>>
                         <?php echo $definition['name']; ?>
                     </option>
                     <?php
