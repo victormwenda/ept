@@ -1140,8 +1140,8 @@ class Application_Service_Evaluation {
                     }
                 }
 
-                if ($tbResult['cartridge_expiration_date'] < $tbResult['date_tested']) {
-                    $cartridgeExpiredOn = $tbResult['cartridge_expiration_date'];
+                if ($tbResult['cartridge_expiration_date'] != '0000-00-00' && Pt_Commons_General::dbDateToString($tbResult['cartridge_expiration_date']) < $tbResult['date_tested']) {
+                    $cartridgeExpiredOn = Pt_Commons_General::dbDateToString($tbResult['cartridge_expiration_date']);
                     array_push($testsDoneAfterCartridgeExpired, array(
                         "sample_label" => $tbResult['sample_label'],
                         "date_tested" => $tbResult['date_tested']
