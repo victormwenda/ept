@@ -3,7 +3,7 @@ $adminSession = new Zend_Session_Namespace('administrators');
 if ($this->shipments == false && count($this->shipments) <= 0) {
     echo "<br/><br/><br/><h4 style='text-align:center;'>Unable fetch shipments. Please try again later or contact system admin for help</h4>";
 } else { ?>
-	
+
     <div class="modal-dialog" style="width:100%;">
         <div class="modal-header">
           <h4 class="modal-title">Shipments Under PE Survey <?php echo $this->shipments[0]['distribution_code']; ?> (<?php echo $this->dateFormat($this->shipments[0]['distribution_date']); ?>)</h4>
@@ -34,8 +34,8 @@ if ($this->shipments == false && count($this->shipments) <= 0) {
 					<td style="text-align: center;"><?php echo $shipment['number_of_samples'] ?></td>
 					<td style="text-align: center;"><?php echo $shipment['participant_count'] ?></td>
 					<td style="text-align: center;"><?php echo $reported ?></td>
-					<td style="text-align: center;"><?php echo (isset($shipment['participant_count']) && $shipment['participant_count'] > 0) ? round(($reported/$shipment['participant_count'])*100,2) : 0; ?></td>					
-					<td style="text-align: center;"><?php echo (isset($shipment['number_passed']) && $shipment['number_passed'] >= 0) ? $shipment['number_passed'] : 0; ?></td>					
+					<td style="text-align: center;"><?php echo (isset($shipment['participant_count']) && $shipment['participant_count'] > 0) ? round(($reported/$shipment['participant_count'])*100,2) : 0; ?></td>
+					<td style="text-align: center;"><?php echo (isset($shipment['number_passed']) && $shipment['number_passed'] >= 0) ? $shipment['number_passed'] : 0; ?></td>
 					<td style="text-align: center;"><?php echo ucfirst($shipment['shipment_status']) ?></td>
 					<td style="text-align: center;">
 					<?php
@@ -95,7 +95,7 @@ if ($this->shipments == false && count($this->shipments) <= 0) {
 }
 ?>
 <div id="vlRangeDiv">
-	
+
 </div>
 <script>
 	function getVLReferenceScores(sid){
@@ -104,6 +104,6 @@ if ($this->shipments == false && count($this->shipments) <= 0) {
 			function (data) {
 				$("#vlRangeDiv").html(data);
 				$.unblockUI();
-			});	
+			});
 	}
 </script>
