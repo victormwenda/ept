@@ -515,7 +515,10 @@ class Application_Service_Evaluation {
             foreach ($assayRecords as $assayRecord) {
                 $assays[$assayRecord['id']] = $assayRecord['short_name'];
             }
-            $assayName = $assays[$attributes['assay']];
+            $assayName = "Unspecified";
+            if (isset($attributes['assay']) && $attributes['assay'] != '') {
+                $assayName = $assays[$attributes['assay']];
+            }
             $mapData = array(
                 "shipment_receipt_date" => Application_Service_Common::ParseDate($params['receiptDate']),
                 "shipment_test_report_date" => Application_Service_Common::ParseDate($params['testReceiptDate']),
@@ -975,12 +978,8 @@ class Application_Service_Evaluation {
         }
 
         $assays = array();
-        $defaultAssayId = '';
         $assayRecords = $db->fetchAll($db->select()->from('r_tb_assay'));
         foreach ($assayRecords as $assayRecord) {
-            if ($defaultAssayId == '') {
-                $defaultAssayId = $assayRecord['id'];
-            }
             $assays[$assayRecord['id']] = $assayRecord['short_name'];
         }
         $i = 0;
@@ -1221,9 +1220,6 @@ class Application_Service_Evaluation {
             if(!isset($attributes['expiry_date'])) {
                 $attributes['expiry_date'] = '';
             }
-            if (!isset($attributes['assay'])) {
-                $attributes['assay'] = $defaultAssayId;
-            }
             $shipmentResult[$i]['documentation_score'] = $scoringService->calculateTbDocumentationScore(
                 $res['shipment_date'], $attributes['expiry_date'], $res['shipment_receipt_date'],
                 $res['supervisor_approval'], $res['participant_supervisor'], $res['lastdate_response']);
@@ -1278,7 +1274,10 @@ class Application_Service_Evaluation {
                     $shipmentResult[$i]['ptNotTestedComment'] .= ' due to the following reason(s): '.$ptNotTestedComment.'.';
                 }
             }
-            $shipmentResult[$i]['assay_name'] = $assays[$attributes['assay']];
+            $shipmentResult[$i]['assay_name'] = "Unspecified";
+            if (isset($attributes['assay']) && $attributes['assay'] != '') {
+                $shipmentResult[$i]['assay_name'] = $assays[$attributes['assay']];
+	        }
             $i++;
             $db->update('shipment_participant_map', array('report_generated' => 'yes'), "map_id=" . $res['map_id']);
             $db->update('shipment', array('status' => 'evaluated'), "shipment_id=" . $shipmentId);
@@ -1548,12 +1547,8 @@ class Application_Service_Evaluation {
         $maxTotalScore = 0;
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $assays = array();
-        $defaultAssayId = '';
         $assayRecords = $db->fetchAll($db->select()->from('r_tb_assay'));
         foreach ($assayRecords as $assayRecord) {
-            if ($defaultAssayId == '') {
-                $defaultAssayId = $assayRecord['id'];
-            }
             $assays[$assayRecord['id']] = $assayRecord['short_name'];
         }
         foreach ($shipmentResult as $shipment) {
@@ -1570,8 +1565,8 @@ class Application_Service_Evaluation {
                 $failureReason['warning'] = "Response was submitted after the last response date.";
             }
             $attributes = json_decode($shipment['attributes'], true);
-            $assayName = $assays[$defaultAssayId];
-            if (isset($attributes['assay']) && array_key_exists($attributes['assay'], $assays)) {
+            $assayName = "Unspecified";
+            if (isset($attributes['assay']) && $attributes['assay'] != '' && array_key_exists($attributes['assay'], $assays)) {
                 $assayName = $assays[$attributes['assay']];
             }
             foreach ($results as $result) {
