@@ -955,13 +955,16 @@ class Application_Service_Evaluation {
             $sql = $sql->limit($sLimit, $sOffset);
 		}
         $shipmentResult = $db->fetchAll($sql);
-        $previousSixShipmentsSql = $sql = $db->select()
+        $previousSixShipmentsSql = $db->select()
             ->from(array('s' => 'shipment'), array(
                 's.shipment_id',
                 's.shipment_code',
                 's.shipment_date'))
             ->join(array('spm' => 'shipment_participant_map'), 's.shipment_id=spm.shipment_id', array('mean_shipment_score' => new Zend_Db_Expr("AVG(IFNULL(spm.shipment_score, 0) + IFNULL(spm.documentation_score, 0))")))
             ->where("s.is_official = 1")
+            ->where(new Zend_Db_Expr("IFNULL(spm.is_pt_test_not_performed, 'no') = 'no'"))
+            ->where(new Zend_Db_Expr("IFNULL(spm.is_excluded, 'no') = 'no'"))
+            ->where(new Zend_Db_Expr("SUBSTR(spm.evaluation_status, 3, 1) = '1'")) // Submitted
             ->where("s.shipment_id <= ".$shipmentId)
             ->group('s.shipment_id')
             ->order("s.shipment_date DESC")
