@@ -5,7 +5,7 @@ class Application_Model_DbTable_MailTemplate extends Zend_Db_Table_Abstract
 
     protected $_name = 'mail_template';
     protected $_primary = 'mail_temp_id';
-  
+
     public function updateMailTemplateDetails($params) {
         $data=array(
                 'mail_purpose' => $params['mailPurpose'],
@@ -24,7 +24,6 @@ class Application_Model_DbTable_MailTemplate extends Zend_Db_Table_Abstract
       }
     }
     public function getEmailTemplateDetails($mailPurpose) {
-       // Zend_Debug::dump($mailPurpose);die;
         return $this->fetchRow("mail_purpose='$mailPurpose'");
     }
 }
