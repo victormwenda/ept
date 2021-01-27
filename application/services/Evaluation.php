@@ -1142,8 +1142,8 @@ class Application_Service_Evaluation {
                     }
                 }
 
-                if ($tbResult['cartridge_expiration_date'] != '0000-00-00' && Pt_Commons_General::dbDateToString($tbResult['cartridge_expiration_date']) < $tbResult['date_tested']) {
-                    $cartridgeExpiredOn = Pt_Commons_General::dbDateToString($tbResult['cartridge_expiration_date']);
+                if (isset($tbResult['cartridge_expiration_date']) && $tbResult['cartridge_expiration_date'] != '0000-00-00' && $tbResult['cartridge_expiration_date'] < $tbResult['date_tested']) {
+                    $cartridgeExpiredOn = $tbResult['cartridge_expiration_date'];
                     array_push($testsDoneAfterCartridgeExpired, array(
                         "sample_label" => $tbResult['sample_label'],
                         "date_tested" => $tbResult['date_tested']
@@ -1236,10 +1236,14 @@ class Application_Service_Evaluation {
             $shipmentResult[$i]['instrumentsUsed'] = $instrumentsUsed;
             $shipmentResult[$i]['cartridge_expired_on'] = $cartridgeExpiredOn;
             $shipmentResult[$i]['tests_done_on_expired_cartridges'] = "";
-            if ($cartridgeExpiredOn && count($testsDoneAfterCartridgeExpired) < $counter) {
-                $shipmentResult[$i]['tests_done_on_expired_cartridges'] = " The following samples were tested using expired cartridges:";
-                foreach ($testsDoneAfterCartridgeExpired as $testDoneAfterCartridgeExpired) {
-                    $shipmentResult[$i]['tests_done_on_expired_cartridges'] .= "<br/>".$testDoneAfterCartridgeExpired["sample_label"] . " was tested on " . Pt_Commons_General::dbDateToString($testDoneAfterCartridgeExpired['date_tested']);
+            if ($cartridgeExpiredOn) {
+                if (count($testsDoneAfterCartridgeExpired) < $counter) {
+                    $shipmentResult[$i]['tests_done_on_expired_cartridges'] = " The following samples were tested using expired cartridges:";
+                    foreach ($testsDoneAfterCartridgeExpired as $testDoneAfterCartridgeExpired) {
+                        $shipmentResult[$i]['tests_done_on_expired_cartridges'] .= "<br/>".$testDoneAfterCartridgeExpired["sample_label"] . " was tested on " . Pt_Commons_General::dbDateToString($testDoneAfterCartridgeExpired['date_tested']);
+                    }
+                } else if (count($testsDoneAfterCartridgeExpired) > 0) {
+                    $shipmentResult[$i]['tests_done_on_expired_cartridges'] = " This panel was tested on ".Pt_Commons_General::dbDateToString($testsDoneAfterCartridgeExpired[0]['date_tested']);
                 }
             }
             $shipmentResult[$i]['instrument_requires_calibration'] = $instrumentRequiresCalibration;
