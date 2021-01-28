@@ -154,7 +154,7 @@ foreach($this->allNotTestedReason as $reason) { ?>
         <td>
             <select class="form-control" name="assay" id="assay" class="form-control"
                     title="Please choose the assay type">
-                <option value="">---Select---</option>
+                <option value="">--Select--</option>
                 <?php
                 foreach ($this->assays as $id => $definition) { ?>
                     <option value="<?php echo $id; ?>"
@@ -393,7 +393,7 @@ foreach($this->allNotTestedReason as $reason) { ?>
                                     class="isRequired form-control input-sm mtbDetected" title="Please enter the MTB Detected for this sample"
                                     placeholder="Please enter the MTB Detected for this sample"
                                     onChange="changeMtbDetected(<?php echo $count; ?>)">
-                                <option value="">-- Select --</option>
+                                <option value="">--Select--</option>
                                 <option value="detected" <?php echo ($sample['res_mtb_detected'] == 'detected' ? "selected='selected'" : ""); ?>>
                                     Detected
                                 </option>

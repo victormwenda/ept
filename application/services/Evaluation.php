@@ -1,4 +1,5 @@
 <?php
+
 class Application_Service_Evaluation {
     public function echoAllDistributions($parameters) {
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
@@ -949,18 +950,17 @@ class Application_Service_Evaluation {
             ->order("sorting_unique_identifier");
         if (isset($sLimit) && isset($sOffset)) {
             $sql = $sql->limit($sLimit, $sOffset);
-        }
+		}
         $shipmentResult = $db->fetchAll($sql);
         $previousSixShipmentsSql = $sql = $db->select()
             ->from(array('s' => 'shipment'), array(
                 's.shipment_id',
                 's.shipment_code',
                 's.shipment_date'))
-            ->join(array('spm' => 'shipment_participant_map'), 's.shipment_id=spm.shipment_id', array('mean_shipment_score' => new Zend_Db_Expr("CASE WHEN spm.is_pt_test_not_performed=\"yes\" THEN AVG(IFNULL(spm.shipment_score, 0) + IFNULL(spm.documentation_score, 0)) ELSE 0 END")))
+            ->join(array('spm' => 'shipment_participant_map'), 's.shipment_id=spm.shipment_id', array('mean_shipment_score' => new Zend_Db_Expr("AVG(IFNULL(spm.shipment_score, 0) + IFNULL(spm.documentation_score, 0))")))
             ->where("s.is_official = 1")
             ->where("s.shipment_id <= ".$shipmentId)
             ->group('s.shipment_id')
-            ->order("RIGHT(shipment_code,5) DESC")
             ->order("s.shipment_date DESC")
             ->limit(6);
         $previousSixShipments = $db->fetchAll($previousSixShipmentsSql);
@@ -973,6 +973,7 @@ class Application_Service_Evaluation {
             $tbResultsConsensusMtbRif = $this->getConsensusResults($shipmentId, 'MTB/RIF');
             $tbResultsConsensusUltra = $this->getConsensusResults($shipmentId, 'MTB Ultra');
         }
+
         $assays = array();
         $defaultAssayId = '';
         $assayRecords = $db->fetchAll($db->select()->from('r_tb_assay'));
@@ -991,6 +992,7 @@ class Application_Service_Evaluation {
                 ->join(array('dm' => 'data_manager'), 'dm.dm_id = pmm.dm_id',
                     array("institute" => "IFNULL(dm.institute, '')"))
                 ->where("pmm.participant_id = " . $res['participant_id']);
+
             $dmResult = $db->fetchAll($dmSql);
             if (!isset($countryPtccs[$res['country_id']])) {
                 $ptccSql = $db->select()
@@ -999,6 +1001,7 @@ class Application_Service_Evaluation {
                     ->where("pcm.country_id = " . $res['country_id'])
                     ->where("pcm.show_details_on_report = 1")
                     ->limit(2);
+
                 $countryPtccs[$res['country_id']] = $db->fetchAll($ptccSql);
             }
             $shipmentResult[$i]['ptcc_profiles'] = $countryPtccs[$res['country_id']];
@@ -1008,6 +1011,7 @@ class Application_Service_Evaluation {
                     ->from(array('spm' => 'shipment_participant_map'), array('shipment_id' => 'spm.shipment_id', 'shipment_score' => new Zend_Db_Expr("IFNULL(spm.shipment_score, 0) + IFNULL(spm.documentation_score, 0)")))
                     ->where("spm.participant_id = " . $res['participant_id'])
                     ->where("spm.shipment_id IN (" . implode(",", array_column($previousSixShipments, "shipment_id")) . ")");
+
                 $participantPreviousSixShipmentRecords = $db->fetchAll($participantPreviousSixShipmentsSql);
                 foreach ($participantPreviousSixShipmentRecords as $participantPreviousSixShipmentRecord) {
                     $participantPreviousSixShipments[$participantPreviousSixShipmentRecord['shipment_id']] = $participantPreviousSixShipmentRecord;
@@ -1077,6 +1081,7 @@ class Application_Service_Evaluation {
                 ->where('spm.participant_id = ?', $res['participant_id'])
                 ->order('ref.sample_id ASC');
             $tbResults = $db->fetchAll($sql);
+
             $counter = 0;
             $toReturn = array();
             $shipmentScore = 0;
@@ -1301,6 +1306,7 @@ class Application_Service_Evaluation {
             ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id', array('d.distribution_code'))
             ->where("s.shipment_id = ?", $shipmentId);
         $shipmentResult = $db->fetchRow($sql);
+
         $aggregates = array();
         $mtbRifReportSummary = array();
         $mtbRifUltraReportSummary = array();
@@ -1365,7 +1371,7 @@ class Application_Service_Evaluation {
                         'rif_indeterminate' => new Zend_Db_Expr("SUM(CASE WHEN `res`.`rif_resistance` = 'indeterminate' THEN 1 ELSE 0 END)"),
                         'rif_uninterpretable' => new Zend_Db_Expr("SUM(CASE WHEN IFNULL(`res`.`mtb_detected`, '') IN ('noResult', 'invalid', 'error', '') THEN 1 ELSE 0 END)"),
                         'no_of_responses' => new Zend_Db_Expr('COUNT(*)'),
-                        'average_ct' => new Zend_Db_Expr('CASE WHEN (SUM(CASE WHEN IFNULL(`res`.`calculated_score`, \'pass\') <> \'fail\' THEN IFNULL(`res`.`probe_2`, 0) ELSE 0 END) / SUM(CASE WHEN `res`.`probe_2` IS NULL OR IFNULL(`res`.`calculated_score`, \'pass\') = \'fail\' THEN 0 ELSE 1 END))<1 THEN 0 ELSE SUM(CASE WHEN IFNULL(`res`.`calculated_score`, \'pass\') <> \'fail\' THEN IFNULL(`res`.`probe_2`, 0) ELSE 0 END) / SUM(CASE WHEN `res`.`probe_2` IS NULL OR IFNULL(`res`.`calculated_score`, \'pass\') = \'fail\' THEN 0 ELSE 1 END) END')))
+                        'average_ct' => new Zend_Db_Expr('SUM(CASE WHEN IFNULL(`res`.`calculated_score`, \'pass\') <> \'fail\' THEN IFNULL(`res`.`probe_2`, 0) ELSE 0 END) / SUM(CASE WHEN `res`.`probe_2` IS NULL OR IFNULL(`res`.`calculated_score`, \'pass\') = \'fail\' THEN 0 ELSE 1 END)')))
                 ->joinLeft(array('a' => 'r_tb_assay'),
                     'a.id = CASE WHEN JSON_VALID(spm.attributes) = 1 THEN JSON_UNQUOTE(JSON_EXTRACT(spm.attributes, "$.assay")) ELSE 0 END')
                 ->where("spm.shipment_id = ?", $shipmentId)
@@ -1386,6 +1392,7 @@ class Application_Service_Evaluation {
                 ->order("ref.sample_id");
             $referenceResults = $db->fetchAll($referenceResultsSql);
         }
+
 		$result = array(
 		    'shipment' => $shipmentResult,
             'mtbRifReportSummary' => $mtbRifReportSummary,
