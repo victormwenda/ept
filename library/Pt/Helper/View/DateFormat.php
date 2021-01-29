@@ -20,7 +20,7 @@ class  Pt_Helper_View_DateFormat extends Zend_View_Helper_Abstract {
 			$mon = $monthsArray[$dateArray[1]-1];
 			if($formatDate == 'dd-M-yy') {
  				return  date_format(date_create($dateIn),'d-M-Y');
-            }
+            		}
 			else
 				return   $mon ."-" . $newDate . $dateArray[0];
 		}
