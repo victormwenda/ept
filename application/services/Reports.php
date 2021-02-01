@@ -4553,8 +4553,11 @@ class Application_Service_Reports {
         
     JSON_UNQUOTE(FlattenedEvaluationResults.attributes_json->\"$.cartridge_lot_no\") AS `Cartridge Lot Number`,
     FlattenedEvaluationResults.assay_name AS `Assay`,
-    STR_TO_DATE(JSON_UNQUOTE(FlattenedEvaluationResults.attributes_json->\"$.expiry_date\"), '%d-%b-%Y') AS `Expiry Date`,
-    
+    COALESCE(
+      STR_TO_DATE(JSON_UNQUOTE(FlattenedEvaluationResults.attributes_json->\"$.expiry_date\"), '%d-%b-%Y'),
+      STR_TO_DATE(JSON_UNQUOTE(FlattenedEvaluationResults.attributes_json->\"$.expiry_date\"), '%Y-%b-%d'),
+      STR_TO_DATE(JSON_UNQUOTE(FlattenedEvaluationResults.attributes_json->\"$.expiry_date\"), '%d-%m-%Y'),
+      STR_TO_DATE(JSON_UNQUOTE(FlattenedEvaluationResults.attributes_json->\"$.expiry_date\"), '%Y-%m-%d')) AS `Expiry Date`,
     FlattenedEvaluationResults.`Date of last instrument calibration`, FlattenedEvaluationResults.`Participated`, FlattenedEvaluationResults.`Reason for No Submission`,
 
     FlattenedEvaluationResults.`1-Date Tested`, FlattenedEvaluationResults.`1-Instrument Serial`, FlattenedEvaluationResults.`1-Instrument Last Calibrated`,
