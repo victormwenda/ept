@@ -1059,17 +1059,25 @@ class Application_Service_Evaluation {
                     'a.id = CASE WHEN JSON_VALID(spm.attributes) = 1 THEN JSON_UNQUOTE(JSON_EXTRACT(spm.attributes, "$.assay")) ELSE 0 END', array('assay_short_name' => 'a.short_name'))
                 ->joinLeft(array('res' => 'response_result_tb'),
                     'res.shipment_map_id = spm.map_id and res.sample_id = ref.sample_id', array(
-                        'mtb_detected',
-                        'rif_resistance',
-                        'error_code',
-                        'date_tested',
-                        'cartridge_expiration_date',
-                        'probe_1',
-                        'probe_2',
-                        'probe_3',
-                        'probe_4',
-                        'probe_5',
-                        'probe_6'))
+                        'res.mtb_detected',
+                        'res.rif_resistance',
+                        'res.error_code',
+                        'res.date_tested',
+                        'cartridge_expiration_date' => new Zend_Db_Expr("COALESCE(
+      STR_TO_DATE(res.cartridge_expiration_date, '%d-%b-%Y'),
+      STR_TO_DATE(res.cartridge_expiration_date, '%Y-%b-%d'),
+      STR_TO_DATE(res.cartridge_expiration_date, '%d-%m-%Y'),
+      STR_TO_DATE(res.cartridge_expiration_date, '%Y-%m-%d'),
+      STR_TO_DATE(JSON_UNQUOTE(JSON_EXTRACT(CAST(spm.attributes AS JSON), \"$.expiry_date\")), '%d-%b-%Y'),
+      STR_TO_DATE(JSON_UNQUOTE(JSON_EXTRACT(CAST(spm.attributes AS JSON), \"$.expiry_date\")), '%Y-%b-%d'),
+      STR_TO_DATE(JSON_UNQUOTE(JSON_EXTRACT(CAST(spm.attributes AS JSON), \"$.expiry_date\")), '%d-%m-%Y'),
+      STR_TO_DATE(JSON_UNQUOTE(JSON_EXTRACT(CAST(spm.attributes AS JSON), \"$.expiry_date\")), '%Y-%m-%d'))"),
+                        'res.probe_1',
+                        'res.probe_2',
+                        'res.probe_3',
+                        'res.probe_4',
+                        'res.probe_5',
+                        'res.probe_6'))
                 ->joinLeft('instrument',
                     'instrument.participant_id = spm.participant_id and instrument.instrument_serial = res.instrument_serial', array(
                         'years_since_last_calibrated' =>
