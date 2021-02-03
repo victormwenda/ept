@@ -1064,14 +1064,18 @@ class Application_Service_Evaluation {
                         'res.error_code',
                         'res.date_tested',
                         'cartridge_expiration_date' => new Zend_Db_Expr("COALESCE(
-      STR_TO_DATE(res.cartridge_expiration_date, '%d-%b-%Y'),
-      STR_TO_DATE(res.cartridge_expiration_date, '%Y-%b-%d'),
-      STR_TO_DATE(res.cartridge_expiration_date, '%d-%m-%Y'),
-      STR_TO_DATE(res.cartridge_expiration_date, '%Y-%m-%d'),
-      STR_TO_DATE(JSON_UNQUOTE(JSON_EXTRACT(CAST(spm.attributes AS JSON), \"$.expiry_date\")), '%d-%b-%Y'),
-      STR_TO_DATE(JSON_UNQUOTE(JSON_EXTRACT(CAST(spm.attributes AS JSON), \"$.expiry_date\")), '%Y-%b-%d'),
-      STR_TO_DATE(JSON_UNQUOTE(JSON_EXTRACT(CAST(spm.attributes AS JSON), \"$.expiry_date\")), '%d-%m-%Y'),
-      STR_TO_DATE(JSON_UNQUOTE(JSON_EXTRACT(CAST(spm.attributes AS JSON), \"$.expiry_date\")), '%Y-%m-%d'))"),
+      CASE WHEN res.cartridge_expiration_date = '0000-00-00' THEN NULL
+      ELSE COALESCE(STR_TO_DATE(res.cartridge_expiration_date, '%d-%b-%Y'),
+        STR_TO_DATE(res.cartridge_expiration_date, '%Y-%b-%d'),
+        STR_TO_DATE(res.cartridge_expiration_date, '%d-%m-%Y'),
+        STR_TO_DATE(res.cartridge_expiration_date, '%Y-%m-%d'))
+      END,
+      CASE WHEN JSON_UNQUOTE(JSON_EXTRACT(CAST(spm.attributes AS JSON), \"$.expiry_date\")) = '0000-00-00' THEN NULL
+      ELSE COALESCE(STR_TO_DATE(JSON_UNQUOTE(JSON_EXTRACT(CAST(spm.attributes AS JSON), \"$.expiry_date\")), '%d-%b-%Y'),
+        STR_TO_DATE(JSON_UNQUOTE(JSON_EXTRACT(CAST(spm.attributes AS JSON), \"$.expiry_date\")), '%Y-%b-%d'),
+        STR_TO_DATE(JSON_UNQUOTE(JSON_EXTRACT(CAST(spm.attributes AS JSON), \"$.expiry_date\")), '%d-%m-%Y'),
+        STR_TO_DATE(JSON_UNQUOTE(JSON_EXTRACT(CAST(spm.attributes AS JSON), \"$.expiry_date\")), '%Y-%m-%d'))
+      END)"),
                         'res.probe_1',
                         'res.probe_2',
                         'res.probe_3',
