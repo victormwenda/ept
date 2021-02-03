@@ -48,7 +48,7 @@ $dtFormat=  $genderHelper->getDateFormat();
 		<td><label>Viral Load Assay <span class="mandatory">*</span></label></td>
 		<td>
 		<select id="vlAssay" name="vlAssay" class="isRequired form-control" onchange="showHideOtherAssay(this.value)">
-			<option>--Select--</option>
+			<option value="">--Select--</option>
 			<?php
 			foreach($this->vlAssay as $id => $name){
 			?>
