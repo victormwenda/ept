@@ -342,11 +342,13 @@ if ($this->result['shipment'] != "") {
     $panelPerformanceMtbRifSvg .= '    <text x="15" y="150" transform="rotate(-90, 15, 150)" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:6pt">Cycle Thresholds (Ct)</text>';
     $ctMaxYAxisValueMtbRif = 0;
     foreach ($this->result['mtbRifReportSummary'] as $sampleSummary) {
-        if ($ctMaxYAxisValueMtbRif < $sampleSummary['ref_expected_ct']) {
-            $ctMaxYAxisValueMtbRif = $sampleSummary['ref_expected_ct'];
-        }
-        if ($ctMaxYAxisValueMtbRif < $sampleSummary['average_ct']) {
-            $ctMaxYAxisValueMtbRif = $sampleSummary['average_ct'];
+        if ($sampleSummary['ref_expected_ct'] > 0) {
+            if ($ctMaxYAxisValueMtbRif < $sampleSummary['ref_expected_ct']) {
+                $ctMaxYAxisValueMtbRif = $sampleSummary['ref_expected_ct'];
+            }
+            if ($ctMaxYAxisValueMtbRif < $sampleSummary['average_ct']) {
+                $ctMaxYAxisValueMtbRif = $sampleSummary['average_ct'];
+            }
         }
     }
     if ($ctMaxYAxisValueMtbRif == 0) {
@@ -402,11 +404,13 @@ if ($this->result['shipment'] != "") {
         $panelPerformanceMtbUltraSvg .= '    <text x="15" y="150" transform="rotate(-90, 15, 150)" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:6pt">Cycle Thresholds (Ct)</text>';
         $ctMaxYAxisValueMtbUltra = 0;
         foreach ($this->result['mtbRifUltraReportSummary'] as $sampleSummary) {
-            if ($ctMaxYAxisValueMtbUltra < $sampleSummary['ref_expected_ct']) {
-                $ctMaxYAxisValueMtbUltra = $sampleSummary['ref_expected_ct'];
-            }
-            if ($ctMaxYAxisValueMtbUltra < $sampleSummary['average_ct']) {
-                $ctMaxYAxisValueMtbUltra = $sampleSummary['average_ct'];
+            if ($sampleSummary['ref_expected_ct'] > 0) {
+                if ($ctMaxYAxisValueMtbUltra < $sampleSummary['ref_expected_ct']) {
+                    $ctMaxYAxisValueMtbUltra = $sampleSummary['ref_expected_ct'];
+                }
+                if ($ctMaxYAxisValueMtbUltra < $sampleSummary['average_ct']) {
+                    $ctMaxYAxisValueMtbUltra = $sampleSummary['average_ct'];
+                }
             }
         }
         if ($ctMaxYAxisValueMtbUltra == 0) {
