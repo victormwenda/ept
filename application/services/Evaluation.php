@@ -1379,7 +1379,7 @@ class Application_Service_Evaluation {
                         'sample_label' => 'ref.sample_label',
                         'ref_is_excluded' => 'ref.is_excluded',
                         'ref_is_exempt' => 'ref.is_exempt',
-                        'ref_expected_ct' => new Zend_Db_Expr("CASE WHEN ref.ultra_mtb_detected IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') THEN LEAST(ref.ultra_probe_is1081_is6110, ref.ultra_probe_rpo_b1, ref.ultra_probe_rpo_b2, ref.ultra_probe_rpo_b3, ref.ultra_probe_rpo_b4) ELSE 0 END")
+                        'ref_expected_ct' => new Zend_Db_Expr("CASE WHEN ref.ultra_mtb_detected IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') THEN LEAST(ref.ultra_probe_rpo_b1, ref.ultra_probe_rpo_b2, ref.ultra_probe_rpo_b3, ref.ultra_probe_rpo_b4) ELSE 0 END")
                     ))
                 ->joinLeft(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id AND res.sample_id = ref.sample_id',
                     array('mtb_detected' => new Zend_Db_Expr("SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') THEN 1 ELSE 0 END)"),
@@ -1390,7 +1390,7 @@ class Application_Service_Evaluation {
                         'rif_indeterminate' => new Zend_Db_Expr("SUM(CASE WHEN `res`.`rif_resistance` = 'indeterminate' THEN 1 ELSE 0 END)"),
                         'rif_uninterpretable' => new Zend_Db_Expr("SUM(CASE WHEN IFNULL(`res`.`mtb_detected`, '') IN ('noResult', 'invalid', 'error', '') THEN 1 ELSE 0 END)"),
                         'no_of_responses' => new Zend_Db_Expr('COUNT(*)'),
-                        'average_ct' => new Zend_Db_Expr('SUM(CASE WHEN IFNULL(`res`.`calculated_score`, \'pass\') NOT IN (\'fail\', \'excluded\', \'noresult\') THEN  LEAST(IFNULL(`res`.`probe_2`, 0), IFNULL(`res`.`probe_3`, 0), IFNULL(`res`.`probe_4`, 0), IFNULL(`res`.`probe_5`, 0), IFNULL(`res`.`probe_6`, 0)) ELSE 0 END) / SUM(CASE WHEN LEAST(IFNULL(CASE WHEN `res`.`probe_2` = \'\' THEN 0 ELSE `res`.`probe_2` END, 0), IFNULL(CASE WHEN `res`.`probe_3` = \'\' THEN 0 ELSE `res`.`probe_3` END, 0), IFNULL(CASE WHEN `res`.`probe_4` = \'\' THEN 0 ELSE `res`.`probe_4` END, 0), IFNULL(CASE WHEN `res`.`probe_5` = \'\' THEN 0 ELSE `res`.`probe_5` END, 0), IFNULL(CASE WHEN `res`.`probe_6` = \'\' THEN 0 ELSE `res`.`probe_6` END, 0)) = 0 OR IFNULL(`res`.`calculated_score`, \'pass\') IN (\'fail\', \'excluded\', \'noresult\') THEN 0 ELSE 1 END)')))
+                        'average_ct' => new Zend_Db_Expr('SUM(CASE WHEN IFNULL(`res`.`calculated_score`, \'pass\') NOT IN (\'fail\', \'excluded\', \'noresult\') THEN  LEAST(IFNULL(`res`.`probe_3`, 0), IFNULL(`res`.`probe_4`, 0), IFNULL(`res`.`probe_5`, 0), IFNULL(`res`.`probe_6`, 0)) ELSE 0 END) / SUM(CASE WHEN LEAST(IFNULL(CASE WHEN `res`.`probe_3` = \'\' THEN 0 ELSE `res`.`probe_3` END, 0), IFNULL(CASE WHEN `res`.`probe_4` = \'\' THEN 0 ELSE `res`.`probe_4` END, 0), IFNULL(CASE WHEN `res`.`probe_5` = \'\' THEN 0 ELSE `res`.`probe_5` END, 0), IFNULL(CASE WHEN `res`.`probe_6` = \'\' THEN 0 ELSE `res`.`probe_6` END, 0)) = 0 OR IFNULL(`res`.`calculated_score`, \'pass\') IN (\'fail\', \'excluded\', \'noresult\') THEN 0 ELSE 1 END)')))
                 ->joinLeft(array('a' => 'r_tb_assay'),
                     'a.id = CASE WHEN JSON_VALID(spm.attributes) = 1 THEN JSON_UNQUOTE(JSON_EXTRACT(spm.attributes, "$.assay")) ELSE 0 END')
                 ->where("spm.shipment_id = ?", $shipmentId)
