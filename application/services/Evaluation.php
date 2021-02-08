@@ -1332,8 +1332,8 @@ class Application_Service_Evaluation {
         if ($shipmentResult != "") {
             $db->update('shipment', array('status' => 'evaluated'), "shipment_id = " . $shipmentId);
             $aggregatesQuery = $db->select()->from(array('spm' => 'shipment_participant_map'), array(
-                'enrolled' => 'COUNT(map_id)',
-                'participated' => "SUM(CASE WHEN SUBSTR(spm.evaluation_status, 3, 1) = '1' AND is_pt_test_not_performed <> 'yes' THEN 1 ELSE 0 END)",
+                'enrolled' => 'COUNT(DISTINCT map_id)',
+                'participated' => "SUM(CASE WHEN SUBSTR(spm.evaluation_status, 3, 1) = '1' AND IFNULL(is_pt_test_not_performed, 'no') <> 'yes' THEN 1 ELSE 0 END)",
                 'scored_100_percent' => 'SUM(CASE WHEN IFNULL(spm.shipment_score, 0) + IFNULL(spm.documentation_score, 0) = 100 THEN 1 ELSE 0 END)'
             ))
                 ->joinLeft(array('a' => 'r_tb_assay'),
