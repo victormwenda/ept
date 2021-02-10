@@ -1336,7 +1336,6 @@ CREATE TABLE `shipment` (
   KEY `scheme_type` (`scheme_type`),
   KEY `distribution_id` (`distribution_id`),
   KEY `shipment_ibfk_3_idx` (`follows_up_from`),
-  KEY `shipment_id` (`shipment_id`),
   CONSTRAINT `shipment_ibfk_1` FOREIGN KEY (`scheme_type`) REFERENCES `scheme_list` (`scheme_id`),
   CONSTRAINT `shipment_ibfk_3` FOREIGN KEY (`follows_up_from`) REFERENCES `shipment` (`shipment_id`) ON DELETE SET NULL,
   CONSTRAINT `shipment_ibfk_4` FOREIGN KEY (`distribution_id`) REFERENCES `distributions` (`distribution_id`) ON DELETE CASCADE
@@ -1399,6 +1398,7 @@ CREATE TABLE `shipment_participant_map` (
   KEY `shipment_id` (`shipment_id`),
   KEY `participant_id` (`participant_id`),
   KEY `is_excluded` (`is_excluded`),
+  UNIQUE KEY `shipment_id_2` (`shipment_id`,`participant_id`),
   CONSTRAINT `shipment_participant_map_ibfk_3` FOREIGN KEY (`shipment_id`) REFERENCES `shipment` (`shipment_id`) ON DELETE CASCADE,
   CONSTRAINT `shipment_participant_map_ibfk_4` FOREIGN KEY (`participant_id`) REFERENCES `participant` (`participant_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Shipment for DTS Samples';
