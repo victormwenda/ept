@@ -33,7 +33,7 @@ class Application_Model_DbTable_DataManagers extends Zend_Db_Table_Abstract {
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
          * you want to insert a non-database field (for example a counter or static image)
          */
-        $aColumns = array('p.unique_identifier', 'u.institute','u.first_name','u.last_name', 'u.mobile', 'u.primary_email', 'u.secondary_email','p.first_name', 'u.status');
+        $aColumns = array('p.unique_identifier', 'u.institute','u.first_name','u.last_name', 'u.mobile', 'u.primary_email', 'u.secondary_email','u.first_name', 'u.status');
 
         /* Indexed column (used for fast and accurate table cardinality) */
         $sIndexColumn = "dm_id";
