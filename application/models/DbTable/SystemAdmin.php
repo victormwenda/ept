@@ -313,15 +313,17 @@ class Application_Model_DbTable_SystemAdmin extends Zend_Db_Table_Abstract {
         return $this->insert($data);
     }
 
+  
     public function getSystemAdminDetails ($adminId) {
-        $sql = $this->getAdapter()->select()->from(array('a' => $this->_name));
+        $dbAdapter =$this->getAdapter();
+        $sql = $dbAdapter->select()->from(array('a' => $this->_name));
         $authNameSpace = new Zend_Session_Namespace('administrators');
         if ($authNameSpace->is_ptcc_coordinator) {
             $sql = $sql->joinLeft(array('pcm' => 'ptcc_country_map'), 'a.admin_id=pcm.admin_id', array())
             ->where("pcm.country_id IN (".implode(",",$authNameSpace->countries).")");
         }
         $sql = $sql->where("a.admin_id = ? ",$adminId);
-        return $this->fetchRow($sql);
+        return $dbAdapter->fetchRow($sql);
     }
 
     public function updateSystemAdmin ($params) {
