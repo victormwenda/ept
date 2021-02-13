@@ -71,6 +71,16 @@ class Admin_ShipmentController extends Zend_Controller_Action {
     }
 
     public function getSampleFormAction() {
+        if ($this->_hasParam('did')) {
+            $this->view->selectedDistribution = (int) base64_decode($this->_getParam('did'));
+        }
+        $distro = new Application_Service_Distribution();
+        $unshippedDistributions = $distro->getUnshippedDistributions();
+        $unshippedDistributionsArray = array();
+        foreach ($unshippedDistributions as $dist) {
+            array_push($unshippedDistributionsArray, iterator_to_array($dist));
+        }
+        $this->view->unshippedDistro = $unshippedDistributionsArray;
         if ($this->getRequest()->isPost()) {
             $this->view->scheme = $sid = strtolower($this->_getParam('sid'));
             if ($sid == 'vl') {
@@ -107,13 +117,8 @@ class Admin_ShipmentController extends Zend_Controller_Action {
                 $participantService = new Application_Service_Participants();
                 $sid = (int)base64_decode($this->_getParam('sid'));
                 $this->view->shipment = $shipmentDetails = $shipmentService->getShipment($sid);
-                $this->view->previouslySelectedCountry = $previouslySelectedCountry = $participantService->getEnrolledCountriesByShipmentId($sid);
-                if ($previouslySelectedCountry == "" || $previouslySelectedCountry == null) {
-                    $this->view->enrolledCountries = $participantService->getEnrolledCountriesBySchemeCode($shipmentDetails['scheme_type']);
-                    $this->view->unEnrolledCountries = $participantService->getUnEnrolledCountriesBySchemeCode($shipmentDetails['scheme_type']);
-                } else {
-                    $this->view->previouslyUnSelectedCountry = $participantService->getUnEnrolledCountriesByShipmentId($sid);
-                }
+                
+                $this->view->countries = $countries = $participantService->getEnrolledAndUnErolledParticipants($sid);
             }
         }
     }
@@ -316,3 +321,4 @@ class Admin_ShipmentController extends Zend_Controller_Action {
         }
     }
 }
+

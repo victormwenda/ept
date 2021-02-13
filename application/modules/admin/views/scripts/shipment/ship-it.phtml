@@ -1,4 +1,6 @@
-<link rel="stylesheet" type="text/css" href="<?php echo $this->baseUrl('css/multi-select.css'); ?>" />
+
+<link href="<?php echo $this->baseUrl('css/hummingbird-treeview.css'); ?>" rel="stylesheet" type="text/css">
+
 <fieldset>
     <legend>
         <?php echo strtoupper($this->shipment->scheme_type); ?>
@@ -7,81 +9,43 @@
     </legend>
     <form method="post" action="" id="shipForm">
 	    <div class="form-group">
-		    <div class="text-info" style="text-align:center;padding:10px 0;">
-                Click on the Participant name to move them between the two sections
-                <br />
-                <br />
-			    <div style="width:500px;margin:0 auto;clear:both;">
-			        <a href='#' id='select-all' style="float:left" class="btn btn-info btn-xs">
-                        Select All
-                        &nbsp;&nbsp;<i class="icon-chevron-right"></i>
-                    </a>
-                    <a href='#' id='deselect-all' style="float:right" class="btn btn-danger btn-xs">
-                        <i class="icon-chevron-left"></i>
-                        &nbsp;&nbsp;&nbsp;Deselect All
-                    </a>
-			    </div>
-		    </div>
-		    <br/>
-		    <select id="participants" name="participants[]" multiple class="isRequired"
-                    title="Please select at least one participant">
-<?php
-if (isset($this->previouslySelectedCountry) && $this->previouslySelectedCountry != null) {
-    foreach ($this->previouslySelectedCountry as $country) { ?>
-                <optgroup label='<?php echo $country["iso_name"]; ?>'>
-<?php
-        foreach ($country["enrolled_participants"] as $participant) { ?>
-	                <option value="<?php echo $participant['participant_id']; ?>" selected>
-                        <?php echo $participant['lab_name']; ?>
-                        (<?php echo $participant['unique_identifier']; ?>)
-                    </option>
-<?php
-        } ?>
-                </optgroup>
-<?php
-    }
-    foreach ($this->previouslyUnSelectedCountry as $country) { ?>
-                <optgroup label='<?php echo $country["iso_name"]; ?>'>
-<?php
-        foreach ($country["unenrolled_participants"] as $participant) { ?>
-	                <option value="<?php echo $participant['participant_id']; ?>">
-                        <?php echo $participant['lab_name']; ?>
-                        (<?php echo $participant['unique_identifier']; ?>)
-                    </option>
-<?php
-        } ?>
-                </optgroup>
-<?php
-    }
-} else {
-    foreach ($this->enrolledCountries as $country) { ?>
-                <optgroup label='<?php echo $country["iso_name"]; ?>'>
- <?php
-        foreach ($country["enrolled_participants"] as $participant) { ?>
-	    		    <option value="<?php echo $participant['participant_id']; ?>" selected>
-                        <?php echo $participant['lab_name']; ?>
-                        (<?php echo $participant['unique_identifier']; ?>)
-                    </option>
-<?php
-        } ?>
-                </optgroup>
-<?php
-    }
-    foreach($this->unEnrolledCountries as $country) { ?>
-                <optgroup label='<?php echo $country["iso_name"]; ?>'>
-<?php
-        foreach ($country["unenrolled_participants"] as $participant) { ?>
-			        <option value="<?php echo $participant['participant_id']; ?>">
-                        <?php echo $participant['lab_name']; ?>
-                        (<?php echo $participant['unique_identifier']; ?>)
-                    </option>
-<?php
-        } ?>
-                </optgroup>
-<?php
-	}
-} ?>
-		    </select>
+            <div id="treeview_container" class="hummingbird-treeview well h-scroll-large" style="background-color: white">
+                <ul id="treeview" class="hummingbird-base">
+            <?php
+            foreach ($this->countries as $ckey => $country) { 
+            ?>
+
+                    <li><i class="fa fa-minus"></i> 
+                        <label> 
+                            <input id="node-<?php echo $ckey; ?>" data-id="custom-<?php echo $ckey; ?>" type="checkbox"  <?php if(count($country["unenrolled_participants"]) == 0) {  ?> checked="true" <?php  } ?>>
+                            <?php echo $country["iso_name"]; ?>
+                        </label>
+                        <ul style="display: block;">
+                            <?php foreach ($country["enrolled_participants"] as $key => $participant) { ?>
+                                <li>
+                                    <label> 
+                                        <input  class="participant_checkbox" name="participants[]" type="checkbox" value="<?php echo $participant['participant_id']; ?>"  checked="true">
+                                        <?php echo $participant['lab_name']; ?>
+                                        (<?php echo $participant['participant_id']; ?>)
+                                        (<?php echo $participant['unique_identifier']; ?>)
+                                    </label>
+                                </li>
+                            <?php } ?>
+                            <?php foreach ($country["unenrolled_participants"] as $key => $participant) { ?>
+                                <li>
+                                    <label> 
+                                        <input  class="participant_checkbox" name="participants[]" type="checkbox" value="<?php echo $participant['participant_id']; ?>">
+                                        <?php echo $participant['lab_name']; ?>
+                                        (<?php echo $participant['participant_id']; ?>)
+                                        (<?php echo $participant['unique_identifier']; ?>)
+                                    </label>
+                                </li>
+                            <?php } ?>
+                        </ul>
+                    </li>
+            <?php } ?>
+                </ul>
+            </div>
 	    </div>
 	    <input type="hidden" id="shipmentId" name="shipmentId" value="<?php echo $this->shipment->shipment_id; ?>" />
 	    <div class="form-group" style="margin-left:230px;display:none;">
@@ -93,72 +57,44 @@ if (isset($this->previouslySelectedCountry) && $this->previouslySelectedCountry 
             </div>
 	    </div>
 	    <div style="clear:both;margin: 90px auto 30px auto; text-align: center;" align="center">
-	        <input name="submitbtn" class="btn btn-primary btn-sm" type="button" onclick="validateNow();return false;"
+	        <input name="submitbtn" class="btn btn-primary btn-sm" type="button" onclick="validateNow(); return true;"
                    tabindex="7" value="Enroll"/>
 	        <input class="btn btn-danger btn-sm" type="button" onclick="window.history.go(-1);"
                    tabindex="8" value="Cancel"/>
 	    </div>
     </form>
 </fieldset>
-<script type="text/javascript" src="<?php echo $this->baseUrl("js/jquery.multi-select.js"); ?>"></script>
-<script type="text/javascript" src="<?php echo $this->baseUrl("js/jquery.quicksearch.js"); ?>"></script>
+
 <script>
-	$(document).ready(function(){
-	    $('#participants').multiSelect({
-            selectableOptgroup: true,
-            selectableFooter: "<div class='custom-header'>Participants not yet enrolled for this scheme (<span id='msUnselectedCountHolder'></span>)</div>",
-            selectionFooter: "<div class='custom-header'>Enrolled/Selected Participants (<span id='msSelectedCountHolder'></span>)</div>",
-            selectableHeader: "<input type='text' class='search-input form-control' autocomplete='off' placeholder='Type Participant Name or Code To Filter'>",
-            selectionHeader: "<input type='text' class='search-input form-control' autocomplete='off' placeholder='Type Participant Name or Code To Filter'>",
-            afterInit: function(ms){
-	            var that = this,
-                    $selectableSearch = that.$selectableUl.prev(),
-                    $selectionSearch = that.$selectionUl.prev(),
-                    selectableSearchString = '#'+that.$container.attr('id')+' .ms-elem-selectable:not(.ms-selected)',
-                    selectionSearchString = '#'+that.$container.attr('id')+' .ms-elem-selection.ms-selected';
-	            that.qs1 = $selectableSearch.quicksearch(selectableSearchString)
-                    .on('keydown', function(e) {
-                        if (e.which === 40) {
-                            that.$selectableUl.focus();
-                            return false;
-                        }
-                    });
-	            that.qs2 = $selectionSearch.quicksearch(selectionSearchString)
-                    .on('keydown', function(e) {
-                        if (e.which == 40) {
-                            that.$selectionUl.focus();
-                            return false;
-                        }
-                    });
-	        },
-            afterSelect: function() {
-                this.qs1.cache();
-                this.qs2.cache();
-            },
-            afterDeselect: function() {
-                this.qs1.cache();
-                this.qs2.cache();
-            }
-	    });
-
-	    $('#select-all').click(function() {
-	        $('#participants').multiSelect('select_all');
-	        return false;
-	    });
-
-	    $('#deselect-all').click(function() {
-	        $('#participants').multiSelect('deselect_all');
-	        return false;
-	    });
-	});
-
     function validateNow() {
-        flag = deforayValidator.init({
-            formId: 'shipForm'
-        });
-        if (flag) {
-            $.blockUI();
-            document.getElementById('shipForm').submit();
+        var numberOfChecked = $('.participant_checkbox:checkbox:checked').length;
+        var totalCheckboxes = $('.participant_checkbox:checkbox').length;
+        var numberNotChecked = totalCheckboxes - numberOfChecked;
+
+        if (confirm('You have enrolled '+ numberOfChecked +' participants and ' + numberNotChecked + '  unenrolled Participants. Are you sure you want to continue?' )){
+
+            flag = deforayValidator.init({
+                formId: 'shipForm'
+            });
+            if (flag) {
+                $.blockUI();
+                document.getElementById('shipForm').submit();
+            }
+        } else {
+            return false;
         }
     }
 </script>
+
+<script src="<?php echo $this->baseUrl('js/hummingbird-treeview.js'); ?>" ></script>
+
+<script>
+$("#treeview").hummingbird();
+$( "#checkNode" ).click(function() {
+  $("#treeview").hummingbird("checkNode",{attr:"id",name: "node-0-2-2",expandParents:false});
+});
+</script>
+
+
+
+
