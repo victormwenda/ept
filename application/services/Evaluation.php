@@ -515,7 +515,10 @@ class Application_Service_Evaluation {
             foreach ($assayRecords as $assayRecord) {
                 $assays[$assayRecord['id']] = $assayRecord['short_name'];
             }
-            $assayName = $assays[$attributes['assay']];
+            $assayName = "Unspecified";
+            if (isset($attributes['assay']) && $attributes['assay'] != '') {
+                $assayName = $assays[$attributes['assay']];
+            }
             $mapData = array(
                 "shipment_receipt_date" => Application_Service_Common::ParseDate($params['receiptDate']),
                 "shipment_test_report_date" => Application_Service_Common::ParseDate($params['testReceiptDate']),
@@ -952,13 +955,16 @@ class Application_Service_Evaluation {
             $sql = $sql->limit($sLimit, $sOffset);
 		}
         $shipmentResult = $db->fetchAll($sql);
-        $previousSixShipmentsSql = $sql = $db->select()
+        $previousSixShipmentsSql = $db->select()
             ->from(array('s' => 'shipment'), array(
                 's.shipment_id',
                 's.shipment_code',
                 's.shipment_date'))
             ->join(array('spm' => 'shipment_participant_map'), 's.shipment_id=spm.shipment_id', array('mean_shipment_score' => new Zend_Db_Expr("AVG(IFNULL(spm.shipment_score, 0) + IFNULL(spm.documentation_score, 0))")))
             ->where("s.is_official = 1")
+            ->where(new Zend_Db_Expr("IFNULL(spm.is_pt_test_not_performed, 'no') = 'no'"))
+            ->where(new Zend_Db_Expr("IFNULL(spm.is_excluded, 'no') = 'no'"))
+            ->where(new Zend_Db_Expr("SUBSTR(spm.evaluation_status, 3, 1) = '1'")) // Submitted
             ->where("s.shipment_id <= ".$shipmentId)
             ->group('s.shipment_id')
             ->order("s.shipment_date DESC")
@@ -975,12 +981,8 @@ class Application_Service_Evaluation {
         }
 
         $assays = array();
-        $defaultAssayId = '';
         $assayRecords = $db->fetchAll($db->select()->from('r_tb_assay'));
         foreach ($assayRecords as $assayRecord) {
-            if ($defaultAssayId == '') {
-                $defaultAssayId = $assayRecord['id'];
-            }
             $assays[$assayRecord['id']] = $assayRecord['short_name'];
         }
         $i = 0;
@@ -1057,17 +1059,29 @@ class Application_Service_Evaluation {
                     'a.id = CASE WHEN JSON_VALID(spm.attributes) = 1 THEN JSON_UNQUOTE(JSON_EXTRACT(spm.attributes, "$.assay")) ELSE 0 END', array('assay_short_name' => 'a.short_name'))
                 ->joinLeft(array('res' => 'response_result_tb'),
                     'res.shipment_map_id = spm.map_id and res.sample_id = ref.sample_id', array(
-                        'mtb_detected',
-                        'rif_resistance',
-                        'error_code',
-                        'date_tested',
-                        'cartridge_expiration_date',
-                        'probe_1',
-                        'probe_2',
-                        'probe_3',
-                        'probe_4',
-                        'probe_5',
-                        'probe_6'))
+                        'res.mtb_detected',
+                        'res.rif_resistance',
+                        'res.error_code',
+                        'res.date_tested',
+                        'cartridge_expiration_date' => new Zend_Db_Expr("COALESCE(
+      CASE WHEN res.cartridge_expiration_date = '0000-00-00' THEN NULL
+      ELSE COALESCE(STR_TO_DATE(res.cartridge_expiration_date, '%d-%b-%Y'),
+        STR_TO_DATE(res.cartridge_expiration_date, '%Y-%b-%d'),
+        STR_TO_DATE(res.cartridge_expiration_date, '%d-%m-%Y'),
+        STR_TO_DATE(res.cartridge_expiration_date, '%Y-%m-%d'))
+      END,
+      CASE WHEN JSON_UNQUOTE(JSON_EXTRACT(CAST(spm.attributes AS JSON), \"$.expiry_date\")) = '0000-00-00' THEN NULL
+      ELSE COALESCE(STR_TO_DATE(JSON_UNQUOTE(JSON_EXTRACT(CAST(spm.attributes AS JSON), \"$.expiry_date\")), '%d-%b-%Y'),
+        STR_TO_DATE(JSON_UNQUOTE(JSON_EXTRACT(CAST(spm.attributes AS JSON), \"$.expiry_date\")), '%Y-%b-%d'),
+        STR_TO_DATE(JSON_UNQUOTE(JSON_EXTRACT(CAST(spm.attributes AS JSON), \"$.expiry_date\")), '%d-%m-%Y'),
+        STR_TO_DATE(JSON_UNQUOTE(JSON_EXTRACT(CAST(spm.attributes AS JSON), \"$.expiry_date\")), '%Y-%m-%d'))
+      END)"),
+                        'res.probe_1',
+                        'res.probe_2',
+                        'res.probe_3',
+                        'res.probe_4',
+                        'res.probe_5',
+                        'res.probe_6'))
                 ->joinLeft('instrument',
                     'instrument.participant_id = spm.participant_id and instrument.instrument_serial = res.instrument_serial', array(
                         'years_since_last_calibrated' =>
@@ -1140,7 +1154,7 @@ class Application_Service_Evaluation {
                     }
                 }
 
-                if ($tbResult['cartridge_expiration_date'] < $tbResult['date_tested']) {
+                if (isset($tbResult['cartridge_expiration_date']) && $tbResult['cartridge_expiration_date'] != '0000-00-00' && $tbResult['cartridge_expiration_date'] < $tbResult['date_tested']) {
                     $cartridgeExpiredOn = $tbResult['cartridge_expiration_date'];
                     array_push($testsDoneAfterCartridgeExpired, array(
                         "sample_label" => $tbResult['sample_label'],
@@ -1221,9 +1235,6 @@ class Application_Service_Evaluation {
             if(!isset($attributes['expiry_date'])) {
                 $attributes['expiry_date'] = '';
             }
-            if (!isset($attributes['assay'])) {
-                $attributes['assay'] = $defaultAssayId;
-            }
             $shipmentResult[$i]['documentation_score'] = $scoringService->calculateTbDocumentationScore(
                 $res['shipment_date'], $attributes['expiry_date'], $res['shipment_receipt_date'],
                 $res['supervisor_approval'], $res['participant_supervisor'], $res['lastdate_response']);
@@ -1237,10 +1248,14 @@ class Application_Service_Evaluation {
             $shipmentResult[$i]['instrumentsUsed'] = $instrumentsUsed;
             $shipmentResult[$i]['cartridge_expired_on'] = $cartridgeExpiredOn;
             $shipmentResult[$i]['tests_done_on_expired_cartridges'] = "";
-            if ($cartridgeExpiredOn && count($testsDoneAfterCartridgeExpired) < $counter) {
-                $shipmentResult[$i]['tests_done_on_expired_cartridges'] = " The following samples were tested using expired cartridges:";
-                foreach ($testsDoneAfterCartridgeExpired as $testDoneAfterCartridgeExpired) {
-                    $shipmentResult[$i]['tests_done_on_expired_cartridges'] .= "<br/>".$testDoneAfterCartridgeExpired["sample_label"] . " was tested on " . Pt_Commons_General::dbDateToString($testDoneAfterCartridgeExpired['date_tested']);
+            if ($cartridgeExpiredOn) {
+                if (count($testsDoneAfterCartridgeExpired) < $counter) {
+                    $shipmentResult[$i]['tests_done_on_expired_cartridges'] = " The following samples were tested using expired cartridges:";
+                    foreach ($testsDoneAfterCartridgeExpired as $testDoneAfterCartridgeExpired) {
+                        $shipmentResult[$i]['tests_done_on_expired_cartridges'] .= "<br/>".$testDoneAfterCartridgeExpired["sample_label"] . " was tested on " . Pt_Commons_General::dbDateToString($testDoneAfterCartridgeExpired['date_tested']);
+                    }
+                } else if (count($testsDoneAfterCartridgeExpired) > 0) {
+                    $shipmentResult[$i]['tests_done_on_expired_cartridges'] = " This panel was tested on ".Pt_Commons_General::dbDateToString($testsDoneAfterCartridgeExpired[0]['date_tested']);
                 }
             }
             $shipmentResult[$i]['instrument_requires_calibration'] = $instrumentRequiresCalibration;
@@ -1278,7 +1293,10 @@ class Application_Service_Evaluation {
                     $shipmentResult[$i]['ptNotTestedComment'] .= ' due to the following reason(s): '.$ptNotTestedComment.'.';
                 }
             }
-            $shipmentResult[$i]['assay_name'] = $assays[$attributes['assay']];
+            $shipmentResult[$i]['assay_name'] = "Unspecified";
+            if (isset($attributes['assay']) && $attributes['assay'] != '') {
+                $shipmentResult[$i]['assay_name'] = $assays[$attributes['assay']];
+	        }
             $i++;
             $db->update('shipment_participant_map', array('report_generated' => 'yes'), "map_id=" . $res['map_id']);
             $db->update('shipment', array('status' => 'evaluated'), "shipment_id=" . $shipmentId);
@@ -1314,16 +1332,17 @@ class Application_Service_Evaluation {
         if ($shipmentResult != "") {
             $db->update('shipment', array('status' => 'evaluated'), "shipment_id = " . $shipmentId);
             $aggregatesQuery = $db->select()->from(array('spm' => 'shipment_participant_map'), array(
-                'enrolled' => 'COUNT(map_id)',
-                'participated' => "SUM(CASE WHEN SUBSTR(spm.evaluation_status, 3, 1) = '1' AND is_pt_test_not_performed <> 'yes' THEN 1 ELSE 0 END)",
+                'enrolled' => 'COUNT(DISTINCT map_id)',
+                'participated' => "SUM(CASE WHEN SUBSTR(spm.evaluation_status, 3, 1) = '1' AND IFNULL(is_pt_test_not_performed, 'no') <> 'yes' THEN 1 ELSE 0 END)",
                 'scored_100_percent' => 'SUM(CASE WHEN IFNULL(spm.shipment_score, 0) + IFNULL(spm.documentation_score, 0) = 100 THEN 1 ELSE 0 END)'
             ))
                 ->joinLeft(array('a' => 'r_tb_assay'),
                     'a.id = CASE WHEN JSON_VALID(spm.attributes) = 1 THEN JSON_UNQUOTE(JSON_EXTRACT(spm.attributes, "$.assay")) ELSE 0 END', array(
-                        'mtb_rif' => "SUM(CASE WHEN a.short_name = 'MTB/RIF' THEN 1 ELSE 0 END)",
-                        'mtb_rif_ultra' => "SUM(CASE WHEN a.short_name = 'MTB Ultra' THEN 1 ELSE 0 END)"
+                        'mtb_rif' => "SUM(CASE WHEN SUBSTR(spm.evaluation_status, 3, 1) = '1' AND IFNULL(is_pt_test_not_performed, 'no') <> 'yes' AND a.short_name = 'MTB/RIF' THEN 1 ELSE 0 END)",
+                        'mtb_rif_ultra' => "SUM(CASE WHEN SUBSTR(spm.evaluation_status, 3, 1) = '1' AND IFNULL(is_pt_test_not_performed, 'no') <> 'yes' AND a.short_name = 'MTB Ultra' THEN 1 ELSE 0 END)"
                     ))
                 ->where("spm.shipment_id = ?", $shipmentId);
+            error_log($aggregatesQuery, 0);
             $aggregates = $db->fetchRow($aggregatesQuery);
 
             $mtbRifSummaryQuery = $db->select()->from(array('spm' => 'shipment_participant_map'), array())
@@ -1332,7 +1351,7 @@ class Application_Service_Evaluation {
                         'sample_label' => 'ref.sample_label',
                         'ref_is_excluded' => 'ref.is_excluded',
                         'ref_is_exempt' => 'ref.is_exempt',
-                        'ref_expected_ct' => 'ref.mtb_rif_probe_a'
+                        'ref_expected_ct' => new Zend_Db_Expr("CASE WHEN ref.mtb_rif_mtb_detected IN ('detected', 'high', 'medium', 'low', 'veryLow') THEN ref.mtb_rif_probe_a ELSE 0 END")
                     ))
                 ->joinLeft(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id AND res.sample_id = ref.sample_id',
                     array('mtb_detected' => new Zend_Db_Expr("SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') THEN 1 ELSE 0 END)"),
@@ -1343,7 +1362,7 @@ class Application_Service_Evaluation {
                         'rif_indeterminate' => new Zend_Db_Expr("SUM(CASE WHEN `res`.`rif_resistance` = 'indeterminate' THEN 1 ELSE 0 END)"),
                         'rif_uninterpretable' => new Zend_Db_Expr("SUM(CASE WHEN IFNULL(`res`.`mtb_detected`, '') IN ('noResult', 'invalid', 'error', '') THEN 1 ELSE 0 END)"),
                         'no_of_responses' => new Zend_Db_Expr('COUNT(*)'),
-                        'average_ct' => new Zend_Db_Expr('SUM(CASE WHEN IFNULL(`res`.`calculated_score`, \'pass\') <> \'fail\' THEN IFNULL(`res`.`probe_6`, 0) ELSE 0 END) / SUM(CASE WHEN `res`.`probe_6` IS NULL OR IFNULL(`res`.`calculated_score`, \'pass\') = \'fail\' THEN 0 ELSE 1 END)')))
+                        'average_ct' => new Zend_Db_Expr('SUM(CASE WHEN IFNULL(`res`.`calculated_score`, \'pass\') NOT IN (\'fail\', \'excluded\', \'noresult\') THEN IFNULL(CASE WHEN `res`.`probe_6` = \'\' THEN 0 ELSE `res`.`probe_6` END, 0) ELSE 0 END) / SUM(CASE WHEN IFNULL(CASE WHEN `res`.`probe_6` = \'\' THEN 0 ELSE `res`.`probe_6` END, 0) = 0 OR IFNULL(`res`.`calculated_score`, \'pass\') IN (\'fail\', \'excluded\', \'noresult\') THEN 0 ELSE 1 END)')))
                 ->joinLeft(array('a' => 'r_tb_assay'),
                     'a.id = CASE WHEN JSON_VALID(spm.attributes) = 1 THEN JSON_UNQUOTE(JSON_EXTRACT(spm.attributes, "$.assay")) ELSE 0 END')
                 ->where("spm.shipment_id = ?", $shipmentId)
@@ -1360,7 +1379,7 @@ class Application_Service_Evaluation {
                         'sample_label' => 'ref.sample_label',
                         'ref_is_excluded' => 'ref.is_excluded',
                         'ref_is_exempt' => 'ref.is_exempt',
-                        'ref_expected_ct' => 'ref.ultra_probe_is1081_is6110'
+                        'ref_expected_ct' => new Zend_Db_Expr("CASE WHEN ref.ultra_mtb_detected IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') THEN LEAST(ref.ultra_probe_rpo_b1, ref.ultra_probe_rpo_b2, ref.ultra_probe_rpo_b3, ref.ultra_probe_rpo_b4) ELSE 0 END")
                     ))
                 ->joinLeft(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id AND res.sample_id = ref.sample_id',
                     array('mtb_detected' => new Zend_Db_Expr("SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') THEN 1 ELSE 0 END)"),
@@ -1371,7 +1390,7 @@ class Application_Service_Evaluation {
                         'rif_indeterminate' => new Zend_Db_Expr("SUM(CASE WHEN `res`.`rif_resistance` = 'indeterminate' THEN 1 ELSE 0 END)"),
                         'rif_uninterpretable' => new Zend_Db_Expr("SUM(CASE WHEN IFNULL(`res`.`mtb_detected`, '') IN ('noResult', 'invalid', 'error', '') THEN 1 ELSE 0 END)"),
                         'no_of_responses' => new Zend_Db_Expr('COUNT(*)'),
-                        'average_ct' => new Zend_Db_Expr('SUM(CASE WHEN IFNULL(`res`.`calculated_score`, \'pass\') <> \'fail\' THEN IFNULL(`res`.`probe_2`, 0) ELSE 0 END) / SUM(CASE WHEN `res`.`probe_2` IS NULL OR IFNULL(`res`.`calculated_score`, \'pass\') = \'fail\' THEN 0 ELSE 1 END)')))
+                        'average_ct' => new Zend_Db_Expr('SUM(CASE WHEN IFNULL(`res`.`calculated_score`, \'pass\') NOT IN (\'fail\', \'excluded\', \'noresult\') THEN  LEAST(IFNULL(`res`.`probe_3`, 0), IFNULL(`res`.`probe_4`, 0), IFNULL(`res`.`probe_5`, 0), IFNULL(`res`.`probe_6`, 0)) ELSE 0 END) / SUM(CASE WHEN LEAST(IFNULL(CASE WHEN `res`.`probe_3` = \'\' THEN 0 ELSE `res`.`probe_3` END, 0), IFNULL(CASE WHEN `res`.`probe_4` = \'\' THEN 0 ELSE `res`.`probe_4` END, 0), IFNULL(CASE WHEN `res`.`probe_5` = \'\' THEN 0 ELSE `res`.`probe_5` END, 0), IFNULL(CASE WHEN `res`.`probe_6` = \'\' THEN 0 ELSE `res`.`probe_6` END, 0)) = 0 OR IFNULL(`res`.`calculated_score`, \'pass\') IN (\'fail\', \'excluded\', \'noresult\') THEN 0 ELSE 1 END)')))
                 ->joinLeft(array('a' => 'r_tb_assay'),
                     'a.id = CASE WHEN JSON_VALID(spm.attributes) = 1 THEN JSON_UNQUOTE(JSON_EXTRACT(spm.attributes, "$.assay")) ELSE 0 END')
                 ->where("spm.shipment_id = ?", $shipmentId)
@@ -1548,12 +1567,8 @@ class Application_Service_Evaluation {
         $maxTotalScore = 0;
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $assays = array();
-        $defaultAssayId = '';
         $assayRecords = $db->fetchAll($db->select()->from('r_tb_assay'));
         foreach ($assayRecords as $assayRecord) {
-            if ($defaultAssayId == '') {
-                $defaultAssayId = $assayRecord['id'];
-            }
             $assays[$assayRecord['id']] = $assayRecord['short_name'];
         }
         foreach ($shipmentResult as $shipment) {
@@ -1570,8 +1585,8 @@ class Application_Service_Evaluation {
                 $failureReason['warning'] = "Response was submitted after the last response date.";
             }
             $attributes = json_decode($shipment['attributes'], true);
-            $assayName = $assays[$defaultAssayId];
-            if (isset($attributes['assay']) && array_key_exists($attributes['assay'], $assays)) {
+            $assayName = "Unspecified";
+            if (isset($attributes['assay']) && $attributes['assay'] != '' && array_key_exists($attributes['assay'], $assays)) {
                 $assayName = $assays[$attributes['assay']];
             }
             foreach ($results as $result) {

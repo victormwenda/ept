@@ -71,6 +71,16 @@ class Admin_ShipmentController extends Zend_Controller_Action {
     }
 
     public function getSampleFormAction() {
+        if ($this->_hasParam('did')) {
+            $this->view->selectedDistribution = (int) base64_decode($this->_getParam('did'));
+        }
+        $distro = new Application_Service_Distribution();
+        $unshippedDistributions = $distro->getUnshippedDistributions();
+        $unshippedDistributionsArray = array();
+        foreach ($unshippedDistributions as $dist) {
+            array_push($unshippedDistributionsArray, iterator_to_array($dist));
+        }
+        $this->view->unshippedDistro = $unshippedDistributionsArray;
         if ($this->getRequest()->isPost()) {
             $this->view->scheme = $sid = strtolower($this->_getParam('sid'));
             if ($sid == 'vl') {

@@ -348,7 +348,7 @@ if (sizeof($this->result['shipment']) > 0) {
                     if ($discrepantResultInSubmission) {
                         array_push($allComments, 'Red highlighted results represent discrepancies between actual and expected results.');
                     }
-                    if ($result['cartridge_expired_on']) {
+                    if (isset($result['cartridge_expired_on']) && $result['cartridge_expired_on'] != '') {
                         array_push($allComments, 'Xpert cartridge kit expired '.Pt_Commons_General::dbDateToString($result['cartridge_expired_on']).'. Use of expired reagents could lead to incorrect reporting of clinical results.'.$result['tests_done_on_expired_cartridges']);
                     }
                     if ($noResultOrError2127InSubmission) {
