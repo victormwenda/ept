@@ -359,8 +359,7 @@ class Application_Service_Participants {
     public function getParticipantsAgainstCountries($dbAdapter ){
        $sql = $dbAdapter->select()
             ->from(array('p' => 'participant'), array('participant_id','lab_name','unique_identifier'))
-            ->join(array('c' => 'countries'), 'p.country = c.id', array('iso_name'))->where("p.status = 'active'");;
-            // ->order(array('c.iso_name');
+            ->join(array('c' => 'countries'), 'p.country = c.id', array('iso_name'))->where("p.status = 'active'");
        return  $dbAdapter->fetchAll($sql);
     }
 
@@ -369,12 +368,10 @@ class Application_Service_Participants {
          $subSql = $dbAdapter->select()
             ->from(array('p' => 'participant'), array('participant_id'))
             ->join(array('spm' => 'shipment_participant_map'), 'spm.participant_id = p.participant_id', array())
-            // ->join(array('s' => 'shipment'), 'spm.shipment_id = s.shipment_id', array())
             ->where("spm.shipment_id = ?", $shipmentId)
             ->where("p.status = 'active'");
 
             return $dbAdapter->fetchAll($subSql);
-        # code...
     }
 
 	public function enrollParticipants($params) {

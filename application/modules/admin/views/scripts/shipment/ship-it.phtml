@@ -14,7 +14,6 @@
             <?php
             foreach ($this->countries as $ckey => $country) { 
             ?>
-
                     <li><i class="fa fa-minus"></i> 
                         <label> 
                             <input id="node-<?php echo $ckey; ?>" data-id="custom-<?php echo $ckey; ?>" type="checkbox"  <?php if(count($country["unenrolled_participants"]) == 0) {  ?> checked="true" <?php  } ?>>
