@@ -306,72 +306,31 @@ class Application_Service_Participants {
         return $countries;
     }
 
-
-     public function getEnrolledAndUnErolledParticipants($shipmentId)
+    public function getEnrolledAndUnEnrolledParticipants($shipmentId)
     {
         $dbAdapter = Zend_Db_Table_Abstract::getDefaultAdapter();
-        $participantCountries = $this->getParticipantsAgainstCountries($dbAdapter);
-        $shipmentParticipantMapList = $this->getAllShipmentMapByShipmentId($dbAdapter,$shipmentId);
-        
-        $keys = array_column($participantCountries, 'iso_name');
-        array_multisort($keys, SORT_ASC, $participantCountries);
-
-        $countries=array();
-        $enrolled=array();
-        $unenrolled=array();
-        $count=array();
-        $count['iso_name']=null;
-        foreach ($participantCountries as $key => $participant) {
-            if($count["iso_name"] != $participant['iso_name']){
-                if ($count["iso_name"]!= null) {
-                    $count["id"]=$participant['participant_id'];
-                    $count["enrolled_participants"]=$enrolled;
-                    $count["unenrolled_participants"]=$unenrolled;
-                    $countries[]=$count;
-                }
-                $count=array();
-                $enrolled=array();
-                $unenrolled=array();
-                $count["iso_name"]=$participant['iso_name'];
-            }
-
-            if ($this->isParticipantEnrolled($participant, $shipmentParticipantMapList)) {
-
-                $enrolled[]=$participant;
-            }else{
-                $unenrolled[]=$participant;
-            }
-         }
-         return $countries;
-    }
-    public function isParticipantEnrolled($participant,$shipmentParticipantMapList)
-    {
-        foreach ($shipmentParticipantMapList as $key => $spml) {
-
-            if ( $participant['participant_id'] == $spml['participant_id']) {
-                return true;
-            }
+        $participantsSql =  $dbAdapter->select()
+            ->from(array('p' => 'participant'), array(
+                "participant_id",
+                "id" => "participant_id",
+                "lab_name",
+                "unique_identifier",
+                "sorting_unique_identifier" => new Zend_Db_Expr("LPAD(p.unique_identifier, 10, '0')")
+            ))
+            ->join(array('c' => 'countries'), 'p.country = c.id', array('iso_name'))
+            ->joinLeft(array('spm' => 'shipment_participant_map'), "p.participant_id = spm.participant_id AND spm.shipment_id = ".(int)$shipmentId, array('map_id'))
+            ->where("p.status = 'active'")
+            ->order(array("c.iso_name ASC", "sorting_unique_identifier ASC"));
+        $participants = $dbAdapter->fetchAll($participantsSql);
+        $countryNames = array_unique(array_column($participants, 'iso_name'));
+        $participantsGroupedByCountry = array();
+        foreach($countryNames as $countryName) {
+            $participantsGroupedByCountry[$countryName] = array_filter($participants,
+                function($participant) use ($countryName) {
+                    return $participant['iso_name'] == $countryName;
+                });
         }
-        return false;
-    }
-
-       
-    public function getParticipantsAgainstCountries($dbAdapter ){
-       $sql = $dbAdapter->select()
-            ->from(array('p' => 'participant'), array('participant_id','lab_name','unique_identifier'))
-            ->join(array('c' => 'countries'), 'p.country = c.id', array('iso_name'))->where("p.status = 'active'");
-       return  $dbAdapter->fetchAll($sql);
-    }
-
-   public function  getAllShipmentMapByShipmentId($dbAdapter, $shipmentId)
-    {
-         $subSql = $dbAdapter->select()
-            ->from(array('p' => 'participant'), array('participant_id'))
-            ->join(array('spm' => 'shipment_participant_map'), 'spm.participant_id = p.participant_id', array())
-            ->where("spm.shipment_id = ?", $shipmentId)
-            ->where("p.status = 'active'");
-
-            return $dbAdapter->fetchAll($subSql);
+        return $participantsGroupedByCountry;
     }
 
 	public function enrollParticipants($params) {

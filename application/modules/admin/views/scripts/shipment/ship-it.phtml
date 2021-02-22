@@ -12,29 +12,22 @@
             <div id="treeview_container" class="hummingbird-treeview well h-scroll-large" style="background-color: white">
                 <ul id="treeview" class="hummingbird-base">
             <?php
-            foreach ($this->countries as $ckey => $country) { 
+            foreach ($this->countries as $ckey => $country) {
+                $unenrolledParticipants = array_filter($country, function ($participant) { return !isset($participant["map_id"]); });
             ?>
-                    <li><i class="fa fa-minus"></i> 
-                        <label> 
-                            <input id="node-<?php echo $ckey; ?>" data-id="custom-<?php echo $ckey; ?>" type="checkbox"  <?php if(count($country["unenrolled_participants"]) == 0) {  ?> checked="true" <?php  } ?>>
-                            <?php echo $country["iso_name"]; ?>
+                    <li><i class="fa fa-minus"></i>
+                        <label>
+                            <input id="node-<?php echo $ckey; ?>" data-id="custom-<?php echo $ckey; ?>" type="checkbox"  <?php if(count($unenrolledParticipants) == 0) {  ?> checked="true" <?php  } ?>>
+                            <?php echo $ckey; ?>
                         </label>
                         <ul style="display: block;">
-                            <?php foreach ($country["enrolled_participants"] as $key => $participant) { ?>
+                            <?php foreach ($country as $participant) { ?>
                                 <li>
-                                    <label> 
-                                        <input  class="participant_checkbox" name="participants[]" type="checkbox" value="<?php echo $participant['participant_id']; ?>"  checked="true">
+                                    <label>
+                                        <input  class="participant_checkbox" name="participants[]" type="checkbox" value="<?php echo $participant['participant_id']; ?>" <?php if(isset($participant['map_id'])) {  ?> checked="true" <?php  } ?>>
+                                        <?php echo $participant['unique_identifier']; ?>
+                                        &nbsp;-&nbsp;
                                         <?php echo $participant['lab_name']; ?>
-                                        (<?php echo $participant['unique_identifier']; ?>)
-                                    </label>
-                                </li>
-                            <?php } ?>
-                            <?php foreach ($country["unenrolled_participants"] as $key => $participant) { ?>
-                                <li>
-                                    <label> 
-                                        <input  class="participant_checkbox" name="participants[]" type="checkbox" value="<?php echo $participant['participant_id']; ?>">
-                                        <?php echo $participant['lab_name']; ?>
-                                        (<?php echo $participant['unique_identifier']; ?>)
                                     </label>
                                 </li>
                             <?php } ?>
@@ -69,7 +62,6 @@
         var numberNotChecked = totalCheckboxes - numberOfChecked;
 
         if (confirm('You have enrolled '+ numberOfChecked +' participants and ' + numberNotChecked + '  unenrolled Participants. Are you sure you want to continue?' )){
-
             flag = deforayValidator.init({
                 formId: 'shipForm'
             });
