@@ -4553,8 +4553,13 @@ class Application_Service_Reports {
         
     JSON_UNQUOTE(FlattenedEvaluationResults.attributes_json->\"$.cartridge_lot_no\") AS `Cartridge Lot Number`,
     FlattenedEvaluationResults.assay_name AS `Assay`,
-    STR_TO_DATE(JSON_UNQUOTE(FlattenedEvaluationResults.attributes_json->\"$.expiry_date\"), '%d-%b-%Y') AS `Expiry Date`,
-    
+    CASE WHEN JSON_UNQUOTE(FlattenedEvaluationResults.attributes_json->\"$.expiry_date\") = '0000-00-00' THEN NULL
+      ELSE COALESCE(
+        STR_TO_DATE(JSON_UNQUOTE(FlattenedEvaluationResults.attributes_json->\"$.expiry_date\"), '%d-%b-%Y'),
+        STR_TO_DATE(JSON_UNQUOTE(FlattenedEvaluationResults.attributes_json->\"$.expiry_date\"), '%Y-%b-%d'),
+        STR_TO_DATE(JSON_UNQUOTE(FlattenedEvaluationResults.attributes_json->\"$.expiry_date\"), '%d-%m-%Y'),
+        STR_TO_DATE(JSON_UNQUOTE(FlattenedEvaluationResults.attributes_json->\"$.expiry_date\"), '%Y-%m-%d'))
+    END AS `Expiry Date`,
     FlattenedEvaluationResults.`Date of last instrument calibration`, FlattenedEvaluationResults.`Participated`, FlattenedEvaluationResults.`Reason for No Submission`,
 
     FlattenedEvaluationResults.`1-Date Tested`, FlattenedEvaluationResults.`1-Instrument Serial`, FlattenedEvaluationResults.`1-Instrument Last Calibrated`,
@@ -5191,8 +5196,8 @@ WHERE spm.shipment_id = ?
 AND res.error_code <> ''";
 
         $nonParticipatingCountriesQuery = "SELECT countries.iso_name AS country_name,
-  CASE WHEN spm.is_pt_test_not_performed = 'yes' THEN IFNULL(rntr.not_tested_reason, 'Unknown') ELSE NULL END AS not_tested_reason,
-  SUM(CASE WHEN spm.is_pt_test_not_performed = 'yes' THEN 1 ELSE 0 END) AS is_pt_test_not_performed,
+  CASE WHEN IFNULL(spm.is_pt_test_not_performed, 'no') = 'yes' THEN IFNULL(rntr.not_tested_reason, 'Unknown') ELSE NULL END AS not_tested_reason,
+  SUM(CASE WHEN IFNULL(spm.is_pt_test_not_performed, 'no') = 'yes' THEN 1 ELSE 0 END) AS is_pt_test_not_performed,
   COUNT(spm.map_id) AS number_of_participants
 FROM shipment_participant_map AS spm
 JOIN participant AS p ON p.participant_id = spm.participant_id
@@ -5225,7 +5230,7 @@ WHERE spm.shipment_id = ?";
   LEFT JOIN r_tb_assay AS a ON a.id = JSON_UNQUOTE(JSON_EXTRACT(spm.attributes, \"$.assay\"))
   WHERE spm.shipment_id = ?
   AND SUBSTR(spm.evaluation_status, 3, 1) = '1'
-  AND spm.is_pt_test_not_performed <> 'yes'";
+  AND IFNULL(spm.is_pt_test_not_performed, 'no') <> 'yes'";
 
         $discordantCountriesQuery = "SELECT mtb_rif_detection_results.country_name,
   SUM(CASE WHEN (mtb_rif_detection_results.res_mtb_detected = 1 AND mtb_rif_detection_results.ref_mtb_not_detected = 1) OR (mtb_rif_detection_results.res_mtb_not_detected = 1 AND mtb_rif_detection_results.ref_mtb_detected = 1) OR (mtb_rif_detection_results.res_rif_resistance_detected = 1 AND mtb_rif_detection_results.ref_rif_resistance_not_detected = 1) THEN 1 ELSE 0 END) AS discordant,
@@ -5250,7 +5255,7 @@ FROM (
   LEFT JOIN r_tb_assay AS a ON a.id = JSON_UNQUOTE(JSON_EXTRACT(spm.attributes, \"$.assay\"))
   WHERE spm.shipment_id = 23
   AND SUBSTR(spm.evaluation_status, 3, 1) = '1'
-  AND spm.is_pt_test_not_performed <> 'yes'";
+  AND IFNULL(spm.is_pt_test_not_performed, 'no') <> 'yes'";
         if ($authNameSpace->is_ptcc_coordinator) {
             $panelStatisticsQuery .= "
 AND p.country IN (".implode(",",$authNameSpace->countries).")";

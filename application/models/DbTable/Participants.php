@@ -832,7 +832,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
                      'spm.participant_id',
                      'spm.shipment_test_date',
                      'RESPONSE' => new Zend_Db_Expr("CASE WHEN spm.is_excluded = 'yes' THEN 'Excluded' ".
-                         "WHEN spm.is_pt_test_not_performed = 'yes' THEN 'Unable to Perform Test' ".
+                         "WHEN IFNULL(spm.is_pt_test_not_performed, 'no') = 'yes' THEN 'Unable to Perform Test' ".
                          "WHEN substr(spm.evaluation_status, 7, 1) = '1' THEN 'Evaluated' ".
                          "WHEN substr(spm.evaluation_status, 3, 1) = '1' AND substr(spm.evaluation_status, 4, 1) = '2' THEN 'Submitted (Late)' ".
                          "WHEN substr(spm.evaluation_status, 3, 1) = '1' THEN 'Submitted' ".
@@ -1018,7 +1018,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
                 'spm.shipment_test_date',
                 'spm.shipment_id',
                 'RESPONSE' => new Zend_Db_Expr("CASE WHEN spm.is_excluded = 'yes' THEN 'Excluded' ".
-                    "WHEN spm.is_pt_test_not_performed = 'yes' THEN 'Unable to Perform Test' ".
+                    "WHEN IFNULL(spm.is_pt_test_not_performed, 'no') = 'yes' THEN 'Unable to Perform Test' ".
                     "WHEN substr(spm.evaluation_status, 7, 1) = '1' THEN 'Evaluated' ".
                     "WHEN substr(spm.evaluation_status, 3, 1) = '1' AND substr(spm.evaluation_status, 4, 1) = '2' THEN 'Submitted (Late)' ".
                     "WHEN substr(spm.evaluation_status, 3, 1) = '1' THEN 'Submitted' ".
