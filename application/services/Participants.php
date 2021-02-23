@@ -306,6 +306,33 @@ class Application_Service_Participants {
         return $countries;
     }
 
+    public function getEnrolledAndUnEnrolledParticipants($shipmentId)
+    {
+        $dbAdapter = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $participantsSql =  $dbAdapter->select()
+            ->from(array('p' => 'participant'), array(
+                "participant_id",
+                "id" => "participant_id",
+                "lab_name",
+                "unique_identifier",
+                "sorting_unique_identifier" => new Zend_Db_Expr("LPAD(p.unique_identifier, 10, '0')")
+            ))
+            ->join(array('c' => 'countries'), 'p.country = c.id', array('iso_name'))
+            ->joinLeft(array('spm' => 'shipment_participant_map'), "p.participant_id = spm.participant_id AND spm.shipment_id = ".(int)$shipmentId, array('map_id'))
+            ->where("p.status = 'active'")
+            ->order(array("c.iso_name ASC", "sorting_unique_identifier ASC"));
+        $participants = $dbAdapter->fetchAll($participantsSql);
+        $countryNames = array_unique(array_column($participants, 'iso_name'));
+        $participantsGroupedByCountry = array();
+        foreach($countryNames as $countryName) {
+            $participantsGroupedByCountry[$countryName] = array_filter($participants,
+                function($participant) use ($countryName) {
+                    return $participant['iso_name'] == $countryName;
+                });
+        }
+        return $participantsGroupedByCountry;
+    }
+
 	public function enrollParticipants($params) {
 		$enrollments = new Application_Model_DbTable_Enrollments();
 		return $enrollments->enrollParticipants($params);
@@ -645,3 +672,4 @@ class Application_Service_Participants {
 		}
 	}
 }
+
