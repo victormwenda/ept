@@ -29,8 +29,6 @@ class Admin_ShipmentController extends Zend_Controller_Action {
         } else if ($this->_hasParam('searchString')) {
             $this->view->searchData = $this->_getParam('searchString');
         }
-        $scheme = new Application_Service_Schemes();
-        $this->view->schemes = $scheme->getAllSchemes();
         if ($this->_hasParam('did')) {
             $this->view->selectedDistribution = (int) base64_decode($this->_getParam('did'));
         } else {
@@ -82,27 +80,7 @@ class Admin_ShipmentController extends Zend_Controller_Action {
         }
         $this->view->unshippedDistro = $unshippedDistributionsArray;
         if ($this->getRequest()->isPost()) {
-            $this->view->scheme = $sid = strtolower($this->_getParam('sid'));
-            if ($sid == 'vl') {
-                $scheme = new Application_Service_Schemes();
-                $this->view->vlControls = $scheme->getSchemeControls($sid);
-                $this->view->vlAssay = $scheme->getVlAssay();
-            } else if ($sid == 'eid') {
-                $scheme = new Application_Service_Schemes();
-                $this->view->eidControls = $scheme->getSchemeControls($sid);
-                $this->view->eidPossibleResults = $scheme->getPossibleResults($sid);
-            } else if ($sid == 'dts') {
-                $scheme = new Application_Service_Schemes();
-                $this->view->dtsPossibleResults = $scheme->getPossibleResults($sid);
-                $this->view->allTestKits = $scheme->getAllDtsTestKit();
-                $this->view->wb = $scheme->getDbsWb();
-                $this->view->eia = $scheme->getDbsEia();
-            } else if ($sid == 'dbs') {
-                $scheme = new Application_Service_Schemes();
-                $this->view->dtsPossibleResults = $scheme->getPossibleResults($sid);
-                $this->view->wb = $scheme->getDbsWb();
-                $this->view->eia = $scheme->getDbsEia();
-            }
+            $this->view->scheme = $sid = strtolower('tb');
         }
     }
 

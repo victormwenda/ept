@@ -874,7 +874,6 @@ class Application_Service_Shipments {
     }
 
     public function addShipment($params) {
-        $scheme = $params['schemeId'];
         $authNameSpace = new Zend_Session_Namespace('administrators');
         $db = new Application_Model_DbTable_Shipments();
         $distroService = new Application_Service_Distribution();
@@ -890,7 +889,7 @@ class Application_Service_Shipments {
         $data = array(
             'shipment_code' => $params['shipmentCode'],
             'distribution_id' => $params['distribution'],
-            'scheme_type' => $scheme,
+            'scheme_type' => 'tb',
             'shipment_date' => $distro['distribution_date'],
             'number_of_samples' => count($params['sampleName']) - $controlCount,
 			'number_of_controls' => $controlCount,
@@ -898,7 +897,7 @@ class Application_Service_Shipments {
             'created_on_admin' => new Zend_Db_Expr('now()'),
             'created_by_admin' => $authNameSpace->primary_email
         );
-        if ($params['schemeId'] == 'tb' && isset($params['isFollowUp'])) {
+        if (isset($params['isFollowUp'])) {
             $data['follows_up_from'] = $params['followsUpFrom'];
         }
         $dbAdapter = Zend_Db_Table_Abstract::getDefaultAdapter();
@@ -913,7 +912,6 @@ class Application_Service_Shipments {
             ));
         }
         $size = count($params['sampleName']);
-        if ($params['schemeId'] == 'tb') {
             for ($i = 0; $i < $size; $i++) {
                 $dbAdapter->insert('reference_result_tb', array(
                         'shipment_id' => $lastId,
@@ -942,7 +940,6 @@ class Application_Service_Shipments {
                     )
                 );
             }
-        }
         if (!isset($params['autoEnroll'])) {
             $distroService->updateDistributionStatus($params['distribution'], 'pending');
         }

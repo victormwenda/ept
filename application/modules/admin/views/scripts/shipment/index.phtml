@@ -59,7 +59,6 @@
                         } ?>
                     </select>
                 </div>
-                <input type="hidden" name="schemeId" id="schemeId" class="isRequired" title="Please choose a Scheme Type on the top of this page"/>
                 <input type="hidden" name="selectedDistribution" id="selectedDistribution" class="" value="<?php echo $this->selectedDistribution; ?>"/>
             </div>
             <div id="isFollowUpContainer" class="form-group" style="display: none;">
@@ -143,23 +142,7 @@
 <script type="text/javascript" charset="utf-8">
     /* Table initialisation */
     var oTable = null;
-    var duplicated = false;
 
-    function checkDuplicate(tableName, fieldName, obj, fnct, msg) {
-        if (obj.val() == "" || obj.val() == null) {
-            return;
-        }
-        $.post("<?php echo $this->url(array('module' => 'default', 'controller' => 'common', 'action' => 'check-duplicate')); ?>", {tableName: tableName, fieldName: fieldName, value: obj.val(), fnct: fnct, format: "html"},
-        function (data) {
-            if (data > 0) {
-                alert(msg, "err");
-                duplicated = true;
-                obj.focus();
-            } else {
-                duplicated = false;
-            }
-        });
-    }
 
     $(document).ready(function () {
         $("body").on("change", 'select.controlOrNot', function () {
@@ -171,40 +154,21 @@
                 $(scoreElem).removeAttr('readonly');
             }
         });
-        schemeSelected($("#scheme").val());
+        drawTable();
         $(".datepicker").datepicker({dateFormat: '<?php echo $this->defaultDateFormat(); ?>'});
     });
 
     function validateNow() {
-        checkDuplicate('shipment', 'shipment_code', $('#shipmentCode'), null, 'This Code already exists for another Shipment. Please try something else.');
         flag = deforayValidator.init({
             formId: 'shipmentForm'
         });
-        if (flag && !duplicated) {
+        if (flag) {
             $.blockUI();
             document.getElementById('shipmentForm').submit();
         }
     }
 
-    function schemeSelected(scheme) {
-        drawTable();
-        $("#schemeId").val(scheme)
-        $("#configShipment").hide();
-        if (scheme != "" && scheme != null) {
-<?php
-if (isset($this->unshippedDistro) && count($this->unshippedDistro) > 0 && $this->unshippedDistro != '') { ?>
-            $("#enrollBtn span").text("New Shipment : " + $("#scheme option:selected").text());
-            $("#btnSpan").fadeIn();
-<?php
-} else {
-?>
-            $("#btnSpan").fadeOut();
-<?php
-} ?>
-        } else {
-            $("#btnSpan").fadeOut();
-        }
-    }
+
 
     function responseSwitch(switchStatus,sid) {
         if (window.confirm("Are you sure you wish to switch this shipment "+switchStatus+" ?")) {
@@ -266,8 +230,6 @@ if (isset($this->unshippedDistro) && count($this->unshippedDistro) > 0 && $this-
             "bServerSide": true,
             "sAjaxSource": "<?php echo $this->url(array('module' => 'admin', 'controller' => 'shipment', 'action' => 'index', 'format' => 'html')); ?>",
             "fnServerParams": function (aoData) {
-                schemeId = $("#scheme").val();
-                aoData.push({"name": "scheme", "value": schemeId});
                 aoData.push({"name": "distribution", "value": '<?php echo $this->selectedDistribution ?>'});
             },
             "fnServerData": function (sSource, aoData, fnCallback) {
@@ -299,21 +261,11 @@ if (isset($this->searchData) && $this->searchData != '') { ?>
     }
     function getSampleForm() {
         $.blockUI();
-        var scheme = $("#scheme").val();
-        $.post("<?php echo $this->url(array('module' => 'admin', 'controller' => 'shipment', 'action' => 'get-sample-form')); ?>", {sid: scheme, format: "html"},
+        $.post("<?php echo $this->url(array('module' => 'admin', 'controller' => 'shipment', 'action' => 'get-sample-form')); ?>", { format: "html"},
         function (data) {
             $("#sampleFormFragment").html(data);
-            if (scheme === 'tb') {
                 $("#isFollowUpContainer").css('display', 'block');
                 $("#generateShipmentCode").css('display', 'block');
-            } else {
-                $("#isFollowUpContainer").css('display', 'none');
-                $("#followsUpFromContainer").css('display', 'none');
-                $("#followsUpFrom").val('');
-                $("#followsUpAutoEnrollContainer").css('display', 'none');
-                $("#autoEnroll").prop('checked',false);
-                $("#generateShipmentCode").css('display', 'none');
-            }
             $.unblockUI();
         });
     }
