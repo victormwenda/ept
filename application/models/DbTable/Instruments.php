@@ -134,12 +134,13 @@ class Application_Model_DbTable_Instruments extends Zend_Db_Table_Abstract {
             ->where("res.instrument_serial = ?", $instrumentSerial)
             ->where("spm.participant_id = ?", $participantId)
             ->where("s.status <> 'finalized'")
+            ->where("substr(spm.evaluation_status, 3, 1) = '9'")
             ->where("res.instrument_installed_on <> i.instrument_installed_on OR res.instrument_last_calibrated_on <> i.instrument_last_calibrated_on");
-        $unfinalizedResponses = $db->fetchAll($sql);
-        foreach ($unfinalizedResponses as $unfinalizedResponse) {
+        $unsubmittedResponses = $db->fetchAll($sql);
+        foreach ($unsubmittedResponses as $unsubmittedResponse) {
 
-            $instrumentInstalledOn = Application_Service_Common::ParseDate($unfinalizedResponse['instrument_installed_on']);
-            $instrumentLastCalibratedOn = Application_Service_Common::ParseDate($unfinalizedResponse['instrument_last_calibrated_on']);
+            $instrumentInstalledOn = Application_Service_Common::ParseDate($unsubmittedResponse['instrument_installed_on']);
+            $instrumentLastCalibratedOn = Application_Service_Common::ParseDate($unsubmittedResponse['instrument_last_calibrated_on']);
             $data = array();
             if (isset($instrumentInstalledOn)) {
                 $data['instrument_installed_on'] = $instrumentInstalledOn;
@@ -149,7 +150,7 @@ class Application_Model_DbTable_Instruments extends Zend_Db_Table_Abstract {
             }
             if (count($data) > 0) {
                 $db->update('response_result_tb', $data,
-                    "shipment_map_id = " . $unfinalizedResponse['shipment_map_id'] . " AND sample_id = " . $unfinalizedResponse['sample_id']
+                    "shipment_map_id = " . $unsubmittedResponse['shipment_map_id'] . " AND sample_id = " . $unsubmittedResponse['sample_id']
                 );
             }
         }
