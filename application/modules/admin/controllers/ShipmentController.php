@@ -57,8 +57,11 @@ class Admin_ShipmentController extends Zend_Controller_Action {
     public function addAction() {
         if ($this->getRequest()->isPost()) {
             $params = $this->getRequest()->getPost();
+            $distributionService = new Application_Service_Distribution();
+            $distribution=$distributionService->addDistributionasshipmentcode($params);
+
             $shipmentService = new Application_Service_Shipments();
-            $shipmentService->addShipment($params);
+            $shipmentService->addShipmentagainstditribution($params,$distribution);
             $this->view->tbShipments = $shipmentService->getShipmentsForScheme('tb');
             if (isset($params['selectedDistribution']) && $params['selectedDistribution'] != "" && $params['selectedDistribution'] != null) {
                 $this->_redirect("/admin/shipment/index/did/" . base64_encode($params['selectedDistribution']));

@@ -42,24 +42,7 @@
         <legend style="font-size:17px;">Add Shipment Details</legend>
         <form class="form-horizontal" name="shipmentForm" id="shipmentForm" method="post" action="<?php echo $this->url(array('module' => 'admin', 'controller' => 'shipment', 'action' => 'add')); ?>" autocomplete="off">
             <div class="form-group">
-                <label class="col-lg-3 control-label" for="distribution">
-                    PE Survey (Unshipped)
-                    &nbsp;<span class="mandatory">*</span>
-                </label>
-                <div class="col-lg-5">
-                    <select id="distribution" name="distribution" class="isRequired form-control input-sm" title="Please select a PE Survey">
-                        <option value="">--Select--</option>
-                        <?php
-                        $distributionCode = "";
-                        foreach ($this->unshippedDistro as $dist) {
-                            if ($dist['distribution_id'] == $this->selectedDistribution) {
-                                $distributionCode = $dist['distribution_code'];
-                            } ?>
-                        <option value="<?php echo $dist['distribution_id']; ?>" <?php echo ($dist['distribution_id'] == $this->selectedDistribution) ? "selected='selected'" : "" ?>><?php echo $dist['distribution_code'] . "   (" . $this->dateFormat($dist['distribution_date']) . ")"; ?></option>
-                        <?php
-                        } ?>
-                    </select>
-                </div>
+               
                 <input type="hidden" name="selectedDistribution" id="selectedDistribution" class="" value="<?php echo $this->selectedDistribution; ?>"/>
             </div>
             <div id="isFollowUpContainer" class="form-group" style="display: none;">
@@ -97,14 +80,8 @@
                            class="isRequired form-control input-sm"
                            title="Please enter the shipment code here"
                            placeholder="Please enter the shipment code here"
-                           value="<?php echo $distributionCode; ?>" 
+                           value="<?php if(isset($distributionCode)){ echo $distributionCode; }?>" 
                            />
-                </div>
-                <div id="generateShipmentCode" class="col-lg-3" style="display: none; padding-top: 0.3em;">
-                    <a style="cursor: pointer;" onclick="generateShipmentCode()">
-                        <i class="icon-cog"></i>
-                        Generate
-                    </a>
                 </div>
             </div>
             <div class="form-group">
@@ -288,7 +265,6 @@ if (isset($this->searchData) && $this->searchData != '') { ?>
         function (data) {
             $("#sampleFormFragment").html(data);
                 $("#isFollowUpContainer").css('display', 'block');
-                $("#generateShipmentCode").css('display', 'block');
             $.unblockUI();
         });
     }
@@ -314,38 +290,6 @@ if (isset($this->searchData) && $this->searchData != '') { ?>
 
     function generateForms(sid) {
       layoutModal('/reports/shipment/generate-forms/sid/' + sid, '980', '550');
-    }
-
-    function generateShipmentCode() {
-      var distributionShipments = {
-        <?php
-        foreach ($this->unshippedDistro as $dist) {
-            echo "'".$dist['distribution_id']."': [";
-            foreach ($dist['shipment_codes'] as $shipmentCode) {
-                echo "'".$shipmentCode."',";
-            }
-            echo "],\n";
-        } ?>
-      };
-      var distributionCodes = {
-          <?php
-          foreach ($this->unshippedDistro as $dist) {
-              echo "'".$dist['distribution_id']."': '".$dist['distribution_code']."',\n";
-          } ?>
-      };
-      var selectedDistributionId = $('#distribution').val();
-      if(!selectedDistributionId) {
-        alert('Please select a survey first?');
-        return;
-      }
-      var existingShipmentCodes = distributionShipments[selectedDistributionId];
-      var generatedCode = distributionCodes[selectedDistributionId] + '-' + (existingShipmentCodes.length + 1);
-      var copyNumber = 1;
-      while (existingShipmentCodes.includes(generatedCode)) {
-        generatedCode = distributionCodes[selectedDistributionId] + '-' + (existingShipmentCodes.length + 1) + ' (' + copyNumber + ')';
-        copyNumber++;
-      }
-      $('#shipmentCode').val(generatedCode);
     }
 
     $('#myModal').on('hidden.bs.modal', function () {

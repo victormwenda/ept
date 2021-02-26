@@ -944,6 +944,83 @@ class Application_Service_Shipments {
             $distroService->updateDistributionStatus($params['distribution'], 'pending');
         }
     }
+    public function addShipmentagainstditribution($params,$distribution) {
+        $authNameSpace = new Zend_Session_Namespace('administrators');
+        $db = new Application_Model_DbTable_Shipments();
+
+        $distroService = new Application_Service_Distribution();
+        $distro = $distroService->getDistribution($distribution);
+
+        $controlCount = 0;
+        if (isset($params['control'])) {
+            foreach ($params['control'] as $control) {
+                if ($control == 1) {
+                    $controlCount+=1;
+                }
+            }
+        }
+        $data = array(
+            'shipment_code' => $params['shipmentCode'],
+            'distribution_id' => $distro['distribution_id'],
+            'scheme_type' => 'tb',
+            'shipment_date' => $distro['distribution_date'],
+            'number_of_samples' => count($params['sampleName']) - $controlCount,
+            'number_of_controls' => $controlCount,
+            'lastdate_response' => Application_Service_Common::ParseDate($params['lastDate']),
+            'is_official' => $params['isOfficial'] == 'yes' ? 1 : 0,
+            'created_on_admin' => new Zend_Db_Expr('now()'),
+            'created_by_admin' => $authNameSpace->primary_email
+        );
+        if (isset($params['isFollowUp'])) {
+            $data['follows_up_from'] = $params['followsUpFrom'];
+        }
+        $dbAdapter = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $lastId = $db->insert($data);
+        if (isset($params['autoEnroll'])) {
+            $participantService = new Application_Service_Participants();
+            $previouslyEnrolledParticipants = $participantService->getEnrolledByShipmentId($params['followsUpFrom']);
+            $enrollmentTable = new Application_Model_DbTable_ShipmentParticipantMap();
+            $enrollmentTable->shipItNow(array(
+                'shipmentId' => $lastId,
+                'participants' => array_map(create_function('$p', 'return $p["participant_id"];'), $previouslyEnrolledParticipants)
+            ));
+        }
+        $size = count($params['sampleName']);
+        if ($params['schemeId'] == 'tb') {
+            for ($i = 0; $i < $size; $i++) {
+                $dbAdapter->insert('reference_result_tb', array(
+                        'shipment_id' => $lastId,
+                        'sample_id' => ($i + 1),
+                        'sample_label' => $params['sampleName'][$i],
+                        'sample_content' => $params['sampleContent'][$i],
+                        'mtb_rif_mtb_detected' => $params['mtbDetectedMtbRif'][$i],
+                        'mtb_rif_rif_resistance' => $params['rifResistanceMtbRif'][$i],
+                        'mtb_rif_probe_d' => $params['probeMtbRifD'][$i],
+                        'mtb_rif_probe_c' => $params['probeMtbRifC'][$i],
+                        'mtb_rif_probe_e' => $params['probeMtbRifE'][$i],
+                        'mtb_rif_probe_b' => $params['probeMtbRifB'][$i],
+                        'mtb_rif_probe_spc' => $params['probeMtbRifSpc'][$i],
+                        'mtb_rif_probe_a' => $params['probeMtbRifA'][$i],
+                        'ultra_mtb_detected' => $params['mtbDetectedUltra'][$i],
+                        'ultra_rif_resistance' => $params['rifResistanceUltra'][$i],
+                        'ultra_probe_spc' => $params['probeUltraSpc'][$i],
+                        'ultra_probe_is1081_is6110' => $params['probeUltraIS1081IS6110'][$i],
+                        'ultra_probe_rpo_b1' => $params['probeUltraRpoB1'][$i],
+                        'ultra_probe_rpo_b2' => $params['probeUltraRpoB2'][$i],
+                        'ultra_probe_rpo_b3' => $params['probeUltraRpoB3'][$i],
+                        'ultra_probe_rpo_b4' => $params['probeUltraRpoB4'][$i],
+                        'control' => 0,
+                        'mandatory' => 1,
+                        'sample_score' => Application_Service_EvaluationScoring::SAMPLE_MAX_SCORE
+                    )
+                );
+            }
+        }
+        if (!isset($params['autoEnroll'])) {
+            $distroService->updateDistributionStatus($distro['distribution_id'], 'pending');
+        }
+    }
+
 
     public function getShipment($sid) {
         $db = new Application_Model_DbTable_Shipments();

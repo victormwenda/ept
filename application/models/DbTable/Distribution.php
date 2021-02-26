@@ -171,6 +171,19 @@ class Application_Model_DbTable_Distribution extends Zend_Db_Table_Abstract {
         );
         return $this->insert($data);
     }
+    public function addDistributionasshipmentcode($params) {
+        $date = new Zend_Date();
+
+        $authNameSpace = new Zend_Session_Namespace('administrators');
+        $data = array(
+            'distribution_code'=>$params['shipmentCode'],
+            'distribution_date'=> new Zend_Db_Expr('now()'),
+            'status' => 'created',
+            'created_by' => $authNameSpace->admin_id,
+            'created_on' => new Zend_Db_Expr('now()')
+        );
+        return $this->insert($data);
+    }
 
     public function shipDistribution($params) {
 
