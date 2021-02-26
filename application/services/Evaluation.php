@@ -1342,7 +1342,6 @@ class Application_Service_Evaluation {
                         'mtb_rif_ultra' => "SUM(CASE WHEN SUBSTR(spm.evaluation_status, 3, 1) = '1' AND IFNULL(is_pt_test_not_performed, 'no') <> 'yes' AND a.short_name = 'MTB Ultra' THEN 1 ELSE 0 END)"
                     ))
                 ->where("spm.shipment_id = ?", $shipmentId);
-            error_log($aggregatesQuery, 0);
             $aggregates = $db->fetchRow($aggregatesQuery);
 
             $mtbRifSummaryQuery = $db->select()->from(array('spm' => 'shipment_participant_map'), array())

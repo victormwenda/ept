@@ -52,8 +52,6 @@ try {
             if ($err > 0) {
                 error_log($result, 0);
                 error_log($err, 0);
-                error_log($errMsg, 0);
-                error_log(json_encode($header, true), 0);
             } else {
                 $responseHeaderLength = curl_getinfo($curl, CURLINFO_HEADER_SIZE);
                 $responseBody = substr($result, $responseHeaderLength);
