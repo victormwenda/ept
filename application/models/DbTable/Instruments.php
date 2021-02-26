@@ -123,19 +123,24 @@ class Application_Model_DbTable_Instruments extends Zend_Db_Table_Abstract {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sql = $db->select()->from(array('res'=>'response_result_tb'), array(
             "shipment_map_id" => "res.shipment_map_id",
-            "sample_id" => "res.sample_id",
-            "instrument_installed_on" => "res.instrument_installed_on",
-            "instrument_last_calibrated_on" => "res.instrument_last_calibrated_on"
+            "sample_id" => "res.sample_id"
         ))
             ->join(array('spm' => 'shipment_participant_map'), 'res.shipment_map_id = spm.map_id', array())
             ->join(array('s' => 'shipment'), 'spm.shipment_id = s.shipment_id', array())
-            ->join(array('i' => 'instrument'), 'res.instrument_serial = spm.map_id', array())
+            ->join(array('i' => 'instrument'), 'res.instrument_serial = i.instrument_serial AND spm.participant_id = i.participant_id', array(
+                "instrument_installed_on" => "i.instrument_installed_on",
+                "instrument_last_calibrated_on" => "i.instrument_last_calibrated_on"
+            ))
             ->where("res.instrument_serial = ?", $instrumentSerial)
             ->where("spm.participant_id = ?", $participantId)
             ->where("s.status <> 'finalized'")
+            ->where("substr(spm.evaluation_status, 3, 1) = '9'")
             ->where("res.instrument_installed_on <> i.instrument_installed_on OR res.instrument_last_calibrated_on <> i.instrument_last_calibrated_on");
-        $unfinalizedResponses = $db->fetchAll($sql);
-        foreach ($unfinalizedResponses as $unfinalizedResponse) {
+        $unsubmittedResponses = $db->fetchAll($sql);
+        foreach ($unsubmittedResponses as $unsubmittedResponse) {
+
+            $instrumentInstalledOn = Application_Service_Common::ParseDate($unsubmittedResponse['instrument_installed_on']);
+            $instrumentLastCalibratedOn = Application_Service_Common::ParseDate($unsubmittedResponse['instrument_last_calibrated_on']);
             $data = array();
             if (isset($instrumentInstalledOn)) {
                 $data['instrument_installed_on'] = $instrumentInstalledOn;
@@ -143,9 +148,11 @@ class Application_Model_DbTable_Instruments extends Zend_Db_Table_Abstract {
             if (isset($instrumentLastCalibratedOn)) {
                 $data['instrument_last_calibrated_on'] = $instrumentLastCalibratedOn;
             }
-            $db->update('response_result_tb', $data,
-                "shipment_map_id = " . $unfinalizedResponse['shipment_map_id'] . " AND sample_id = " . $unfinalizedResponse['sample_id']
-            );
+            if (count($data) > 0) {
+                $db->update('response_result_tb', $data,
+                    "shipment_map_id = " . $unsubmittedResponse['shipment_map_id'] . " AND sample_id = " . $unsubmittedResponse['sample_id']
+                );
+            }
         }
     }
 }
