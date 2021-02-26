@@ -159,6 +159,14 @@ class Api_ResultsController extends Zend_Controller_Action {
             $sID = intval($this->getRequest()->getParam('sid'));
             $pID = intval($this->getRequest()->getParam('pid'));
             $params = Zend_Json::decode($this->getRequest()->getRawBody());
+            $rawSubmissionService = new Application_Service_RawSubmission();
+            $rawSubmissionService->addRawSubmission(array(
+                "function" => "api/controllers/ResultsController/resultHeaderAction PUT",
+                "body" => $params,
+                "dm_id" => $authNameSpace->dm_id,
+                "sID" => $sID,
+                "pID" => $pID
+            ));
             $params['shipmentId'] = $sID;
             $params['participantId'] = $pID;
             $shipmentService = new Application_Service_Shipments();
@@ -178,6 +186,15 @@ class Api_ResultsController extends Zend_Controller_Action {
             $pID = intval($this->getRequest()->getParam('pid'));
             $sampleID = intval($this->getRequest()->getParam('id'));
             $params = Zend_Json::decode($this->getRequest()->getRawBody());
+            $rawSubmissionService = new Application_Service_RawSubmission();
+            $rawSubmissionService->addRawSubmission(array(
+                "function" => "modules/api/controllers/ResultsController/resultItemAction PUT",
+                "body" => $params,
+                "dm_id" => $authNameSpace->dm_id,
+                "sID" => $sID,
+                "pID" => $pID,
+                "sampleID" => $sampleID
+            ));
             $params['shipmentId'] = $sID;
             $params['participantId'] = $pID;
             $params['sampleId'] = $sampleID;
@@ -213,6 +230,15 @@ class Api_ResultsController extends Zend_Controller_Action {
             $params['shipmentId'] = $sID;
             $params['participantId'] = $pID;
             $submitResponse = $this->getRequest()->getParam('submitResponse');
+            $rawSubmissionService = new Application_Service_RawSubmission();
+            $rawSubmissionService->addRawSubmission(array(
+                "function" => "api/controllers/ResultsController/resultFooterAction PUT",
+                "body" => $params,
+                "dm_id" => $authNameSpace->dm_id,
+                "sID" => $sID,
+                "pID" => $pID,
+                "submitResponse" => $submitResponse
+            ));
             if(isset($submitResponse)) {
                 $params['submitResponse'] = $submitResponse;
             } else {

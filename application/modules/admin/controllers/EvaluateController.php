@@ -9,13 +9,13 @@ class Admin_EvaluateController extends Zend_Controller_Action {
                     ->addActionContext('update-shipment-status', 'html')
                     ->addActionContext('delete-dts-response', 'html')
                     ->addActionContext('vl-range', 'html')
-                    ->initContext();        
+                    ->initContext();
         $this->_helper->layout()->pageName = 'analyze';
     }
 
     public function indexAction() {
         if ($this->getRequest()->isPost()) {
-            $params = $this->_getAllParams();            
+            $params = $this->_getAllParams();
             $evalService = new Application_Service_Evaluation();
             $evalService->echoAllDistributions($params);
         }
@@ -29,7 +29,7 @@ class Admin_EvaluateController extends Zend_Controller_Action {
         if ($this->_hasParam('did')){
             $id = (int)($this->_getParam('did'));
             $evalService = new Application_Service_Evaluation();
-            $this->view->shipments = $evalService->getShipments($id);            
+            $this->view->shipments = $evalService->getShipments($id);
         } else {
             $this->view->shipments = false;
         }
@@ -88,14 +88,19 @@ class Admin_EvaluateController extends Zend_Controller_Action {
         if ($this->getRequest()->isPost()) {
             $params = $this->getRequest()->getPost();
             $evalService = new Application_Service_Evaluation();
+            $rawSubmissionService = new Application_Service_RawSubmission();
+            $rawSubmissionService->addRawSubmission(array(
+                "function" => "modules/admin/controllers/EvaluateController/editAction POST",
+                "body" => $params
+            ));
             $evalService->updateShipmentResults($params);
             $shipmentId = base64_encode($params['shipmentId']);
             $alertMsg = new Zend_Session_Namespace('alertSpace');
             $alertMsg->message = "Shipment Results updated successfully";
             if (isset($params['whereToGo']) && $params['whereToGo'] != "") {
-               $this->_redirect($params['whereToGo']); 
+               $this->_redirect($params['whereToGo']);
             } else {
-                $this->_redirect("/admin/evaluate/shipment/sid/$shipmentId");    
+                $this->_redirect("/admin/evaluate/shipment/sid/$shipmentId");
             }
         } else {
             if ($this->_hasParam('sid') && $this->_hasParam('pid')  && $this->_hasParam('scheme')) {
@@ -230,7 +235,7 @@ class Admin_EvaluateController extends Zend_Controller_Action {
 			$this->_redirect("/admin/evaluate/");
 		}
     }
-	
+
 	public function vlSamplePlotAction() {
 		$shipmentId = $this->_getParam('shipment');
 		$sampleId = $this->_getParam('sample');
@@ -239,7 +244,7 @@ class Admin_EvaluateController extends Zend_Controller_Action {
 		$this->view->shipmentId = $shipmentId;
 		$this->view->sampleId = $sampleId;
 	}
-	
+
 	public function addManualLimitsAction() {
 		$this->_helper->layout()->disableLayout();
         if ($this->_hasParam('id')) {
