@@ -1333,13 +1333,13 @@ class Application_Service_Evaluation {
             $db->update('shipment', array('status' => 'evaluated'), "shipment_id = " . $shipmentId);
             $aggregatesQuery = $db->select()->from(array('spm' => 'shipment_participant_map'), array(
                 'enrolled' => 'COUNT(DISTINCT map_id)',
-                'participated' => "SUM(CASE WHEN SUBSTR(spm.evaluation_status, 3, 1) = '1' AND IFNULL(is_pt_test_not_performed, 'no') <> 'yes' THEN 1 ELSE 0 END)",
+                'participated' => "SUM(CASE WHEN SUBSTR(spm.evaluation_status, 3, 1) = '1' AND IFNULL(is_pt_test_not_performed, 'no') <> 'yes' AND IFNULL(is_excluded, 'no') = 'no' THEN 1 ELSE 0 END)",
                 'scored_100_percent' => 'SUM(CASE WHEN IFNULL(spm.shipment_score, 0) + IFNULL(spm.documentation_score, 0) = 100 THEN 1 ELSE 0 END)'
             ))
                 ->joinLeft(array('a' => 'r_tb_assay'),
                     'a.id = CASE WHEN JSON_VALID(spm.attributes) = 1 THEN JSON_UNQUOTE(JSON_EXTRACT(spm.attributes, "$.assay")) ELSE 0 END', array(
-                        'mtb_rif' => "SUM(CASE WHEN SUBSTR(spm.evaluation_status, 3, 1) = '1' AND IFNULL(is_pt_test_not_performed, 'no') <> 'yes' AND a.short_name = 'MTB/RIF' THEN 1 ELSE 0 END)",
-                        'mtb_rif_ultra' => "SUM(CASE WHEN SUBSTR(spm.evaluation_status, 3, 1) = '1' AND IFNULL(is_pt_test_not_performed, 'no') <> 'yes' AND a.short_name = 'MTB Ultra' THEN 1 ELSE 0 END)"
+                        'mtb_rif' => "SUM(CASE WHEN SUBSTR(spm.evaluation_status, 3, 1) = '1' AND IFNULL(is_pt_test_not_performed, 'no') <> 'yes' AND IFNULL(is_excluded, 'no') = 'no' AND a.short_name = 'MTB/RIF' THEN 1 ELSE 0 END)",
+                        'mtb_rif_ultra' => "SUM(CASE WHEN SUBSTR(spm.evaluation_status, 3, 1) = '1' AND IFNULL(is_pt_test_not_performed, 'no') <> 'yes' AND IFNULL(is_excluded, 'no') = 'no' AND a.short_name = 'MTB Ultra' THEN 1 ELSE 0 END)"
                     ))
                 ->where("spm.shipment_id = ?", $shipmentId);
             $aggregates = $db->fetchRow($aggregatesQuery);
