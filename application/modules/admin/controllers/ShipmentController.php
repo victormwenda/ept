@@ -89,6 +89,13 @@ class Admin_ShipmentController extends Zend_Controller_Action {
         if ($this->getRequest()->isPost()) {
             $params = $this->getRequest()->getPost();
             $shipmentService->shipItNow($params);
+            $CountryDbModel = new Application_Model_DbTable_Countries();
+
+            $CountryShipmentMapService = new Application_Service_CountryShipmentMap();
+            foreach ($params['country_last_dates'] as $country => $due_date) {
+                $CountryShipmentMapService->updateOrInsertCountryShipmetDueDate($due_date,$CountryDbModel->getCountryId($country),$params['shipmentId']);
+            }
+            
             $this->_redirect("/admin/shipment");
         } else {
             if ($this->_hasParam('sid')) {
@@ -96,6 +103,8 @@ class Admin_ShipmentController extends Zend_Controller_Action {
                 $sid = (int)base64_decode($this->_getParam('sid'));
                 $this->view->shipment = $shipmentDetails = $shipmentService->getShipment($sid);
                 $this->view->countries = $countries = $participantService->getEnrolledAndUnEnrolledParticipants($sid);
+
+                return false;
             }
         }
     }

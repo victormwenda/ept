@@ -17,8 +17,14 @@
             ?>
                     <li><i class="fa fa-minus"></i>
                         <label>
-                            <input id="node-<?php echo $ckey; ?>" data-id="custom-<?php echo $ckey; ?>" type="checkbox"  <?php if(count($unenrolledParticipants) == 0) {  ?> checked="true" <?php  } ?>>
+                        <input id="node-<?php echo $ckey; ?>" data-id="custom-<?php echo $ckey; ?>" type="checkbox"  <?php if(count($unenrolledParticipants) == 0) {  ?> checked="true" <?php  } ?>>
                             <?php echo $ckey; ?>
+                        <input type="text" name="country_last_dates[<?php  echo $ckey; ?>]" size="50" maxlength="45" 
+                            value="<?php  echo $this->shipment->lastdate_response;?>"
+                            readonly="readonly"
+                           class="input-sm datepicker ml-auto"
+                           title="Please enter the last date here"
+                           placeholder="Please enter the last date here"/>
                         </label>
                         <ul style="display: block;">
                             <?php foreach ($country as $participant) { ?>
@@ -73,6 +79,11 @@
             return false;
         }
     }
+
+
+    $(document).ready(function () {
+        $(".datepicker").datepicker({dateFormat: '<?php echo $this->defaultDateFormat(); ?>'});
+    });
 </script>
 
 <script src="<?php echo $this->baseUrl('js/hummingbird-treeview.js'); ?>" ></script>
