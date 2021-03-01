@@ -634,9 +634,8 @@ class Application_Service_Shipments {
                 $params['instrumentSerial'] != "") {
                 $instrumentDetails = array(
                     'instrument_serial' => $params['instrumentSerial'],
-                    // No need to parse these dates because they come in from the mobile add as dates, not strings
-                    'instrument_installed_on' => $params['instrumentInstalledOn'],
-                    'instrument_last_calibrated_on' => $params['instrumentLastCalibratedOn']
+                    'instrument_installed_on' => Application_Service_Common::ParseDate($params['instrumentInstalledOn']),
+                    'instrument_last_calibrated_on' => Application_Service_Common::ParseDate($params['instrumentLastCalibratedOn'])
                 );
                 $instrumentsDb->upsertInstrument($params['participantId'], $instrumentDetails);
             }
