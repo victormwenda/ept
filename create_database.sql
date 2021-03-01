@@ -1491,6 +1491,10 @@ CREATE TABLE `raw_submission` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping routines for database 'create_database'
+--
+
 /*!50003 DROP PROCEDURE IF EXISTS `CreateParticipant` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
