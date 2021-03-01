@@ -53,7 +53,7 @@ class Application_Model_DbTable_Instruments extends Zend_Db_Table_Abstract {
     }
 
     public function upsertInstrument($pid, $params) {
-        if (!isset($params['instrument_id']) && (!isset($params['instrument_serial']) || !$params['instrument_serial'] == "")) {
+        if (!isset($params['instrument_id']) && (!isset($params['instrument_serial']) || $params['instrument_serial'] == "")) {
             return;
         }
         $authNameSpace = new Zend_Session_Namespace('datamanagers');
