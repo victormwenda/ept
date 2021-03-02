@@ -310,11 +310,10 @@ CREATE TABLE `instrument` (
   `created_on` datetime DEFAULT NULL,
   `updated_by` varchar(45) DEFAULT NULL,
   `updated_on` datetime DEFAULT NULL,
-  CONSTRAINT `instrument_serial_UNIQUE` UNIQUE KEY `instrument_serial_UNIQUE`(`instrument_serial`),
-  CONSTRAINT `participant_id_UNIQUE` UNIQUE KEY `participant_id_UNIQUE`(`participant_id`),
   PRIMARY KEY (`instrument_id`),
   KEY `participant_id` (`participant_id`),
-  CONSTRAINT `instrument_ibfk_2` FOREIGN KEY (`participant_id`) REFERENCES `participant` (`participant_id`)
+  CONSTRAINT `instrument_ibfk_2` FOREIGN KEY (`participant_id`) REFERENCES `participant` (`participant_id`),
+  UNIQUE KEY `participant_id_instrument_serial` (`participant_id`, `instrument_serial`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
