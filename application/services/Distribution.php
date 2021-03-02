@@ -10,9 +10,9 @@ class Application_Service_Distribution {
         $distributionDb = new Application_Model_DbTable_Distribution();
 		return $distributionDb->addDistribution($params);
 	}
-	public function addDistributionasshipmentcode($params) {
+	public function AddDistributionAsShipmentCode($params) {
         $distributionDb = new Application_Model_DbTable_Distribution();
-		return $distributionDb->addDistributionasshipmentcode($params);
+		return $distributionDb->AddDistributionAsShipmentCode($params);
 	}
 	public function getDistribution($did) {
         $distributionDb = new Application_Model_DbTable_Distribution();

@@ -58,7 +58,7 @@ class Admin_ShipmentController extends Zend_Controller_Action {
         if ($this->getRequest()->isPost()) {
             $params = $this->getRequest()->getPost();
             $distributionService = new Application_Service_Distribution();
-            $distribution=$distributionService->addDistributionasshipmentcode($params);
+            $distribution=$distributionService->AddDistributionAsShipmentCode($params);
 
             $shipmentService = new Application_Service_Shipments();
             $shipmentService->addShipmentagainstditribution($params,$distribution);

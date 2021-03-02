@@ -986,7 +986,6 @@ class Application_Service_Shipments {
             ));
         }
         $size = count($params['sampleName']);
-        if ($params['schemeId'] == 'tb') {
             for ($i = 0; $i < $size; $i++) {
                 $dbAdapter->insert('reference_result_tb', array(
                         'shipment_id' => $lastId,
@@ -1015,7 +1014,6 @@ class Application_Service_Shipments {
                     )
                 );
             }
-        }
         if (!isset($params['autoEnroll'])) {
             $distroService->updateDistributionStatus($distro['distribution_id'], 'pending');
         }
