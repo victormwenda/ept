@@ -15,8 +15,8 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
             if (isset($headerInstrumentSerial) &&
                 $headerInstrumentSerial != "") {
                 $instrumentDetails[$headerInstrumentSerial] = array(
-                    'instrument_installed_on' => $params['headerInstrumentInstalledOn'][$key],
-                    'instrument_last_calibrated_on' => $params['headerInstrumentLastCalibratedOn'][$key]
+                    'instrument_installed_on' => Application_Service_Common::ParseDate($params['headerInstrumentInstalledOn'][$key]),
+                    'instrument_last_calibrated_on' => Application_Service_Common::ParseDate($params['headerInstrumentLastCalibratedOn'][$key])
                 );
             }
         }
@@ -32,14 +32,10 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
                 if (isset($params['instrumentSerial'][$key]) &&
                     isset($instrumentDetails[$params['instrumentSerial'][$key]])) {
                     if (isset($instrumentDetails[$params['instrumentSerial'][$key]]['instrument_installed_on'])) {
-                        $instrumentInstalledOn = Application_Service_Common::ParseDate(
-                            $instrumentDetails[$params['instrumentSerial'][$key]]['instrument_installed_on']
-                        );
+                        $instrumentInstalledOn = $instrumentDetails[$params['instrumentSerial'][$key]]['instrument_installed_on'];
                     }
                     if (isset($instrumentDetails[$params['instrumentSerial'][$key]]['instrument_last_calibrated_on'])) {
-                        $instrumentLastCalibratedOn = Application_Service_Common::ParseDate(
-                            $instrumentDetails[$params['instrumentSerial'][$key]]['instrument_last_calibrated_on']
-                        );
+                        $instrumentLastCalibratedOn = $instrumentDetails[$params['instrumentSerial'][$key]]['instrument_last_calibrated_on'];
                     }
                 }
                 $cartridgeExpirationDate = Application_Service_Common::ParseDate($params['expiryDate']);
@@ -103,8 +99,8 @@ class Application_Model_DbTable_ResponseTb extends Zend_Db_Table_Abstract {
         $res = $this->fetchRow("shipment_map_id = " . $params['smid'] . " and sample_id = " . $sampleId);
 
         $dateTested = Application_Service_Common::ParseDate($params['dateTested']);
-        $instrumentInstalledOn = Application_Service_Common::ParseDbDate($params['instrumentInstalledOn']);
-        $instrumentLastCalibratedOn = Application_Service_Common::ParseDbDate($params['instrumentLastCalibratedOn']);
+        $instrumentInstalledOn = Application_Service_Common::ParseDate($params['instrumentInstalledOn']);
+        $instrumentLastCalibratedOn = Application_Service_Common::ParseDate($params['instrumentLastCalibratedOn']);
         if ($res == null || count($res) == 0) {
             $responseResult = array(
                 'shipment_map_id' => $params['smid'],

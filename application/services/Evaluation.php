@@ -563,13 +563,13 @@ class Application_Service_Evaluation {
                     $headerInstrumentSerial != "") {
                     $headerInstrumentDetails = array(
                         'instrument_serial' => $headerInstrumentSerial,
-                        'instrument_installed_on' => $params['headerInstrumentInstalledOn'][$key],
-                        'instrument_last_calibrated_on' => $params['headerInstrumentLastCalibratedOn'][$key]
+                        'instrument_installed_on' => Application_Service_Common::ParseDate($params['headerInstrumentInstalledOn'][$key]),
+                        'instrument_last_calibrated_on' => Application_Service_Common::ParseDate($params['headerInstrumentLastCalibratedOn'][$key])
                     );
                     $instrumentsDb->upsertInstrument($params['participantId'], $headerInstrumentDetails);
                     $instrumentDetails[$headerInstrumentSerial] = array(
-                        'instrument_installed_on' => $params['headerInstrumentInstalledOn'][$key],
-                        'instrument_last_calibrated_on' => $params['headerInstrumentLastCalibratedOn'][$key]
+                        'instrument_installed_on' => Application_Service_Common::ParseDate($params['headerInstrumentInstalledOn'][$key]),
+                        'instrument_last_calibrated_on' => Application_Service_Common::ParseDate($params['headerInstrumentLastCalibratedOn'][$key])
                     );
                 }
             }
@@ -590,14 +590,10 @@ class Application_Service_Evaluation {
                 if (isset($params['instrumentSerial'][$i]) &&
                     isset($instrumentDetails[$params['instrumentSerial'][$i]])) {
                     if (isset($instrumentDetails[$params['instrumentSerial'][$i]]['instrument_installed_on'])) {
-                        $instrumentInstalledOn = Application_Service_Common::ParseDate(
-                            $instrumentDetails[$params['instrumentSerial'][$i]]['instrument_installed_on']
-                        );
+                        $instrumentInstalledOn = $instrumentDetails[$params['instrumentSerial'][$i]]['instrument_installed_on'];
                     }
                     if (isset($instrumentDetails[$params['instrumentSerial'][$i]]['instrument_last_calibrated_on'])) {
-                        $instrumentLastCalibratedOn = Application_Service_Common::ParseDate(
-                            $instrumentDetails[$params['instrumentSerial'][$i]]['instrument_last_calibrated_on']
-                        );
+                        $instrumentLastCalibratedOn = $instrumentDetails[$params['instrumentSerial'][$i]]['instrument_last_calibrated_on'];
                     }
                 }
                 $cartridgeExpirationDate = Application_Service_Common::ParseDate($params['expiryDate']);
@@ -1333,16 +1329,15 @@ class Application_Service_Evaluation {
             $db->update('shipment', array('status' => 'evaluated'), "shipment_id = " . $shipmentId);
             $aggregatesQuery = $db->select()->from(array('spm' => 'shipment_participant_map'), array(
                 'enrolled' => 'COUNT(DISTINCT map_id)',
-                'participated' => "SUM(CASE WHEN SUBSTR(spm.evaluation_status, 3, 1) = '1' AND IFNULL(is_pt_test_not_performed, 'no') <> 'yes' THEN 1 ELSE 0 END)",
+                'participated' => "SUM(CASE WHEN SUBSTR(spm.evaluation_status, 3, 1) = '1' AND IFNULL(is_pt_test_not_performed, 'no') <> 'yes' AND IFNULL(is_excluded, 'no') = 'no' THEN 1 ELSE 0 END)",
                 'scored_100_percent' => 'SUM(CASE WHEN IFNULL(spm.shipment_score, 0) + IFNULL(spm.documentation_score, 0) = 100 THEN 1 ELSE 0 END)'
             ))
                 ->joinLeft(array('a' => 'r_tb_assay'),
                     'a.id = CASE WHEN JSON_VALID(spm.attributes) = 1 THEN JSON_UNQUOTE(JSON_EXTRACT(spm.attributes, "$.assay")) ELSE 0 END', array(
-                        'mtb_rif' => "SUM(CASE WHEN SUBSTR(spm.evaluation_status, 3, 1) = '1' AND IFNULL(is_pt_test_not_performed, 'no') <> 'yes' AND a.short_name = 'MTB/RIF' THEN 1 ELSE 0 END)",
-                        'mtb_rif_ultra' => "SUM(CASE WHEN SUBSTR(spm.evaluation_status, 3, 1) = '1' AND IFNULL(is_pt_test_not_performed, 'no') <> 'yes' AND a.short_name = 'MTB Ultra' THEN 1 ELSE 0 END)"
+                        'mtb_rif' => "SUM(CASE WHEN SUBSTR(spm.evaluation_status, 3, 1) = '1' AND IFNULL(is_pt_test_not_performed, 'no') <> 'yes' AND IFNULL(is_excluded, 'no') = 'no' AND a.short_name = 'MTB/RIF' THEN 1 ELSE 0 END)",
+                        'mtb_rif_ultra' => "SUM(CASE WHEN SUBSTR(spm.evaluation_status, 3, 1) = '1' AND IFNULL(is_pt_test_not_performed, 'no') <> 'yes' AND IFNULL(is_excluded, 'no') = 'no' AND a.short_name = 'MTB Ultra' THEN 1 ELSE 0 END)"
                     ))
                 ->where("spm.shipment_id = ?", $shipmentId);
-            error_log($aggregatesQuery, 0);
             $aggregates = $db->fetchRow($aggregatesQuery);
 
             $mtbRifSummaryQuery = $db->select()->from(array('spm' => 'shipment_participant_map'), array())
@@ -1361,7 +1356,7 @@ class Application_Service_Evaluation {
                         'rif_not_detected' => new Zend_Db_Expr("SUM(CASE WHEN `res`.`mtb_detected` IN ('notDetected', 'detected', 'high', 'medium', 'low', 'veryLow') AND IFNULL(`res`.`rif_resistance`, '') IN ('notDetected', 'na', '') THEN 1 ELSE 0 END)"),
                         'rif_indeterminate' => new Zend_Db_Expr("SUM(CASE WHEN `res`.`rif_resistance` = 'indeterminate' THEN 1 ELSE 0 END)"),
                         'rif_uninterpretable' => new Zend_Db_Expr("SUM(CASE WHEN IFNULL(`res`.`mtb_detected`, '') IN ('noResult', 'invalid', 'error', '') THEN 1 ELSE 0 END)"),
-                        'no_of_responses' => new Zend_Db_Expr('COUNT(*)'),
+                        'no_of_responses' => new Zend_Db_Expr("SUM(CASE WHEN IFNULL(`res`.`mtb_detected`, '') = '' THEN 0 ELSE 1 END)"),
                         'average_ct' => new Zend_Db_Expr('SUM(CASE WHEN IFNULL(`res`.`calculated_score`, \'pass\') NOT IN (\'fail\', \'excluded\', \'noresult\') THEN IFNULL(CASE WHEN `res`.`probe_6` = \'\' THEN 0 ELSE `res`.`probe_6` END, 0) ELSE 0 END) / SUM(CASE WHEN IFNULL(CASE WHEN `res`.`probe_6` = \'\' THEN 0 ELSE `res`.`probe_6` END, 0) = 0 OR IFNULL(`res`.`calculated_score`, \'pass\') IN (\'fail\', \'excluded\', \'noresult\') THEN 0 ELSE 1 END)')))
                 ->joinLeft(array('a' => 'r_tb_assay'),
                     'a.id = CASE WHEN JSON_VALID(spm.attributes) = 1 THEN JSON_UNQUOTE(JSON_EXTRACT(spm.attributes, "$.assay")) ELSE 0 END')
@@ -1387,9 +1382,9 @@ class Application_Service_Evaluation {
                         'mtb_uninterpretable' => new Zend_Db_Expr("SUM(CASE WHEN IFNULL(`res`.`mtb_detected`, '') IN ('noResult', 'invalid', 'error') THEN 1 ELSE 0 END)"),
                         'rif_detected' => new Zend_Db_Expr("SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow') AND `res`.`rif_resistance` = 'detected' THEN 1 ELSE 0 END)"),
                         'rif_not_detected' => new Zend_Db_Expr("SUM(CASE WHEN `res`.`mtb_detected` IN ('notDetected', 'detected', 'high', 'medium', 'low', 'veryLow') AND IFNULL(`res`.`rif_resistance`, '') IN ('notDetected', 'na', '') THEN 1 ELSE 0 END)"),
-                        'rif_indeterminate' => new Zend_Db_Expr("SUM(CASE WHEN `res`.`rif_resistance` = 'indeterminate' THEN 1 ELSE 0 END)"),
+                        'rif_indeterminate' => new Zend_Db_Expr("SUM(CASE WHEN `res`.`rif_resistance` = 'indeterminate' OR (`res`.`mtb_detected` = 'trace' AND `res`.`rif_resistance` = 'na') THEN 1 ELSE 0 END)"),
                         'rif_uninterpretable' => new Zend_Db_Expr("SUM(CASE WHEN IFNULL(`res`.`mtb_detected`, '') IN ('noResult', 'invalid', 'error', '') THEN 1 ELSE 0 END)"),
-                        'no_of_responses' => new Zend_Db_Expr('COUNT(*)'),
+                        'no_of_responses' => new Zend_Db_Expr("SUM(CASE WHEN IFNULL(`res`.`mtb_detected`, '') = '' THEN 0 ELSE 1 END)"),
                         'average_ct' => new Zend_Db_Expr('SUM(CASE WHEN IFNULL(`res`.`calculated_score`, \'pass\') NOT IN (\'fail\', \'excluded\', \'noresult\') THEN  LEAST(IFNULL(`res`.`probe_3`, 0), IFNULL(`res`.`probe_4`, 0), IFNULL(`res`.`probe_5`, 0), IFNULL(`res`.`probe_6`, 0)) ELSE 0 END) / SUM(CASE WHEN LEAST(IFNULL(CASE WHEN `res`.`probe_3` = \'\' THEN 0 ELSE `res`.`probe_3` END, 0), IFNULL(CASE WHEN `res`.`probe_4` = \'\' THEN 0 ELSE `res`.`probe_4` END, 0), IFNULL(CASE WHEN `res`.`probe_5` = \'\' THEN 0 ELSE `res`.`probe_5` END, 0), IFNULL(CASE WHEN `res`.`probe_6` = \'\' THEN 0 ELSE `res`.`probe_6` END, 0)) = 0 OR IFNULL(`res`.`calculated_score`, \'pass\') IN (\'fail\', \'excluded\', \'noresult\') THEN 0 ELSE 1 END)')))
                 ->joinLeft(array('a' => 'r_tb_assay'),
                     'a.id = CASE WHEN JSON_VALID(spm.attributes) = 1 THEN JSON_UNQUOTE(JSON_EXTRACT(spm.attributes, "$.assay")) ELSE 0 END')

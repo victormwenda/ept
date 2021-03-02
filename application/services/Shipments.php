@@ -634,8 +634,8 @@ class Application_Service_Shipments {
                 $params['instrumentSerial'] != "") {
                 $instrumentDetails = array(
                     'instrument_serial' => $params['instrumentSerial'],
-                    'instrument_installed_on' => Application_Service_Common::ParseDbDate($params['instrumentInstalledOn']),
-                    'instrument_last_calibrated_on' => Application_Service_Common::ParseDbDate($params['instrumentLastCalibratedOn'])
+                    'instrument_installed_on' => Application_Service_Common::ParseDate($params['instrumentInstalledOn']),
+                    'instrument_last_calibrated_on' => Application_Service_Common::ParseDate($params['instrumentLastCalibratedOn'])
                 );
                 $instrumentsDb->upsertInstrument($params['participantId'], $instrumentDetails);
             }
@@ -767,8 +767,8 @@ class Application_Service_Shipments {
                     $headerInstrumentSerial != "") {
                     $headerInstrumentDetails = array(
                         'instrument_serial' => $headerInstrumentSerial,
-                        'instrument_installed_on' => $params['headerInstrumentInstalledOn'][$key],
-                        'instrument_last_calibrated_on' => $params['headerInstrumentLastCalibratedOn'][$key]
+                        'instrument_installed_on' => Application_Service_Common::ParseDate($params['headerInstrumentInstalledOn'][$key]),
+                        'instrument_last_calibrated_on' => Application_Service_Common::ParseDate($params['headerInstrumentLastCalibratedOn'][$key])
                     );
                     $instrumentsDb->upsertInstrument($params['participantId'], $headerInstrumentDetails);
                 }

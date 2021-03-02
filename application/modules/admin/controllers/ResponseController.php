@@ -50,6 +50,11 @@ class Admin_ResponseController extends Zend_Controller_Action
             $params = $this->getRequest()->getPost();
             $responseService = new Application_Service_Response();
             $shipmentId = base64_encode($params['shipmentId']);
+            $rawSubmissionService = new Application_Service_RawSubmission();
+            $rawSubmissionService->addRawSubmission(array(
+                "function" => "modules/admin/controllers/ResponseController/editAction POST",
+                "body" => $params
+            ));
             if ($responseService->updateShipmentResults($params)) {
                 $shipmentService = new Application_Service_Shipments();
                 $shipmentService->sendShipmentSavedEmailToParticipantsAndPECC($params['participantId'], $params['shipmentId']);

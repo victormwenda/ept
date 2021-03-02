@@ -394,13 +394,13 @@ class Application_Service_Response {
                     $headerInstrumentSerial != "") {
                     $headerInstrumentDetails = array(
                         'instrument_serial' => $headerInstrumentSerial,
-                        'instrument_installed_on' => $params['headerInstrumentInstalledOn'][$key],
-                        'instrument_last_calibrated_on' => $params['headerInstrumentLastCalibratedOn'][$key]
+                        'instrument_installed_on' => Application_Service_Common::ParseDate($params['headerInstrumentInstalledOn'][$key]),
+                        'instrument_last_calibrated_on' => Application_Service_Common::ParseDate($params['headerInstrumentLastCalibratedOn'][$key])
                     );
                     $instrumentsDb->upsertInstrument($params['participantId'], $headerInstrumentDetails);
                     $instrumentDetails[$headerInstrumentSerial] = array(
-                        'instrument_installed_on' => $params['headerInstrumentInstalledOn'][$key],
-                        'instrument_last_calibrated_on' => $params['headerInstrumentLastCalibratedOn'][$key]
+                        'instrument_installed_on' => Application_Service_Common::ParseDate($params['headerInstrumentInstalledOn'][$key]),
+                        'instrument_last_calibrated_on' => Application_Service_Common::ParseDate($params['headerInstrumentLastCalibratedOn'][$key])
                     );
                 }
             }
@@ -440,14 +440,10 @@ class Application_Service_Response {
                     if (isset($params['instrumentSerial'][$i]) &&
                         isset($instrumentDetails[$params['instrumentSerial'][$i]])) {
                         if (isset($instrumentDetails[$params['instrumentSerial'][$i]]['instrument_installed_on'])) {
-                            $instrumentInstalledOn = Application_Service_Common::ParseDate(
-                                $instrumentDetails[$params['instrumentSerial'][$i]]['instrument_installed_on']
-                            );
+                            $instrumentInstalledOn = $instrumentDetails[$params['instrumentSerial'][$i]]['instrument_installed_on'];
                         }
                         if (isset($instrumentDetails[$params['instrumentSerial'][$i]]['instrument_last_calibrated_on'])) {
-                            $instrumentLastCalibratedOn = Application_Service_Common::ParseDate(
-                                $instrumentDetails[$params['instrumentSerial'][$i]]['instrument_last_calibrated_on']
-                            );
+                            $instrumentLastCalibratedOn = $instrumentDetails[$params['instrumentSerial'][$i]]['instrument_last_calibrated_on'];
                         }
                     }
                     $cartridgeExpirationDate = Application_Service_Common::ParseDate($params['expiryDate']);
