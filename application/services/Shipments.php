@@ -944,7 +944,7 @@ class Application_Service_Shipments {
             $distroService->updateDistributionStatus($params['distribution'], 'pending');
         }
     }
-    public function addShipmentagainstditribution($params,$distribution) {
+    public function addShipmentAgainstDitribution($params,$distribution) {
         $authNameSpace = new Zend_Session_Namespace('administrators');
         $db = new Application_Model_DbTable_Shipments();
 
