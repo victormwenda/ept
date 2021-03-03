@@ -318,17 +318,21 @@ class Application_Service_Participants {
                 "sorting_unique_identifier" => new Zend_Db_Expr("LPAD(p.unique_identifier, 10, '0')")
             ))
             ->join(array('c' => 'countries'), 'p.country = c.id', array('iso_name'))
+            ->joinLeft(array('csm' => 'country_shipment_map'), 'csm.country_id=c.id AND  csm.shipment_id = '.(int)$shipmentId, array('due_date_text'))
             ->joinLeft(array('spm' => 'shipment_participant_map'), "p.participant_id = spm.participant_id AND spm.shipment_id = ".(int)$shipmentId, array('map_id'))
             ->where("p.status = 'active'")
             ->order(array("c.iso_name ASC", "sorting_unique_identifier ASC"));
         $participants = $dbAdapter->fetchAll($participantsSql);
+
         $countryNames = array_unique(array_column($participants, 'iso_name'));
         $participantsGroupedByCountry = array();
+
+        
         foreach($countryNames as $countryName) {
             $participantsGroupedByCountry[$countryName] = array_filter($participants,
-                function($participant) use ($countryName) {
-                    return $participant['iso_name'] == $countryName;
-                });
+            function($participant) use ($countryName) {
+                return $participant['iso_name'] == $countryName;
+            });
         }
         return $participantsGroupedByCountry;
     }

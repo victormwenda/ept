@@ -2,22 +2,38 @@
 
 class Application_Model_DbTable_CountrieShipmentMap extends Zend_Db_Table_Abstract {
     protected $_name = 'country_shipment_map';
+    public function insertOrUpdate($countries,$shipment,$dates){
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $countryShipmentMapValues =  $this->formatData($this->mappingCountryShipmentDate($countries,$shipment,$dates), $db);
+        $db->beginTransaction(); 
+        try {
+            $sql='INSERT INTO `country_shipment_map` (`country_id`,`shipment_id`,`due_date_text`) 
+                VALUES  '.implode (', ', $countryShipmentMapValues). ' ON DUPLICATE KEY UPDATE `due_date_text` = VALUES(due_date_text)';
+            $db->query($sql);
+            $db->commit();
+        } catch (Exception $e) {
+            $db->rollBack();
+            error_log($e, 0);
+        }
+   }
 
-    public function isShipmentExist($country ,$shipment){
-         $sql = $this->select()->where('country_id = ?',$country)->where('shipment_id = ?',$shipment);
-         print_r($this->fetchAll($sql));
-        return count($this->fetchAll($sql)) > 0;
+   function mappingCountryShipmentDate($countries,$shipment,$dates){
+    $data=array();
+        foreach($dates as $key => $date){
+            $data[]=[$countries[$key]['id'],$shipment,$date];
+        }
+    return $data;
+   }
+
+   function formatData($data ,$db){
+    $countryShipmentMapValues = array();
+    foreach ($data as $rowValues) {
+        foreach ($rowValues as $key => $rowValue) {
+             $rowValues[$key] = $db->quote($rowValues[$key]);
+        }
+        $countryShipmentMapValues[] = "(" . implode(', ', $rowValues) . ")";
     }
-    public function updateCountryShipmentMap($country ,$shipment,$date){
-         return $this->update(array('due_date_text'=>$date),array('country_id = ?'=>$country,'shipment_id = ?'=>$shipment));
-    }
-    public function insertCountryShipmentMap($country ,$shipment,$date){
-         $data = array(
-                'country_id'=>$country,
-                'shipment_id'=>$shipment,
-                'due_date_text'=>$date
-            );
-        return $this->insert($data);
-    }
+    return $countryShipmentMapValues;
+   }
 }
 
