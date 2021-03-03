@@ -986,34 +986,34 @@ class Application_Service_Shipments {
             ));
         }
         $size = count($params['sampleName']);
-            for ($i = 0; $i < $size; $i++) {
-                $dbAdapter->insert('reference_result_tb', array(
-                        'shipment_id' => $lastId,
-                        'sample_id' => ($i + 1),
-                        'sample_label' => $params['sampleName'][$i],
-                        'sample_content' => $params['sampleContent'][$i],
-                        'mtb_rif_mtb_detected' => $params['mtbDetectedMtbRif'][$i],
-                        'mtb_rif_rif_resistance' => $params['rifResistanceMtbRif'][$i],
-                        'mtb_rif_probe_d' => $params['probeMtbRifD'][$i],
-                        'mtb_rif_probe_c' => $params['probeMtbRifC'][$i],
-                        'mtb_rif_probe_e' => $params['probeMtbRifE'][$i],
-                        'mtb_rif_probe_b' => $params['probeMtbRifB'][$i],
-                        'mtb_rif_probe_spc' => $params['probeMtbRifSpc'][$i],
-                        'mtb_rif_probe_a' => $params['probeMtbRifA'][$i],
-                        'ultra_mtb_detected' => $params['mtbDetectedUltra'][$i],
-                        'ultra_rif_resistance' => $params['rifResistanceUltra'][$i],
-                        'ultra_probe_spc' => $params['probeUltraSpc'][$i],
-                        'ultra_probe_is1081_is6110' => $params['probeUltraIS1081IS6110'][$i],
-                        'ultra_probe_rpo_b1' => $params['probeUltraRpoB1'][$i],
-                        'ultra_probe_rpo_b2' => $params['probeUltraRpoB2'][$i],
-                        'ultra_probe_rpo_b3' => $params['probeUltraRpoB3'][$i],
-                        'ultra_probe_rpo_b4' => $params['probeUltraRpoB4'][$i],
-                        'control' => 0,
-                        'mandatory' => 1,
-                        'sample_score' => Application_Service_EvaluationScoring::SAMPLE_MAX_SCORE
-                    )
-                );
-            }
+        for ($i = 0; $i < $size; $i++) {
+            $dbAdapter->insert('reference_result_tb', array(
+                    'shipment_id' => $lastId,
+                    'sample_id' => ($i + 1),
+                    'sample_label' => $params['sampleName'][$i],
+                    'sample_content' => $params['sampleContent'][$i],
+                    'mtb_rif_mtb_detected' => $params['mtbDetectedMtbRif'][$i],
+                    'mtb_rif_rif_resistance' => $params['rifResistanceMtbRif'][$i],
+                    'mtb_rif_probe_d' => $params['probeMtbRifD'][$i],
+                    'mtb_rif_probe_c' => $params['probeMtbRifC'][$i],
+                    'mtb_rif_probe_e' => $params['probeMtbRifE'][$i],
+                    'mtb_rif_probe_b' => $params['probeMtbRifB'][$i],
+                    'mtb_rif_probe_spc' => $params['probeMtbRifSpc'][$i],
+                    'mtb_rif_probe_a' => $params['probeMtbRifA'][$i],
+                    'ultra_mtb_detected' => $params['mtbDetectedUltra'][$i],
+                    'ultra_rif_resistance' => $params['rifResistanceUltra'][$i],
+                    'ultra_probe_spc' => $params['probeUltraSpc'][$i],
+                    'ultra_probe_is1081_is6110' => $params['probeUltraIS1081IS6110'][$i],
+                    'ultra_probe_rpo_b1' => $params['probeUltraRpoB1'][$i],
+                    'ultra_probe_rpo_b2' => $params['probeUltraRpoB2'][$i],
+                    'ultra_probe_rpo_b3' => $params['probeUltraRpoB3'][$i],
+                    'ultra_probe_rpo_b4' => $params['probeUltraRpoB4'][$i],
+                    'control' => 0,
+                    'mandatory' => 1,
+                    'sample_score' => Application_Service_EvaluationScoring::SAMPLE_MAX_SCORE
+                )
+            );
+        }
         if (!isset($params['autoEnroll'])) {
             $distroService->updateDistributionStatus($distro['distribution_id'], 'pending');
         }
