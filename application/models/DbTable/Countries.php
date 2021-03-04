@@ -11,7 +11,10 @@ class Application_Model_DbTable_Countries extends Zend_Db_Table_Abstract {
         }
 		return $this->fetchAll($sql);
 	}
-
+    public function getCountryIds($isonames=array()) {
+        return $this->fetchAll($this->select()->from(array('countries'),
+               array('id'))->where('iso_name  IN (?) ',$isonames) );
+    }
     public function updateCountry($countryId, $countryData) {
         return $this->update($countryData,"id=".$countryId);
     }

@@ -12,16 +12,32 @@
             <div id="treeview_container" class="hummingbird-treeview well h-scroll-large" style="background-color: white">
                 <ul id="treeview" class="hummingbird-base">
             <?php
+            $i=0;
             foreach ($this->countries as $ckey => $country) {
                 $unenrolledParticipants = array_filter($country, function ($participant) { return !isset($participant["map_id"]); });
             ?>
-                    <li><i class="fa fa-minus"></i>
-                        <label>
-                            <input id="node-<?php echo $ckey; ?>" data-id="custom-<?php echo $ckey; ?>" type="checkbox"  <?php if(count($unenrolledParticipants) == 0) {  ?> checked="true" <?php  } ?>>
+                    <li class="country"><i class="fa fa-minus"></i>
+                        <label style="display: block; ">
+                            <input id="node-<?php echo $ckey; ?>" class="countr_checkbox"  data-id="custom-<?php echo $ckey; ?>" type="checkbox"  <?php if(count($unenrolledParticipants) == 0) {  ?> checked="true" <?php  } ?>>
                             <?php echo $ckey; ?>
+                            <span style="float:right" class="duedate">
+                                <label>Result due date: </label>
+                                <input type="text" class="input_date" onchange="$(this).attr('name','country_last_dates[<?php  echo $ckey; ?>]')" 
+                                value="<?php 
+                                            if($country[$i]['due_date_text']){
+                                                echo ($country[$i]['due_date_text']);
+                                            }else{
+                                                echo ($this->shipment->shipment_date);
+                                            }
+                                        ?>"
+                                        width="50" size="50" 
+                                        title="Result due date for "
+                                        placeholder="Result due date for "
+                                        >
+                            </span>
                         </label>
                         <ul style="display: block;">
-                            <?php foreach ($country as $participant) { ?>
+                            <?php foreach ($country as $participant) { $i++; ?>
                                 <li>
                                     <label>
                                         <input  class="participant_checkbox" name="participants[]" type="checkbox" value="<?php echo $participant['participant_id']; ?>" <?php if(isset($participant['map_id'])) {  ?> checked="true" <?php  } ?>>
@@ -77,11 +93,32 @@
 
 <script src="<?php echo $this->baseUrl('js/hummingbird-treeview.js'); ?>" ></script>
 
-<script>
+<script>  
+
 $("#treeview").hummingbird();
 $( "#checkNode" ).click(function() {
   $("#treeview").hummingbird("checkNode",{attr:"id",name: "node-0-2-2",expandParents:false});
 });
+
+
+$( document ).ready(function() {
+    dueDateDisplay();
+});
+$( ".participant_checkbox" ).click(function( index ) {
+    dueDateDisplay();
+});
+$( ".countr_checkbox" ).click(function( index ) {
+    dueDateDisplay();
+});
+function dueDateDisplay(){
+    $(".duedate").hide();
+    $( ".participant_checkbox:checked" ).each(function( index ) {
+        $(this).closest('.country').find('.duedate').show();
+    });
+}
+
+
+
 </script>
 
 
