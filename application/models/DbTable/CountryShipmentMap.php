@@ -1,6 +1,6 @@
 <?php
 
-class Application_Model_DbTable_CountrieShipmentMap extends Zend_Db_Table_Abstract {
+class Application_Model_DbTable_CountryShipmentMap extends Zend_Db_Table_Abstract {
     protected $_name = 'country_shipment_map';
     public function insertOrUpdate($countries,$shipment,$dates){
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
