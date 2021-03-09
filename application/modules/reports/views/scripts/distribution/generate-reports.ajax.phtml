@@ -288,7 +288,7 @@ if (sizeof($this->result['shipment']) > 0) {
                     $labRes .= '	     <td style="width:22%;text-align:center;"><strong>'.$tbResultValueMapping[$response['rif_resistance']].'</strong></td>';
                 }
                 $labRes .= '	     <td style="width:10%;text-align:center;">';
-                if ($this->result['is_excluded'] != 'yes') {
+                if ($result['is_excluded'] != 'yes') {
                     $labRes .= '	         <strong>'.$response['score'].'</strong>';
                 }
                 $labRes .= '	     </td>';
@@ -303,12 +303,12 @@ if (sizeof($this->result['shipment']) > 0) {
             $labRes .= '    <tr>';
             $labRes .= '	     <td style="width:46%;background-color:#B6DDE8;border-bottom: solid 10px #000000;border-right: solid 10px #ffffff;"><strong>FINAL SCORE</strong></td>';
             $labRes .= '	     <td style="width:22%;background-color:#B6DDE8;border-top: solid 10px #000000;border-bottom: solid 10px #000000;text-align:center;">';
-            if ($this->result['is_excluded'] != 'yes') {
+            if ($result['is_excluded'] != 'yes') {
                 $labRes .= '	         <strong>'.round(($result['shipment_score'] / $result['max_shipment_score']) * 100, 1).'</strong>';
             }
             $labRes .= '	     </td>';
             $labRes .= '	     <td style="width:22%;background-color:#B6DDE8;border-top: solid 10px #000000;border-bottom: solid 10px #000000;text-align:center;">';
-            if ($this->result['is_excluded'] == 'yes') {
+            if ($result['is_excluded'] == 'yes') {
                 $labRes .= '	         <strong>Excluded</strong>';
             } else {
                 $labRes .= '	         <strong>'.($result['submission_score_status'] == 'fail' ? 'Unsatisfactory' : 'Satisfactory').'</strong>';
