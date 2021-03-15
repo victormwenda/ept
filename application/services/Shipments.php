@@ -189,6 +189,22 @@ class Application_Service_Shipments {
         echo json_encode($output);
     }
 
+    public function UpdateDistributionStatusByShipmentId($sid,$status){
+        $shipment=new Application_Model_DbTable_Shipments();
+        $dist_id=$shipment->fetchRow('shipment_id='.$sid)['distribution_id'];
+        $shipment->updateShipmentStatusByDistribution($dist_id,$status);
+        $distributionService = new Application_Service_Distribution();
+        $shipmentsForThisDistribution = $distributionService->getShipments($dist_id);
+        if (count($shipmentsForThisDistribution) > 1) {
+            foreach ($shipmentsForThisDistribution as $shipmentForThisDistribution) {
+                if (!isset($shipmentForThisDistribution['status']) || $shipmentForThisDistribution['status'] != $status) {
+                    return;
+                }
+            }
+        }
+        $distributionService->updateDistributionStatus($dist_id,$status);
+    }
+
     public function getShipmentsForScheme($scheme) {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sQuery = $db->select()->from(array('s' => 'shipment'))
