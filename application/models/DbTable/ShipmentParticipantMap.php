@@ -6,6 +6,9 @@ class Application_Model_DbTable_ShipmentParticipantMap extends Zend_Db_Table_Abs
     protected $_primary = 'map_id';
 
     public function shipItNow($params) {
+        if (!isset($params["participants"])) {
+            return;
+        }
         $db = $this->getAdapter();
         try {
             $db->beginTransaction();
@@ -15,6 +18,7 @@ class Application_Model_DbTable_ShipmentParticipantMap extends Zend_Db_Table_Abs
                     ->from(array("spm" => $this->_name), array("spm.participant_id"))
                     ->where("spm.shipment_id = " . $params["shipmentId"]));
             $existingEnrollmentParticipantIds = array_column($existingEnrollments, 'participant_id');
+
             foreach ($existingEnrollmentParticipantIds as $existingEnrollmentParticipantId) {
                 if (!in_array($existingEnrollmentParticipantId, $params["participants"])) {
                     $db->delete($this->_name,
@@ -32,6 +36,7 @@ class Application_Model_DbTable_ShipmentParticipantMap extends Zend_Db_Table_Abs
                     $db->insert($this->_name, $data);
                 }
             }
+
 
             $shipmentDb = new Application_Model_DbTable_Shipments();
             $shipmentRow = $shipmentDb->fetchRow('shipment_id=' . $params['shipmentId']);

@@ -91,10 +91,11 @@ class Admin_ShipmentController extends Zend_Controller_Action {
         $shipmentService = new Application_Service_Shipments();
         if ($this->getRequest()->isPost()) {
             $params = $this->getRequest()->getPost();
-            if(count($params['participants'])>0)
+            if(isset($params['participants']) && count($params['participants']) > 0) {
                 $shipmentService->UpdateDistributionStatusByShipmentId($params['shipmentId'],'configured');
-            else
-                $shipmentService->UpdateDistributionStatusByShipmentId($params['shipmentId'],'created');
+            } else {
+                $shipmentService->UpdateDistributionStatusByShipmentId($params['shipmentId'], 'created');
+            }
             $shipmentService->shipItNow($params);
             $CountryShipmentMapService = new Application_Service_CountryShipmentMap();
             if(isset($params['country_last_dates'])){
