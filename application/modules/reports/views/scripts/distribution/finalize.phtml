@@ -256,9 +256,9 @@ if (count($this->shipment) > 0) { ?>
       if (getCookie('<?php echo $this->shipment[0]["shipment_id"]; ?>summaryReportTab')) {
 <?php
     if ($adminSession->is_ptcc_coordinator == 0 && $shipment["report_generated"] == "yes") {
-      $fileSafeShipmentCode = str_replace(array_merge(
+      $fileSafeShipmentCode = str_replace( ' ', '-', str_replace(array_merge(
         array_map('chr', range(0, 31)),
-        array('<', '>', ':', '"', '/', '\\', '|', '?', '*')), '', $shipment["shipment_code"]);
+        array('<', '>', ':', '"', '/', '\\', '|', '?', '*')), '', $shipment["shipment_code"]));
       if (file_exists(UPLOAD_PATH.DIRECTORY_SEPARATOR."reports".DIRECTORY_SEPARATOR.$fileSafeShipmentCode.DIRECTORY_SEPARATOR.$fileSafeShipmentCode."-summary.pdf")) { ?>
         document.getElementById("summaryDiv").innerHTML = '<a href="<?php echo $this->baseUrl("uploads/reports/".$fileSafeShipmentCode."/".$fileSafeShipmentCode."-summary.pdf"); ?>"\
             id="summaryReport" class="btn btn-success btn-sm" target="_blank"\
@@ -296,10 +296,10 @@ if (count($this->shipment) > 0) { ?>
                 $lastEnd = $end;
             }
 
-            $fileSafeShipmentCode = str_replace(array_merge(
+            $fileSafeShipmentCode = str_replace( ' ', '-', str_replace(array_merge(
               array_map('chr', range(0, 31)),
               array('<', '>', ':', '"', '/', '\\', '|', '?', '*')
-            ), '', $shipment["shipment_code"]);
+            ), '', $shipment["shipment_code"]));
             if (file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . "reports" . DIRECTORY_SEPARATOR . $fileSafeShipmentCode . DIRECTORY_SEPARATOR . $fileSafeShipmentCode . "-" . $start . "-" . $end . "-bulk-participant-report.pdf")) { ?>
       if (getCookie('<?php echo $this->shipment[0]["shipment_id"]."indivitualReportTab-".$start."-".$end; ?>')) {
         $("#summaryDiv").append('&nbsp;&nbsp;\
@@ -421,10 +421,10 @@ if (count($this->shipment) > 0) { ?>
               finalizeShipmentBtn();
               $( "#" + startVal + '-' + endVal + "-bulk-participant-report").remove();
               <?php
-                $fileSafeShipmentCode = str_replace(array_merge(
+                $fileSafeShipmentCode = str_replace( ' ', '-', str_replace(array_merge(
                   array_map('chr', range(0, 31)),
                   array('<', '>', ':', '"', '/', '\\', '|', '?', '*')
-                ), '', $shipment['shipment_code']);
+                ), '', $shipment['shipment_code']));
               ?>
               $( "#summaryDiv" ).append('&nbsp;<a href="<?php echo $this->baseUrl() ;?>/uploads/reports/<?php echo $fileSafeShipmentCode ?>/<?php echo $fileSafeShipmentCode ?>-' + startVal + '-' + endVal + '-bulk-participant-report.pdf" id="' + startVal + '-' + endVal + '-bulk-participant-report" class="btn btn-info btn-sm" target="_BLANK" style="margin-top:10px;float:left;clear:both;"> <i class="icon-file-text"></i> &nbsp Download ' + startVal + '-' + endVal + ' Participants Report</a>');
             }
@@ -460,10 +460,10 @@ if (count($this->shipment) > 0) { ?>
             if (summary == 'success') {
               $("#summaryReport").remove();
               <?php
-                $fileSafeShipmentCode = str_replace(array_merge(
+                $fileSafeShipmentCode = str_replace( ' ', '-', str_replace(array_merge(
                   array_map('chr', range(0, 31)),
                   array('<', '>', ':', '"', '/', '\\', '|', '?', '*')
-                ), '', $shipment['shipment_code']);
+                ), '', $shipment['shipment_code']));
               ?>
               $("#summaryDiv").append("&nbsp <a href=\"<?php echo $this->baseUrl("uploads/reports/".$fileSafeShipmentCode."/".$fileSafeShipmentCode."-summary.pdf"); ?>\" class='btn btn-success btn-sm' id='summaryReport' target='_BLANK' style='margin-top:10px;float:left;clear:both;'><i class='icon-file-text'></i>&nbsp Download Summary Report</a>");
             }
