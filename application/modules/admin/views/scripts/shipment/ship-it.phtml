@@ -25,7 +25,7 @@
                         <label class="CountryDetails">
                             <input id="node-<?php echo $ckey; ?>" class="countr_checkbox"  data-id="custom-<?php echo $ckey; ?>" type="checkbox"  <?php if(count($unenrolledParticipants) == 0) {  ?> checked="true" <?php  } ?>>
                             <?php echo $ckey; ?>
-                            <span style="float:right" class="duedate">
+                            <span class="duedate">
                                 <label>Result due date: </label>
                                 <input type="text" class="input_date" onchange="$(this).attr('name','country_last_dates[<?php  echo $ckey; ?>]')"
                                 value="<?php

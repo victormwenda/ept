@@ -101,3 +101,17 @@ input.numberInput {
     color: #000;
 }
 
+
+.CountryDetails {
+    width: 100%;
+    display: block;
+}
+
+.duedate {
+    float:right;
+    margin-right: 30%;
+}
+
+.duedate .input_date {
+    width: 12em;
+}

@@ -1,9 +1,9 @@
 * { margin:0; padding:0;}
-html, body { height:100%;  min-width:950px;}	
-body { 
-	background: url(../images/bot.gif); 
+html, body { height:100%;  min-width:950px;}
+body {
+	background: url(../images/bot.gif);
 	font-family:Arial, Helvetica, sans-serif;
-	font-size:100%; 
+	font-size:100%;
 	line-height:1.125em;
 	color:#757575;
 	}
@@ -26,17 +26,17 @@ fieldset{ border:none}
 
 a{ color:#0c80a5; text-decoration:none; outline:none}
 a:hover{ text-decoration:underline}
-		
+
 section ul.list{margin:0; padding:0; list-style:none;}
 section ul.list li{background:url(../images/marker1.gif) top left no-repeat; background-position:0 1px; margin:0; padding-left:26px; padding-bottom:12px }
-section ul.list li a{color:#0c80a5; text-decoration:none; line-height:18px} 
+section ul.list li a{color:#0c80a5; text-decoration:none; line-height:18px}
 section ul.list li a:hover { text-decoration:none; color:#f07700; }
 
 section ul.list1{margin:0; padding:0; list-style:none;}
 section ul.list1 li{ margin-bottom:6px; overflow:hidden }
-section ul.list1 li a{color:#434343; text-decoration:none; font-size:18px; line-height:33px; background:#fff; padding:0px 15px 0px 15px; display:block; border-radius:5px; -moz-border-radius:5px; -webkit-border-radius:5px; position:relative } 
+section ul.list1 li a{color:#434343; text-decoration:none; font-size:18px; line-height:33px; background:#fff; padding:0px 15px 0px 15px; display:block; border-radius:5px; -moz-border-radius:5px; -webkit-border-radius:5px; position:relative }
 section ul.list1 li a:hover { text-decoration:none; color:#fff;  background:#f07d2c; }
-section ul.list1 li a.current { text-decoration:none; color:#fff;  background:#f07d2c; } 
+section ul.list1 li a.current { text-decoration:none; color:#fff;  background:#f07d2c; }
 
 nav ul { border-style: none !important;}
 
@@ -79,14 +79,14 @@ header h1 a {}
 .button1:hover{text-decoration:none; color:#2fc5fc }
 
 /*--- superfish dropdown menu begin ---*/
-.sf-menu {margin:0; padding:0;	list-style: none; z-index:90000; position:relative } 
+.sf-menu {margin:0; padding:0;	list-style: none; z-index:90000; position:relative }
 .sf-menu li{display:inline; float:left; background:url(../images/bg_li.gif) top right no-repeat; padding:0 2px 0 0;}
-.sf-menu li a{color:#2c2d2d;  text-decoration:none; display:block; float:left; line-height:50px; text-transform:uppercase; padding:0 27px 0 27px; font-family: "Trebuchet MS", Arial, Helvetica, sans-serif; font-size:14px;  } 
+.sf-menu li a{color:#2c2d2d;  text-decoration:none; display:block; float:left; line-height:50px; text-transform:uppercase; padding:0 27px 0 27px; font-family: "Trebuchet MS", Arial, Helvetica, sans-serif; font-size:14px;  }
 .sf-menu li a:hover {color:#2c2d2d;  text-decoration:none; background:url(../images/bg_li-hov.gif) top left repeat-x}
 .sf-menu li a.current{ color:#fff;  text-decoration:none; background:url(../images/bg_li-act.gif) top left repeat-x}
 
 .sf-menu .m{ margin:0; display:inline; float:left; background:none; padding-right:0}
-.sf-menu .m a{color:#0e0e0e; text-decoration:none; display:block; line-height:50px; padding:0; width:79px; background:url(../images/m1.gif) top left no-repeat; height:50px} 
+.sf-menu .m a{color:#0e0e0e; text-decoration:none; display:block; line-height:50px; padding:0; width:79px; background:url(../images/m1.gif) top left no-repeat; height:50px}
 .sf-menu .m a:hover { background:url(../images/m1-act.gif) top left no-repeat; width:79px; }
 .sf-menu .m a.current{ background:url(../images/m1-act.gif) top left no-repeat; width:79px; }
 
@@ -181,28 +181,28 @@ h5{color:#0c80a5; font-size:1em; font-weight:normal;  }
 /*footer*/
 footer { color:#2c2e31; font-size:0.875em; background:url(../images/bot.gif) top repeat-x; font-family:"Trebuchet MS", Arial, Helvetica, sans-serif}
 footer .inside{ padding:34px 0 50px 0px }
-footer span {color:#0d82a7;}  
-footer a {color:#2c2e31; text-decoration:underline}  
+footer span {color:#0d82a7;}
+footer a {color:#2c2e31; text-decoration:underline}
 footer a:hover {  text-decoration:none}
 footer h2{color:#000; font-weight:normal; font-size:21px;  font-family:"Trebuchet MS", Arial, Helvetica, sans-serif; margin-bottom:13px; line-height:1.2em; text-transform:none}
 
-.row .col-1{ width:549px; } 
-.row .col-2{ width:92px; } 
-.row .col-3{ width:309px; } 
-.row .col-1 .col-1{ width:167px; } 
-.row .col-1 .col-2{ width:160px; } 
+.row .col-1{ width:549px; }
+.row .col-2{ width:92px; }
+.row .col-3{ width:309px; }
+.row .col-1 .col-1{ width:167px; }
+.row .col-1 .col-2{ width:160px; }
 
 footer ul.list-2{margin:0; padding:0; list-style:none;}
 footer ul.list-2 li{ margin:0px;  display:block; line-height:28px; overflow:hidden}
-footer ul.list-2 li a{color:#000; text-decoration:none; display:block; line-height:28px; background:url(../images/marker.gif) center left no-repeat; padding-left:13px; float:left; font-size:13px } 
-footer ul.list-2 .li a{  background:url(../images/icon1.gif) center left no-repeat; padding-left:33px; } 
-footer ul.list-2 .li1 a{ background:url(../images/icon2.gif) center left no-repeat; padding-left:33px; } 
-footer ul.list-2 .li2 a{ background:url(../images/icon3.gif) center left no-repeat; padding-left:33px; } 
+footer ul.list-2 li a{color:#000; text-decoration:none; display:block; line-height:28px; background:url(../images/marker.gif) center left no-repeat; padding-left:13px; float:left; font-size:13px }
+footer ul.list-2 .li a{  background:url(../images/icon1.gif) center left no-repeat; padding-left:33px; }
+footer ul.list-2 .li1 a{ background:url(../images/icon2.gif) center left no-repeat; padding-left:33px; }
+footer ul.list-2 .li2 a{ background:url(../images/icon3.gif) center left no-repeat; padding-left:33px; }
 footer ul.list-2 li a:hover { text-decoration:none; color:#0d82a7  }
 
 footer ul.list-1{margin:0; padding:0; list-style:none;}
 footer ul.list-1 li{ margin:0px; display:inline; background:url(../images/bg_li1.gif) center left no-repeat; float:left}
-footer ul.list-1 li a{color:#797979; text-decoration:none; display:block; float:left; padding:2px 8px 2px 8px; font-size:14px; font-family:"Trebuchet MS", Arial, Helvetica, sans-serif} 
+footer ul.list-1 li a{color:#797979; text-decoration:none; display:block; float:left; padding:2px 8px 2px 8px; font-size:14px; font-family:"Trebuchet MS", Arial, Helvetica, sans-serif}
 footer ul.list-1 li a:hover { text-decoration: underline; color:#797979 }
 footer ul.list-1 .first{background:none;}
 footer ul.list-1 .first a{ padding-left:0px}
@@ -210,7 +210,7 @@ footer ul.list-1 li .current{ text-decoration:underline; color:#797979  }
 
 .jamp{ width:40px; margin-left:6px}
 select{font-size:.84em; color:#2d3331; height:20px}
-	
+
 .indent-2{ position:relative; padding-left:20px; float:left}
 .rowElem{ height:30px}
 .rowElem1{ height:30px; background:url(../images/bg_input.gif) top left no-repeat}
@@ -218,7 +218,7 @@ select{font-size:.84em; color:#2d3331; height:20px}
 .rowElem3{ height:102px; background:url(../images/bg_input2.gif) top left no-repeat}
 .block-contact span{ float:right; margin-right:40px}
 .input{
-   	border:none; 
+   	border:none;
 	background:none;
 	width:141px; height:20px;
 	font-size:1em;
@@ -228,7 +228,7 @@ select{font-size:.84em; color:#2d3331; height:20px}
 	padding-top:5px;
 	padding-bottom:5px;
 }.input1{
-   	border:none; 
+   	border:none;
 	background:none;
 	width:280px; height:20px;
 	font-size:13px;
@@ -240,7 +240,7 @@ select{font-size:.84em; color:#2d3331; height:20px}
 	padding-bottom:5px;
 }
 textarea{
-   	border:none; 
+   	border:none;
 	background:none;
 	width:280px; height:86px;
 	font-size:13px;
@@ -281,3 +281,4 @@ input.numberInput {
 }
 
 .hidden { display: none; }
+
