@@ -76,7 +76,7 @@ class Application_Service_Shipments {
         Get data to display
         */
         $sQuery = $db->select()->from(array('s' => 'shipment'))
-            ->join(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id', array('distribution_code', 'distribution_date'))
+            ->join(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id', array('distribution_code', 'distribution_date','distribution_id'))
             ->joinLeft(array('spm' => 'shipment_participant_map'), 's.shipment_id = spm.shipment_id', array('total_participants'=> new Zend_Db_Expr('count(map_id)'),'last_new_shipment_mailed_on','new_shipment_mail_count'))
             ->joinLeft(array('p' => 'participant'), 'spm.participant_id = p.participant_id', array())
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('SCHEME' => 'sl.scheme_name'))
@@ -173,6 +173,9 @@ class Application_Service_Shipments {
             }
             if ($aRow['status'] == 'shipped' || $aRow['status'] == 'evaluated') {
                 $manageResponses='&nbsp;<a class="btn btn-info btn-xs" href="/admin/shipment/manage-responses/sid/' . base64_encode($aRow['shipment_id']) . '/sctype/'. base64_encode($aRow['scheme_type']) . '"><span><i class="icon-gear"></i> Responses</span></a>';
+            }
+            if ($aRow['status'] == 'configured') {
+                $manageResponses .= '&nbsp;<a class="btn btn-primary btn-xs" href="javascript:void(0);" onclick="shipDistribution(\'' . base64_encode($aRow['distribution_id']) . '\')"><span><i class="icon-ambulance"></i> Ship Now</span></a>';
             }
             $delete = '';
             if (!$authNameSpace->is_ptcc_coordinator) {
