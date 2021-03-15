@@ -263,7 +263,10 @@ class Application_Service_Evaluation {
         foreach ($assayRecords as $assayRecord) {
             $assays[$assayRecord['id']] = $assayRecord['short_name'];
         }
-        $assayName = $assays[$attributes['assay']];
+        $assayName = "Unspecified";
+        if (isset($attributes['assay']) && $attributes['assay'] != '' && array_key_exists($attributes['assay'], $assays)) {
+            $assayName = $assays[$attributes['assay']];
+        }
         for ($i = 0; $i < count($sampleRes); $i++) {
             $sampleRes[$i]['calculated_score'] = $scoringService->calculateTbSamplePassStatus($sampleRes[$i][$assayName == 'MTB Ultra' ? 'ref_ultra_mtb_detected' : 'ref_mtb_rif_mtb_detected'],
                 $sampleRes[$i]['res_mtb_detected'], $sampleRes[$i][$assayName == 'MTB Ultra' ? 'ref_ultra_rif_resistance' : 'ref_mtb_rif_rif_resistance'], $sampleRes[$i]['res_rif_resistance'],
@@ -348,7 +351,10 @@ class Application_Service_Evaluation {
         foreach ($assayRecords as $assayRecord) {
             $assays[$assayRecord['id']] = $assayRecord['short_name'];
         }
-        $assayName = $assays[$attributes['assay']];
+        $assayName = "Unspecified";
+        if (isset($attributes['assay']) && $attributes['assay'] != '' && array_key_exists($attributes['assay'], $assays)) {
+            $assayName = $assays[$attributes['assay']];
+        }
         for ($i=0; $i < count($sampleRes); $i++) {
             $sampleRes[$i]['calculated_score'] = $scoringService->calculateTbSamplePassStatus($sampleRes[$i][$assayName == 'MTB Ultra' ? 'ref_ultra_mtb_detected' : 'ref_mtb_rif_mtb_detected'],
                 $sampleRes[$i]['res_mtb_detected'], $sampleRes[$i][$assayName == 'MTB Ultra' ? 'ref_ultra_rif_resistance' : 'ref_mtb_rif_rif_resistance'], $sampleRes[$i]['res_rif_resistance'],
@@ -945,7 +951,6 @@ class Application_Service_Evaluation {
             ->joinLeft(array('rntr' => 'response_not_tested_reason'), 'rntr.not_tested_reason_id = sp.not_tested_reason', array('rntr.not_tested_reason'))
             ->where("s.shipment_id = ?", $shipmentId)
             ->where("substring(sp.evaluation_status,4,1) != '0'")
-            ->where("sp.is_excluded = 'no'")
             ->order("sorting_unique_identifier");
         if (isset($sLimit) && isset($sOffset)) {
             $sql = $sql->limit($sLimit, $sOffset);

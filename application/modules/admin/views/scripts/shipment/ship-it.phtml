@@ -1,11 +1,16 @@
 
-<link href="<?php echo $this->baseUrl('css/hummingbird-treeview.css'); ?>" rel="stylesheet" type="text/css">
+<link href="<?php echo $this->baseUrl('css/hummingbird-treeview.css'); ?>" rel="stylesheet" type="text/css"/>
 
 <fieldset>
-    <legend>
-        <?php echo strtoupper($this->shipment->scheme_type); ?>
-        &nbsp;Shipment :
-        &nbsp;<?php echo $this->shipment->shipment_code . "(".$this->dateFormat($this->shipment->shipment_date).") "; ?>
+
+    <legend class="row">
+            <?php echo strtoupper($this->shipment->scheme_type); ?>
+            &nbsp;Shipment :
+            &nbsp;<?php echo $this->shipment->shipment_code . "(".$this->dateFormat($this->shipment->shipment_date).") "; ?>
+            <span style="float: right; padding-bottom:10px;"  >
+                Search:
+                <input type="text" id="searchBox" placeholder="Search"  onkeyup="search()">
+            </span>
     </legend>
     <form method="post" action="" id="shipForm">
 	    <div class="form-group">
@@ -17,33 +22,38 @@
                 $unenrolledParticipants = array_filter($country, function ($participant) { return !isset($participant["map_id"]); });
             ?>
                     <li class="country"><i class="fa fa-minus"></i>
-                        <label style="display: block; ">
+                        <label class="CountryDetails">
                             <input id="node-<?php echo $ckey; ?>" class="countr_checkbox"  data-id="custom-<?php echo $ckey; ?>" type="checkbox"  <?php if(count($unenrolledParticipants) == 0) {  ?> checked="true" <?php  } ?>>
                             <?php echo $ckey; ?>
-                            <span style="float:right" class="duedate">
+                            <span class="duedate">
                                 <label>Result due date: </label>
-                                <input type="text" class="input_date" onchange="$(this).attr('name','country_last_dates[<?php  echo $ckey; ?>]')" 
-                                value="<?php 
+                                <input type="text" class="input_date" onchange="$(this).attr('name','country_last_dates[<?php  echo $ckey; ?>]')"
+                                value="<?php
                                             if($country[$i]['due_date_text']){
                                                 echo ($country[$i]['due_date_text']);
                                             }else{
                                                 echo ($this->shipment->shipment_date);
                                             }
                                         ?>"
-                                        width="50" size="50" 
+                                        width="50" size="50"
                                         title="Result due date for "
                                         placeholder="Result due date for "
                                         >
                             </span>
                         </label>
                         <ul style="display: block;">
-                            <?php foreach ($country as $participant) { $i++; ?>
+                            <?php foreach ($country as $participant) {
+                                $i++; ?>
                                 <li>
-                                    <label>
+                                    <label class="ParticipantDetails">
                                         <input  class="participant_checkbox" name="participants[]" type="checkbox" value="<?php echo $participant['participant_id']; ?>" <?php if(isset($participant['map_id'])) {  ?> checked="true" <?php  } ?>>
                                         <?php echo $participant['unique_identifier']; ?>
                                         &nbsp;-&nbsp;
                                         <?php echo $participant['lab_name']; ?>
+                                        &nbsp;-&nbsp;
+                                        <span style="visibility: hidden;">
+                                        <?php echo $participant['email']; ?>
+                                        </span>
                                     </label>
                                 </li>
                             <?php } ?>
@@ -72,6 +82,28 @@
 </fieldset>
 
 <script>
+    function search(){
+        var searchvalue=$("#searchBox").val().toLowerCase();
+        if(searchvalue != ""){
+            $(".ParticipantDetails").hide();
+            $(".CountryDetails").hide();
+            $('.ParticipantDetails').each(function( index ) {
+                if( $(this).text().toLowerCase().includes(searchvalue)){
+                    $(this).show();
+                    $(this).closest('.country').find('.CountryDetails').show();
+                }
+            });
+            $(".CountryDetails").each(function( index ) {
+                if( $(this).text().toLowerCase().includes(searchvalue)){
+                    $(this).show();
+                    $(this).closest('.country').find('.ParticipantDetails').show();
+                }
+            });
+        }else{
+            $(".ParticipantDetails").show();
+            $(".CountryDetails").show();
+        }
+    }
     function validateNow() {
         var numberOfChecked = $('.participant_checkbox:checkbox:checked').length;
         var totalCheckboxes = $('.participant_checkbox:checkbox').length;
@@ -93,7 +125,7 @@
 
 <script src="<?php echo $this->baseUrl('js/hummingbird-treeview.js'); ?>" ></script>
 
-<script>  
+<script>
 
 $("#treeview").hummingbird();
 $( "#checkNode" ).click(function() {
@@ -116,8 +148,6 @@ function dueDateDisplay(){
         $(this).closest('.country').find('.duedate').show();
     });
 }
-
-
 
 </script>
 

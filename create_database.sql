@@ -312,7 +312,8 @@ CREATE TABLE `instrument` (
   `updated_on` datetime DEFAULT NULL,
   PRIMARY KEY (`instrument_id`),
   KEY `participant_id` (`participant_id`),
-  CONSTRAINT `instrument_ibfk_2` FOREIGN KEY (`participant_id`) REFERENCES `participant` (`participant_id`)
+  CONSTRAINT `instrument_ibfk_2` FOREIGN KEY (`participant_id`) REFERENCES `participant` (`participant_id`),
+  UNIQUE KEY `participant_id_instrument_serial` (`participant_id`, `instrument_serial`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -1490,6 +1491,10 @@ CREATE TABLE `raw_submission` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping routines for database 'create_database'
+--
 
 /*!50003 DROP PROCEDURE IF EXISTS `CreateParticipant` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;

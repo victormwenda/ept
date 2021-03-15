@@ -287,7 +287,11 @@ if (sizeof($this->result['shipment']) > 0) {
                     $labRes .= '	     <td style="width:22%;text-align:center;"><strong>'.$tbResultValueMapping[$response['mtb_detected']].'</strong></td>';
                     $labRes .= '	     <td style="width:22%;text-align:center;"><strong>'.$tbResultValueMapping[$response['rif_resistance']].'</strong></td>';
                 }
-                $labRes .= '	     <td style="width:10%;text-align:center;"><strong>'.$response['score'].'</strong></td>';
+                $labRes .= '	     <td style="width:10%;text-align:center;">';
+                if ($result['is_excluded'] != 'yes') {
+                    $labRes .= '	         <strong>'.$response['score'].'</strong>';
+                }
+                $labRes .= '	     </td>';
                 $labRes .= '    </tr>';
             }
             $labRes .= '    <tr>';
@@ -298,8 +302,18 @@ if (sizeof($this->result['shipment']) > 0) {
             $labRes .= '    </tr>';
             $labRes .= '    <tr>';
             $labRes .= '	     <td style="width:46%;background-color:#B6DDE8;border-bottom: solid 10px #000000;border-right: solid 10px #ffffff;"><strong>FINAL SCORE</strong></td>';
-            $labRes .= '	     <td style="width:22%;background-color:#B6DDE8;border-top: solid 10px #000000;border-bottom: solid 10px #000000;text-align:center;"><strong>'.round(($result['shipment_score'] / $result['max_shipment_score']) * 100, 1).'</strong></td>';
-            $labRes .= '	     <td style="width:22%;background-color:#B6DDE8;border-top: solid 10px #000000;border-bottom: solid 10px #000000;text-align:center;"><strong>'.($result['submission_score_status'] == 'fail' ? 'Unsatisfactory' : 'Satisfactory').'</strong></td>';
+            $labRes .= '	     <td style="width:22%;background-color:#B6DDE8;border-top: solid 10px #000000;border-bottom: solid 10px #000000;text-align:center;">';
+            if ($result['is_excluded'] != 'yes') {
+                $labRes .= '	         <strong>'.round(($result['shipment_score'] / $result['max_shipment_score']) * 100, 1).'</strong>';
+            }
+            $labRes .= '	     </td>';
+            $labRes .= '	     <td style="width:22%;background-color:#B6DDE8;border-top: solid 10px #000000;border-bottom: solid 10px #000000;text-align:center;">';
+            if ($result['is_excluded'] == 'yes') {
+                $labRes .= '	         <strong>Excluded</strong>';
+            } else {
+                $labRes .= '	         <strong>'.($result['submission_score_status'] == 'fail' ? 'Unsatisfactory' : 'Satisfactory').'</strong>';
+            }
+            $labRes .= '	     </td>';
             $labRes .= '	     <td style="width:10%;border-top: solid 10px #000000;"></td>';
             $labRes .= '    </tr>';
             foreach ($result['responseResult'] as $response) {
