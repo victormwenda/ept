@@ -314,6 +314,7 @@ class Application_Service_Participants {
                 "participant_id",
                 "id" => "participant_id",
                 "lab_name",
+                "email",
                 "unique_identifier",
                 "sorting_unique_identifier" => new Zend_Db_Expr("LPAD(p.unique_identifier, 10, '0')")
             ))
