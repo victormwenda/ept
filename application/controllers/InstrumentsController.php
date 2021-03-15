@@ -19,9 +19,9 @@ class InstrumentsController extends Zend_Controller_Action
                 $existingInstruments = $instrumentsDb->getInstruments(null, false);
                 foreach ($existingInstruments as $instrument_id => $instrumentDetails) {
                     if (!in_array($instrument_id, $instrumentIds)) {
-                        $instrumentsDb.deleteInstrument($instrument_id);
+                        $instrumentsDb->deleteInstrument($instrument_id);
                     }
-                }
+                } 
                 foreach ($instrumentIds as $key => $instrumentId) {
                     $instrumentDetails = array(
                         'instrument_id' => $instrumentId,
