@@ -12,8 +12,9 @@
                 <input type="text" id="searchBox" placeholder="Search"  onkeyup="search()">
             </span>
     </legend>
+
     <form method="post" action="" id="shipForm">
-	    <div class="form-group">
+        <div class="form-group" style="overflow-y: scroll;height: 400px;">
             <div id="treeview_container" class="hummingbird-treeview well h-scroll-large" style="background-color: white">
                 <ul id="treeview" class="hummingbird-base">
             <?php
@@ -72,6 +73,7 @@
                        placeholder="Enter an optional name for this enrollment" />
             </div>
 	    </div>
+
 	    <div style="clear:both;margin: 90px auto 30px auto; text-align: center;" align="center">
 	        <input name="submitbtn" class="btn btn-primary btn-sm" type="button" onclick="validateNow(); return true;"
                    tabindex="7" value="Enroll"/>
@@ -79,6 +81,7 @@
                    tabindex="8" value="Cancel"/>
 	    </div>
     </form>
+
 </fieldset>
 
 <script>
