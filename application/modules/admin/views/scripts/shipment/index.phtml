@@ -121,8 +121,17 @@
 </div>
 <script type="text/javascript" charset="utf-8">
     /* Table initialisation */
+    var counter=0;
     var oTable = null;
     var duplicated = false;
+    function SetShipmentCode() {
+        var shipmentCode=document.getElementById('shipmentCode').value;
+        $("input[name='sampleName[]']").each(function(index){
+            counter+=1;
+            if($(this).val()<0)
+                $(this).val(shipmentCode+"-"+counter);
+        });
+    }
 
     function checkDuplicate(tableName, fieldName, obj, fnct, msg) {
         if (obj.val() == "" || obj.val() == null) {
