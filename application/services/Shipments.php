@@ -1052,7 +1052,11 @@ class Application_Service_Shipments {
     public function removeShipment($sid) {
         try {
             $shipmentDb = new Application_Model_DbTable_Shipments();
+            $relatedDistribution=new Application_Model_DbTable_Distribution();
             $row = $shipmentDb->fetchRow('shipment_id=' . $sid);
+            $did=$row['distribution_id'];
+            $distribution=$relatedDistribution->delete('distribution_id='.$did);
+
             $db = Zend_Db_Table_Abstract::getDefaultAdapter();
             if ($row['scheme_type'] == 'dts') {
                 $db->delete('reference_dts_eia', 'shipment_id=' . $sid);
