@@ -80,8 +80,9 @@
                            class="isRequired form-control input-sm"
                            title="Please enter the shipment code here"
                            placeholder="Please enter the shipment code here"
-                           value="<?php if(isset($distributionCode)){ echo $distributionCode; }?>" 
-                           />
+                           value="<?php if(isset($distributionCode)){ echo $distributionCode; }?>"
+                           onchange="SetShipmentCode()"
+                    />
                 </div>
             </div>
             <div class="form-group">
@@ -175,10 +176,6 @@
             document.getElementById('shipmentForm').submit();
         }
     }
-
-
-
-
     function responseSwitch(switchStatus,sid) {
         if (window.confirm("Are you sure you wish to switch this shipment "+switchStatus+" ?")) {
             $.blockUI();
@@ -192,7 +189,6 @@
             drawTable();
         }
     }
-
     function removeShipment(sidEncoded, sid) {
         if (window.confirm("Are you sure you wish to delete? This cannot be undone!")) {
             $.blockUI();
@@ -208,7 +204,6 @@
             });
         }
     }
-
     function drawTable() {
         oTable = $('#shipmentTable').dataTable({
             "oLanguage": {
@@ -255,7 +250,7 @@
         });
 <?php
 if (isset($this->searchData) && $this->searchData != '') { ?>
-            oTable.fnFilter('<?php echo $this->searchData; ?>');
+     oTable.fnFilter('<?php echo $this->searchData; ?>');
 <?php
 } ?>
     }
