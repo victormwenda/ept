@@ -99,17 +99,18 @@ $dtFormat = $dateHelper->getDateFormat();
     function goto_dashboard(){
         window.history.back();
     }
-
     $(function() {
-      var today = new Date('<?php echo date("Y-m-d") ?>');
-      $(".datepicker").datepicker({
-        dateFormat: '<?php echo $dtFormat;?>',
-        beforeShowDay: function(date){
-          return [date <= today, ""];
-        }
-      });
+        ApplyDatePicker();
     });
-
+    function ApplyDatePicker() {
+        var today = new Date('<?php echo date("Y-m-d") ?>');
+        $(".datepicker").datepicker({
+            dateFormat: '<?php echo $dtFormat;?>',
+            beforeShowDay: function(date){
+                return [date <= today, ""];
+            }
+        });
+    }
     function addInstrumentRow(obj) {
         var participantOptions = '';
         <?php
@@ -148,6 +149,7 @@ $dtFormat = $dateHelper->getDateFormat();
                 </a>\
             </td>\
          </tr>');
+        ApplyDatePicker();
     }
 
     function removeInstrumentRow(obj) {
