@@ -12,6 +12,8 @@
                 <input type="text" id="searchBox" placeholder="Search"  onkeyup="search()">
             </span>
     </legend>
+    <div style="font-style: italic;font-size: 16px;letter-spacing: 2px;font-weight: bold;" class="text-center" id="ParticipantCalculation">
+    </div><hr>
     <form method="post" action="" id="shipForm">
 	    <div class="form-group">
             <div id="treeview_container" class="hummingbird-treeview well h-scroll-large" style="background-color: white">
@@ -120,6 +122,17 @@
         } else {
             return false;
         }
+    }
+    $(document).ready(function(){
+        $('.participant_checkbox:checked').addClass('selectedParticipant');
+        $('.participant_checkbox:not(:checked)').addClass('unselectedParticipant');
+        calculateParticipantEnrollment();
+    });
+    $(".participant_checkbox").change(function(){
+        calculateParticipantEnrollment();
+    });
+    function calculateParticipantEnrollment(){
+        $("#ParticipantCalculation").html('<span id="selected">'+$('.participant_checkbox:checked').length+'</span> Participants Selected, Removing <span id="removing">'+ ($('.selectedParticipant').length-$('.selectedParticipant:checked').length) +'</span> Participants and Adding <span id="adding">'+$('.unselectedParticipant:checked').length +' Participant</span>');
     }
 </script>
 
