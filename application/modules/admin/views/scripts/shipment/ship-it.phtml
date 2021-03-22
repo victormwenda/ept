@@ -28,7 +28,7 @@
                             <span style="width: 50%;">
                                 <?php echo $ckey; ?>
                             </span>
-                            <span style="float: right">
+                            <span class="dueDate" style="float:right;">
                                 <label>Result due date: </label>
                                 <input type="text" class="input_date" onchange="$(this).attr('name','country_last_dates[<?php  echo $ckey; ?>]')"
                                 value="<?php
@@ -149,9 +149,9 @@ $( ".countr_checkbox" ).click(function( index ) {
     dueDateDisplay();
 });
 function dueDateDisplay(){
-    $(".duedate").hide();
+    $(".dueDate").hide();
     $( ".participant_checkbox:checked" ).each(function( index ) {
-        $(this).closest('.country').find('.duedate').show();
+        $(this).closest('.country').find(".dueDate").show();
     });
 }
 
