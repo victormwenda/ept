@@ -1,7 +1,7 @@
 
 <link href="<?php echo $this->baseUrl('css/hummingbird-treeview.css'); ?>" rel="stylesheet" type="text/css"/>
 
-<fieldset>
+<div style="height: 100%">
 
     <legend class="row">
             <?php echo strtoupper($this->shipment->scheme_type); ?>
@@ -12,8 +12,9 @@
                 <input type="text" id="searchBox" placeholder="Search"  onkeyup="search()">
             </span>
     </legend>
-    <form method="post" action="" id="shipForm">
-	    <div class="form-group">
+
+    <form method="post" action="" id="shipForm"  >
+        <div class="container" style="overflow-y: scroll;overflow-x: hidden;border: 2px solid darkgray;border-radius: 5px; height: 70vh;  width: 100%;">
             <div id="treeview_container" class="hummingbird-treeview well h-scroll-large" style="background-color: white">
                 <ul id="treeview" class="hummingbird-base">
             <?php
@@ -24,8 +25,10 @@
                     <li class="country"><i class="fa fa-minus"></i>
                         <label class="CountryDetails">
                             <input id="node-<?php echo $ckey; ?>" class="countr_checkbox"  data-id="custom-<?php echo $ckey; ?>" type="checkbox"  <?php if(count($unenrolledParticipants) == 0) {  ?> checked="true" <?php  } ?>>
-                            <?php echo $ckey; ?>
-                            <span class="duedate">
+                            <span style="width: 50%;">
+                                <?php echo $ckey; ?>
+                            </span>
+                            <span class="dueDate" style="float:right;">
                                 <label>Result due date: </label>
                                 <input type="text" class="input_date" onchange="$(this).attr('name','country_last_dates[<?php  echo $ckey; ?>]')"
                                 value="<?php
@@ -35,7 +38,7 @@
                                                 echo ($this->shipment->shipment_date);
                                             }
                                         ?>"
-                                        width="50" size="50"
+                                        width="40" size="20"
                                         title="Result due date for "
                                         placeholder="Result due date for "
                                         >
@@ -59,7 +62,7 @@
                             <?php } ?>
                         </ul>
                     </li>
-            <?php } ?>
+                <?php } ?>
                 </ul>
             </div>
 	    </div>
@@ -72,14 +75,17 @@
                        placeholder="Enter an optional name for this enrollment" />
             </div>
 	    </div>
-	    <div style="clear:both;margin: 90px auto 30px auto; text-align: center;" align="center">
+
+	    <div class="text-center" style="padding-top: 10px;">
 	        <input name="submitbtn" class="btn btn-primary btn-sm" type="button" onclick="validateNow(); return true;"
                    tabindex="7" value="Enroll"/>
 	        <input class="btn btn-danger btn-sm" type="button" onclick="window.history.go(-1);"
                    tabindex="8" value="Cancel"/>
 	    </div>
     </form>
-</fieldset>
+
+</div>
+
 
 <script>
     function search(){
@@ -143,9 +149,9 @@ $( ".countr_checkbox" ).click(function( index ) {
     dueDateDisplay();
 });
 function dueDateDisplay(){
-    $(".duedate").hide();
+    $(".dueDate").hide();
     $( ".participant_checkbox:checked" ).each(function( index ) {
-        $(this).closest('.country').find('.duedate').show();
+        $(this).closest('.country').find(".dueDate").show();
     });
 }
 
