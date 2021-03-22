@@ -106,12 +106,8 @@ input.numberInput {
     width: 100%;
     display: block;
 }
-
-.duedate {
-    float:right;
-    margin-right: 30%;
+.dueDate{
 }
-
-.duedate .input_date {
+.dueDate .input_date {
     width: 12em;
 }
