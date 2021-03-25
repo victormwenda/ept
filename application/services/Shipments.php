@@ -1731,16 +1731,18 @@ class Application_Service_Shipments {
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('SCHEME' => 'sl.scheme_name'))
             ->where("sp.shipment_id = ?", $params["shipmentId"]);
         if ($params["sendTo"] == "notSubmitted") {
-            $sQuery = $sQuery->where(new Zend_Db_Expr("substr(sp.evaluation_status, 2, 1) = '9'"));
+            $sQuery = $sQuery->where(new Zend_Db_Expr("substr(sp.evaluation_status, 3, 1) = '9'"));
         }
         if ($params["sendTo"] == "submitted") {
-            $sQuery = $sQuery->where(new Zend_Db_Expr("substr(sp.evaluation_status, 2, 1) = '1'"));
+            $sQuery = $sQuery->where(new Zend_Db_Expr("substr(sp.evaluation_status, 3, 1) = '1'"));
         }
         if ($params["sendTo"] == "saved") {
-            $sQuery = $sQuery->where("sp.shipment_receipt_date IS NOT NULL");
+            $sQuery = $sQuery->where("sp.shipment_receipt_date IS NOT NULL")
+                ->where(new Zend_Db_Expr("substr(sp.evaluation_status, 3, 1) = '9'"));
         }
         if ($params["sendTo"] == "neither") {
-            $sQuery = $sQuery->where("sp.shipment_receipt_date IS NULL");
+            $sQuery = $sQuery->where("sp.shipment_receipt_date IS NULL")
+                ->where(new Zend_Db_Expr("substr(sp.evaluation_status, 3, 1) = '9'"));
         }
         $sQuery = $sQuery->group("p.participant_id");
         $participantEmails = $db->fetchAll($sQuery);
