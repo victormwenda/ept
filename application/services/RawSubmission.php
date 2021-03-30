@@ -11,11 +11,7 @@ class Application_Service_RawSubmission {
                 $details['headers'] = $headers;
             }
         }
-        for ($i=0;$i< sizeof($details['body']['mtbDetected']);$i++){
-            if($details['body']['mtbDetected'][$i]=='trace'){
-                $details['body']['rifResistance'][$i]='indeterminate';
-            }
-        }
+
         $detailsString = json_encode($details);
         error_log($detailsString, 0);
         $rawSubmissionDb = new Application_Model_DbTable_RawSubmission();
