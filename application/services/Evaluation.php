@@ -624,7 +624,11 @@ class Application_Service_Evaluation {
                 if ($mtbDetected != "error") {
                     $errorCode = null;
                     if(!in_array($mtbDetected, array("detected", "high", "medium", "low", "veryLow")) && ($rifResistance == null || $rifResistance == "")) {
-                        $rifResistance = "na";
+                        if($mtbDetected=="trace") {
+                            $rifResistance = "indeterminate";
+                        }else{
+                            $rifResistance = "na";
+                        }
                     }
                 } else {
                     $rifResistance = "na";
