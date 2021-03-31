@@ -632,13 +632,18 @@ class Application_Service_Shipments {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $db->beginTransaction();
         try {
+
             $mtbDetected = $params['mtbDetected'];
             $rifResistance = $params['rifResistance'];
             $errorCode = $params['errorCode'];
             if ($mtbDetected != "error") {
                 $errorCode = null;
                 if(!in_array($mtbDetected, array("detected", "high", "medium", "low", "veryLow")) && ($rifResistance == null || $rifResistance == "")) {
-                    $rifResistance = "na";
+                    if($mtbDetected=="trace") {
+                        $rifResistance = "indeterminate";
+                    }else{
+                        $rifResistance = "na";
+                    }
                 }
             } else {
                 $rifResistance = "na";
@@ -769,7 +774,11 @@ class Application_Service_Shipments {
                 if ($mtbDetected != "error") {
                     $errorCode = null;
                     if(!in_array($mtbDetected, array("detected", "high", "medium", "low", "veryLow")) && ($rifResistance == null || $rifResistance == "")) {
-                        $rifResistance = "na";
+                        if($mtbDetected=="trace") {
+                            $rifResistance = "indeterminate";
+                        }else{
+                            $rifResistance = "na";
+                        }
                     }
                 } else {
                     $rifResistance = "na";

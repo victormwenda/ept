@@ -11,6 +11,7 @@ class Application_Service_RawSubmission {
                 $details['headers'] = $headers;
             }
         }
+
         $detailsString = json_encode($details);
         error_log($detailsString, 0);
         $rawSubmissionDb = new Application_Model_DbTable_RawSubmission();
