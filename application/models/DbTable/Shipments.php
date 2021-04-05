@@ -1880,6 +1880,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
                 "spm.evaluation_status",
                 "qc_date",
                 "spm.participant_id",
+                "spm.is_excluded",
                 "RESPONSEDATE" => "DATE_FORMAT(spm.shipment_test_report_date,'%Y-%m-%d')",'spm.shipment_score'))
 			->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('scheme_name'))
 			->join(array('p' => 'participant'), 'p.participant_id=spm.participant_id', array(
@@ -1888,8 +1889,6 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
                 'p.participant_id'))
 			->join(array('pmm' => 'participant_manager_map'), 'pmm.participant_id=p.participant_id')
 			->where("pmm.dm_id=?", $this->_session->dm_id)
-			->where("s.status= 'finalized'")
-			->where("spm.is_excluded = 0")
 			->where("s.scheme_type=?", $parameters['scheme']);
 
 
@@ -1964,7 +1963,11 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
              $row[] = $aRow['unique_identifier'];
              $row[] = $aRow['lab_name'];
              $row[] = $general->humanDateFormat($aRow['RESPONSEDATE']);
-             $row[] = $aRow['shipment_score'];
+             if($aRow['status'] == 'finalized' && $aRow['is_excluded'] == 'no' ){
+                 $row[] = $aRow['shipment_score'];
+             }else{
+                 $row[] = "";
+             }
              $output['aaData'][] = $row;
          }
          $output['shipmentArray'] = $shipmentArray;
