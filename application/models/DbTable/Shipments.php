@@ -1888,7 +1888,11 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
                 'p.participant_id'))
 			->join(array('pmm' => 'participant_manager_map'), 'pmm.participant_id=p.participant_id')
 			->where("pmm.dm_id=?", $this->_session->dm_id)
+			->where("s.status= 'finalized'")
+			->where("spm.is_excluded = 0")
 			->where("s.scheme_type=?", $parameters['scheme']);
+
+
 
         if (isset($sWhere) && $sWhere != "") {
             $sQuery = $sQuery->where($sWhere);
