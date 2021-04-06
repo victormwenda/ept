@@ -1007,7 +1007,7 @@ CREATE TABLE `reference_result_tb` (
   `ultra_is_exempt` varchar(5) NOT NULL DEFAULT 'no',
   `excluded_reason` text,
   `sample_content` varchar(255) DEFAULT NULL,
-  KEY `indexing_reference_result_tb`(`shipment_id`, `sample_id`, `is_excluded`)
+  KEY `indexing_reference_result_tb`(`shipment_id`, `sample_id`, `mtb_rif_is_excluded`, `mtb_rif_is_exempt`, `ultra_is_excluded`, `ultra_is_exempt`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
