@@ -1001,8 +1001,10 @@ CREATE TABLE `reference_result_tb` (
   `control` int(11) DEFAULT NULL,
   `mandatory` int(11) NOT NULL DEFAULT '0',
   `sample_score` int(11) NOT NULL DEFAULT '1',
-  `is_excluded` varchar(5) NOT NULL DEFAULT 'no',
-  `is_exempt` varchar(5) NOT NULL DEFAULT 'no',
+  `mtb_rif_is_excluded` varchar(5) NOT NULL DEFAULT 'no',
+  `mtb_rif_is_exempt` varchar(5) NOT NULL DEFAULT 'no',
+  `ultra_is_excluded` varchar(5) NOT NULL DEFAULT 'no',
+  `ultra_is_exempt` varchar(5) NOT NULL DEFAULT 'no',
   `excluded_reason` text,
   `sample_content` varchar(255) DEFAULT NULL,
   KEY `indexing_reference_result_tb`(`shipment_id`, `sample_id`, `is_excluded`)

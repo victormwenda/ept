@@ -61,8 +61,10 @@ class Application_Service_Schemes {
             ->join(array('s' => 'shipment'), 's.shipment_id=sp.shipment_id')
             ->join(array('ref' => 'reference_result_tb'), 'sp.shipment_id=ref.shipment_id', array(
             'sample_label', 'mandatory', 'sample_id', 'control',
-            'ref_is_exempt' => 'ref.is_exempt',
-            'ref_is_excluded' => 'ref.is_excluded',
+            'ref_mtb_rif_is_excluded' => 'ref.mtb_rif_is_excluded',
+            'ref_mtb_rif_is_exempt' => 'ref.mtb_rif_is_exempt',
+            'ref_ultra_is_excluded' => 'ref.ultra_is_excluded',
+            'ref_ultra_is_exempt' => 'ref.ultra_is_exempt',
             'ref_mtb_rif_mtb_detected' => 'ref.mtb_rif_mtb_detected',
             'ref_mtb_rif_rif_resistance' => 'ref.mtb_rif_rif_resistance',
             'ref_mtb_rif_probe_d' => 'ref.mtb_rif_probe_d',
