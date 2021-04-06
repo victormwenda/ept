@@ -167,8 +167,8 @@ if ($this->result['shipment'] != "") {
     $labInfo .= '	     <td style="width:40%;"></td>';
     foreach ($this->result['mtbRifReportSummary'] as $sampleSummary) {
         $labInfo .= '	     <td style="width:' . (60 / count($this->result['mtbRifReportSummary'])) . '%;text-align:center;"><strong>' . $sampleSummary['sample_label'] . '</strong>';
-        if ($sampleSummary['ref_is_excluded'] == 'yes') {
-            if ($sampleSummary['ref_is_exempt'] == 'yes') {
+        if ($sampleSummary['ref_mtb_rif_is_excluded'] == 'yes') {
+            if ($sampleSummary['ref_mtb_rif_is_exempt'] == 'yes') {
                 $labInfo .= '<br /><span style="color:#ffa500;">(Exempt)</span>';
             } else {
                 $labInfo .= '<br /><span style="color:#ff0000;">(Excluded)</span>';
@@ -241,8 +241,8 @@ if ($this->result['shipment'] != "") {
         $labInfo .= '	     <td style="width:40%;"></td>';
         foreach ($this->result['mtbRifUltraReportSummary'] as $sampleSummary) {
             $labInfo .= '	     <td style="width:' . (60 / count($this->result['mtbRifUltraReportSummary'])) . '%;text-align:center;"><strong>' . $sampleSummary['sample_label'] . '</strong>';
-            if ($sampleSummary['ref_is_excluded'] == 'yes') {
-                if ($sampleSummary['ref_is_exempt'] == 'yes') {
+            if ($sampleSummary['ref_ultra_is_excluded'] == 'yes') {
+                if ($sampleSummary['ref_ultra_is_exempt'] == 'yes') {
                     $labInfo .= '<br /><span style="color:#ffa500;">(Exempt)</span>';
                 } else {
                     $labInfo .= '<br /><span style="color:#ff0000;">(Excluded)</span>';

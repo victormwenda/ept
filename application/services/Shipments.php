@@ -1214,8 +1214,10 @@ class Application_Service_Shipments {
                 'mtb_rif_rif_resistance' => $existingResult['mtb_rif_rif_resistance'],
                 'ultra_mtb_detected' => $existingResult['ultra_mtb_detected'],
                 'ultra_rif_resistance' => $existingResult['ultra_rif_resistance'],
-                'is_excluded' => $existingResult['is_excluded'],
-                'is_exempt' => $existingResult['is_exempt'],
+                'mtb_rif_is_excluded' => $existingResult['mtb_rif_is_excluded'],
+                'mtb_rif_is_exempt' => $existingResult['mtb_rif_is_exempt'],
+                'ultra_is_excluded' => $existingResult['ultra_is_excluded'],
+                'ultra_is_exempt' => $existingResult['ultra_is_exempt'],
                 'excluded_reason' => $existingResult['excluded_reason']
             );
         }
@@ -1230,8 +1232,10 @@ class Application_Service_Shipments {
                 'mtb_rif_rif_resistance' => $params['rifResistanceMtbRif'][$i],
                 'ultra_mtb_detected' => $params['mtbDetectedUltra'][$i],
                 'ultra_rif_resistance' => $params['rifResistanceUltra'][$i],
-                'is_excluded' => $params['excluded'][$i] == 'yes_not_exempt' || $params['excluded'][$i] == 'yes_exempt' ? 'yes' : 'no',
-                'is_exempt' => $params['excluded'][$i] == 'yes_exempt' ? 'yes' : 'no',
+                'mtb_rif_is_excluded' => $params['mtb_rif_excluded'][$i] == 'yes_not_exempt' || $params['mtb_rif_excluded'][$i] == 'yes_exempt' ? 'yes' : 'no',
+                'mtb_rif_is_exempt' => $params['mtb_rif_excluded'][$i] == 'yes_exempt' ? 'yes' : 'no',
+                'ultra_is_excluded' => $params['ultra_excluded'][$i] == 'yes_not_exempt' || $params['ultra_excluded'][$i] == 'yes_exempt' ? 'yes' : 'no',
+                'ultra_is_exempt' => $params['ultra_excluded'][$i] == 'yes_exempt' ? 'yes' : 'no',
                 'excluded_reason' => $params['excludedReason'][$i]
             );
             if (!isset($existingSampleMap[$sampleId]) ||
@@ -1239,8 +1243,10 @@ class Application_Service_Shipments {
                 $existingSampleMap[$sampleId]['mtb_rif_rif_resistance'] != $newSampleMap[$sampleId]['mtb_rif_rif_resistance'] ||
                 $existingSampleMap[$sampleId]['ultra_mtb_detected'] != $newSampleMap[$sampleId]['ultra_mtb_detected'] ||
                 $existingSampleMap[$sampleId]['ultra_rif_resistance'] != $newSampleMap[$sampleId]['ultra_rif_resistance'] ||
-                $existingSampleMap[$sampleId]['is_excluded'] != $newSampleMap[$sampleId]['is_excluded'] ||
-                $existingSampleMap[$sampleId]['is_exempt'] != $newSampleMap[$sampleId]['is_exempt'] ||
+                $existingSampleMap[$sampleId]['mtb_rif_is_excluded'] != $newSampleMap[$sampleId]['mtb_rif_is_excluded'] ||
+                $existingSampleMap[$sampleId]['mtb_rif_is_exempt'] != $newSampleMap[$sampleId]['mtb_rif_is_exempt'] ||
+                $existingSampleMap[$sampleId]['ultra_is_excluded'] != $newSampleMap[$sampleId]['ultra_is_excluded'] ||
+                $existingSampleMap[$sampleId]['ultra_is_exempt'] != $newSampleMap[$sampleId]['ultra_is_exempt'] ||
                 $existingSampleMap[$sampleId]['excluded_reason'] != $newSampleMap[$sampleId]['excluded_reason']) {
                 $rescoringNecessary = true;
             }
@@ -1268,16 +1274,24 @@ class Application_Service_Shipments {
                 'control' => 0,
                 'mandatory' => 1,
                 'sample_score' => Application_Service_EvaluationScoring::SAMPLE_MAX_SCORE,
-                'is_excluded' => $newSampleMap[$sampleId]['is_excluded'],
-                'is_exempt' => $newSampleMap[$sampleId]['is_exempt'],
+                'mtb_rif_is_excluded' => $newSampleMap[$sampleId]['mtb_rif_is_excluded'],
+                'mtb_rif_is_exempt' => $newSampleMap[$sampleId]['mtb_rif_is_exempt'],
+                'ultra_is_excluded' => $newSampleMap[$sampleId]['ultra_is_excluded'],
+                'ultra_is_exempt' => $newSampleMap[$sampleId]['ultra_is_exempt'],
                 'excluded_reason' => $newSampleMap[$sampleId]['excluded_reason']
             ));
-            if ($newSampleMap[$sampleId]['is_excluded'] == 'no' ||
-                $newSampleMap[$sampleId]['is_exempt'] == 'yes') {
+            if ($newSampleMap[$sampleId]['mtb_rif_is_excluded'] == 'no' ||
+                $newSampleMap[$sampleId]['mtb_rif_is_exempt'] == 'yes' ||
+                $newSampleMap[$sampleId]['ultra_is_excluded'] == 'no' ||
+                $newSampleMap[$sampleId]['ultra_is_exempt'] == 'yes') {
                 $maxShipmentScore += Application_Service_EvaluationScoring::SAMPLE_MAX_SCORE;
             }
         }
         if ($rescoringNecessary) {
+            $assayRecords = $dbAdapter->fetchAll($dbAdapter->select()->from('r_tb_assay'));
+            foreach ($assayRecords as $assayRecord) {
+                $assays[$assayRecord['id']] = $assayRecord['short_name'];
+            }
             $scoredSubmissions = $dbAdapter->fetchAll($dbAdapter->select()
                 ->from('shipment_participant_map')
                 ->where('shipment_score is not null')
@@ -1292,14 +1306,19 @@ class Application_Service_Shipments {
                 $submissionShipmentScore = 0;
                 $failureReason = array();
                 $hasBlankResult = false;
+                $assayName = "Unspecified";
+                if (isset($attributes['assay']) && $attributes['assay'] != '' && array_key_exists($attributes['assay'], $assays)) {
+                    $assayName = $assays[$attributes['assay']];
+                }
                 for ($i = 0; $i < count($sampleRes); $i++) {
                     $sampleId = $sampleRes[$i]['sample_id'];
-                    $samplePassStatus = $scoringService->calculateTbSamplePassStatus($newSampleMap[$sampleId]['mtb_detected'],
-                        $sampleRes[$i]['res_mtb_detected'], $newSampleMap[$sampleId]['rif_resistance'],
-                        $sampleRes[$i]['res_rif_resistance'], $sampleRes[$i]['res_probe_1'], $sampleRes[$i]['res_probe_2'],
+                    $samplePassStatus = $scoringService->calculateTbSamplePassStatus(
+                        $newSampleMap[$sampleId][$assayName == 'MTB Ultra' ? 'ultra_mtb_detected' : 'mtb_rif_mtb_detected'], $sampleRes[$i]['res_mtb_detected'],
+                        $newSampleMap[$sampleId][$assayName == 'MTB Ultra' ? 'ultra_rif_resistance' : 'mtb_rif_rif_resistance'], $sampleRes[$i]['res_rif_resistance'],
+                        $sampleRes[$i]['res_probe_1'], $sampleRes[$i]['res_probe_2'],
                         $sampleRes[$i]['res_probe_3'], $sampleRes[$i]['res_probe_4'], $sampleRes[$i]['res_probe_5'],
-                        $sampleRes[$i]['res_probe_6'], $newSampleMap[$sampleId]['is_excluded'],
-                        $newSampleMap[$sampleId]['is_exempt']);
+                        $sampleRes[$i]['res_probe_6'], $newSampleMap[$sampleId][$assayName == 'MTB Ultra' ? 'ultra_is_excluded' : 'mtb_rif_is_excluded'],
+                        $newSampleMap[$sampleId][$assayName == 'MTB Ultra' ? 'ultra_is_exempt' : 'mtb_rif_is_exempt']);
                     $submissionShipmentScore += $scoringService->calculateTbSampleScore(
                         $samplePassStatus,
                         $sampleRes[$i]['ref_sample_score']);

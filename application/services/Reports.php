@@ -518,7 +518,7 @@ class Application_Service_Reports {
             's.shipment_code',
             new Zend_Db_Expr('count("sp.map_id")'),
             new Zend_Db_Expr("SUM(substr(sp.evaluation_status,3,1) = 1)"),
-            new Zend_Db_Expr("(SUM(substr(sp.evaluation_status,3,1) = 1) - SUM(is_excluded = 'yes'))"),
+            new Zend_Db_Expr("(SUM(substr(sp.evaluation_status,3,1) = 1) - SUM(sp.is_excluded = 'yes'))"),
             new Zend_Db_Expr("SUM(final_result = 1)"),
             new Zend_Db_Expr("((SUM(final_result = 1))/(SUM(final_result = 1) + SUM(final_result = 2)))*100"),
             'average_score'
@@ -539,7 +539,7 @@ class Application_Service_Reports {
             's.shipment_code',
             new Zend_Db_Expr('count("sp.map_id")'),
             new Zend_Db_Expr("SUM(substr(sp.evaluation_status,3,1) = 1)"),
-            new Zend_Db_Expr("(SUM(substr(sp.evaluation_status,3,1) = 1) - SUM(is_excluded = 'yes'))"),
+            new Zend_Db_Expr("(SUM(substr(sp.evaluation_status,3,1) = 1) - SUM(sp.is_excluded = 'yes'))"),
             new Zend_Db_Expr("SUM(final_result = 1)"),
             new Zend_Db_Expr("((SUM(final_result = 1))/(SUM(final_result = 1) + SUM(final_result = 2)))*100"),
             'average_score'
@@ -628,7 +628,7 @@ class Application_Service_Reports {
 						   array("DATE_FORMAT(s.shipment_date,'%d-%b-%Y')",
 								 "total_shipped" => new Zend_Db_Expr('count("sp.map_id")'),
 								 "total_responses" => new Zend_Db_Expr("SUM(substr(sp.evaluation_status,3,1) = 1)"),
-								 "valid_responses" => new Zend_Db_Expr("(SUM(substr(sp.evaluation_status,3,1) = 1) - SUM(is_excluded = 'yes'))"),
+								 "valid_responses" => new Zend_Db_Expr("(SUM(substr(sp.evaluation_status,3,1) = 1) - SUM(sp.is_excluded = 'yes'))"),
 								 "total_passed" => new Zend_Db_Expr("(SUM(final_result = 1))"),
 								 "pass_percentage" => new Zend_Db_Expr("((SUM(final_result = 1))/(SUM(final_result = 1) + SUM(final_result = 2)))*100")
 								 ))
@@ -728,7 +728,7 @@ class Application_Service_Reports {
         $sQuery = $dbAdapter->select()->from(array('s' => 'shipment'))
                 ->join(array('sl' => 'scheme_list'), 's.scheme_type=sl.scheme_id')
                 ->joinLeft(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array("DATE_FORMAT(s.shipment_date,'%d-%b-%Y')", "total_shipped" => new Zend_Db_Expr('count("sp.map_id")'), "total_responses" => new Zend_Db_Expr("SUM(substr(sp.evaluation_status,3,1) = 1)"),
-                    "valid_responses" => new Zend_Db_Expr("(SUM(substr(sp.evaluation_status,3,1) = 1) - SUM(is_excluded = 'yes'))"),
+                    "valid_responses" => new Zend_Db_Expr("(SUM(substr(sp.evaluation_status,3,1) = 1) - SUM(sp.is_excluded = 'yes'))"),
                     ))
                 ->where("s.shipment_id = ?", $shipmentId);
         //echo $sQuery;die;
@@ -748,7 +748,7 @@ class Application_Service_Reports {
             'invalid_responses',
             new Zend_Db_Expr("SUM(substr(sp.evaluation_status,3,1) = 1)"),
             new Zend_Db_Expr("SUM(sp.final_result=1)"),
-            new Zend_Db_Expr("(SUM(substr(sp.evaluation_status,3,1) = 1) - SUM(is_excluded = 'yes'))"),
+            new Zend_Db_Expr("(SUM(substr(sp.evaluation_status,3,1) = 1) - SUM(sp.is_excluded = 'yes'))"),
         );
 
         $searchColumns = array('sl.scheme_name',
@@ -769,7 +769,7 @@ class Application_Service_Reports {
             'invalid_responses',
             new Zend_Db_Expr("SUM(substr(sp.evaluation_status,3,1) = 1)"),
             new Zend_Db_Expr("SUM(sp.final_result=1)"),
-            new Zend_Db_Expr("(SUM(substr(sp.evaluation_status,3,1) = 1) - SUM(is_excluded = 'yes'))"),
+            new Zend_Db_Expr("(SUM(substr(sp.evaluation_status,3,1) = 1) - SUM(sp.is_excluded = 'yes'))"),
         );
 
 
@@ -871,7 +871,7 @@ class Application_Service_Reports {
         $dbAdapter = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sQuery = $dbAdapter->select()->from(array('s' => 'shipment'), array('shipment_code'))
                 ->join(array('sl' => 'scheme_list'), 's.scheme_type=sl.scheme_id')
-                ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array("total_responses" => new Zend_Db_Expr("SUM(substr(sp.evaluation_status,3,1) = 1)"), "total_passed" => new Zend_Db_Expr("SUM(sp.final_result=1)"), "valid_responses" => new Zend_Db_Expr("(SUM(sp.shipment_test_date <> '0000-00-00') - SUM(is_excluded = 'yes'))")))
+                ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array("total_responses" => new Zend_Db_Expr("SUM(substr(sp.evaluation_status,3,1) = 1)"), "total_passed" => new Zend_Db_Expr("SUM(sp.final_result=1)"), "valid_responses" => new Zend_Db_Expr("(SUM(sp.shipment_test_date <> '0000-00-00') - SUM(sp.is_excluded = 'yes'))")))
                 //->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id')
                 ->join(array('ref' => $refTable), 's.shipment_id=ref.shipment_id')
                 ->join(array('res' => $resTable), 'sp.map_id=res.shipment_map_id', array("positive_responses" => new Zend_Db_Expr('SUM(if(res.reported_result = ' . $rPositive . ', 1, 0))'), "negative_responses" => new Zend_Db_Expr('SUM(if(res.reported_result = ' . $rNegative . ', 1, 0))'), "invalid_responses" => new Zend_Db_Expr('SUM(if(res.reported_result = ' . $rInderminate . ', 1, 0))')))
@@ -2676,7 +2676,7 @@ class Application_Service_Reports {
         $totalQuery = $dbAdapter->select()->from(array('s' => 'shipment'), array("average_score"))
                 ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array("total_shipped" => new Zend_Db_Expr('count("sp.map_id")'),
             "total_responses" => new Zend_Db_Expr("SUM(substr(sp.evaluation_status,3,1) = 1)"),
-            "valid_responses" => new Zend_Db_Expr("(SUM(substr(sp.evaluation_status,3,1) = 1) - SUM(is_excluded = 'yes'))"),
+            "valid_responses" => new Zend_Db_Expr("(SUM(substr(sp.evaluation_status,3,1) = 1) - SUM(sp.is_excluded = 'yes'))"),
             ));
 
         if (isset($parameters['scheme']) && $parameters['scheme'] != "") {
@@ -2950,7 +2950,7 @@ class Application_Service_Reports {
             $totalQuery = $db->select()->from(array('s' => 'shipment'), array("average_score"))
                     ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array("total_shipped" => new Zend_Db_Expr('count("sp.map_id")'),
                 "total_responses" => new Zend_Db_Expr("SUM(substr(sp.evaluation_status,3,1) = 1)"),
-                "valid_responses" => new Zend_Db_Expr("(SUM(substr(sp.evaluation_status,3,1) = 1) - SUM(is_excluded = 'yes'))"),
+                "valid_responses" => new Zend_Db_Expr("(SUM(substr(sp.evaluation_status,3,1) = 1) - SUM(sp.is_excluded = 'yes'))"),
                 ));
 
             if (isset($params['scheme']) && $params['scheme'] != "") {
@@ -3146,8 +3146,8 @@ class Application_Service_Reports {
         $totalQuery = $db->select()->from(array('s' => 'shipment'), array())
                 ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array("total_shipped" => new Zend_Db_Expr('count("sp.map_id")'),
             "total_responses" => new Zend_Db_Expr("SUM(substr(sp.evaluation_status,3,1) = 1)"),
-            "valid_responses" => new Zend_Db_Expr("(SUM(substr(sp.evaluation_status,3,1) = 1) - SUM(is_excluded = 'yes'))"),
-            "average_score" => new Zend_Db_Expr("((SUM(Case When sp.is_excluded='yes' Then 0 Else sp.shipment_score End)+SUM(Case When sp.is_excluded='yes' Then 0 Else sp.documentation_score End))/(SUM(final_result = 1) + SUM(final_result = 2)))")));
+            "valid_responses" => new Zend_Db_Expr("(SUM(substr(sp.evaluation_status,3,1) = 1) - SUM(sp.is_excluded = 'yes'))"),
+            "average_score" => new Zend_Db_Expr("((SUM(CASE WHEN sp.is_excluded='yes' THEN 0 ELSE sp.shipment_score END)+SUM(CASE WHEN sp.is_excluded='yes' THEN 0 ELSE sp.documentation_score END))/(SUM(final_result = 1) + SUM(final_result = 2)))")));
 
         if (isset($params['scheme']) && $params['scheme'] != "") {
             $totalQuery = $totalQuery->where("s.scheme_type = ?", $params['scheme']);
@@ -3527,7 +3527,7 @@ class Application_Service_Reports {
             'p.region',
             new Zend_Db_Expr('count("sp.map_id")'),
             new Zend_Db_Expr("SUM(substr(sp.evaluation_status,3,1) = 1)"),
-            new Zend_Db_Expr("(SUM(substr(sp.evaluation_status,3,1) = 1) - SUM(is_excluded = 'yes'))"),
+            new Zend_Db_Expr("(SUM(substr(sp.evaluation_status,3,1) = 1) - SUM(sp.is_excluded = 'yes'))"),
             new Zend_Db_Expr("SUM(final_result = 1)"),
             new Zend_Db_Expr("((SUM(final_result = 1))/(SUM(final_result = 1) + SUM(final_result = 2)))*100"),
             'average_score'
@@ -3544,7 +3544,7 @@ class Application_Service_Reports {
             'p.region',
             new Zend_Db_Expr('count("sp.map_id")'),
             new Zend_Db_Expr("SUM(substr(sp.evaluation_status,3,1) = 1)"),
-            new Zend_Db_Expr("(SUM(substr(sp.evaluation_status,3,1) = 1) - SUM(is_excluded = 'yes'))"),
+            new Zend_Db_Expr("(SUM(substr(sp.evaluation_status,3,1) = 1) - SUM(sp.is_excluded = 'yes'))"),
             new Zend_Db_Expr("SUM(final_result = 1)"),
             new Zend_Db_Expr("((SUM(final_result = 1))/(SUM(final_result = 1) + SUM(final_result = 2)))*100"),
             'average_score'
@@ -3630,7 +3630,7 @@ class Application_Service_Reports {
         $dbAdapter = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sQuery = $dbAdapter->select()->from(array('s' => 'shipment'))
                 ->join(array('sl' => 'scheme_list'), 's.scheme_type=sl.scheme_id')
-                ->joinLeft(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array("DATE_FORMAT(s.shipment_date,'%d-%b-%Y')", "total_shipped" => new Zend_Db_Expr('count("sp.map_id")'), "total_responses" => new Zend_Db_Expr("SUM(substr(sp.evaluation_status,3,1) = 1)"), "valid_responses" => new Zend_Db_Expr("(SUM(substr(sp.evaluation_status,3,1) = 1) - SUM(is_excluded = 'yes'))"), "total_passed" => new Zend_Db_Expr("(SUM(final_result = 1))"), "pass_percentage" => new Zend_Db_Expr("((SUM(final_result = 1))/(SUM(final_result = 1) + SUM(final_result = 2)))*100"), "average_score" => new Zend_Db_Expr("((SUM(Case When sp.is_excluded='yes' Then 0 Else sp.shipment_score End)+SUM(Case When sp.is_excluded='yes' Then 0 Else sp.documentation_score End))/(SUM(final_result = 1) + SUM(final_result = 2)))")))
+                ->joinLeft(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array("DATE_FORMAT(s.shipment_date,'%d-%b-%Y')", "total_shipped" => new Zend_Db_Expr('count("sp.map_id")'), "total_responses" => new Zend_Db_Expr("SUM(substr(sp.evaluation_status,3,1) = 1)"), "valid_responses" => new Zend_Db_Expr("(SUM(substr(sp.evaluation_status,3,1) = 1) - SUM(sp.is_excluded = 'yes'))"), "total_passed" => new Zend_Db_Expr("(SUM(final_result = 1))"), "pass_percentage" => new Zend_Db_Expr("((SUM(final_result = 1))/(SUM(final_result = 1) + SUM(final_result = 2)))*100"), "average_score" => new Zend_Db_Expr("((SUM(CASE WHEN sp.is_excluded='yes' THEN 0 ELSE sp.shipment_score END)+SUM(CASE WHEN sp.is_excluded='yes' THEN 0 ELSE sp.documentation_score END))/(SUM(final_result = 1) + SUM(final_result = 2)))")))
                 ->joinLeft(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array('region'))
                 ->joinLeft(array('rr' => 'r_results'), 'sp.final_result=rr.result_id')
                 ->group(array('p.region'));

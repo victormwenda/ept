@@ -72,9 +72,8 @@ $dtFormat=  $vHelper->getDateFormat(); ?>
                             <th style="text-align: center;vertical-align:middle;" colspan="11">Sample <?php echo $counter; ?></th>
                         </tr>
                         <tr align="center">
-                            <th style="width:10%;text-align: center;vertical-align:middle;">Name</th>
-                            <th style="width:8%;text-align: center;vertical-align:middle;">Excluded</th>
-                            <th style="width:9%;vertical-align:middle;" rowspan="2">MTB/RIF</th>
+                            <th style="width:18%;text-align: center;vertical-align:middle;">Name</th>
+                            <th style="width:9%;vertical-align:middle;">MTB/RIF</th>
                             <th style="width:12%;vertical-align:middle;">MTB Detected</th>
                             <th style="width:14%;vertical-align:middle;">Rif Resistance</th>
                             <th style="width:7%;text-align: center;vertical-align:middle;">Probe D</th>
@@ -90,18 +89,18 @@ $dtFormat=  $vHelper->getDateFormat(); ?>
                                        value="<?php echo $reference['sample_label']; ?>" />
                             </td>
                             <td>
-                                <select name="excluded[]" class="isRequired form-control input-sm"
-                                        title="Do you wish to exclude this sample from evaluation and scoring?"
-                                        placeholder="Do you wish to exclude this sample from evaluation and scoring?"
+                                <select name="mtb_rif_excluded[]" class="isRequired form-control input-sm"
+                                        title="Do you wish to exclude this sample from evaluation and scoring of MTB/Rif submissions?"
+                                        placeholder="Do you wish to exclude this sample from evaluation and scoring of MTB/Rif submissions?"
                                         onChange="changeExcluded(this, '<?php echo $counter; ?>')">
-                                    <option value="yes_not_exempt" <?php echo ($reference['is_excluded'] == 'yes' && $reference['is_exempt'] == 'no' ? "selected='selected'" : ""); ?>>
-                                        Yes, Exclude from Evaluation Entirely
+                                    <option value="yes_not_exempt" <?php echo ($reference['mtb_rif_is_excluded'] == 'yes' && $reference['mtb_rif_is_exempt'] == 'no' ? "selected='selected'" : ""); ?>>
+                                        Exclude MTB/Rif Results from Evaluation
                                     </option>
-                                    <option value="yes_exempt" <?php echo ($reference['is_excluded'] == 'yes' && $reference['is_exempt'] == 'yes' ? "selected='selected'" : ""); ?>>
-                                        Yes, Score 100% for all Submissions
+                                    <option value="yes_exempt" <?php echo ($reference['mtb_rif_is_excluded'] == 'yes' && $reference['mtb_rif_is_exempt'] == 'yes' ? "selected='selected'" : ""); ?>>
+                                        Score 100% for all MTB/Rif Submissions
                                     </option>
-                                    <option value="no" <?php echo ($reference['is_excluded'] == 'no' ? "selected='selected'" : ""); ?>>
-                                        No
+                                    <option value="no" <?php echo ($reference['mtb_rif_is_excluded'] == 'no' ? "selected='selected'" : ""); ?>>
+                                        Don't Exclude MTB/Rif Submissions
                                     </option>
                                 </select>
                             </td>
@@ -193,8 +192,8 @@ $dtFormat=  $vHelper->getDateFormat(); ?>
                             </td>
                         </tr>
                         <tr>
-                            <th style="text-align: center;vertical-align:middle;" colspan="2">Content</th>
-                            <th style="vertical-align:middle;" rowspan="2">MTB Ultra</th>
+                            <th style="text-align: center;vertical-align:middle;">Content</th>
+                            <th style="vertical-align:middle;">MTB Ultra</th>
                             <th style="vertical-align:middle;">MTB Detected</th>
                             <th style="vertical-align:middle;">Rif Resistance</th>
                             <th style="text-align: center;vertical-align:middle;">SPC</th>
@@ -205,7 +204,7 @@ $dtFormat=  $vHelper->getDateFormat(); ?>
                             <th style="text-align: center;vertical-align:middle;">rpoB4</th>
                         </tr>
                         <tr>
-                            <td colspan="2">
+                            <td>
                                 <select name="sampleContent[]" class="form-control input-sm"
                                         title="Please enter the organism used for this sample"
                                         placeholder="Please enter the organism used for this sample">
@@ -225,6 +224,22 @@ $dtFormat=  $vHelper->getDateFormat(); ?>
                                     <option value="H37Rv M. tuberculosis parent strain with laboratory derived mutation in the rpoB gene (H526D)" <?php echo ($reference['sample_content'] == 'H37Rv M. tuberculosis parent strain with laboratory derived mutation in the rpoB gene (H526D)' ? "selected='selected'" : ""); ?>>H37Rv M. tuberculosis parent strain with laboratory derived mutation in the rpoB gene (H526D)</option>
                                     <option value="M. tuberculosis, WHO strain 2116, mutation in the rpoB gene (A516V)" <?php echo ($reference['sample_content'] == 'M. tuberculosis, WHO strain 2116, mutation in the rpoB gene (A516V)' ? "selected='selected'" : ""); ?>>M. tuberculosis, WHO strain 2116, mutation in the rpoB gene (A516V)</option>
                                     <option value="M. tuberculosis, WHO strain 3201, mutation in the rpoB gene (H526T)" <?php echo ($reference['sample_content'] == 'M. tuberculosis, WHO strain 3201, mutation in the rpoB gene (H526T)' ? "selected='selected'" : ""); ?>>M. tuberculosis, WHO strain 3201, mutation in the rpoB gene (H526T)</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select name="ultra_excluded[]" class="isRequired form-control input-sm"
+                                        title="Do you wish to exclude this sample from evaluation and scoring of ultra submissions?"
+                                        placeholder="Do you wish to exclude this sample from evaluation and scoring of ultra submissions?"
+                                        onChange="changeExcluded(this, '<?php echo $counter; ?>')">
+                                    <option value="yes_not_exempt" <?php echo ($reference['ultra_is_excluded'] == 'yes' && $reference['ultra_is_exempt'] == 'no' ? "selected='selected'" : ""); ?>>
+                                        Exclude Ultra Results from Evaluation
+                                    </option>
+                                    <option value="yes_exempt" <?php echo ($reference['ultra_is_excluded'] == 'yes' && $reference['ultra_is_exempt'] == 'yes' ? "selected='selected'" : ""); ?>>
+                                        Score 100% for all Ultra Submissions
+                                    </option>
+                                    <option value="no" <?php echo ($reference['ultra_is_excluded'] == 'no' ? "selected='selected'" : ""); ?>>
+                                        Don't Exclude Ultra Submissions
+                                    </option>
                                 </select>
                             </td>
                             <td>
@@ -317,7 +332,7 @@ $dtFormat=  $vHelper->getDateFormat(); ?>
                                        value="<?php echo $reference['ultra_probe_rpo_b4']; ?>" />
                             </td>
                         </tr>
-                        <tr id="excludedReasonRow<?php echo $counter; ?>" style="display: <?php echo ($reference['is_excluded'] == 'yes' || $reference['is_exempt'] == 'yes') ? 'table-row' : 'none'?>;">
+                        <tr id="excludedReasonRow<?php echo $counter; ?>" style="display: <?php echo ($reference['mtb_rif_is_excluded'] == 'yes' || $reference['mtb_rif_is_exempt'] == 'yes' || $reference['ultra_is_excluded'] == 'yes' || $reference['ultra_is_exempt'] == 'yes') ? 'table-row' : 'none'?>;">
                             <td colspan="2">
                                 <label for="excludedReason[]">Excluded Reason</label>
                             </td>
