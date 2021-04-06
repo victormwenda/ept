@@ -2558,7 +2558,7 @@ class Application_Service_Reports {
         if (isset($schemeType) && $schemeType != "") {
             $sQuery->where("s.scheme_type = ?", $schemeType);
         }
-        $sQuery->order("s.shipment_id");
+        $sQuery->order("s.shipment_id DESC");
         $resultArray = $db->fetchAll($sQuery);
         return $resultArray;
     }
