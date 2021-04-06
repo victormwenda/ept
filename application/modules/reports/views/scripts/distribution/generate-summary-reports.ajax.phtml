@@ -95,13 +95,13 @@ if ($this->result['shipment'] != "") {
 
     $participationYAxisMultiplier = 1;
     if ($this->result['aggregates']['enrolled'] > 10) {
-        $participationYAxisMultiplier = 10;
+        $participationYAxisMultiplier = ceil($this->result['aggregates']['enrolled'] / 10);
     }
     if ($this->result['aggregates']['enrolled'] > 100) {
-        $participationYAxisMultiplier = 100;
+        $participationYAxisMultiplier = ceil($this->result['aggregates']['enrolled'] / 100) * 10;
     }
     if ($this->result['aggregates']['enrolled'] > 1000) {
-        $participationYAxisMultiplier = 1000;
+        $participationYAxisMultiplier = ceil($this->result['aggregates']['enrolled'] / 1000) * 100;
     }
 
     $testMethodYAxisMultiplier = 1;
@@ -110,13 +110,13 @@ if ($this->result['shipment'] != "") {
         $largerTestMethod = $this->result['aggregates']['mtb_rif_ultra'];
     }
     if ($largerTestMethod > 10) {
-        $testMethodYAxisMultiplier = 10;
+        $testMethodYAxisMultiplier = ceil($largerTestMethod / 10);
     }
     if ($largerTestMethod > 100) {
-        $testMethodYAxisMultiplier = 100;
+        $testMethodYAxisMultiplier = ceil($largerTestMethod / 100) * 10;
     }
     if ($largerTestMethod > 1000) {
-        $testMethodYAxisMultiplier = 1000;
+        $testMethodYAxisMultiplier = ceil($largerTestMethod / 1000) * 10;
     }
     $participationSvg = '<?xml version="1.0" encoding="UTF-8"?>';
     $participationSvg .= '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 180">';
