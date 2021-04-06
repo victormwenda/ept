@@ -1,6 +1,6 @@
 <?php
 
-class Reports_XmpepIndicatorsController extends Zend_Controller_Action {
+class Reports_XtptIndicatorsController extends Zend_Controller_Action {
     public function init(){
         $ajaxContext = $this->_helper->getHelper('AjaxContext');
         $ajaxContext->addActionContext('index', 'html')
@@ -13,7 +13,7 @@ class Reports_XmpepIndicatorsController extends Zend_Controller_Action {
         if ($this->getRequest()->isPost()) {
             $params = $this->_getAllParams();
             $reportService = new Application_Service_Reports();
-            $response = $reportService->getXmpepIndicatorsReport($params);
+            $response = $reportService->getXtptIndicatorsReport($params);
             $this->view->response = $response;
         }
     }
