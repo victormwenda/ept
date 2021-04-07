@@ -246,7 +246,7 @@ class Api_ResultsController extends Zend_Controller_Action {
             }
             $shipmentService = new Application_Service_Shipments();
             if($shipmentService->updateTbResultFooter($params)) {
-                $shipmentService->sendShipmentSavedEmailToParticipantsAndPECC($pID, $sID);
+                $shipmentService->sendShipmentSavedEmailToParticipantsAndPTCC($pID, $sID);
             }
             $this->getResponse()->setBody('OK');
             $this->getResponse()->setHttpResponseCode(200);

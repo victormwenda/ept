@@ -18,7 +18,7 @@ class TbController extends Zend_Controller_Action
                 "body" => $data
             ));
             if ($shipmentService->updateTbResults($data)) {
-                $shipmentService->sendShipmentSavedEmailToParticipantsAndPECC($data['participantId'], $data['shipmentId']);
+                $shipmentService->sendShipmentSavedEmailToParticipantsAndPTCC($data['participantId'], $data['shipmentId']);
             }
             $this->_redirect("/participant/dashboard");
         } else {

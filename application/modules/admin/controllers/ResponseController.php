@@ -57,7 +57,7 @@ class Admin_ResponseController extends Zend_Controller_Action
             ));
             if ($responseService->updateShipmentResults($params)) {
                 $shipmentService = new Application_Service_Shipments();
-                $shipmentService->sendShipmentSavedEmailToParticipantsAndPECC($params['participantId'], $params['shipmentId']);
+                $shipmentService->sendShipmentSavedEmailToParticipantsAndPTCC($params['participantId'], $params['shipmentId']);
             }
             $alertMsg = new Zend_Session_Namespace('alertSpace');
             $alertMsg->message = "Shipment Results updated successfully";
