@@ -5460,7 +5460,11 @@ class Application_Service_Reports {
                                 }
                                 $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($nonParticipatingCountryData['not_participated'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
                                 $columnIndex++;
-                                $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($nonParticipatingCountryData['not_participated'] / $nonParticipatingCountryData['total_participants'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                                $notParticipatedRatio = 0;
+                                if ($nonParticipatingCountryData['total_participants'] > 0) {
+                                    $notParticipatedRatio = $nonParticipatingCountryData['not_participated'] / $nonParticipatingCountryData['total_participants'];
+                                }
+                                $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($notParticipatedRatio, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
                                 $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->getNumberFormat()->applyFromArray(
                                     array(
                                         'code' => PHPExcel_Style_NumberFormat::FORMAT_PERCENTAGE_00
@@ -5560,7 +5564,11 @@ class Application_Service_Reports {
                         $columnIndex++;
                         $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode(intval($discordantCountry['discordant']), ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
                         $columnIndex++;
-                        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode(intval($discordantCountry['discordant']) / intval($discordantCountry['total_results']), ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
+                        $countryDiscordantRatio = 0;
+                        if (intval($discordantCountry['total_results']) > 0) {
+                            $countryDiscordantRatio = intval($discordantCountry['discordant']) /  intval($discordantCountry['total_results']);
+                        }
+                        $panelStatisticsSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($countryDiscordantRatio, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
                         $panelStatisticsSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->getNumberFormat()->applyFromArray(
                             array(
                                 'code' => PHPExcel_Style_NumberFormat::FORMAT_PERCENTAGE_00
@@ -5932,7 +5940,10 @@ class Application_Service_Reports {
                                 $mtbRifConcordanceSheet->mergeCells("A" . ($rowIndex) . ":C" . ($rowIndex));
                                 $columnIndex++;
                                 $concordanceTotals = $mtbRifConcordance[$mtbRifSubmissions[$recordIndex]["sample_label"]];
-                                $sampleConcordance = $concordanceTotals["withinRange"] / $concordanceTotals["totalValidSubmissions"];
+                                $sampleConcordance = 0;
+                                if ($concordanceTotals["totalValidSubmissions"] > 0) {
+                                    $sampleConcordance = $concordanceTotals["withinRange"] / $concordanceTotals["totalValidSubmissions"];
+                                }
                                 $mtbRifConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($sampleConcordance, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
                                 if ($sampleConcordance < $expectedConcordance) {
                                     $mtbRifConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
@@ -6368,7 +6379,10 @@ class Application_Service_Reports {
                     $mtbUltraConcordanceSheet->mergeCells("A" . ($rowIndex) . ":C" . ($rowIndex));
                     $columnIndex++;
                     $concordanceTotals = $mtbUltraConcordance[$mtbUltraSubmissions[$recordIndex]["sample_label"]];
-                    $sampleConcordance = $concordanceTotals["withinRange"] / $concordanceTotals["totalValidSubmissions"];
+                    $sampleConcordance = 0;
+                    if ($concordanceTotals["totalValidSubmissions"] > 0) {
+                        $sampleConcordance = $concordanceTotals["withinRange"] / $concordanceTotals["totalValidSubmissions"];
+                    }
                     $mtbUltraConcordanceSheet->getCellByColumnAndRow($columnIndex, $rowIndex)->setValueExplicit(html_entity_decode($sampleConcordance, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_NUMERIC);
                     if ($sampleConcordance < $expectedConcordance) {
                         $mtbUltraConcordanceSheet->getStyleByColumnAndRow($columnIndex, $rowIndex)->applyFromArray($nonConcordanceStyle);
