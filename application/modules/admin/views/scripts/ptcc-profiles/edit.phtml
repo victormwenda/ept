@@ -11,7 +11,7 @@ $authNameSpace = new Zend_Session_Namespace('administrators');
                 } else {
                     echo "Create ";
                 } ?>
-                PE Country Coordinator
+                Proficiency Testing Country Coordinator
             </legend>
             <div class="form-group">
                 <label class="col-lg-3 control-label">First Name <span class="mandatory">*</span></label>
@@ -39,7 +39,7 @@ $authNameSpace = new Zend_Session_Namespace('administrators');
                     <input type="text" id="primaryEmail" name="primaryEmail" size="50" class="isRequired form-control isEmail"
                            title="Please enter the primary email id here" placeholder="Please enter the primary email id here"
 						   value="<?php echo $this->ptccProfile['primary_email']; ?>"
-                           onblur="checkDuplicate('system_admin', 'primary_email','primaryEmail','<?php echo "admin_id##" . (isset($this->ptccProfile['admin_id']) ? $this->ptccProfile['admin_id'] : '0'); ?>', 'This Email already exists for another PE Country Coordinator. Please try something else.');checkEmailId();"/>
+                           onblur="checkDuplicate('system_admin', 'primary_email','primaryEmail','<?php echo "admin_id##" . (isset($this->ptccProfile['admin_id']) ? $this->ptccProfile['admin_id'] : '0'); ?>', 'This Email already exists for another Proficiency Testing Country Coordinator. Please try something else.');checkEmailId();"/>
                 </div>
             </div>
             <div class="form-group">

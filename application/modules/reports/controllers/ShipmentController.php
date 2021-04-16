@@ -124,20 +124,20 @@ class Reports_ShipmentController extends Zend_Controller_Action {
                                     'default',
                                     true
                                 );
-                                $peccDetailsString = "If you are experiencing challenges testing the panel or submitting results please contact ";
+                                $ptccDetailsString = "If you are experiencing challenges testing the panel or submitting results please contact ";
                                 $submissionForm->SetXY(28, 170.9);
-                                $peccDetails = array_unique(explode(",", $templateData["country"][$participant["country"]]["pecc_details"]));
-                                for ($ii = 0; $ii < count($peccDetails); $ii++) {
+                                $ptccDetails = array_unique(explode(",", $templateData["country"][$participant["country"]]["pecc_details"]));
+                                for ($ii = 0; $ii < count($ptccDetails); $ii++) {
                                     if ($ii > 0) {
-                                        if ($ii == count($peccDetails) - 1) {
-                                            $peccDetailsString .= " or ";
+                                        if ($ii == count($ptccDetails) - 1) {
+                                            $ptccDetailsString .= " or ";
                                         } else {
-                                            $peccDetailsString .= ", ";
+                                            $ptccDetailsString .= ", ";
                                         }
                                     }
-                                    $peccDetailsString .= $peccDetails[$ii];
+                                    $ptccDetailsString .= $ptccDetails[$ii];
                                 }
-                                $submissionForm->Write(0, $peccDetailsString);
+                                $submissionForm->Write(0, $ptccDetailsString);
                             }
                         }
                     }

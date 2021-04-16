@@ -1779,7 +1779,7 @@ class Application_Service_Shipments {
         }
     }
 
-    public function sendShipmentSavedEmailToParticipantsAndPECC($pid, $sid) {
+    public function sendShipmentSavedEmailToParticipantsAndPTCC($pid, $sid) {
         $commonServices = new Application_Service_Common();
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $resultsSql = $db->select()
