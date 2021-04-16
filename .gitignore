@@ -10,4 +10,5 @@ application/cache
 #Uploads
 public/uploads
 
-\application\configs\application.ini
+application/configs/application.ini
+application/configs/config.ini
