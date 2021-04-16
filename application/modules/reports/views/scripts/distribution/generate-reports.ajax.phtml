@@ -246,8 +246,8 @@ if (sizeof($this->result['shipment']) > 0) {
                 $labRes .= '	     <td style="width:22%;text-align:center;">'.$tbResultValueMapping[$response['consensus_mtb_rif_mtb_detected']].'</td>';
                 $labRes .= '	     <td style="width:22%;text-align:center;">'.$tbResultValueMapping[$response['consensus_mtb_rif_rif_resistance']].'</td>';
                 $labRes .= '	     <td style="width:10%;">';
-                if ($response[$result['assay_name'] == 'MTB Ultra' ? 'ref_ultra_is_excluded' : 'ref_mtb_rif_is_excluded'] == 'yes') {
-                    if ($response[$result['assay_name'] == 'MTB Ultra' ? 'ref_ultra_is_exempt' : 'ref_mtb_rif_is_exempt'] == 'yes') {
+                if ($response['ref_mtb_rif_is_excluded'] == 'yes') {
+                    if ($response['ref_mtb_rif_is_exempt'] == 'yes') {
                         $labRes .= '<span style="color:#ffa500;">(Exempt)</span>';
                     } else {
                         $labRes .= '<span style="color:#ff0000;">(Excluded)</span>';
@@ -260,8 +260,8 @@ if (sizeof($this->result['shipment']) > 0) {
                 $labRes .= '	     <td style="width:22%;text-align:center;">'.$tbResultValueMapping[$response['consensus_ultra_mtb_detected']].'</td>';
                 $labRes .= '	     <td style="width:22%;text-align:center;">'.$tbResultValueMapping[$response['consensus_ultra_rif_resistance']].'</td>';
                 $labRes .= '	     <td style="width:10%;">';
-                if ($response[$result['assay_name'] == 'MTB Ultra' ? 'ref_ultra_is_excluded' : 'ref_mtb_rif_is_excluded'] == 'yes') {
-                    if ($response[$result['assay_name'] == 'MTB Ultra' ? 'ref_ultra_is_exempt' : 'ref_mtb_rif_is_exempt'] == 'yes') {
+                if ($response['ref_ultra_is_excluded'] == 'yes') {
+                    if ($response['ref_ultra_is_exempt'] == 'yes') {
                         $labRes .= '<span style="color:#ffa500;">(Exempt)</span>';
                     } else {
                         $labRes .= '<span style="color:#ff0000;">(Excluded)</span>';
