@@ -1367,7 +1367,7 @@ class Application_Service_Evaluation {
                         'ref_mtb_rif_is_exempt' => 'ref.mtb_rif_is_exempt',
                         'ref_ultra_is_excluded' => 'ref.ultra_is_excluded',
                         'ref_ultra_is_exempt' => 'ref.ultra_is_exempt',
-                        'ref_expected_ct' => new Zend_Db_Expr("CASE WHEN ref.mtb_rif_mtb_detected IN ('detected', 'high', 'medium', 'low', 'veryLow') AND ref.mtb_rif_is_excluded = 'no' THEN ref.mtb_rif_probe_a ELSE 0 END")
+                        'ref_expected_ct' => new Zend_Db_Expr("CASE WHEN ref.mtb_rif_mtb_detected IN ('detected', 'high', 'medium', 'low', 'veryLow') THEN ref.mtb_rif_probe_a ELSE 0 END")
                     ))
                 ->joinLeft(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id AND res.sample_id = ref.sample_id',
                     array('mtb_detected' => new Zend_Db_Expr("SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') THEN 1 ELSE 0 END)"),
@@ -1397,7 +1397,7 @@ class Application_Service_Evaluation {
                         'ref_mtb_rif_is_exempt' => 'ref.mtb_rif_is_exempt',
                         'ref_ultra_is_excluded' => 'ref.ultra_is_excluded',
                         'ref_ultra_is_exempt' => 'ref.ultra_is_exempt',
-                        'ref_expected_ct' => new Zend_Db_Expr("CASE WHEN ref.ultra_mtb_detected IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') AND ref.ultra_is_excluded = 'no' THEN LEAST(ref.ultra_probe_rpo_b1, ref.ultra_probe_rpo_b2, ref.ultra_probe_rpo_b3, ref.ultra_probe_rpo_b4) ELSE 0 END")
+                        'ref_expected_ct' => new Zend_Db_Expr("CASE WHEN ref.ultra_mtb_detected IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') THEN LEAST(ref.ultra_probe_rpo_b1, ref.ultra_probe_rpo_b2, ref.ultra_probe_rpo_b3, ref.ultra_probe_rpo_b4) ELSE 0 END")
                     ))
                 ->joinLeft(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id AND res.sample_id = ref.sample_id',
                     array('mtb_detected' => new Zend_Db_Expr("SUM(CASE WHEN `res`.`mtb_detected` IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') THEN 1 ELSE 0 END)"),

@@ -369,7 +369,14 @@ if ($this->result['shipment'] != "") {
         $barSpaceCenter = (35 + ($sampleIndexMtbRif * $barSpaceMtbRif) + ($barSpaceMtbRif * 0.15) + $barWidthMtbRif);
         $panelPerformanceMtbRifSvg .= '    <text x="'.$barSpaceCenter.'" y="270" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">'.$sampleSummary['sample_label'].'</text>';
         if ($sampleSummary['ref_mtb_rif_is_excluded'] == 'yes') {
-            $panelPerformanceMtbRifSvg .= '    <text x="' . $barSpaceCenter . '" y="275" dominant-baseline="middle" text-anchor="middle" style="fill:#FF0000;font-family:helvetica;font-size:3.5pt">(';
+            $panelPerformanceMtbRifSvg .= '    <text x="' . $barSpaceCenter . '" y="275" dominant-baseline="middle" text-anchor="middle" style="fill:#';
+            if ($sampleSummary['ref_mtb_rif_is_exempt'] == 'yes') {
+                $panelPerformanceMtbRifSvg .= 'ffa500';
+            } else {
+                $panelPerformanceMtbRifSvg .= 'ff0000';
+            }
+            $panelPerformanceMtbRifSvg .= ';font-family:helvetica;font-size:3.5pt">(';
+
             if ($sampleSummary['ref_mtb_rif_is_exempt'] == 'yes') {
                 $panelPerformanceMtbRifSvg .= 'Exempt';
             } else {
@@ -440,7 +447,14 @@ if ($this->result['shipment'] != "") {
             $barSpaceCenter = (35 + ($sampleIndexMtbUltra * $barSpaceMtbUltra) + ($barSpaceMtbUltra * 0.15) + $barWidthMtbUltra);
             $panelPerformanceMtbUltraSvg .= '    <text x="' . $barSpaceCenter . '" y="270" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">' . $sampleSummary['sample_label'] . '</text>';
             if ($sampleSummary['ref_ultra_is_excluded'] == 'yes') {
-                $panelPerformanceMtbUltraSvg .= '    <text x="' . $barSpaceCenter . '" y="275" dominant-baseline="middle" text-anchor="middle" style="fill:#FF0000;font-family:helvetica;font-size:3.5pt">(';
+                $panelPerformanceMtbUltraSvg .= '    <text x="' . $barSpaceCenter . '" y="275" dominant-baseline="middle" text-anchor="middle" style="fill:#';
+                $panelPerformanceMtbUltraSvg .= '    <text x="' . $barSpaceCenter . '" y="275" dominant-baseline="middle" text-anchor="middle" style="fill:#';
+                if ($sampleSummary['ref_ultra_is_exempt'] == 'yes') {
+                    $panelPerformanceMtbUltraSvg .= 'ffa500';
+                } else {
+                    $panelPerformanceMtbUltraSvg .= 'ff0000';
+                }
+                $panelPerformanceMtbUltraSvg .= ';font-family:helvetica;font-size:3.5pt">(';
                 if ($sampleSummary['ref_ultra_is_exempt'] == 'yes') {
                     $panelPerformanceMtbUltraSvg .= 'Exempt';
                 } else {
