@@ -40,6 +40,8 @@ cd /var/www/ept-staging.systemone.id
 git clone git@github.com:SystemOneId/ept.git .
 vi application/configs/application.ini
 # Edit with correct email, URL and database configuration values
+vi application/configs/config.ini
+# Edit with correct Google API Key
 sudo vi /etc/apache2/sites-available/ept-staging.systemone.id.conf
 sudo a2ensite ept-staging.systemone.id.conf
 sudo a2dissite 000-default.conf
@@ -103,4 +105,4 @@ There should be a cron job or service that automatically renews the SSL certific
 
 ### Who do I talk to? ###
 
-* You can reach us at brichards@systemone.id
+* You can reach us at support@systemone.id
