@@ -27,7 +27,7 @@ if (isset($this->responseData['shipment']["shipment_test_report_date"]) &&
     <tr>
         <td colspan="2">
             <h4 class="text-info">
-                Was the participant able to test the performance evaluation panel?&nbsp;&nbsp;&nbsp;&nbsp;
+                Was the participant able to test the proficiency testing panel?&nbsp;&nbsp;&nbsp;&nbsp;
                 <input type="radio" id="ableToEnterResultsYes" name="ableToEnterResults" value="yes"
                 <?php echo ($this->responseData['shipment']['is_pt_test_not_performed'] == "no" || $this->responseData['shipment']['is_pt_test_not_performed'] == "" || $this->responseData['shipment']['is_pt_test_not_performed'] == null) ? " checked='checked' " : ""; ?> />
                 <label for="ableToEnterResultsYes">Yes</label>&nbsp;&nbsp;
