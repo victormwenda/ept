@@ -1887,7 +1887,7 @@ class Application_Service_Shipments {
                     $participantConfirmationEmailBody .= "<p><strong><span style=\"color: red;\">IMPORTANT:</span> While the following data has been saved on the system, it will not be evaluated until someone actually submits these results. When the results are ready to be submitted, please ensure that the 'Submit' button at the bottom of the form is clicked.</strong></p>";
                 }
                 if (isset($resultsSaved[0]["is_pt_test_not_performed"]) && $resultsSaved[0]["is_pt_test_not_performed"] == "yes") {
-                    $participantConfirmationEmailBody .= "<p>Participant was unable to test the performance evaluation panel";
+                    $participantConfirmationEmailBody .= "<p>Participant was unable to test the proficiency testing panel";
                     if (isset($resultsSaved[0]["not_tested_reason"]) && $resultsSaved[0]["not_tested_reason"] != "") {
                         $participantConfirmationEmailBody .= "due to ".$resultsSaved[0]["not_tested_reason"];
                     }
