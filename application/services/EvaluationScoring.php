@@ -14,13 +14,14 @@ class Application_Service_EvaluationScoring {
                                                 $probe1, $probe2, $probe3, $probe4, $probe5, $probe6, $isExcluded,
                                                 $isExempt) {
         $calculatedScore = "fail";
-        if ($isExcluded == 'yes') {
+        if (!isset($resMtbDetected) || $resMtbDetected == "") {
+            $calculatedScore = "fail";
+        } else if ($isExcluded == 'yes') {
             $calculatedScore = "excluded";
             if ($isExempt == 'yes') {
                 $calculatedScore = "exempt";
             }
-        } else if ($resMtbDetected == "noResult" || $resMtbDetected == "error" ||
-            $resMtbDetected == "invalid") {
+        } else if ($resMtbDetected == "noResult" || $resMtbDetected == "error" || $resMtbDetected == "invalid") {
             $calculatedScore = "noresult";
         } else if ($this->resMtbDetectedEqualsRefMtbDetected($resMtbDetected, $refMtbDetected)) {
             if ($this->resRifResistanceEqualsRefRifResistance($resMtbDetected, $resRifResistance, $refRifResistance)) {
