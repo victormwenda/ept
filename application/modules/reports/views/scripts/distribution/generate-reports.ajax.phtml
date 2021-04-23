@@ -269,7 +269,7 @@ if (sizeof($this->result['shipment']) > 0) {
                 }
                 $labRes .= '</td>';
                 $labRes .= '    </tr>';
-                if ($response["discrepant_result"]) {
+                if ($response["discrepant_result"] || !isset($response['mtb_detected']) || $response['mtb_detected'] == "") {
                     $discrepantResultInSubmission = true;
                     $labRes .= '    <tr style="color: #ff0000;">';
                 } else {
