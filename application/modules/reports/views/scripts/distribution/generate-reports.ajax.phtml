@@ -213,14 +213,14 @@ if (sizeof($this->result['shipment']) > 0) {
             $discrepantResultInSubmission = false;
             $noResultOrError2127InSubmission = false;
             foreach ($result['responseResult'] as $response) {
-                if ($response['ref_is_excluded'] == 'yes' &&
+                if ($response[$result['assay_name'] == 'MTB Ultra' ? 'ref_ultra_is_excluded' : 'ref_mtb_rif_is_excluded'] == 'yes' &&
                     isset($response['ref_excluded_reason']) &&
                     trim($response['ref_excluded_reason']) != "") {
                     $exclusionCount++;
                 }
                 $labRes .= '    <tr>';
                 $labRes .= '	     <td style="background-color:#cccccc;width:100%;" colspan="4"><strong>Sample ID: '.$response['sample_label'];
-                if ($response['ref_is_excluded'] == 'yes' &&
+                if ($response[$result['assay_name'] == 'MTB Ultra' ? 'ref_ultra_is_excluded' : 'ref_mtb_rif_is_excluded'] == 'yes' &&
                     isset($response['ref_excluded_reason']) &&
                     trim($response['ref_excluded_reason']) != "") {
                     for ($excludedReasonIndex = 0; $excludedReasonIndex < $exclusionCount; $excludedReasonIndex++) {
@@ -246,8 +246,8 @@ if (sizeof($this->result['shipment']) > 0) {
                 $labRes .= '	     <td style="width:22%;text-align:center;">'.$tbResultValueMapping[$response['consensus_mtb_rif_mtb_detected']].'</td>';
                 $labRes .= '	     <td style="width:22%;text-align:center;">'.$tbResultValueMapping[$response['consensus_mtb_rif_rif_resistance']].'</td>';
                 $labRes .= '	     <td style="width:10%;">';
-                if ($response['ref_is_excluded'] == 'yes') {
-                    if ($response['ref_is_exempt'] == 'yes') {
+                if ($response['ref_mtb_rif_is_excluded'] == 'yes') {
+                    if ($response['ref_mtb_rif_is_exempt'] == 'yes') {
                         $labRes .= '<span style="color:#ffa500;">(Exempt)</span>';
                     } else {
                         $labRes .= '<span style="color:#ff0000;">(Excluded)</span>';
@@ -260,8 +260,8 @@ if (sizeof($this->result['shipment']) > 0) {
                 $labRes .= '	     <td style="width:22%;text-align:center;">'.$tbResultValueMapping[$response['consensus_ultra_mtb_detected']].'</td>';
                 $labRes .= '	     <td style="width:22%;text-align:center;">'.$tbResultValueMapping[$response['consensus_ultra_rif_resistance']].'</td>';
                 $labRes .= '	     <td style="width:10%;">';
-                if ($response['ref_is_excluded'] == 'yes') {
-                    if ($response['ref_is_exempt'] == 'yes') {
+                if ($response['ref_ultra_is_excluded'] == 'yes') {
+                    if ($response['ref_ultra_is_exempt'] == 'yes') {
                         $labRes .= '<span style="color:#ffa500;">(Exempt)</span>';
                     } else {
                         $labRes .= '<span style="color:#ff0000;">(Excluded)</span>';
@@ -269,7 +269,7 @@ if (sizeof($this->result['shipment']) > 0) {
                 }
                 $labRes .= '</td>';
                 $labRes .= '    </tr>';
-                if ($response["discrepant_result"]) {
+                if ($response["discrepant_result"] || !isset($response['mtb_detected']) || $response['mtb_detected'] == "") {
                     $discrepantResultInSubmission = true;
                     $labRes .= '    <tr style="color: #ff0000;">';
                 } else {
@@ -317,7 +317,7 @@ if (sizeof($this->result['shipment']) > 0) {
             $labRes .= '	     <td style="width:10%;border-top: solid 10px #000000;"></td>';
             $labRes .= '    </tr>';
             foreach ($result['responseResult'] as $response) {
-                if ($response['ref_is_excluded'] == 'yes' &&
+                if ($response[$result['assay_name'] == 'MTB Ultra' ? 'ref_ultra_is_excluded' : 'ref_mtb_rif_is_excluded'] == 'yes' &&
                     isset($response['ref_excluded_reason']) &&
                     trim($response['ref_excluded_reason']) != "") {
                     $labRes .= '    <tr>';

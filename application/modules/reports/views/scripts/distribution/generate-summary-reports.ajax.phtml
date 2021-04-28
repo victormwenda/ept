@@ -95,13 +95,13 @@ if ($this->result['shipment'] != "") {
 
     $participationYAxisMultiplier = 1;
     if ($this->result['aggregates']['enrolled'] > 10) {
-        $participationYAxisMultiplier = 10;
+        $participationYAxisMultiplier = ceil($this->result['aggregates']['enrolled'] / 10);
     }
     if ($this->result['aggregates']['enrolled'] > 100) {
-        $participationYAxisMultiplier = 100;
+        $participationYAxisMultiplier = ceil($this->result['aggregates']['enrolled'] / 100) * 10;
     }
     if ($this->result['aggregates']['enrolled'] > 1000) {
-        $participationYAxisMultiplier = 1000;
+        $participationYAxisMultiplier = ceil($this->result['aggregates']['enrolled'] / 1000) * 100;
     }
 
     $testMethodYAxisMultiplier = 1;
@@ -110,13 +110,13 @@ if ($this->result['shipment'] != "") {
         $largerTestMethod = $this->result['aggregates']['mtb_rif_ultra'];
     }
     if ($largerTestMethod > 10) {
-        $testMethodYAxisMultiplier = 10;
+        $testMethodYAxisMultiplier = ceil($largerTestMethod / 10);
     }
     if ($largerTestMethod > 100) {
-        $testMethodYAxisMultiplier = 100;
+        $testMethodYAxisMultiplier = ceil($largerTestMethod / 100) * 10;
     }
     if ($largerTestMethod > 1000) {
-        $testMethodYAxisMultiplier = 1000;
+        $testMethodYAxisMultiplier = ceil($largerTestMethod / 1000) * 10;
     }
     $participationSvg = '<?xml version="1.0" encoding="UTF-8"?>';
     $participationSvg .= '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 180">';
@@ -167,8 +167,8 @@ if ($this->result['shipment'] != "") {
     $labInfo .= '	     <td style="width:40%;"></td>';
     foreach ($this->result['mtbRifReportSummary'] as $sampleSummary) {
         $labInfo .= '	     <td style="width:' . (60 / count($this->result['mtbRifReportSummary'])) . '%;text-align:center;"><strong>' . $sampleSummary['sample_label'] . '</strong>';
-        if ($sampleSummary['ref_is_excluded'] == 'yes') {
-            if ($sampleSummary['ref_is_exempt'] == 'yes') {
+        if ($sampleSummary['ref_mtb_rif_is_excluded'] == 'yes') {
+            if ($sampleSummary['ref_mtb_rif_is_exempt'] == 'yes') {
                 $labInfo .= '<br /><span style="color:#ffa500;">(Exempt)</span>';
             } else {
                 $labInfo .= '<br /><span style="color:#ff0000;">(Excluded)</span>';
@@ -241,8 +241,8 @@ if ($this->result['shipment'] != "") {
         $labInfo .= '	     <td style="width:40%;"></td>';
         foreach ($this->result['mtbRifUltraReportSummary'] as $sampleSummary) {
             $labInfo .= '	     <td style="width:' . (60 / count($this->result['mtbRifUltraReportSummary'])) . '%;text-align:center;"><strong>' . $sampleSummary['sample_label'] . '</strong>';
-            if ($sampleSummary['ref_is_excluded'] == 'yes') {
-                if ($sampleSummary['ref_is_exempt'] == 'yes') {
+            if ($sampleSummary['ref_ultra_is_excluded'] == 'yes') {
+                if ($sampleSummary['ref_ultra_is_exempt'] == 'yes') {
                     $labInfo .= '<br /><span style="color:#ffa500;">(Exempt)</span>';
                 } else {
                     $labInfo .= '<br /><span style="color:#ff0000;">(Excluded)</span>';
@@ -368,6 +368,22 @@ if ($this->result['shipment'] != "") {
     foreach ($this->result['mtbRifReportSummary'] as $sampleSummary) {
         $barSpaceCenter = (35 + ($sampleIndexMtbRif * $barSpaceMtbRif) + ($barSpaceMtbRif * 0.15) + $barWidthMtbRif);
         $panelPerformanceMtbRifSvg .= '    <text x="'.$barSpaceCenter.'" y="270" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">'.$sampleSummary['sample_label'].'</text>';
+        if ($sampleSummary['ref_mtb_rif_is_excluded'] == 'yes') {
+            $panelPerformanceMtbRifSvg .= '    <text x="' . $barSpaceCenter . '" y="275" dominant-baseline="middle" text-anchor="middle" style="fill:#';
+            if ($sampleSummary['ref_mtb_rif_is_exempt'] == 'yes') {
+                $panelPerformanceMtbRifSvg .= 'ffa500';
+            } else {
+                $panelPerformanceMtbRifSvg .= 'ff0000';
+            }
+            $panelPerformanceMtbRifSvg .= ';font-family:helvetica;font-size:3.5pt">(';
+
+            if ($sampleSummary['ref_mtb_rif_is_exempt'] == 'yes') {
+                $panelPerformanceMtbRifSvg .= 'Exempt';
+            } else {
+                $panelPerformanceMtbRifSvg .= 'Excluded';
+            }
+            $panelPerformanceMtbRifSvg .= ')</text>';
+        }
         if ($sampleSummary['ref_expected_ct'] > 0) {
             $panelPerformanceMtbRifSvg .= '    <rect width="'.$barWidthMtbRif.'" height="' . ($sampleSummary['ref_expected_ct'] * $yAxis1UnitMtbRif) . '" x="'.(35 + ($sampleIndexMtbRif * $barSpaceMtbRif) + ($barSpaceMtbRif * 0.15)).'" y="'.((($ctMaxYAxisValueMtbRif - $sampleSummary['ref_expected_ct']) * $yAxis1UnitMtbRif) + 40).'" fill="#4F81BD" />';
             $panelPerformanceMtbRifSvg .= '    <rect width="'.$barWidthMtbRif.'" height="' . ($sampleSummary['average_ct'] * $yAxis1UnitMtbRif) . '" x="'.$barSpaceCenter.'" y="'.((($ctMaxYAxisValueMtbRif - $sampleSummary['average_ct']) * $yAxis1UnitMtbRif) + 40).'" fill="#C0504D" />';
@@ -430,6 +446,22 @@ if ($this->result['shipment'] != "") {
         foreach ($this->result['mtbRifUltraReportSummary'] as $sampleSummary) {
             $barSpaceCenter = (35 + ($sampleIndexMtbUltra * $barSpaceMtbUltra) + ($barSpaceMtbUltra * 0.15) + $barWidthMtbUltra);
             $panelPerformanceMtbUltraSvg .= '    <text x="' . $barSpaceCenter . '" y="270" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">' . $sampleSummary['sample_label'] . '</text>';
+            if ($sampleSummary['ref_ultra_is_excluded'] == 'yes') {
+                $panelPerformanceMtbUltraSvg .= '    <text x="' . $barSpaceCenter . '" y="275" dominant-baseline="middle" text-anchor="middle" style="fill:#';
+                $panelPerformanceMtbUltraSvg .= '    <text x="' . $barSpaceCenter . '" y="275" dominant-baseline="middle" text-anchor="middle" style="fill:#';
+                if ($sampleSummary['ref_ultra_is_exempt'] == 'yes') {
+                    $panelPerformanceMtbUltraSvg .= 'ffa500';
+                } else {
+                    $panelPerformanceMtbUltraSvg .= 'ff0000';
+                }
+                $panelPerformanceMtbUltraSvg .= ';font-family:helvetica;font-size:3.5pt">(';
+                if ($sampleSummary['ref_ultra_is_exempt'] == 'yes') {
+                    $panelPerformanceMtbUltraSvg .= 'Exempt';
+                } else {
+                    $panelPerformanceMtbUltraSvg .= 'Excluded';
+                }
+                $panelPerformanceMtbUltraSvg .= ')</text>';
+            }
             if ($sampleSummary['ref_expected_ct'] > 0) {
                 $panelPerformanceMtbUltraSvg .= '    <rect width="' . $barWidthMtbUltra . '" height="' . ($sampleSummary['ref_expected_ct'] * $yAxis1UnitMtbUltra) . '" x="' . (35 + ($sampleIndexMtbUltra * $barSpaceMtbUltra) + ($barSpaceMtbUltra * 0.15)) . '" y="' . ((($ctMaxYAxisValueMtbUltra - $sampleSummary['ref_expected_ct']) * $yAxis1UnitMtbUltra) + 40) . '" fill="#4F81BD" />';
                 $panelPerformanceMtbUltraSvg .= '    <rect width="' . $barWidthMtbUltra . '" height="' . ($sampleSummary['average_ct'] * $yAxis1UnitMtbUltra) . '" x="' . $barSpaceCenter . '" y="' . ((($ctMaxYAxisValueMtbUltra - $sampleSummary['average_ct']) * $yAxis1UnitMtbUltra) + 40) . '" fill="#C0504D" />';

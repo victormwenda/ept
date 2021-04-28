@@ -272,11 +272,12 @@ class Application_Service_Evaluation {
                 $sampleRes[$i]['res_mtb_detected'], $sampleRes[$i][$assayName == 'MTB Ultra' ? 'ref_ultra_rif_resistance' : 'ref_mtb_rif_rif_resistance'], $sampleRes[$i]['res_rif_resistance'],
                 $sampleRes[$i]['res_probe_1'], $sampleRes[$i]['res_probe_2'], $sampleRes[$i]['res_probe_3'],
                 $sampleRes[$i]['res_probe_4'], $sampleRes[$i]['res_probe_5'], $sampleRes[$i]['res_probe_6'],
-                $sampleRes[$i]['ref_is_excluded'], $sampleRes[$i]['ref_is_exempt']);
+                $sampleRes[$i][$assayName == 'MTB Ultra' ? 'ref_ultra_is_excluded' : 'ref_mtb_rif_is_excluded'],
+                $sampleRes[$i][$assayName == 'MTB Ultra' ? 'ref_ultra_is_exempt' : 'ref_mtb_rif_is_exempt']);
             $submissionShipmentScore += $scoringService->calculateTbSampleScore(
                 $sampleRes[$i]['calculated_score'],
                 $sampleRes[$i]['ref_sample_score']);
-            if ($sampleRes[$i]['ref_is_excluded'] == 'no' || $sampleRes[$i]['ref_is_exempt'] == 'yes') {
+            if ($sampleRes[$i][$assayName == 'MTB Ultra' ? 'ref_ultra_is_excluded' : 'ref_mtb_rif_is_excluded'] == 'no' || $sampleRes[$i][$assayName == 'MTB Ultra' ? 'ref_ultra_is_exempt' : 'ref_mtb_rif_is_exempt'] == 'yes') {
                 $maxShipmentScore += $sampleRes[$i]['ref_sample_score'];
             }
             array_push($samplePassStatuses, $sampleRes[$i]['calculated_score']);
@@ -360,11 +361,12 @@ class Application_Service_Evaluation {
                 $sampleRes[$i]['res_mtb_detected'], $sampleRes[$i][$assayName == 'MTB Ultra' ? 'ref_ultra_rif_resistance' : 'ref_mtb_rif_rif_resistance'], $sampleRes[$i]['res_rif_resistance'],
                 $sampleRes[$i]['res_probe_1'], $sampleRes[$i]['res_probe_2'], $sampleRes[$i]['res_probe_3'],
                 $sampleRes[$i]['res_probe_4'], $sampleRes[$i]['res_probe_5'], $sampleRes[$i]['res_probe_6'],
-                $sampleRes[$i]['ref_is_excluded'], $sampleRes[$i]['ref_is_exempt']);
+                $sampleRes[$i][$assayName == 'MTB Ultra' ? 'ref_ultra_is_excluded' : 'ref_mtb_rif_is_excluded'],
+                $sampleRes[$i][$assayName == 'MTB Ultra' ? 'ref_ultra_is_exempt' : 'ref_mtb_rif_is_exempt']);
             $submissionShipmentScore += $scoringService->calculateTbSampleScore(
                 $sampleRes[$i]['calculated_score'],
                 $sampleRes[$i]['ref_sample_score']);
-            if ($sampleRes[$i]['ref_is_excluded'] == 'no' || $sampleRes[$i]['ref_is_exempt'] == 'yes') {
+            if ($sampleRes[$i][$assayName == 'MTB Ultra' ? 'ref_ultra_is_excluded' : 'ref_mtb_rif_is_excluded'] == 'no' || $sampleRes[$i][$assayName == 'MTB Ultra' ? 'ref_ultra_is_exempt' : 'ref_mtb_rif_is_exempt'] == 'yes') {
                 $maxShipmentScore += $sampleRes[$i]['ref_sample_score'];
             }
             array_push($samplePassStatuses, $sampleRes[$i]['calculated_score']);
@@ -612,8 +614,8 @@ class Application_Service_Evaluation {
                 $calculatedScorePassStatus = $scoringService->calculateTbSamplePassStatus($referenceSample[$assayName == 'MTB Ultra' ? 'ultra_mtb_detected' : 'mtb_rif_mtb_detected'],
                     $params['mtbDetected'][$i], $referenceSample[$assayName == 'MTB Ultra' ? 'ultra_rif_resistance' : 'mtb_rif_rif_resistance'], $params['rifResistance'][$i],
                     $params['probe1'][$i], $params['probe2'][$i], $params['probe3'][$i], $params['probe4'][$i],
-                    $params['probe5'][$i], $params['probe6'][$i], $referenceSample['is_excluded'],
-                    $referenceSample['is_exempt']);
+                    $params['probe5'][$i], $params['probe6'][$i], $referenceSample[$assayName == 'MTB Ultra' ? 'ultra_is_excluded' : 'mtb_rif_is_excluded'],
+                    $referenceSample[$assayName == 'MTB Ultra' ? 'ultra_is_exempt' : 'mtb_rif_is_exempt']);
                 $shipmentScore += $scoringService->calculateTbSampleScore(
                     $calculatedScorePassStatus,
                     $referenceSample['sample_score']);
@@ -790,8 +792,10 @@ class Application_Service_Evaluation {
                 'mtb_rif_rif_resistance',
                 'ultra_mtb_detected',
                 'ultra_rif_resistance',
-                'ref_is_excluded' => 'ref.is_excluded',
-                'ref_is_exempt' => 'ref.is_exempt'
+                'ref_mtb_rif_is_excluded' => 'ref.mtb_rif_is_excluded',
+                'ref_mtb_rif_is_exempt' => 'ref.mtb_rif_is_exempt',
+                'ref_ultra_is_excluded' => 'ref.ultra_is_excluded',
+                'ref_ultra_is_exempt' => 'ref.ultra_is_exempt'
             ))
             ->where("ref.shipment_id = ?", $shipmentId);
         $tbResultsExpectedResults = $db->fetchAll($expectedResultsQuery);
@@ -801,8 +805,10 @@ class Application_Service_Evaluation {
                 'mtb_rif_rif_resistance' => $tbResultsExpectedResult['mtb_rif_rif_resistance'],
                 'ultra_mtb_detected' => $tbResultsExpectedResult['ultra_mtb_detected'],
                 'ultra_rif_resistance' => $tbResultsExpectedResult['ultra_rif_resistance'],
-                'ref_is_excluded' => $tbResultsExpectedResult['ref_is_excluded'],
-                'ref_is_exempt' => $tbResultsExpectedResult['ref_is_exempt']
+                'ref_mtb_rif_is_excluded' => $tbResultsExpectedResult['ref_mtb_rif_is_excluded'],
+                'ref_mtb_rif_is_exempt' => $tbResultsExpectedResult['ref_mtb_rif_is_exempt'],
+                'ref_ultra_is_excluded' => $tbResultsExpectedResult['ref_ultra_is_excluded'],
+                'ref_ultra_is_exempt' => $tbResultsExpectedResult['ref_ultra_is_exempt']
             );
         }
         return $tbResultsExpected;
@@ -1055,8 +1061,10 @@ class Application_Service_Evaluation {
             $sql = $db->select()->from(array('ref' => 'reference_result_tb'),
                 array(
                     'sample_id', 'sample_label', 'sample_score',
-                    'ref_is_excluded' => 'ref.is_excluded',
-                    'ref_is_exempt' => 'ref.is_exempt',
+                    'ref_mtb_rif_is_excluded' => 'ref.mtb_rif_is_excluded',
+                    'ref_mtb_rif_is_exempt' => 'ref.mtb_rif_is_exempt',
+                    'ref_ultra_is_excluded' => 'ref.ultra_is_excluded',
+                    'ref_ultra_is_exempt' => 'ref.ultra_is_exempt',
                     'ref_excluded_reason' => 'ref.excluded_reason'))
                 ->join(array('spm' => 'shipment_participant_map'),
                     'spm.shipment_id = ref.shipment_id', array())
@@ -1124,14 +1132,14 @@ class Application_Service_Evaluation {
                     $tbResultsExpected[$tbResult['sample_id']][$tbResult['assay_short_name'] == 'MTB Ultra' ? 'ultra_rif_resistance' : 'mtb_rif_rif_resistance'],
                     $tbResult['rif_resistance'],
                     $tbResult['probe_1'], $tbResult['probe_2'], $tbResult['probe_3'], $tbResult['probe_4'],
-                    $tbResult['probe_5'], $tbResult['probe_6'], $tbResult['ref_is_excluded'],
-                    $tbResult['ref_is_exempt']);
+                    $tbResult['probe_5'], $tbResult['probe_6'], $tbResult[$tbResult['assay_short_name'] == 'MTB Ultra' ? 'ref_ultra_is_excluded' : 'ref_mtb_rif_is_excluded'],
+                    $tbResult[$tbResult['assay_short_name'] == 'MTB Ultra' ? 'ref_ultra_is_exempt' : 'ref_mtb_rif_is_exempt']);
                 array_push($sampleStatuses, $sampleScoreStatus);
                 $sampleScore = $scoringService->calculateTbSampleScore(
                     $sampleScoreStatus,
                     $tbResult['sample_score']);
                 $shipmentScore += $sampleScore;
-                if ($tbResult['ref_is_excluded'] == 'no' || $tbResult['ref_is_exempt'] == 'yes') {
+                if ($tbResult[$tbResult['assay_short_name'] == 'MTB Ultra' ? 'ref_ultra_is_excluded' : 'ref_mtb_rif_is_excluded'] == 'no' || $tbResult[$tbResult['assay_short_name'] == 'MTB Ultra' ? 'ref_ultra_is_exempt' : 'ref_mtb_rif_is_exempt'] == 'yes') {
                     $maxShipmentScore += $tbResult['sample_score'];
                 }
                 $consensusTbMtbDetectedMtbRif = $tbResultsExpected[$tbResult['sample_id']]['mtb_rif_mtb_detected'];
@@ -1200,8 +1208,8 @@ class Application_Service_Evaluation {
                     'sample_id' => $tbResult['sample_id'],
                     'sample_label' => $tbResult['sample_label'],
                     'mtb_detected' => $tbResult['mtb_detected'],
-                    'discrepant_result' => $tbResult['ref_is_exempt'] != 'yes' &&
-                        $tbResult['ref_is_excluded'] != 'yes' &&
+                    'discrepant_result' => $tbResult[$tbResult['assay_short_name'] == 'MTB Ultra' ? 'ref_ultra_is_exempt' : 'ref_mtb_rif_is_exempt'] != 'yes' &&
+                        $tbResult[$tbResult['assay_short_name'] == 'MTB Ultra' ? 'ref_ultra_is_excluded' : 'ref_mtb_rif_is_excluded'] != 'yes' &&
                         $sampleScore == 0,
                     'rif_resistance' => $tbResult['rif_resistance'],
                     'error_code' => $tbResult['error_code'],
@@ -1219,8 +1227,10 @@ class Application_Service_Evaluation {
                     'consensus_mtb_rif_rif_resistance' => $consensusTbRifResistanceMtbRif,
                     'consensus_ultra_mtb_detected' => $consensusTbMtbDetectedUltra,
                     'consensus_ultra_rif_resistance' => $consensusTbRifResistanceUltra,
-                    'ref_is_excluded' => $tbResult['ref_is_excluded'],
-                    'ref_is_exempt' => $tbResult['ref_is_exempt'],
+                    'ref_mtb_rif_is_excluded' => $tbResult['ref_mtb_rif_is_excluded'],
+                    'ref_mtb_rif_is_exempt' => $tbResult['ref_mtb_rif_is_exempt'],
+                    'ref_ultra_is_excluded' => $tbResult['ref_ultra_is_excluded'],
+                    'ref_ultra_is_exempt' => $tbResult['ref_ultra_is_exempt'],
                     'ref_excluded_reason' => $tbResult['ref_excluded_reason'],
                     'max_score' => $tbResult['sample_score'],
                     'score' => $sampleScore,
@@ -1353,8 +1363,10 @@ class Application_Service_Evaluation {
                 ->join(array('ref' => 'reference_result_tb'),
                     'ref.shipment_id = spm.shipment_id', array(
                         'sample_label' => 'ref.sample_label',
-                        'ref_is_excluded' => 'ref.is_excluded',
-                        'ref_is_exempt' => 'ref.is_exempt',
+                        'ref_mtb_rif_is_excluded' => 'ref.mtb_rif_is_excluded',
+                        'ref_mtb_rif_is_exempt' => 'ref.mtb_rif_is_exempt',
+                        'ref_ultra_is_excluded' => 'ref.ultra_is_excluded',
+                        'ref_ultra_is_exempt' => 'ref.ultra_is_exempt',
                         'ref_expected_ct' => new Zend_Db_Expr("CASE WHEN ref.mtb_rif_mtb_detected IN ('detected', 'high', 'medium', 'low', 'veryLow') THEN ref.mtb_rif_probe_a ELSE 0 END")
                     ))
                 ->joinLeft(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id AND res.sample_id = ref.sample_id',
@@ -1366,7 +1378,7 @@ class Application_Service_Evaluation {
                         'rif_indeterminate' => new Zend_Db_Expr("SUM(CASE WHEN `res`.`rif_resistance` = 'indeterminate' THEN 1 ELSE 0 END)"),
                         'rif_uninterpretable' => new Zend_Db_Expr("SUM(CASE WHEN IFNULL(`res`.`mtb_detected`, '') IN ('noResult', 'invalid', 'error', '') THEN 1 ELSE 0 END)"),
                         'no_of_responses' => new Zend_Db_Expr("SUM(CASE WHEN IFNULL(`res`.`mtb_detected`, '') = '' THEN 0 ELSE 1 END)"),
-                        'average_ct' => new Zend_Db_Expr('SUM(CASE WHEN IFNULL(`res`.`calculated_score`, \'pass\') NOT IN (\'fail\', \'excluded\', \'noresult\') THEN IFNULL(CASE WHEN `res`.`probe_6` = \'\' THEN 0 ELSE `res`.`probe_6` END, 0) ELSE 0 END) / SUM(CASE WHEN IFNULL(CASE WHEN `res`.`probe_6` = \'\' THEN 0 ELSE `res`.`probe_6` END, 0) = 0 OR IFNULL(`res`.`calculated_score`, \'pass\') IN (\'fail\', \'excluded\', \'noresult\') THEN 0 ELSE 1 END)')))
+                        'average_ct' => new Zend_Db_Expr('SUM(CASE WHEN IFNULL(`res`.`calculated_score`, \'pass\') NOT IN (\'fail\', \'noresult\') THEN IFNULL(CASE WHEN `res`.`probe_6` = \'\' THEN 0 ELSE `res`.`probe_6` END, 0) ELSE 0 END) / SUM(CASE WHEN IFNULL(CASE WHEN `res`.`probe_6` = \'\' THEN 0 ELSE `res`.`probe_6` END, 0) = 0 OR IFNULL(`res`.`calculated_score`, \'pass\') IN (\'fail\', \'noresult\') THEN 0 ELSE 1 END)')))
                 ->joinLeft(array('a' => 'r_tb_assay'),
                     'a.id = CASE WHEN JSON_VALID(spm.attributes) = 1 THEN JSON_UNQUOTE(JSON_EXTRACT(spm.attributes, "$.assay")) ELSE 0 END')
                 ->where("spm.shipment_id = ?", $shipmentId)
@@ -1381,8 +1393,10 @@ class Application_Service_Evaluation {
                 ->join(array('ref' => 'reference_result_tb'),
                     'ref.shipment_id = spm.shipment_id', array(
                         'sample_label' => 'ref.sample_label',
-                        'ref_is_excluded' => 'ref.is_excluded',
-                        'ref_is_exempt' => 'ref.is_exempt',
+                        'ref_mtb_rif_is_excluded' => 'ref.mtb_rif_is_excluded',
+                        'ref_mtb_rif_is_exempt' => 'ref.mtb_rif_is_exempt',
+                        'ref_ultra_is_excluded' => 'ref.ultra_is_excluded',
+                        'ref_ultra_is_exempt' => 'ref.ultra_is_exempt',
                         'ref_expected_ct' => new Zend_Db_Expr("CASE WHEN ref.ultra_mtb_detected IN ('detected', 'high', 'medium', 'low', 'veryLow', 'trace') THEN LEAST(ref.ultra_probe_rpo_b1, ref.ultra_probe_rpo_b2, ref.ultra_probe_rpo_b3, ref.ultra_probe_rpo_b4) ELSE 0 END")
                     ))
                 ->joinLeft(array('res' => 'response_result_tb'), 'res.shipment_map_id = spm.map_id AND res.sample_id = ref.sample_id',
@@ -1394,7 +1408,7 @@ class Application_Service_Evaluation {
                         'rif_indeterminate' => new Zend_Db_Expr("SUM(CASE WHEN `res`.`rif_resistance` = 'indeterminate' OR (`res`.`mtb_detected` = 'trace' AND `res`.`rif_resistance` = 'na') THEN 1 ELSE 0 END)"),
                         'rif_uninterpretable' => new Zend_Db_Expr("SUM(CASE WHEN IFNULL(`res`.`mtb_detected`, '') IN ('noResult', 'invalid', 'error', '') THEN 1 ELSE 0 END)"),
                         'no_of_responses' => new Zend_Db_Expr("SUM(CASE WHEN IFNULL(`res`.`mtb_detected`, '') = '' THEN 0 ELSE 1 END)"),
-                        'average_ct' => new Zend_Db_Expr('SUM(CASE WHEN IFNULL(`res`.`calculated_score`, \'pass\') NOT IN (\'fail\', \'excluded\', \'noresult\') THEN  LEAST(IFNULL(`res`.`probe_3`, 0), IFNULL(`res`.`probe_4`, 0), IFNULL(`res`.`probe_5`, 0), IFNULL(`res`.`probe_6`, 0)) ELSE 0 END) / SUM(CASE WHEN LEAST(IFNULL(CASE WHEN `res`.`probe_3` = \'\' THEN 0 ELSE `res`.`probe_3` END, 0), IFNULL(CASE WHEN `res`.`probe_4` = \'\' THEN 0 ELSE `res`.`probe_4` END, 0), IFNULL(CASE WHEN `res`.`probe_5` = \'\' THEN 0 ELSE `res`.`probe_5` END, 0), IFNULL(CASE WHEN `res`.`probe_6` = \'\' THEN 0 ELSE `res`.`probe_6` END, 0)) = 0 OR IFNULL(`res`.`calculated_score`, \'pass\') IN (\'fail\', \'excluded\', \'noresult\') THEN 0 ELSE 1 END)')))
+                        'average_ct' => new Zend_Db_Expr('SUM(CASE WHEN IFNULL(`res`.`calculated_score`, \'pass\') NOT IN (\'fail\', \'noresult\') THEN  LEAST(IFNULL(`res`.`probe_3`, 0), IFNULL(`res`.`probe_4`, 0), IFNULL(`res`.`probe_5`, 0), IFNULL(`res`.`probe_6`, 0)) ELSE 0 END) / SUM(CASE WHEN LEAST(IFNULL(CASE WHEN `res`.`probe_3` = \'\' THEN 0 ELSE `res`.`probe_3` END, 0), IFNULL(CASE WHEN `res`.`probe_4` = \'\' THEN 0 ELSE `res`.`probe_4` END, 0), IFNULL(CASE WHEN `res`.`probe_5` = \'\' THEN 0 ELSE `res`.`probe_5` END, 0), IFNULL(CASE WHEN `res`.`probe_6` = \'\' THEN 0 ELSE `res`.`probe_6` END, 0)) = 0 OR IFNULL(`res`.`calculated_score`, \'pass\') IN (\'fail\', \'noresult\') THEN 0 ELSE 1 END)')))
                 ->joinLeft(array('a' => 'r_tb_assay'),
                     'a.id = CASE WHEN JSON_VALID(spm.attributes) = 1 THEN JSON_UNQUOTE(JSON_EXTRACT(spm.attributes, "$.assay")) ELSE 0 END')
                 ->where("spm.shipment_id = ?", $shipmentId)
@@ -1597,14 +1611,15 @@ class Application_Service_Evaluation {
                 $calculatedScorePassStatus = $scoringService->calculateTbSamplePassStatus($result[$assayName == 'MTB Ultra' ? 'ref_ultra_mtb_detected' : 'ref_mtb_rif_mtb_detected'],
                     $result['res_mtb_detected'], $result[$assayName == 'MTB Ultra' ? 'ref_ultra_rif_resistance' : 'ref_mtb_rif_rif_resistance'], $result['res_rif_resistance'],
                     $result['res_probe_1'], $result['res_probe_2'], $result['res_probe_3'], $result['res_probe_4'],
-                    $result['res_probe_5'], $result['res_probe_6'], $result['ref_is_excluded'], $result['ref_is_exempt']);
+                    $result['res_probe_5'], $result['res_probe_6'], $result[$assayName == 'MTB Ultra' ? 'ref_ultra_is_excluded' : 'ref_mtb_rif_is_excluded'],
+                    $result[$assayName == 'MTB Ultra' ? 'ref_ultra_is_exempt' : 'ref_mtb_rif_is_exempt']);
 
                 $shipmentScore += $scoringService->calculateTbSampleScore(
                     $calculatedScorePassStatus,
                     $result['ref_sample_score']);
                 $db->update('response_result_tb', array('calculated_score' => $calculatedScorePassStatus),
                     "shipment_map_id = " . $result['map_id'] . " and sample_id = " . $result['sample_id']);
-                if ($result['ref_is_excluded'] == 'no' || $result['ref_is_exempt'] == 'yes') {
+                if ($result[$assayName == 'MTB Ultra' ? 'ref_ultra_is_excluded' : 'ref_mtb_rif_is_excluded'] == 'no' || $result[$assayName == 'MTB Ultra' ? 'ref_ultra_is_exempt' : 'ref_mtb_rif_is_exempt'] == 'yes') {
                     $maxShipmentScore += $result['ref_sample_score'];
                 }
                 array_push($samplePassStatuses, $calculatedScorePassStatus);
