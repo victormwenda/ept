@@ -66,7 +66,7 @@ class Reports_ShipmentController extends Zend_Controller_Action {
                     $submissionForm->SetTextColor(0, 0, 0);
                     $submissionForm->SetXY(85, 19.5);
                     $submissionForm->Write(0, $shipmentCode);
-                    $submissionForm->SetXY(157, 19.5);
+                    $submissionForm->SetXY(142, 19.5);
                     $submissionForm->Write(0, $templateData["country"][$participant["country"]]["country_name"]);
                     $submissionForm->SetXY(237, 19.5);
                     $submissionForm->Write(0, $participant["due_date"]);
@@ -164,7 +164,7 @@ class SubmissionForm extends TcpdfFpdi {
     var $_tplIdx;
     function Header() {
         if (is_null($this->_tplIdx)) {
-            $this->numPages = $this->setSourceFile('./templates/ept_tb_submission_form_1.1.pdf');
+            $this->numPages = $this->setSourceFile('./templates/ept_tb_submission_form_1.2.pdf');
             $this->_tplIdx = $this->importPage(1);
         }
         $this->useTemplate($this->_tplIdx);
