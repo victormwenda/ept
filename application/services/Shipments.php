@@ -1135,26 +1135,26 @@ class Application_Service_Shipments {
                 ->from(array('s' => 'shipment'), array('s.shipment_code', 's.lastdate_response'))
                 ->where("s.shipment_id = ?", $sid)
         );
-        $participantData = $db->fetchAll(
-            $db->select()
-                ->from(array('spm' => 'shipment_participant_map'), array())
-                ->join(array('s' => 'shipment'), 's.shipment_id = spm.shipment_id', array())
-                ->join(array('p' => 'participant'), 'p.participant_id = spm.participant_id',
-                    array(
-                        "country" => "p.country",
-                        "participant_name" => "p.lab_name",
-                        "pt_id" => "p.unique_identifier"
-                    ))
-                ->joinLeft(array('pmm' => 'participant_manager_map'), 'pmm.participant_id = spm.participant_id', array())
-                ->joinLeft(array('dm' => 'data_manager'), 'dm.dm_id = pmm.dm_id', array(
-                    "username" => "dm.primary_email",
-                    "dm.password"
+        $participantDataQuery = $db->select()
+            ->from(array('spm' => 'shipment_participant_map'), array())
+            ->join(array('s' => 'shipment'), 's.shipment_id = spm.shipment_id', array())
+            ->join(array('p' => 'participant'), 'p.participant_id = spm.participant_id',
+                array(
+                    "country" => "p.country",
+                    "participant_name" => "p.lab_name",
+                    "pt_id" => "p.unique_identifier",
+                    'sorting_unique_identifier' => new Zend_Db_Expr("LPAD(p.unique_identifier, 10, '0')")
                 ))
-                ->joinLeft(array('csm' => 'country_shipment_map'), 'csm.country_id = p.country AND csm.shipment_id = spm.shipment_id', array('due_date' => new Zend_Db_Expr('IFNULL(csm.due_date_text, CAST(s.lastdate_response AS CHAR))')))
-                ->where("spm.shipment_id = ?", $sid)
-                ->group('p.participant_id')
-                ->order(new Zend_Db_Expr("CASE WHEN p.unique_identifier REGEXP '\d*' THEN CAST(CAST(p.unique_identifier AS DECIMAL) AS CHAR) ELSE TRIM(LEADING '0' FROM p.unique_identifier) END"))
-        );
+            ->joinLeft(array('pmm' => 'participant_manager_map'), 'pmm.participant_id = spm.participant_id', array())
+            ->joinLeft(array('dm' => 'data_manager'), 'dm.dm_id = pmm.dm_id', array(
+                "username" => "dm.primary_email",
+                "dm.password"
+            ))
+            ->joinLeft(array('csm' => 'country_shipment_map'), 'csm.country_id = p.country AND csm.shipment_id = spm.shipment_id', array('due_date' => new Zend_Db_Expr('IFNULL(csm.due_date_text, CAST(s.lastdate_response AS CHAR))')))
+            ->where("spm.shipment_id = ?", $sid)
+            ->group('p.participant_id')
+            ->order('sorting_unique_identifier');
+        $participantData = $db->fetchAll($participantDataQuery);
 
         $sampleData = $db->fetchAll(
             $db->select()
