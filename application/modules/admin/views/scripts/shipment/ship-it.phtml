@@ -5,8 +5,8 @@
 
     <legend class="row">
             <?php echo strtoupper($this->shipment->scheme_type); ?>
-            &nbsp;Shipment :
-            &nbsp;<?php echo $this->shipment->shipment_code . "(".$this->dateFormat($this->shipment->shipment_date).") "; ?>
+            &nbsp;Shipment:
+            &nbsp;<?php echo $this->shipment->shipment_code . " (" . $this->dateFormat($this->shipment->shipment_date) . ") "; ?>
             <span style="float: right; padding-bottom:10px;"  >
                 Search:
                 <input type="text" id="searchBox" placeholder="Search"  onkeyup="search()">
