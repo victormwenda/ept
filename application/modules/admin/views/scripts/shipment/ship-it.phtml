@@ -25,13 +25,13 @@
             ?>
                     <li class="country"><i class="fa fa-minus"></i>
                         <label class="CountryDetails">
-                            <input id="node-<?php echo $ckey; ?>" class="countr_checkbox"  data-id="custom-<?php echo $ckey; ?>" type="checkbox"  <?php if(count($unenrolledParticipants) == 0) {  ?> checked="true" <?php  } ?>>
+                            <input id="node-<?php echo $ckey; ?>" class="countr_checkbox" data-id="custom-<?php echo $ckey; ?>" type="checkbox"  <?php if(count($unenrolledParticipants) == 0) {  ?> checked="true" <?php  } ?>>
                             <span style="width: 50%;">
                                 <?php echo $ckey; ?>
                             </span>
                             <span class="dueDate" style="float:right;">
                                 <label>Result due date: </label>
-                                <input type="text" class="input_date" onchange="$(this).attr('name','country_last_dates[<?php  echo $ckey; ?>]')"
+                                <input id="country_last_dates_<?php echo $ckey; ?>" type="text" class="input_date" onchange="$(this).attr('name','country_last_dates[<?php  echo $ckey; ?>]')"
                                 value="<?php
                                             if($country[$i]['due_date_text']){
                                                 echo ($country[$i]['due_date_text']);
@@ -50,7 +50,7 @@
                                 $i++; ?>
                                 <li>
                                     <label class="ParticipantDetails">
-                                        <input  class="participant_checkbox" name="participants[]" type="checkbox" value="<?php echo $participant['participant_id']; ?>" <?php if(isset($participant['map_id'])) {  ?> checked="true" <?php  } ?>>
+                                        <input id="participant_checkbox_<?php echo $participant['participant_id']; ?>" class="participant_checkbox" name="participants[]" type="checkbox" value="<?php echo $participant['participant_id']; ?>" <?php if(isset($participant['map_id'])) {  ?> checked="true" <?php  } ?>>
                                         <?php echo $participant['unique_identifier']; ?>
                                         &nbsp;-&nbsp;
                                         <?php echo $participant['lab_name']; ?>
@@ -136,8 +136,11 @@
     $(".participant_checkbox").change(function(){
         calculateParticipantEnrollment();
     });
+    $(".countr_checkbox").change(function(){
+      calculateParticipantEnrollment();
+    });
     function calculateParticipantEnrollment(){
-        $("#ParticipantCalculation").html('<span id="selected">'+$('.participant_checkbox:checked').length+'</span> Participants Selected, Removing <span id="removing">'+ ($('.selectedParticipant').length-$('.selectedParticipant:checked').length) +'</span> Participants and Adding <span id="adding">'+$('.unselectedParticipant:checked').length +' Participant</span>');
+        $("#ParticipantCalculation").html('<span id="selected">'+$('.participant_checkbox:checked').length+'</span> Participants Selected, Removing <span id="removing">'+ ($('.selectedParticipant').length-$('.selectedParticipant:checked').length) +'</span> Participants and Adding <span id="adding">'+$('.unselectedParticipant:checked').length +' Participants</span>');
     }
 </script>
 
