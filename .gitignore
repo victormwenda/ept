@@ -1,14 +1,18 @@
-#IDE Generated Files
+# IDE Generated Files
 .idea/
 .settings/
 nbproject/
 live_web_logs/
 
-#Generated Files
+# Generated Files
 application/cache
 
-#Uploads
+# Uploads
 public/uploads
 
 application/configs/application.ini
 application/configs/config.ini
+
+# Unminified scripts
+public/js/jquery-1.10.2.min.map
+public/js/jquery-1.10.2.js
