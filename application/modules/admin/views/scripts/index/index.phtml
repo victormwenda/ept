@@ -1,5 +1,6 @@
 <link rel="stylesheet" href="<?php echo $this->baseUrl("css/morris-0.4.3.css"); ?>" type="text/css" media="all">
 <?php
+$adminSession = new Zend_Session_Namespace('administrators');
 $file = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini";
 $config = new Zend_Config_Ini($file, APPLICATION_ENV);
 $lastmonth = date("F",strtotime("-1 month"));
@@ -143,9 +144,11 @@ foreach ($this->events as $events) {
                 $ppsShipmentLastDate[] = "'".$this->dateFormat($pc['lastdate_response'])."'";
             }
             ?>
-            <div class="text-right">
-                <a href="<?php echo $this->url(array('module'=>'admin','controller'=>'shipment','action'=>'index'),'default',true); ?>" class="btn-sm btn-primary" style="text-decoration: none;">View all Shipments <i class="icon-forward"></i></a>
-            </div>
+            <?php if ($adminSession->is_ptcc_coordinator == 0) { ?>
+                <div class="text-right">
+                    <a href="<?php echo $this->url(array('module'=>'admin','controller'=>'shipment','action'=>'index'),'default',true); ?>" class="btn-sm btn-primary" style="text-decoration: none;">View all Shipments <i class="icon-forward"></i></a>
+                </div>
+            <?php } ?>
         </div>
     </div>
 </div>
@@ -201,8 +204,8 @@ foreach ($this->events as $events) {
         });
         showParticipantsLocation();
     });
-  
-   
+
+
     function showParticipantsLocation() {
         objVal=document.getElementById("scheme").value;
         var mapOptions = {
