@@ -156,7 +156,19 @@
 
 <?php
     $adminSession = new Zend_Session_Namespace('administrators');
-    if ($adminSession->is_ptcc_coordinator == 0) { ?>
+    if ($adminSession->is_ptcc_coordinator == 0) {
+        $fileName = preg_replace('/[^A-Za-z0-9.]/', '-', $fileName);
+        $fileName = str_replace(" ", "-", $fileName);
+
+        $fileSafeShipmentCode = str_replace( ' ', '-', str_replace(array_merge(
+            array_map('chr', range(0, 31)),
+            array('<', '>', ':', '"', '/', '\\', '|', '?', '*')
+        ), '', $shipment['shipment_code']));
+        $reportsFolderPath = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports';
+        $shipmentFolderPath = $reportsFolderPath . DIRECTORY_SEPARATOR . $fileSafeShipmentCode;
+
+        $summaryReportFilePath = $shipmentFolderPath . DIRECTORY_SEPARATOR . $fileSafeShipmentCode . "-summary.pdf";
+        ?>
 <br/>
 <br/>
 <br/>
@@ -165,8 +177,8 @@
     <table class="table table-condensed table-bordered" style="width:340px;margin:0 auto;">
         <tr>
             <td>
-        <?php if (file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . "reports" . DIRECTORY_SEPARATOR . $shipment['shipment_code'] . DIRECTORY_SEPARATOR . $shipment['shipment_code']."-summary.pdf")) { ?>
-        <a href="<?php echo $this->baseUrl("uploads/reports/" . $shipment['shipment_code'] . "/".$shipment['shipment_code'] ."-summary.pdf"); ?>" class="btn btn-info" target="_BLANK" style="width:100%;"><i class="icon-file-text"></i> Download Summary Report</a>
+        <?php if (file_exists($summaryReportFilePath)) { ?>
+        <a href="<?php echo $this->baseUrl($summaryReportFilePath); ?>" class="btn btn-info" target="_BLANK" style="width:100%;"><i class="icon-file-text"></i> Download Summary Report</a>
         <?php } ?>
         </td>
         </tr>
@@ -196,10 +208,11 @@
                   $lastEnd = $end;
               }
           }
-          if (file_exists(UPLOAD_PATH . DIRECTORY_SEPARATOR . "reports" . DIRECTORY_SEPARATOR . $shipment['shipment_code'] . DIRECTORY_SEPARATOR . $shipment['shipment_code']."-".$start."-".$end."-bulk-participant-report.pdf")) { ?>
+          $bulkReportFilePath = $shipmentFolderPath . DIRECTORY_SEPARATOR . $fileSafeShipmentCode . "-" . $start . "-" . $end . "-bulk-participant-report.pdf";
+          if (file_exists($bulkReportFilePath)) { ?>
           <tr>
               <td>
-                  <a href="<?php echo $this->baseUrl("uploads/reports/" . $shipment['shipment_code'] . "/".$shipment['shipment_code']."-".$start."-".$end."-bulk-participant-report.pdf"); ?>"  style="width:100%;" class='btn btn-info' target='_BLANK' id="<?php echo $start."-".$end."-bulk-participant-report"; ?>" style=''><i class='icon-file-text'></i> Download <?php echo $start; ?> - <?php echo $end;?> Participants Report</a>
+                  <a href="<?php echo $this->baseUrl($bulkReportFilePath); ?>"  style="width:100%;" class='btn btn-info' target='_BLANK' id="<?php echo $start."-".$end."-bulk-participant-report"; ?>" style=''><i class='icon-file-text'></i> Download <?php echo $start; ?> - <?php echo $end;?> Participants Report</a>
               </td>
           </tr>
     <?php }
