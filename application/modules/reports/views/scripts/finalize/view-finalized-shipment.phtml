@@ -165,6 +165,7 @@
         $shipmentFolderPath = $reportsFolderPath . DIRECTORY_SEPARATOR . $fileSafeShipmentCode;
 
         $summaryReportFilePath = $shipmentFolderPath . DIRECTORY_SEPARATOR . $fileSafeShipmentCode . "-summary.pdf";
+        $reportsDirectoryDownloadPath = DIRECTORY_SEPARATOR . "uploads" . DIRECTORY_SEPARATOR . "reports" . DIRECTORY_SEPARATOR;
         ?>
 <br/>
 <br/>
@@ -175,7 +176,7 @@
         <tr>
             <td>
         <?php if (file_exists($summaryReportFilePath)) { ?>
-        <a href="<?php echo $this->baseUrl($summaryReportFilePath); ?>" class="btn btn-info" target="_BLANK" style="width:100%;"><i class="icon-file-text"></i> Download Summary Report</a>
+        <a href="<?php echo $this->baseUrl($reportsDirectoryDownloadPath . $fileSafeShipmentCode . "-summary.pdf"); ?>" class="btn btn-info" target="_BLANK" style="width:100%;"><i class="icon-file-text"></i> Download Summary Report</a>
         <?php } ?>
         </td>
         </tr>
@@ -205,7 +206,7 @@
                   $lastEnd = $end;
               }
           }
-          $bulkReportFilePath = $shipmentFolderPath . DIRECTORY_SEPARATOR . $fileSafeShipmentCode . "-" . $start . "-" . $end . "-bulk-participant-report.pdf";
+          $bulkReportFilePath = $reportsDirectoryDownloadPath . $fileSafeShipmentCode . "-" . $start . "-" . $end . "-bulk-participant-report.pdf";
           if (file_exists($bulkReportFilePath)) { ?>
           <tr>
               <td>
