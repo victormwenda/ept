@@ -436,8 +436,9 @@ class Application_Model_DbTable_SystemAdmin extends Zend_Db_Table_Abstract {
                     'id' => 'c.id',
                     'name' => 'c.iso_name'
                 ))
-                ->joinLeft(array('pcm' => 'ptcc_country_map'), 'c.id=pcm.country_id', array())
-                ->where("pcm.admin_id is null"));
+                ->joinLeft(array('pcm' => 'ptcc_country_map'), $dbAdapter->quoteInto("c.id = pcm.country_id AND pcm.admin_id = ?", $adminId), array())
+                ->where("pcm.admin_id is null")
+                ->order('name'));
         } else {
             $ptccProfile = array(
                 'first_name' => null,
