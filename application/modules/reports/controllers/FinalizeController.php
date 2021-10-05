@@ -2,7 +2,6 @@
 
 class Reports_FinalizeController extends Zend_Controller_Action
 {
-
     public function init()
     {
         $ajaxContext = $this->_helper->getHelper('AjaxContext');
@@ -78,6 +77,12 @@ class Reports_FinalizeController extends Zend_Controller_Action
                 ->join(array('s' => 'shipment'), 's.shipment_id=spm.shipment_id', array('s.shipment_code'))
                 ->join(array('p' => 'participant'), 'p.participant_id=spm.participant_id', array('p.lab_name'))
                 ->where("spm.map_id = ?", $id));
+        } else if ($this->_hasParam('5umm9ry')) {
+            $id = (int) base64_decode($this->_getParam('5umm9ry'));
+            $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+            $this->view->summary = $db->fetchRow($db->select()
+                ->from(array('s' => 'shipment'), array('s.shipment_id', 's.shipment_code'))
+                ->where("s.shipment_id = ?", $id));
         }
     }
 }

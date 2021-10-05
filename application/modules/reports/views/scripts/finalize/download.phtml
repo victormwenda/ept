@@ -31,5 +31,31 @@ if ($this->result != "") {
 	} else {
 	    echo "<h2 align='center' style='margin-top:100px;font-family:arial;'>Requested file does not exist</h2>";
 	}
+} else if ($this->summary != "") {
+	$fileSafeShipmentCode = str_replace( ' ', '-', str_replace(array_merge(
+		array_map('chr', range(0, 31)),
+		array('<', '>', ':', '"', '/', '\\', '|', '?', '*')
+	), '', $this->summary['shipment_code']));
+	$reportsFolderPath = UPLOAD_PATH . DIRECTORY_SEPARATOR . 'reports';
+	$shipmentFolderPath = $reportsFolderPath . DIRECTORY_SEPARATOR . $fileSafeShipmentCode;
+
+	$summaryReportFilePath = $shipmentFolderPath . DIRECTORY_SEPARATOR . $fileSafeShipmentCode . "-summary.pdf";
+	if (file_exists($summaryReportFilePath)) {
+		echo "<h2 align='center' style='margin-top:100px;font-family:arial;'>Requested image will be downloaded shortly, After downloaded please close the window </h2>";
+		header('Content-Description: File Transfer');
+		header('Content-Type: application/octet-stream');
+		header('Content-Disposition: attachment; filename='.basename($summaryReportFilePath));
+		header('Content-Transfer-Encoding: binary');
+		header('Expires: 0');
+		header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+		header('Pragma: public');
+		header('Content-Length: ' . filesize($summaryReportFilePath));
+		ob_clean();
+		flush();
+		readfile($summaryReportFilePath);
+		exit;
+	} else {
+		echo "<h2 align='center' style='margin-top:100px;font-family:arial;'>Requested file does not exist</h2>";
+	}
 }
 ?>

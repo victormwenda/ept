@@ -165,7 +165,6 @@
         $shipmentFolderPath = $reportsFolderPath . DIRECTORY_SEPARATOR . $fileSafeShipmentCode;
 
         $summaryReportFilePath = $shipmentFolderPath . DIRECTORY_SEPARATOR . $fileSafeShipmentCode . "-summary.pdf";
-        $reportsDirectoryDownloadPath = DIRECTORY_SEPARATOR . "uploads" . DIRECTORY_SEPARATOR . "reports" . DIRECTORY_SEPARATOR;
         ?>
 <br/>
 <br/>
@@ -174,48 +173,12 @@
 <div align="center" style="padding-top:3px;text-align:center;" id="summaryDiv" >
     <table class="table table-condensed table-bordered" style="width:340px;margin:0 auto;">
         <tr>
-            <td>
+        <td>
         <?php if (file_exists($summaryReportFilePath)) { ?>
-        <a href="<?php echo $this->baseUrl($reportsDirectoryDownloadPath . $fileSafeShipmentCode . "-summary.pdf"); ?>" class="btn btn-info" target="_BLANK" style="width:100%;"><i class="icon-file-text"></i> Download Summary Report</a>
+        <a href='<?php echo $this->baseUrl("/reports/finalize/download/5umm9ry/" . base64_encode($shipment["shipment_id"])); ?>' class="btn btn-info" target="_BLANK" style="width:100%;"><i class="icon-file-text"></i> Download Summary Report</a>
         <?php } ?>
         </td>
         </tr>
-    <?php
-    if ($shipment['report_generated'] == 'yes') {
-        $buttonCount = (int)ceil($this->responseCount["reported_count"] / 50);
-        $responseCnt = $this->responseCount["reported_count"];
-        $start = 1;
-        if ($this->responseCount["reported_count"] >= 50) {
-            $lastEnd = 50;
-        } else {
-          $lastEnd = $this->responseCount["reported_count"];
-        }
-        for ($i = 1; $i <= $buttonCount; $i++) {
-          if ($this->responseCount["reported_count"] >= 50) {
-            $end=$i*50;
-          } else {
-              $end=$this->responseCount["reported_count"];
-          }
-          if ($end > $this->responseCount["reported_count"]) {
-               $sub = $this->responseCount["reported_count"] - $lastEnd;
-               $start = $lastEnd + 1;
-               $end = $lastEnd + $sub;
-          } else {
-              if ($i != 1) {
-                  $start = $lastEnd + 1;
-                  $lastEnd = $end;
-              }
-          }
-          $bulkReportFilePath = $reportsDirectoryDownloadPath . $fileSafeShipmentCode . "-" . $start . "-" . $end . "-bulk-participant-report.pdf";
-          if (file_exists($bulkReportFilePath)) { ?>
-          <tr>
-              <td>
-                  <a href="<?php echo $this->baseUrl($bulkReportFilePath); ?>"  style="width:100%;" class='btn btn-info' target='_BLANK' id="<?php echo $start."-".$end."-bulk-participant-report"; ?>" style=''><i class='icon-file-text'></i> Download <?php echo $start; ?> - <?php echo $end;?> Participants Report</a>
-              </td>
-          </tr>
-    <?php }
-      }
-    } ?>
     </table>
 </div>
 <?php } ?>
