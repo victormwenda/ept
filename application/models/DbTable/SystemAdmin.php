@@ -368,17 +368,6 @@ class Application_Model_DbTable_SystemAdmin extends Zend_Db_Table_Abstract {
                     $data['force_password_reset']= 1;
                 }
                 $this->update($data,'admin_id = '.$adminId);
-                if (isset($params['countryId'])) {
-                    $where = $dbAdapter->quoteInto("admin_id = ?", $adminId);
-                    $dbAdapter->delete('ptcc_country_map', $where);
-                    foreach ($params['countryId'] as $countryId) {
-                        $dbAdapter->insert('ptcc_country_map', array(
-                            'admin_id' => $adminId,
-                            'country_id' => $countryId,
-                            'show_details_on_report' => $params['showDetailsOnReport'] == "yes" ? "1" : "0"
-                        ));
-                    }
-                }
             } else {
                 $data = array(
                     'first_name' => $params['firstName'],
@@ -394,10 +383,15 @@ class Application_Model_DbTable_SystemAdmin extends Zend_Db_Table_Abstract {
                     'created_on' => new Zend_Db_Expr('now()')
                 );
                 $adminId = $this->insert($data);
+            }
+            if (isset($params['countryId'])) {
+                $where = $dbAdapter->quoteInto("admin_id = ?", $adminId);
+                $dbAdapter->delete('ptcc_country_map', $where);
                 foreach ($params['countryId'] as $countryId) {
                     $dbAdapter->insert('ptcc_country_map', array(
                         'admin_id' => $adminId,
-                        'country_id' => $countryId
+                        'country_id' => $countryId,
+                        'show_details_on_report' => $params['showDetailsOnReport'] == "yes" ? "1" : "0"
                     ));
                 }
             }
