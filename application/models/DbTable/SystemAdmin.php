@@ -357,6 +357,7 @@ class Application_Model_DbTable_SystemAdmin extends Zend_Db_Table_Abstract {
                     'primary_email' => $params['primaryEmail'],
                     'secondary_email' => $params['secondaryEmail'],
                     'phone' => $params['phone'],
+                    'include_as_pecc_in_reports' => ($params['showDetailsOnReport'] == "yes" ? 1 : 0),
                     'updated_by' => $authNameSpace->admin_id,
                     'updated_on' => new Zend_Db_Expr('now()')
                 );
@@ -379,6 +380,7 @@ class Application_Model_DbTable_SystemAdmin extends Zend_Db_Table_Abstract {
                     'status' => $params['status'],
                     'is_ptcc_coordinator'=>1,
                     'force_password_reset' => 1,
+                    'include_as_pecc_in_reports' => ($params['showDetailsOnReport'] == "yes" ? 1 : 0),
                     'created_by' => $authNameSpace->admin_id,
                     'created_on' => new Zend_Db_Expr('now()')
                 );
