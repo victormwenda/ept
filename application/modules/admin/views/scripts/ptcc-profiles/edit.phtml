@@ -99,10 +99,10 @@ $authNameSpace = new Zend_Session_Namespace('administrators');
                 <div class="col-lg-5">
                     <select type="text" id="showDetailsOnReport" name="showDetailsOnReport" class="isRequired form-control"
                             title="Show details on report">
-                        <option value="yes" <?php echo ($this->ptccProfile['show_details_on_report'] == "1") ? "selected='selected'" : ""; ?>>
+                        <option value="yes" <?php echo ($this->ptccProfile['show_details_on_report'] == "1" || $this->ptccProfile["include_as_pecc_in_reports"] === "1") ? "selected='selected'" : ""; ?>>
                             Yes
                         </option>
-                        <option value="no" <?php echo ($this->ptccProfile['show_details_on_report'] == "0") ? "selected='selected'" : ""; ?>>
+                        <option value="no" <?php echo ($this->ptccProfile['show_details_on_report'] == "0" && $this->ptccProfile["include_as_pecc_in_reports"] === "0") ? "selected='selected'" : ""; ?>>
                             No
                         </option>
                     </select>

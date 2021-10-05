@@ -11,23 +11,19 @@ class Reports_ShipmentsController extends Zend_Controller_Action {
                     ->addActionContext('vl-assay-distribution', 'html')
                     ->addActionContext('vl-participant-count', 'html')
                     ->initContext();
-        $this->_helper->layout()->pageName = 'report';                
+        $this->_helper->layout()->pageName = 'report';
     }
 
     public function indexAction() {
-
         if ($this->getRequest()->isPost()) {
             $params = $this->_getAllParams();
             $reportService = new Application_Service_Reports();
             $reportService->getAllShipments($params);
         }
-
         $scheme = new Application_Service_Schemes();
         $this->view->schemes = $scheme->getAllSchemes();
-
         $dataManagerService = new Application_Service_DataManagers();
         $this->view->dataManagers = $dataManagerService->getDataManagerList();
-
     }
 
     public function responseChartAction() {
@@ -58,7 +54,7 @@ class Reports_ShipmentsController extends Zend_Controller_Action {
             $this->view->exported=$reportService->exportShipmentsReport($params);
         }
     }
-    
+
     public function vlSampleAnalysisAction() {
         if ($this->getRequest()->isPost()) {
             $params = $this->_getAllParams();
@@ -75,7 +71,7 @@ class Reports_ShipmentsController extends Zend_Controller_Action {
            $this->view->vlSampleResult= $reportService->getAllVlSampleResult($params);
         }
     }
-    
+
     public function vlAssayDistributionAction() {
         if ($this->getRequest()->isPost()) {
             $params = $this->_getAllParams();

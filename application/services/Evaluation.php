@@ -1012,7 +1012,8 @@ class Application_Service_Evaluation {
                     ->from(array('pcm' => 'ptcc_country_map'))
                     ->join(array('sa' => 'system_admin'), 'sa.admin_id = pcm.admin_id')
                     ->where("pcm.country_id = " . $res['country_id'])
-                    ->where("pcm.show_details_on_report = 1")
+                    ->where("pcm.show_details_on_report = 1 OR sa.include_as_pecc_in_reports = 1")
+                    ->where("sa.status = 'active'")
                     ->limit(2);
 
                 $countryPtccs[$res['country_id']] = $db->fetchAll($ptccSql);
