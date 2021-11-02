@@ -357,7 +357,7 @@ class Zend_Filter_Encrypt_Mcrypt implements Zend_Filter_Encrypt_Interface
         }
 
         if (!self::$_srandCalled) {
-            srand((double) microtime() * 1000000);
+            srand((double) microtime(true) * 1000000);
             self::$_srandCalled = true;
         }
     }
