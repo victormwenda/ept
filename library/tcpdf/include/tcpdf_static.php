@@ -1347,7 +1347,7 @@ class TCPDF_STATIC {
 	 * @public static
 	 */
 	public static function getRandomSeed($seed='') {
-		$seed .= microtime();
+		$seed .= microtime(true);
 		if (function_exists('openssl_random_pseudo_bytes') AND (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN')) {
 			// this is not used on windows systems because it is very slow for a know bug
 			$seed .= openssl_random_pseudo_bytes(512);
@@ -1380,7 +1380,7 @@ class TCPDF_STATIC {
 		}
 		$seed .= rand();
 		$seed .= uniqid('', true);
-		$seed .= microtime();
+		$seed .= microtime(true);
 		return $seed;
 	}
 

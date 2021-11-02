@@ -1294,7 +1294,7 @@ class Zend_Http_Client
             switch($this->enctype) {
                 case self::ENC_FORMDATA:
                     // Encode body as multipart/form-data
-                    $boundary = '---ZENDHTTPCLIENT-' . md5(microtime());
+                    $boundary = '---ZENDHTTPCLIENT-' . md5(microtime(true));
                     $this->setHeaders(self::CONTENT_TYPE, self::ENC_FORMDATA . "; boundary={$boundary}");
 
                     // Encode all files and POST vars in the order they were given

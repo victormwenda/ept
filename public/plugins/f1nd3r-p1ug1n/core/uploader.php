@@ -337,7 +337,7 @@ class uploader {
     }
 
     protected function normalizeFilename($filename) {
-        $filename = substr(str_shuffle(sha1(microtime())), 0, 9)."-".$filename;
+        $filename = substr(str_shuffle(sha1(microtime(true))), 0, 9)."-".$filename;
         if (isset($this->config['filenameChangeChars']) &&
             is_array($this->config['filenameChangeChars'])
         )
