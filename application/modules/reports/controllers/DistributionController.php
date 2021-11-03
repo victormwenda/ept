@@ -74,6 +74,7 @@ class Reports_DistributionController extends Zend_Controller_Action {
             $this->view->logo = $reportService->getReportConfigValue('logo');
             $this->view->logoRight = $reportService->getReportConfigValue('logo-right');
             $evalService = new Application_Service_Evaluation();
+            $evalService->getShipmentToEvaluate($id,true);
             $this->view->result = $evalService->getSummaryReportsInPdf($id);
             $this->view->comingFrom = $comingFrom;
         }
