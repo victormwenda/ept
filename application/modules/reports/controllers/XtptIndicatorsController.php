@@ -12,6 +12,10 @@ class Reports_XtptIndicatorsController extends Zend_Controller_Action {
     public function indexAction() {
         if ($this->getRequest()->isPost()) {
             $params = $this->_getAllParams();
+            
+            $evalService = new Application_Service_Evaluation();
+            $evalService->getEvaluateReportsInPdf($params["shipmentId"], null, null);
+            
             $reportService = new Application_Service_Reports();
             $response = $reportService->getXtptIndicatorsReport($params);
             $this->view->response = $response;
