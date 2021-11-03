@@ -57,9 +57,8 @@ class Reports_FinalizeController extends Zend_Controller_Action
         $shipmentService = new Application_Service_Shipments();
          if($this->_hasParam('sid')){
             $id = (int)base64_decode($this->_getParam('sid'));
-            $reEvaluate = false;
             $evalService = new Application_Service_Evaluation();
-            $shipment = $this->view->shipment = $evalService->getShipmentToEvaluateReports($id,$reEvaluate);
+            $shipment = $this->view->shipment = $evalService->getShipmentToEvaluateReports($id);
             $this->view->responseCount = $evalService->getResponseCount($id,$shipment[0]['distribution_id']);
             $this->view->shipmentsUnderDistro = $shipmentService->getShipmentInReports($shipment[0]['distribution_id']);
         }else{

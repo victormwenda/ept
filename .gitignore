@@ -1,6 +1,7 @@
 # IDE Generated Files
 .idea/
 .settings/
+.vscode
 nbproject/
 live_web_logs/
 

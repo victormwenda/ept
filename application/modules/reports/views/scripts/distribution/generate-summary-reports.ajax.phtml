@@ -98,10 +98,12 @@ if ($this->result['shipment'] != "") {
         $participationYAxisMultiplier = ceil($this->result['aggregates']['enrolled'] / 10);
     }
     if ($this->result['aggregates']['enrolled'] > 100) {
-        $participationYAxisMultiplier = ceil($this->result['aggregates']['enrolled'] / 100) * 10;
-    }
-    if ($this->result['aggregates']['enrolled'] > 1000) {
-        $participationYAxisMultiplier = ceil($this->result['aggregates']['enrolled'] / 1000) * 100;
+        $enrolledString = strval($this->result['aggregates']['enrolled']);
+        $upperRange = intval(str_pad(strval(intval(substr($enrolledString, 0, 2)) + 1), strlen($enrolledString), "0", STR_PAD_RIGHT));
+        if (substr($enrolledString, 0, 1) == "9") {
+            $upperRange = intval(str_pad("1", strlen($enrolledString) + 1, "0", STR_PAD_RIGHT));
+        }
+        $participationYAxisMultiplier = $upperRange / 10;
     }
 
     $testMethodYAxisMultiplier = 1;
@@ -113,10 +115,12 @@ if ($this->result['shipment'] != "") {
         $testMethodYAxisMultiplier = ceil($largerTestMethod / 10);
     }
     if ($largerTestMethod > 100) {
-        $testMethodYAxisMultiplier = ceil($largerTestMethod / 100) * 10;
-    }
-    if ($largerTestMethod > 1000) {
-        $testMethodYAxisMultiplier = ceil($largerTestMethod / 1000) * 10;
+        $largerTestMethodString = strval($largerTestMethod);
+        $upperRange = intval(str_pad(strval(intval(substr($largerTestMethodString, 0, 2)) + 1), strlen($largerTestMethodString), "0", STR_PAD_RIGHT));
+        if (substr($largerTestMethodString, 0, 1) == "9") {
+            $upperRange = intval(str_pad("1", strlen($largerTestMethodString) + 1, "0", STR_PAD_RIGHT));
+        }
+        $testMethodYAxisMultiplier = $upperRange / 10;
     }
     $participationSvg = '<?xml version="1.0" encoding="UTF-8"?>';
     $participationSvg .= '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 180">';
@@ -130,14 +134,32 @@ if ($this->result['shipment'] != "") {
     }
     $participationSvg .= '    <text x="10" y="100" transform="rotate(-90, 10, 100)" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">Number of sites</text>';
     $participationSvg .= '    <rect width="30" height="' . (($this->result['aggregates']['enrolled'] / ($participationYAxisMultiplier * 10)) * 100) . '" x="40" y="' . (100 - (($this->result['aggregates']['enrolled'] / ($participationYAxisMultiplier * 10)) * 100) + 50) . '" fill="#4F81BD" />';
-    $participationSvg .= '    <text x="55" y="' . (107 - (($this->result['aggregates']['enrolled'] / ($participationYAxisMultiplier * 10)) * 100) + 50) . '" dominant-baseline="hanging" text-anchor="middle" style="fill:#FFFFFF;font-family:helvetica;font-size:5pt">'.round($this->result['aggregates']['enrolled'], 1).'</text>';
+    $participationSvg .= '    <text x="55" ';
+    if ($this->result['aggregates']['enrolled'] < $participationYAxisMultiplier) {
+        $participationSvg .= 'y="' . (98 - (($this->result['aggregates']['enrolled'] / ($participationYAxisMultiplier * 10)) * 100) + 50) . '" dominant-baseline="text-top" text-anchor="middle" style="fill:#666666;';
+    } else {
+        $participationSvg .= 'y="' . (107 - (($this->result['aggregates']['enrolled'] / ($participationYAxisMultiplier * 10)) * 100) + 50) . '" dominant-baseline="hanging" text-anchor="middle" style="fill:#FFFFFF;';
+    }
+    $participationSvg .= 'font-family:helvetica;font-size:5pt">'.round($this->result['aggregates']['enrolled'], 1).'</text>';
     $participationSvg .= '    <text x="55" y="158" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">Enrolled Sites</text>';
     $participationSvg .= '    <rect width="30" height="' . (($this->result['aggregates']['participated'] / ($participationYAxisMultiplier * 10)) * 100) . '" x="90" y="' . (100 - (($this->result['aggregates']['participated'] / ($participationYAxisMultiplier * 10)) * 100) + 50) . '" fill="#4F81BD" />';
-    $participationSvg .= '    <text x="105" y="' . (107 - (($this->result['aggregates']['participated'] / ($participationYAxisMultiplier * 10)) * 100) + 50) . '" dominant-baseline="hanging" text-anchor="middle" style="fill:#FFFFFF;font-family:helvetica;font-size:5pt">'.round($this->result['aggregates']['participated'], 1).'</text>';
+    $participationSvg .= '    <text x="105" ';
+    if ($this->result['aggregates']['participated'] < $participationYAxisMultiplier) {
+        $participationSvg .= 'y="' . (98 - (($this->result['aggregates']['participated'] / ($participationYAxisMultiplier * 10)) * 100) + 50) . '" dominant-baseline="text-top" text-anchor="middle" style="fill:#666666;';
+    } else {
+        $participationSvg .= 'y="' . (107 - (($this->result['aggregates']['participated'] / ($participationYAxisMultiplier * 10)) * 100) + 50) . '" dominant-baseline="hanging" text-anchor="middle" style="fill:#FFFFFF;';
+    }
+    $participationSvg .= 'font-family:helvetica;font-size:5pt">'.round($this->result['aggregates']['participated'], 1).'</text>';
     $participationSvg .= '    <text x="105" y="158" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">Participating</text>';
     $participationSvg .= '    <text x="105" y="165" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">Sites</text>';
     $participationSvg .= '    <rect width="30" height="' . (($this->result['aggregates']['scored_100_percent'] / ($participationYAxisMultiplier * 10)) * 100) . '" x="140" y="' . (100 - (($this->result['aggregates']['scored_100_percent'] / ($participationYAxisMultiplier * 10)) * 100) + 50) . '" fill="#4F81BD" />';
-    $participationSvg .= '    <text x="155" y="' . (107 - (($this->result['aggregates']['scored_100_percent'] / ($participationYAxisMultiplier * 10)) * 100) + 50) . '" dominant-baseline="hanging" text-anchor="middle" style="fill:#FFFFFF;font-family:helvetica;font-size:5pt">'.round($this->result['aggregates']['scored_100_percent'], 1).'</text>';
+    $participationSvg .= '    <text x="155" ';
+    if ($this->result['aggregates']['participated'] < $participationYAxisMultiplier) {
+        $participationSvg .= 'y="' . (98 - (($this->result['aggregates']['scored_100_percent'] / ($participationYAxisMultiplier * 10)) * 100) + 50) . '" dominant-baseline="text-top" text-anchor="middle" style="fill:#666666;';
+    } else {
+        $participationSvg .= 'y="' . (107 - (($this->result['aggregates']['scored_100_percent'] / ($participationYAxisMultiplier * 10)) * 100) + 50) . '" dominant-baseline="hanging" text-anchor="middle" style="fill:#FFFFFF;';
+    }
+    $participationSvg .= 'font-family:helvetica;font-size:5pt">'.round($this->result['aggregates']['scored_100_percent'], 1).'</text>';
     $participationSvg .= '    <text x="155" y="158" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">Sites Scoring</text>';
     $participationSvg .= '    <text x="155" y="165" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">100%</text>';
     $participationSvg .= '    <rect width="190" height="180" x="200" y="0" stroke="#E4E4E4" stroke-width="1" fill="white" />';
@@ -148,11 +170,23 @@ if ($this->result['shipment'] != "") {
     }
     $participationSvg .= '    <text x="210" y="100" transform="rotate(-90, 210, 100)" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">Number of sites</text>';
     $participationSvg .= '    <rect width="30" height="' . (($this->result['aggregates']['mtb_rif'] / ($testMethodYAxisMultiplier * 10)) * 100) . '" x="250" y="' . (100 - (($this->result['aggregates']['mtb_rif'] / ($testMethodYAxisMultiplier * 10)) * 100) + 50) . '" fill="#4F81BD" />';
-    $participationSvg .= '    <text x="265" y="' . (107 - (($this->result['aggregates']['mtb_rif'] / ($testMethodYAxisMultiplier * 10)) * 100) + 50) . '" dominant-baseline="hanging" text-anchor="middle" style="fill:#FFFFFF;font-family:helvetica;font-size:5pt">'.round($this->result['aggregates']['mtb_rif'], 1).'</text>';
+    $participationSvg .= '    <text x="265" ';
+    if ($this->result['aggregates']['mtb_rif'] < $testMethodYAxisMultiplier) {
+        $participationSvg .= 'y="' . (98 - (($this->result['aggregates']['mtb_rif'] / ($testMethodYAxisMultiplier * 10)) * 100) + 50) . '" dominant-baseline="text-top" text-anchor="middle" style="fill:#666666;';
+    } else {
+        $participationSvg .= 'y="' . (107 - (($this->result['aggregates']['mtb_rif'] / ($testMethodYAxisMultiplier * 10)) * 100) + 50) . '" dominant-baseline="hanging" text-anchor="middle" style="fill:#FFFFFF;';
+    }
+    $participationSvg .= 'font-family:helvetica;font-size:5pt">'.round($this->result['aggregates']['mtb_rif'], 1).'</text>';
     $participationSvg .= '    <text x="265" y="158" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">Sites testing</text>';
     $participationSvg .= '    <text x="265" y="165" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">Xpert MTB/RIF</text>';
     $participationSvg .= '    <rect width="30" height="' . (($this->result['aggregates']['mtb_rif_ultra'] / ($testMethodYAxisMultiplier * 10)) * 100) . '" x="325" y="' . (100 - (($this->result['aggregates']['mtb_rif_ultra'] / ($testMethodYAxisMultiplier * 10)) * 100) + 50) . '" fill="#4F81BD" />';
-    $participationSvg .= '    <text x="340" y="' . (107 - (($this->result['aggregates']['mtb_rif_ultra'] / ($testMethodYAxisMultiplier * 10)) * 100) + 50) . '" dominant-baseline="hanging" text-anchor="middle" style="fill:#FFFFFF;font-family:helvetica;font-size:5pt">'.round($this->result['aggregates']['mtb_rif_ultra'], 1).'</text>';
+    $participationSvg .= '    <text x="340" ';
+    if ($this->result['aggregates']['mtb_rif_ultra'] < $testMethodYAxisMultiplier) {
+        $participationSvg .= 'y="' . (98 - (($this->result['aggregates']['mtb_rif_ultra'] / ($testMethodYAxisMultiplier * 10)) * 100) + 50) . '" dominant-baseline="text-top" text-anchor="middle" style="fill:#666666;';
+    } else {
+        $participationSvg .= 'y="' . (107 - (($this->result['aggregates']['mtb_rif_ultra'] / ($testMethodYAxisMultiplier * 10)) * 100) + 50) . '" dominant-baseline="hanging" text-anchor="middle" style="fill:#FFFFFF;';
+    }
+    $participationSvg .= 'font-family:helvetica;font-size:5pt">'.round($this->result['aggregates']['mtb_rif_ultra'], 1).'</text>';
     $participationSvg .= '    <text x="340" y="158" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">Sites testing</text>';
     $participationSvg .= '    <text x="340" y="165" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">Xpert Ultra</text>';
     $participationSvg .= '</svg>';
