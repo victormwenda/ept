@@ -204,7 +204,7 @@ class Application_Service_Evaluation {
         return $db->fetchRow($sql);
     }
 
-    public function getShipmentToEvaluate($shipmentId, $reEvaluate = false) {
+    public function getShipmentToEvaluate($shipmentId) {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sql = $db->select()->from(array('s' => 'shipment'), array('s.shipment_id', 's.shipment_code', 's.scheme_type', 's.shipment_date', 's.lastdate_response', 's.distribution_id', 's.number_of_samples', 's.max_score', 's.shipment_comment', 's.created_by_admin', 's.created_on_admin', 's.updated_by_admin', 's.updated_on_admin', 'shipment_status' => 's.status'))
             ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id')
@@ -219,7 +219,7 @@ class Application_Service_Evaluation {
             ->order('sorting_unique_identifier');
         $shipmentResult = $db->fetchAll($sql);
 
-        return $this->evaluateTb($shipmentResult,$shipmentId);
+        return $this->evaluateTb($shipmentResult, $shipmentId);
     }
 
     public function editEvaluation($shipmentId, $participantId, $scheme) {
@@ -750,7 +750,7 @@ class Application_Service_Evaluation {
         }
     }
 
-    public function getShipmentToEvaluateReports($shipmentId, $reEvaluate = false) {
+    public function getShipmentToEvaluateReports($shipmentId) {
         $authNameSpace = new Zend_Session_Namespace('administrators');
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sql = $db->select()->from(array('s' => 'shipment', array(
@@ -1461,124 +1461,7 @@ class Application_Service_Evaluation {
         return $dbAdapter->fetchRow($sQuery);
     }
 
-	public function evaluateDtsViralLoad($shipmentResult,$shipmentId,$reEvaluate) {
-		$counter = 0;
-		$maxScore = 0;
-		$finalResult = null;
-		$schemeService = new Application_Service_Schemes();
-		$db = Zend_Db_Table_Abstract::getDefaultAdapter();
-		$file = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini";
-		$config = new Zend_Config_Ini($file, APPLICATION_ENV);
-		$passPercentage = $config->evaluation->vl->passPercentage;
-		$vlRange = $schemeService->getVlRange($shipmentId);
-		if ($reEvaluate || $vlRange == null || $vlRange == "" || count($vlRange) == 0) {
-			$schemeService->setVlRange($shipmentId);
-			$vlRange = $schemeService->getVlRange($shipmentId);
-		}
-		foreach ($shipmentResult as $shipment) {
-			$createdOnUser = explode(" ", $shipment['shipment_test_report_date']);
-            $createdOn = Application_Service_Common::ParseDateISO8601OrYYYYMMDDOrMin($createdOnUser[0]);
-            $lastDate = Application_Service_Common::ParseDateISO8601OrYYYYMMDD($shipment['lastdate_response']);
-			if ($createdOn->compare($lastDate,Zend_date::DATES) <= 0) {
-				$results = $schemeService->getVlSamples($shipmentId, $shipment['participant_id']);
-				$totalScore = 0;
-				$maxScore = 0;
-				$mandatoryResult = "";
-				$failureReason = array();
-				foreach ($results as $result) {
-					if($result['control'] == 1) continue;
-					$calcResult = "";
-					$responseAssay = json_decode($result['attributes'], true);
-					$responseAssay = isset($responseAssay['vl_assay']) ? $responseAssay['vl_assay'] : "";
-					if (isset($vlRange[$responseAssay])) {
-						// matching reported and low/high limits
-						if (isset($result['reported_viral_load']) && $result['reported_viral_load'] != null) {
-							if (isset($vlRange[$responseAssay][$result['sample_id']]) &&
-                                $vlRange[$responseAssay][$result['sample_id']]['low'] <= $result['reported_viral_load'] &&
-                                $vlRange[$responseAssay][$result['sample_id']]['high'] >= $result['reported_viral_load']) {
-							    $totalScore += $result['sample_score'];
-								$calcResult = "pass";
-							} else {
-								if ($result['sample_score'] > 0) {
-									$failureReason[]['warning'] = "Sample <strong>" . $result['sample_label'] . "</strong> was reported wrongly";
-								}
-								$calcResult = "fail";
-							}
-						}
-					} else {
-						$totalScore = "N/A";
-						$calcResult = "excluded";
-					}
-					$maxScore += $result['sample_score'];
-					$db->update('response_result_vl', array('calculated_score' => $calcResult),
-                        "shipment_map_id = " . $result['map_id'] . " and sample_id = " . $result['sample_id']);
-				}
-                // if we are excluding this result, then let us not give pass/fail
-                if ($shipment['is_excluded'] == 'yes') {
-                    $totalScore = 0;
-                    $failureReason = array();
-                    $shipmentResult[$counter]['shipment_score'] = $responseScore = 0;
-                    $shipmentResult[$counter]['documentation_score'] = 0;
-                    $shipmentResult[$counter]['display_result'] = 'Excluded';
-                    $shipmentResult[$counter]['is_followup'] = 'yes';
-                    $failureReason[] = array('warning' => 'Excluded from Evaluation');
-                    $finalResult = 3;
-                    $shipmentResult[$counter]['failure_reason'] = $failureReason = json_encode($failureReason);
-                } else {
-                    $shipment['is_excluded'] = 'no';
-                    // checking if total score and maximum scores are the same
-                    if ($totalScore == 'N/A') {
-                        $failureReason[]['warning'] = "Could not determine score. Not enough responses found in the chosen VL Assay.";
-                        $scoreResult = 'Not Evaluated';
-                    } else if ($totalScore != $maxScore) {
-                        $scoreResult = 'Fail';
-                        if ($maxScore != 0) {
-                            $totalScore = ($totalScore/$maxScore)*100;
-                        }
-                        $failureReason[]['warning'] = "Participant did not meet the score criteria (Participant Score - <strong>$totalScore</strong> and Required Score - <strong>$passPercentage</strong>)";
-                    } else {
-                        if($maxScore != 0) {
-                            $totalScore = ($totalScore/$maxScore)*100;
-                        }
-                        $scoreResult = 'Pass';
-                    }
-                    if ($scoreResult == 'Not Evaluated') {
-                        $finalResult = 4;
-                    }
-                    else if ($scoreResult == 'Fail' || $mandatoryResult == 'Fail') {
-                        $finalResult = 2;
-                    } else {
-                        $finalResult = 1;
-                    }
-                    $shipmentResult[$counter]['shipment_score'] = $totalScore;
-                    $shipmentResult[$counter]['max_score'] = $passPercentage;
-                    $fRes = $db->fetchCol($db->select()->from('r_results', array('result_name'))
-                        ->where('result_id = ' . $finalResult));
-                    $shipmentResult[$counter]['display_result'] = $fRes[0];
-                    $shipmentResult[$counter]['failure_reason'] = $failureReason = json_encode($failureReason);
-                    // let us update the total score in DB
-                    if ($totalScore == 'N/A') {
-                        $totalScore = 0;
-                    }
-                }
-				$db->update('shipment_participant_map', array(
-				    'shipment_score' => $totalScore,
-                    'final_result' => $finalResult,
-                    'failure_reason' => $failureReason),
-                    "map_id = " . $shipment['map_id']);
-			} else {
-				$failureReason = array('warning' => "Response was submitted after the last response date.");
-				$db->update('shipment_participant_map',
-                    array('failure_reason' => json_encode($failureReason)),
-                    "map_id = " . $shipment['map_id']);
-			}
-			$counter++;
-		}
-		$db->update('shipment', array('max_score' => $maxScore), "shipment_id = " . $shipmentId);
-		return $shipmentResult;
-	}
-
-    public function evaluateTb($shipmentResult,$shipmentId) {
+    public function evaluateTb($shipmentResult, $shipmentId) {
         $counter = 0;
         $finalResult = null;
         $schemeService = new Application_Service_Schemes();

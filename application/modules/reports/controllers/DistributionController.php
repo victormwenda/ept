@@ -33,9 +33,8 @@ class Reports_DistributionController extends Zend_Controller_Action {
         $shipmentService = new Application_Service_Shipments();
         if ($this->_hasParam('sid')) {
             $id = (int)base64_decode($this->_getParam('sid'));
-            $reEvaluate = false;
             $evalService = new Application_Service_Evaluation();
-            $shipment = $this->view->shipment = $evalService->getShipmentToEvaluateReports($id,$reEvaluate);
+            $shipment = $this->view->shipment = $evalService->getShipmentToEvaluateReports($id);
             $this->view->responseCount = $evalService->getResponseCount($id,$shipment[0]['distribution_id']);
             $this->view->shipmentsUnderDistro = $shipmentService->getShipmentInReports($shipment[0]['distribution_id']);
         } else {
@@ -74,7 +73,6 @@ class Reports_DistributionController extends Zend_Controller_Action {
             $this->view->logo = $reportService->getReportConfigValue('logo');
             $this->view->logoRight = $reportService->getReportConfigValue('logo-right');
             $evalService = new Application_Service_Evaluation();
-            $evalService->getShipmentToEvaluate($id,true);
             $this->view->result = $evalService->getSummaryReportsInPdf($id);
             $this->view->comingFrom = $comingFrom;
         }
@@ -84,9 +82,8 @@ class Reports_DistributionController extends Zend_Controller_Action {
         $shipmentService = new Application_Service_Shipments();
         if ($this->_hasParam('sid')) {
             $id = (int)base64_decode($this->_getParam('sid'));
-            $reEvaluate = false;
             $evalService = new Application_Service_Evaluation();
-            $shipment = $this->view->shipment = $evalService->getShipmentToEvaluateReports($id,$reEvaluate);
+            $shipment = $this->view->shipment = $evalService->getShipmentToEvaluateReports($id);
             $this->view->shipmentsUnderDistro = $shipmentService->getShipmentInReports($shipment[0]['distribution_id']);
             $this->view->responseCount = $evalService->getResponseCount($id,$shipment[0]['distribution_id']);
         } else {
