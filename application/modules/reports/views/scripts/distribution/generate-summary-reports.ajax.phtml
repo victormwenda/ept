@@ -100,7 +100,6 @@ if ($this->result['shipment'] != "") {
     if ($this->result['aggregates']['enrolled'] > 100) {
         $enrolledString = strval($this->result['aggregates']['enrolled']);
         $upperRange = intval(str_pad(strval(intval(substr($enrolledString, 0, 2)) + 1), strlen($enrolledString), "0", STR_PAD_RIGHT));
-        error_log($upperRange, 0);
         if (substr($enrolledString, 0, 1) == "9") {
             $upperRange = intval(str_pad("1", strlen($enrolledString) + 1, "0", STR_PAD_RIGHT));
         }
