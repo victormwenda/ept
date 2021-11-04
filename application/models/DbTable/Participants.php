@@ -835,7 +835,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
                          "WHEN IFNULL(spm.is_pt_test_not_performed, 'no') = 'yes' THEN 'Unable to Perform Test' ".
                          "WHEN substr(spm.evaluation_status, 7, 1) = '1' THEN 'Evaluated' ".
                          "WHEN substr(spm.evaluation_status, 3, 1) = '1' AND substr(spm.evaluation_status, 4, 1) = '2' THEN 'Submitted (Late)' ".
-                         "WHEN substr(spm.evaluation_status, 3, 1) = '1' THEN 'Submitted' ".
+                         "WHEN substr(spm.evaluation_status, 3, 1) = '1' AND substr(spm.evaluation_status, 4, 1) = '1' THEN 'Submitted' ".
                          "WHEN spm.shipment_receipt_date IS NOT NULL AND spm.shipment_receipt_date <> '' AND spm.shipment_receipt_date <> '0000-00-00' THEN 'Panel Received' ".
                          "WHEN spm.updated_on_user IS NOT NULL THEN 'Saved' ".
                          "ELSE 'Waiting for Response' END")))
@@ -1021,7 +1021,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
                     "WHEN IFNULL(spm.is_pt_test_not_performed, 'no') = 'yes' THEN 'Unable to Perform Test' ".
                     "WHEN substr(spm.evaluation_status, 7, 1) = '1' THEN 'Evaluated' ".
                     "WHEN substr(spm.evaluation_status, 3, 1) = '1' AND substr(spm.evaluation_status, 4, 1) = '2' THEN 'Submitted (Late)' ".
-                    "WHEN substr(spm.evaluation_status, 3, 1) = '1' THEN 'Submitted' ".
+                    "WHEN substr(spm.evaluation_status, 3, 1) = '1' AND substr(spm.evaluation_status, 4, 1) = '1' THEN 'Submitted' ".
                     "WHEN spm.shipment_receipt_date IS NOT NULL AND spm.shipment_receipt_date <> '' AND spm.shipment_receipt_date <> '0000-00-00' THEN 'Panel Received' ".
                     "WHEN spm.updated_on_user IS NOT NULL THEN 'Saved' ".
                     "ELSE 'Waiting for Response' END")))
