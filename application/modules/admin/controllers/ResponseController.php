@@ -27,8 +27,8 @@ class Admin_ResponseController extends Zend_Controller_Action
     public function getShipmentsAction() {
         if ($this->_hasParam('did')) {
             $id = (int)($this->_getParam('did'));
-            $responseService = new Application_Service_Response();
-            $this->view->shipments = $responseService->getShipments($id);
+            $shipmentService = new Application_Service_Shipments();
+            $this->view->shipments = $shipmentService->getShipments($id);
         } else {
             $this->view->shipments = false;
         }
@@ -39,7 +39,8 @@ class Admin_ResponseController extends Zend_Controller_Action
             $id = (int)base64_decode($this->_getParam('sid'));
             $responseService = new Application_Service_Response();
             $shipment = $this->view->shipment = $responseService->getShipmentToEdit($id);
-            $this->view->shipmentsUnderDistro = $responseService->getShipments($shipment[0]['distribution_id']);
+            $shipmentService = new Application_Service_Shipments();
+            $this->view->shipmentsUnderDistro = $shipmentService->getShipments($shipment[0]['distribution_id']);
         } else {
             $this->_redirect("/admin/response/");
         }

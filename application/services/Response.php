@@ -133,32 +133,6 @@ class Application_Service_Response {
         echo json_encode($output);
     }
 
-    public function getShipments($distributionId) {
-        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
-        $sql = $db->select()->from(array('s' => 'shipment'))
-                ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id')
-                ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array(
-                    'map_id',
-                    'responseDate' => 'shipment_test_report_date',
-                    'participant_count' => new Zend_Db_Expr('count("participant_id")'),
-                    'reported_count' => new Zend_Db_Expr("SUM(substr(sp.evaluation_status,3,1) = 1)"),
-                    'number_passed' => new Zend_Db_Expr("SUM(final_result = 1)"),
-                    'last_not_participated_mailed_on',
-                    'last_not_participated_mail_count',
-                    'shipment_status' => 's.status'))
-                ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id')
-                ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type')
-                ->joinLeft(array('rr' => 'r_results'), 'sp.final_result=rr.result_id')
-                ->where("s.distribution_id = ?", $distributionId);
-        $authNameSpace = new Zend_Session_Namespace('administrators');
-        if(isset($authNameSpace) && $authNameSpace->is_ptcc_coordinator) {
-            $sql = $sql->where("p.country IN (".implode(",",$authNameSpace->countries).")");
-        }
-        $sql = $sql->group('s.shipment_id')
-                   ->order(new Zend_Db_Expr("CASE WHEN p.unique_identifier REGEXP '\d*' THEN CAST(CAST(p.unique_identifier AS DECIMAL) AS CHAR) ELSE TRIM(LEADING '0' FROM p.unique_identifier) END"));
-        return $db->fetchAll($sql);
-    }
-
     public function getResponseCount($shipmentId,$distributionId) {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sql = $db->select()->from(array('s' => 'shipment'),array(''))
