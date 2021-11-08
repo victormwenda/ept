@@ -33,13 +33,13 @@ if (sizeof($this->result['shipment']) > 0) {
             $html .= '	     <td style="border-top:solid 10px #000000;border-bottom:solid 10px #000000;background-color:#777777;color:#ffffff;text-align:center;width:15%;"><strong>Page Number</strong></td>';
             $html .= '    </tr>';
             $html .= '    <tr>';
-            $html .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.$this->result['country_name'].'</td>';
-            $html .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.$this->result['lab_name'];
+            $html .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.htmlspecialchars($this->result['country_name'], ENT_XML1).'</td>';
+            $html .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.htmlspecialchars($this->result['lab_name'], ENT_XML1);
             if ($this->result['is_excluded'] == 'yes') {
                 $html .= '       <span style="color:#ff0000;">(Excluded)</span>';
             }
             $html .= '       </td>';
-            $html .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.$this->result['unique_identifier'].'</td>';
+            $html .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.htmlspecialchars($this->result['unique_identifier'], ENT_XML1).'</td>';
             $html .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.$this->getAliasNumPage().'/3</td>';
             $html .= '    </tr>';
             $html .= '</table>';
@@ -279,7 +279,7 @@ if (sizeof($this->result['shipment']) > 0) {
                     $response['error_code'] == "2127") {
                     $noResultOrError2127InSubmission = true;
                 }
-                $labRes .= '	     <td style="width:46%;"><strong>'.$result['lab_name'].'</strong></td>';
+                $labRes .= '	     <td style="width:46%;"><strong>'.htmlspecialchars($result['lab_name'], ENT_XML1).'</strong></td>';
                 if ($response['mtb_detected'] == 'error') {
                     $labRes .= '	     <td style="width:22%;text-align:center;"><strong>Error: '.$response['error_code'].'</strong></td>';
                     $labRes .= '	     <td style="width:22%;text-align:center;"></td>';
@@ -326,7 +326,7 @@ if (sizeof($this->result['shipment']) > 0) {
                     for ($excludedReasonIndex = 0; $excludedReasonIndex < $exclusionCount; $excludedReasonIndex++) {
                         $labRes .= '*';
                     }
-                    $labRes .= '            </strong> ' . $response['ref_excluded_reason'];
+                    $labRes .= '            </strong> ' . htmlspecialchars($response['ref_excluded_reason'], ENT_XML1);
                     $labRes .= '        </td>';
                     $labRes .= '    </tr>';
                 }
@@ -351,13 +351,13 @@ if (sizeof($this->result['shipment']) > 0) {
                 (isset($result['ptNotTestedComment']) && $result['ptNotTestedComment'] != '')) {
                 $allComments = array();
                 if (isset($result['eval_comment']) && $result['eval_comment'] !== '') {
-                    array_push($allComments, $result['eval_comment']);
+                    array_push($allComments, htmlspecialchars($result['eval_comment'], ENT_XML1));
                 }
                 if (isset($result['optional_eval_comment']) && $result['optional_eval_comment'] !== '') {
-                    array_push($allComments, $result['optional_eval_comment']);
+                    array_push($allComments, htmlspecialchars($result['optional_eval_comment'], ENT_XML1));
                 }
                 if (isset($result['ptNotTestedComment']) && $result['ptNotTestedComment'] != '') {
-                    array_push($allComments, $result['ptNotTestedComment']);
+                    array_push($allComments, htmlspecialchars($result['ptNotTestedComment'], ENT_XML1));
                 } else {
                     if ($discrepantResultInSubmission) {
                         array_push($allComments, 'Red highlighted results represent discrepancies between actual and expected results.');
@@ -412,7 +412,7 @@ if (sizeof($this->result['shipment']) > 0) {
                 foreach ($result['corrective_actions'] as $correctiveAction) {
                     $correctiveActionsSection .= '    <tr>';
                     $correctiveActionsSection .= '	     <td style="border:solid 10px #000000;width:17px;"></td>';
-                    $correctiveActionsSection .= '	     <td>'.$correctiveAction.'</td>';
+                    $correctiveActionsSection .= '	     <td>'.htmlspecialchars($correctiveAction, ENT_XML1).'</td>';
                     $correctiveActionsSection .= '    </tr>';
                 }
                 $correctiveActionsSection .= '</table>';
@@ -422,7 +422,7 @@ if (sizeof($this->result['shipment']) > 0) {
         $longitudinalPerformanceSvg = '<?xml version="1.0" encoding="UTF-8"?>';
         $longitudinalPerformanceSvg .= '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 160">';
         $longitudinalPerformanceSvg .= '    <rect width="400" height="150" x="0" y="0" stroke="#E4E4E4" stroke-width="1" fill="white" />';
-        $longitudinalPerformanceSvg .= '    <text x="200" y="12" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:8pt">'.$result['lab_name'].' Performance Over Time</text>';
+        $longitudinalPerformanceSvg .= '    <text x="200" y="12" dominant-baseline="middle" text-anchor="middle" style="fill:#666666;font-family:helvetica;font-size:8pt">'.htmlspecialchars($result['lab_name'], ENT_XML1).' Performance Over Time</text>';
         $longitudinalPerformanceSvg .= '    <text x="15" y="22" dominant-baseline="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">100</text>';
         $longitudinalPerformanceSvg .= '    <line x1="30" x2="390" y1="20" y2="20" stroke="#E4E4E4" stroke-width="1" />';
         $longitudinalPerformanceSvg .= '    <text x="15" y="42" dominant-baseline="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">80</text>';
@@ -468,18 +468,18 @@ if (sizeof($this->result['shipment']) > 0) {
             $ptccDetails .= '	     <td style="border:solid 1px #000000;" colspan="'.count($result['ptcc_profiles']).'"><h3>Proficiency Test Country Coordinators (PTCC)</h3></td>';
             $ptccDetails .= '    </tr>';
             $ptccDetails .= '    <tr>';
-            $ptccDetails .= '	     <td style="border:solid 1px #000000;">'.$result['ptcc_profiles'][0]['first_name'].' '.$result['ptcc_profiles'][0]['last_name'].'</td>';
+            $ptccDetails .= '	     <td style="border:solid 1px #000000;">'.$result['ptcc_profiles'][0]['first_name'].' '.htmlspecialchars($result['ptcc_profiles'][0]['last_name'], ENT_XML1).'</td>';
             if (count($result['ptcc_profiles']) > 1) {
                 $ptccDetails .= '	     <td style="border:solid 1px #000000;">';
-                $ptccDetails .= '	         '.$result['ptcc_profiles'][1]['first_name'].' '.$result['ptcc_profiles'][1]['last_name'];
+                $ptccDetails .= '	         '.htmlspecialchars($result['ptcc_profiles'][1]['first_name'], ENT_XML1).' '.htmlspecialchars($result['ptcc_profiles'][1]['last_name'], ENT_XML1);
                 $ptccDetails .= '        </td>';
             }
             $ptccDetails .= '    </tr>';
             $ptccDetails .= '    <tr>';
-            $ptccDetails .= '	     <td style="border:solid 1px #000000;"><a href="mailto:'.$result['ptcc_profiles'][0]['primary_email'].'">'.$result['ptcc_profiles'][0]['primary_email'].'</a></td>';
+            $ptccDetails .= '	     <td style="border:solid 1px #000000;"><a href="mailto:'.htmlspecialchars($result['ptcc_profiles'][0]['primary_email'], ENT_XML1).'">'.htmlspecialchars($result['ptcc_profiles'][0]['primary_email'], ENT_XML1).'</a></td>';
             if (count($result['ptcc_profiles']) > 1) {
                 $ptccDetails .= '	     <td style="border:solid 1px #000000;">';
-                $ptccDetails .= '	         <a href="mailto:'.$result['ptcc_profiles'][1]['primary_email'].'">'.$result['ptcc_profiles'][1]['primary_email'].'</a>';
+                $ptccDetails .= '	         <a href="mailto:'.htmlspecialchars($result['ptcc_profiles'][1]['primary_email'], ENT_XML1).'">'.htmlspecialchars($result['ptcc_profiles'][1]['primary_email'], ENT_XML1).'</a>';
                 $ptccDetails .= '        </td>';
             }
             $ptccDetails .= '    </tr>';
@@ -542,7 +542,7 @@ if (sizeof($this->result['shipment']) > 0) {
 
     $mergePdf = $fileSafeShipmentCode . "-" . $this->bulkfileNameVal . "-bulk-participant-report.pdf";
     $mergeFilePath = $shipmentFolderPath . DIRECTORY_SEPARATOR . $mergePdf;
-    $pdfNew ->save($mergeFilePath);
+    $pdfNew->save($mergeFilePath);
 
     foreach ($this->result['dmResult'] as $key=>$dmRes) {
         $pdfNew->pages = array();
