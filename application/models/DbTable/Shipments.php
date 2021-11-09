@@ -47,9 +47,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
                     ->where("s.shipment_id = ?", $sId));
 		if ($result != "") {
 			$tableName = "reference_result_dts";
-			if ($result['scheme_type'] == 'vl') {
-			    $tableName = "reference_result_vl";
-			} else if($result['scheme_type'] == 'eid') {
+			if($result['scheme_type'] == 'eid') {
 				$tableName = "reference_result_eid";
 			} else if($result['scheme_type'] == 'dts') {
 				$tableName = "reference_result_dts";

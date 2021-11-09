@@ -441,36 +441,6 @@ class Application_Service_Shipments {
         }
     }
 
-    public function removeDtsVlResults($mapId) {
-        try {
-            $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
-            $authNameSpace = new Zend_Session_Namespace('datamanagers');
-            $data = array(
-                "shipment_receipt_date" =>'',
-                "shipment_test_date" =>'',
-                "attributes" => '',
-                "shipment_test_report_date" => '',
-                "supervisor_approval" =>'',
-                "participant_supervisor" =>'',
-                "user_comment" => '',
-                "final_result" => '',
-                "updated_on_user" => new Zend_Db_Expr('now()'),
-                "updated_by_user" => $authNameSpace->dm_id,
-                "qc_date"=>'',
-                "qc_done_by" => '',
-                "qc_created_on" => '',
-                "mode_id" => ''
-            );
-            $noOfRowsAffected = $shipmentParticipantDb->removeShipmentMapDetails($data, $mapId);
-
-            $responseDb = new Application_Model_DbTable_ResponseVl();
-            $responseDb->delete("shipment_map_id=$mapId");
-        } catch (Exception $e) {
-            return($e->getMessage());
-            return "Unable to delete. Please try again later or contact system admin for help";
-        }
-    }
-
     public function removeDtsTbResults($mapId) {
         try {
             $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
@@ -811,96 +781,6 @@ class Application_Service_Shipments {
         return false;
     }
 
-    public function updateVlResults($params) {
-        if (!$this->isShipmentEditable($params['shipmentId'], $params['participantId'])) {
-            return false;
-        }
-
-        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
-
-        $db->beginTransaction();
-        try {
-            $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
-            $authNameSpace = new Zend_Session_Namespace('datamanagers');
-            if (isset($params['sampleRehydrationDate']) && trim($params['sampleRehydrationDate'])!="") {
-				$params['sampleRehydrationDate']=Application_Service_Common::ParseDate($params['sampleRehydrationDate']);
-			}
-			if (isset($params['assayExpirationDate']) && trim($params['assayExpirationDate'])!="") {
-				$params['assayExpirationDate']=Application_Service_Common::ParseDate($params['assayExpirationDate']);
-			}
-            $attributes = array("sample_rehydration_date" => $params['sampleRehydrationDate'],
-                "vl_assay" => $params['vlAssay'],
-                "assay_lot_number" => $params['assayLotNumber'],
-                "assay_expiration_date" => $params['assayExpirationDate'],
-                "specimen_volume" => $params['specimenVolume'],
-				"uploaded_file" => $params['uploadedFilePath']
-			);
-
-            if (isset($params['otherAssay']) && $params['otherAssay'] != "") {
-                $attributes['other_assay'] = $params['otherAssay'];
-            }
-
-            if (!isset($params['modeOfReceipt'])) {
-                $params['modeOfReceipt'] = NULL;
-            }
-            $attributes = json_encode($attributes);
-            $data = array(
-                "shipment_receipt_date" => Application_Service_Common::ParseDate($params['receiptDate']),
-                "shipment_test_date" => Application_Service_Common::ParseDate($params['testDate']),
-                "attributes" => $attributes,
-                "supervisor_approval" => $params['supervisorApproval'],
-                "participant_supervisor" => $params['participantSupervisor'],
-                "user_comment" => $params['userComments'],
-                "updated_by_user" => $authNameSpace->dm_id,
-                "mode_id" => $params['modeOfReceipt'],
-                "updated_on_user" => new Zend_Db_Expr('now()')
-            );
-            if (isset($params['testReceiptDate']) && trim($params['testReceiptDate'])!= '') {
-                $data['shipment_test_report_date'] = Application_Service_Common::ParseDate($params['testReceiptDate']);
-            } else {
-                $data['shipment_test_report_date'] = new Zend_Db_Expr('now()');
-            }
-
-            if (isset($params['isPtTestNotPerformed']) && $params['isPtTestNotPerformed']== 'yes') {
-                $data['is_pt_test_not_performed'] = 'yes';
-                $data['not_tested_reason'] = $params['notTestedReason'];
-                $data['pt_test_not_performed_comments'] = $params['ptNotTestedComments'];
-                $data['pt_support_comments'] = $params['ptSupportComments'];
-            } else {
-                $data['is_pt_test_not_performed'] = NULL;
-                $data['not_tested_reason'] = NULL;
-                $data['pt_test_not_performed_comments'] = NULL;
-                $data['pt_support_comments'] = NULL;
-            }
-
-            if (isset($authNameSpace->qc_access) && $authNameSpace->qc_access =='yes') {
-                $data['qc_done'] = $params['qcDone'];
-                if (isset($data['qc_done']) && trim($data['qc_done']) == "yes") {
-                    $data['qc_date'] = Application_Service_Common::ParseDate($params['qcDate']);
-                    $data['qc_done_by'] = trim($params['qcDoneBy']);
-                    $data['qc_created_on'] = new Zend_Db_Expr('now()');
-                } else {
-                    $data['qc_date']=NULL;
-                    $data['qc_done_by'] = NULL;
-                    $data['qc_created_on'] = NULL;
-                }
-            }
-
-            $noOfRowsAffected = $shipmentParticipantDb->updateShipment($data, $params['smid'], $params['hdLastDate'], null);
-
-            $eidResponseDb = new Application_Model_DbTable_ResponseVl();
-            $eidResponseDb->updateResults($params);
-            $db->commit();
-        } catch (Exception $e) {
-            // If any of the queries failed and threw an exception,
-            // we want to roll back the whole transaction, reversing
-            // changes made in the transaction, even those that succeeded.
-            // Thus all changes are committed together, or none are.
-            $db->rollBack();
-            error_log($e->getMessage());
-        }
-    }
-
     public function addShipment($params) {
         $authNameSpace = new Zend_Session_Namespace('administrators');
         $db = new Application_Model_DbTable_Shipments();
@@ -1075,8 +955,6 @@ class Application_Service_Shipments {
                 $db->delete('reference_dbs_eia', 'shipment_id=' . $sid);
                 $db->delete('reference_dbs_wb', 'shipment_id=' . $sid);
                 $db->delete("reference_result_dbs", 'shipment_id=' . $sid);
-            } else if ($row['scheme_type'] == 'vl') {
-                $db->delete("reference_result_vl", 'shipment_id=' . $sid);
             } else if ($row['scheme_type'] == 'eid') {
                 $db->delete("reference_result_eid", 'shipment_id=' . $sid);
             } else if ($row['scheme_type'] == 'tb') {
@@ -1491,9 +1369,7 @@ class Application_Service_Shipments {
         if ($sid == 'dts') {
             $code = 'DTS' . $month . $year . '-' . $count;
         }
-        else if ($sid == 'vl') {
-            $code = 'VL' . $month . $year . '-' . $count;
-        } else if ($sid == 'eid') {
+        else if ($sid == 'eid') {
             $code = 'EID' . $month . $year . '-' . $count;
         } else if ($sid == 'dbs') {
             $code = 'DBS' . $month . $year . '-' . $count;
@@ -1506,8 +1382,6 @@ class Application_Service_Shipments {
         $code = '';
         if ($sid == 'dts') {
             $code = 'DTS' . $month . $year . '-' . $count;
-        } else if ($sid == 'vl') {
-            $code = 'VL' . $month . $year . '-' . $count;
         } else if ($sid == 'eid') {
             $code = 'EID' . $month . $year . '-' . $count;
         } else if ($sid == 'dbs') {
@@ -1519,8 +1393,6 @@ class Application_Service_Shipments {
             $count++;
             if ($sid == 'dts') {
                 $code = 'DTS' . $month . $year . '-' . $count;
-            } else if ($sid == 'vl') {
-                $code = 'VL' . $month . $year . '-' . $count;
             } else if ($sid == 'eid') {
                 $code = 'EID' . $month . $year . '-' . $count;
             } else if ($sid == 'dbs') {

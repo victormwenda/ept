@@ -40,21 +40,11 @@ if ($this->shipments == false && count($this->shipments) <= 0) {
 					<td style="text-align: center;">
 					<?php
                         if ($adminSession->is_ptcc_coordinator == 0) {
-                            if (isset($shipment["reported_count"]) && $shipment["reported_count"] > 0) {
-						        if ($shipment['scheme_type'] != 'vl') { ?>
+                            if (isset($shipment["reported_count"]) && $shipment["reported_count"] > 0) { ?>
 						<a class="btn btn-success btn-xs" href="/admin/evaluate/shipment/sid/<?php echo base64_encode($shipment['shipment_id']); ?>">
                             <span><i class="icon-edit"></i> Evaluate</span>
                         </a>
 						<?php
-                                } else { ?>
-						<a class="btn btn-success btn-xs" href="/admin/evaluate/shipment/sid/<?php echo base64_encode($shipment['shipment_id']); ?>">
-                            <span><i class="icon-edit"></i> Evaluate</span>
-                        </a>
-						<a class="btn btn-success btn-xs" href="javascript:void(0);" onclick="getVLReferenceScores('<?php echo base64_encode($shipment['shipment_id']); ?>')">
-                            <span><i class="icon-edit"></i> VL Range</span>
-                        </a>
-						<?php
-						        }
 							    if ($nonResponse > 0) { ?>
                         <a class="btn btn-warning btn-xs" href="javascript:void(0);" onclick="mailNonParticipants('<?php echo base64_encode($shipment['shipment_id']); ?>');">
                             <span><i class="icon-envelope"></i> Mail <?php echo $nonResponse ?> Not Responded Participants</span>
@@ -94,16 +84,3 @@ if ($this->shipments == false && count($this->shipments) <= 0) {
 	<?php
 }
 ?>
-<div id="vlRangeDiv">
-
-</div>
-<script>
-	function getVLReferenceScores(sid){
-		$.blockUI();
-			$.post("<?php echo $this->url(array('module'=>'admin','controller' =>'evaluate', 'action' => 'vl-range'), 'default', true); ?>", { sid: sid, format: "html" },
-			function (data) {
-				$("#vlRangeDiv").html(data);
-				$.unblockUI();
-			});
-	}
-</script>

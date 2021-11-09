@@ -92,29 +92,11 @@
         $.post("<?php echo $this->url(array('module' => 'admin', 'controller' => 'evaluate', 'action' => 'get-shipments')); ?>", {did: did, format: "html"},
         function (data) {
             $("#shipments").html(data);
-            <?php
-            if(isset($this->scheme) && isset($this->showcalc)  && $this->scheme == 'vl'){
-                ?>
-                getVLReferenceScores('<?php echo ($this->showcalc); ?>');
-                <?php
-            }
-            ?>
             $.unblockUI();
         });
     }
 
     function mailNonParticipants(sid) {
       layoutModal('/admin/shipment/edit-shipment-email/id/' + sid + '/mail_purpose/not_participated/', '980', '550');
-    }
-    
-    function closeVlModal(sId,sampleId,vlAssay,mLowLimit,mHighLimit) {
-        if (sId!='') {
-            closeLayoutModal();
-            alert("Vl manual value updated successfully");
-            $("#manualRange"+vlAssay.toString()+sampleId.toString()).val(mHighLimit);
-            $("#mLowLimitCol"+vlAssay.toString()+sampleId.toString()).html(mLowLimit);
-            $("#mHighLimitCol"+vlAssay.toString()+sampleId.toString()).html(mHighLimit);
-            $(".manualRange"+vlAssay.toString()+sampleId.toString()).css("background-color","");
-        }
     }
 </script>
