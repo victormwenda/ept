@@ -371,56 +371,59 @@ class Application_Service_Evaluation {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $authNameSpace = new Zend_Session_Namespace('administrators');
         $admin = $authNameSpace->primary_email;
-        if ($params['unableToSubmit'] == "yes") {
-            $correctiveActions = array();
-            if (isset($params['correctiveActions']) && $params['correctiveActions'] != "") {
-                if (is_array($params['correctiveActions'])) {
-                    foreach ($params['correctiveActions'] as $correctiveAction) {
-                        if($correctiveAction != null && trim($correctiveAction) != "") {
-                            array_push($correctiveActions, $correctiveAction);
-                        }
+
+        $correctiveActions = array();
+        if (isset($params['correctiveActions']) && $params['correctiveActions'] != "") {
+            if (is_array($params['correctiveActions'])) {
+                foreach ($params['correctiveActions'] as $correctiveAction) {
+                    if($correctiveAction != null && trim($correctiveAction) != "") {
+                        array_push($correctiveActions, $correctiveAction);
                     }
+                }
+            } else {
+                array_push($correctiveActions, $params['correctiveActions']);
+            }
+        }
+
+        $schemeService = new Application_Service_Schemes();
+        $shipmentData = $schemeService->getShipmentData($params['shipmentId'], $params['participantId']);
+        if (!isset($shipmentData['attributes']) || $shipmentData['attributes'] == "") {
+            $shipmentData['attributes'] = "{}";
+        }
+        $attributes = json_decode($shipmentData['attributes'], true);
+
+        if (isset($shipmentData['follows_up_from']) && $shipmentData['follows_up_from'] > 0) {
+            $previousShipmentData = $schemeService->getShipmentData($shipmentData['follows_up_from'], $params['participantId']);
+            $previousShipmentAttributes = json_decode($previousShipmentData['attributes'], true);
+
+            $correctiveActionsFromPreviousRound = array();
+            $correctiveActionsCheckedOff = array();
+            if (isset($params['correctiveActionsFromPreviousRound'])) {
+                if ($params['correctiveActionsFromPreviousRound'] == "") {
+                    array_push($correctiveActionsCheckedOff, $params['correctiveActionsFromPreviousRound']);
                 } else {
-                    array_push($correctiveActions, $params['correctiveActions']);
+                    $correctiveActionsCheckedOff = $params['correctiveActionsFromPreviousRound'];
                 }
             }
 
-            $schemeService = new Application_Service_Schemes();
-            $shipmentData = $schemeService->getShipmentData($params['shipmentId'], $params['participantId']);
-            $attributes = json_decode($shipmentData['attributes'], true);
-
-            if (isset($shipmentData['follows_up_from']) && $shipmentData['follows_up_from'] > 0) {
-                $previousShipmentData = $schemeService->getShipmentData($shipmentData['follows_up_from'], $params['participantId']);
-                $previousShipmentAttributes = json_decode($previousShipmentData['attributes'], true);
-
-                $correctiveActionsFromPreviousRound = array();
-                $correctiveActionsCheckedOff = array();
-                if (isset($params['correctiveActionsFromPreviousRound'])) {
-                    if ($params['correctiveActionsFromPreviousRound'] == "") {
-                        array_push($correctiveActionsCheckedOff, $params['correctiveActionsFromPreviousRound']);
-                    } else {
-                        $correctiveActionsCheckedOff = $params['correctiveActionsFromPreviousRound'];
-                    }
+            if (isset($previousShipmentAttributes['corrective_actions'])) {
+                foreach ($previousShipmentAttributes['corrective_actions'] as $correctiveActionFromPreviousRound) {
+                    array_push($correctiveActionsFromPreviousRound, array(
+                        'checked_off' => in_array($correctiveActionFromPreviousRound,
+                            $correctiveActionsCheckedOff),
+                        'corrective_action' => $correctiveActionFromPreviousRound
+                    ));
                 }
-
-                if (isset($previousShipmentAttributes['corrective_actions'])) {
-                    foreach ($previousShipmentAttributes['corrective_actions'] as $correctiveActionFromPreviousRound) {
-                        array_push($correctiveActionsFromPreviousRound, array(
-                            'checked_off' => in_array($correctiveActionFromPreviousRound,
-                                $correctiveActionsCheckedOff),
-                            'corrective_action' => $correctiveActionFromPreviousRound
-                        ));
-                    }
-                }
-                $attributes['corrective_actions_from_previous_round'] = $correctiveActionsFromPreviousRound;
             }
+            $attributes['corrective_actions_from_previous_round'] = $correctiveActionsFromPreviousRound;
+        }
 
+        if ($params['unableToSubmit'] == "yes") {
             $attributes = array_merge($attributes, array(
                 "corrective_actions" => $correctiveActions));
 
-            $attributes = json_encode($attributes);
             $mapData = array(
-                "attributes" => $attributes,
+                "attributes" => json_encode($attributes),
                 "updated_by_admin" => $admin,
                 "updated_on_admin" => new Zend_Db_Expr('now()')
             );
@@ -440,50 +443,6 @@ class Application_Service_Evaluation {
             $mapData['documentation_score'] = 0;
             $db->update('shipment_participant_map', $mapData, "map_id = " . $params['smid']);
         } else {
-            $size = count($params['sampleId']);
-            $correctiveActions = array();
-            if (isset($params['correctiveActions']) && $params['correctiveActions'] != "") {
-                if (is_array($params['correctiveActions'])) {
-                    foreach ($params['correctiveActions'] as $correctiveAction) {
-                        if($correctiveAction != null && trim($correctiveAction) != "") {
-                            array_push($correctiveActions, $correctiveAction);
-                        }
-                    }
-                } else {
-                    array_push($correctiveActions, $params['correctiveActions']);
-                }
-            }
-
-            $schemeService = new Application_Service_Schemes();
-            $shipmentData = $schemeService->getShipmentData($params['shipmentId'], $params['participantId']);
-            $attributes = json_decode($shipmentData['attributes'], true);
-
-            if (isset($shipmentData['follows_up_from']) && $shipmentData['follows_up_from'] > 0) {
-                $previousShipmentData = $schemeService->getShipmentData($shipmentData['follows_up_from'], $params['participantId']);
-                $previousShipmentAttributes = json_decode($previousShipmentData['attributes'], true);
-
-                $correctiveActionsFromPreviousRound = array();
-                $correctiveActionsCheckedOff = array();
-                if (isset($params['correctiveActionsFromPreviousRound'])) {
-                    if ($params['correctiveActionsFromPreviousRound'] == "") {
-                        array_push($correctiveActionsCheckedOff, $params['correctiveActionsFromPreviousRound']);
-                    } else {
-                        $correctiveActionsCheckedOff = $params['correctiveActionsFromPreviousRound'];
-                    }
-                }
-
-                if (isset($previousShipmentAttributes['corrective_actions'])) {
-                    foreach ($previousShipmentAttributes['corrective_actions'] as $correctiveActionFromPreviousRound) {
-                        array_push($correctiveActionsFromPreviousRound, array(
-                            'checked_off' => in_array($correctiveActionFromPreviousRound,
-                                $correctiveActionsCheckedOff),
-                            'corrective_action' => $correctiveActionFromPreviousRound
-                        ));
-                    }
-                }
-                $attributes['corrective_actions_from_previous_round'] = $correctiveActionsFromPreviousRound;
-            }
-
             $attributes = array_merge($attributes, array(
                 "cartridge_lot_no" => isset($params['cartridgeLotNo']) ? $params['cartridgeLotNo'] : $params['mtbRifKitLotNo'],
                 "expiry_date" => Application_Service_Common::ParseDate($params['expiryDate']),
@@ -492,7 +451,6 @@ class Application_Service_Evaluation {
                 "count_errors_encountered_over_month" => $params['countErrorsEncounteredOverMonth'],
                 "error_codes_encountered_over_month" => $params['errorCodesEncounteredOverMonth'],
                 "corrective_actions" => $correctiveActions));
-            $attributes = json_encode($attributes);
             $assayRecords = $db->fetchAll($db->select()->from('r_tb_assay'));
             foreach ($assayRecords as $assayRecord) {
                 $assays[$assayRecord['id']] = $assayRecord['short_name'];
@@ -504,7 +462,7 @@ class Application_Service_Evaluation {
             $mapData = array(
                 "shipment_receipt_date" => Application_Service_Common::ParseDate($params['receiptDate']),
                 "shipment_test_report_date" => Application_Service_Common::ParseDate($params['testReceiptDate']),
-                "attributes" => $attributes,
+                "attributes" => json_encode($attributes),
                 "supervisor_approval" => $params['supervisorApproval'],
                 "participant_supervisor" => $params['participantSupervisor'],
                 "user_comment" => $params['userComments'],
@@ -558,6 +516,7 @@ class Application_Service_Evaluation {
             $scoringService = new Application_Service_EvaluationScoring();
             $shipmentScore = 0;
             $shipmentTestDate = null;
+            $size = count($params['sampleId']);
             for ($i = 0; $i < $size; $i++) {
                 $dateTested = Application_Service_Common::ParseDate($params['dateTested'][$i]);
                 if ($dateTested > $shipmentTestDate) {

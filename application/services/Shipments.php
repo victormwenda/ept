@@ -265,11 +265,10 @@ class Application_Service_Shipments {
                 "detection_assay_lot_no" => $params['detectionAssayLotNo'],
 		        "uploaded_file" => $params['uploadedFilePath']);
 
-            $attributes = json_encode($attributes);
             $data = array(
                 "shipment_receipt_date" => Application_Service_Common::ParseDate($params['receiptDate']),
                 "shipment_test_date" => Application_Service_Common::ParseDate($params['testDate']),
-                "attributes" => $attributes,
+                "attributes" => json_encode($attributes),
                 "supervisor_approval" => $params['supervisorApproval'],
                 "participant_supervisor" => $params['participantSupervisor'],
                 "user_comment" => $params['userComments'],
@@ -325,13 +324,11 @@ class Application_Service_Shipments {
             $authNameSpace = new Zend_Session_Namespace('datamanagers');
             $attributes["sample_rehydration_date"] = Application_Service_Common::ParseDate($params['sampleRehydrationDate']);
             $attributes["algorithm"] = $params['algorithm'];
-            $attributes = json_encode($attributes);
-
 
             $data = array(
                 "shipment_receipt_date" => Application_Service_Common::ParseDate($params['receiptDate']),
                 "shipment_test_date" => Application_Service_Common::ParseDate($params['testDate']),
-                "attributes" => $attributes,
+                "attributes" => json_encode($attributes),
                 "supervisor_approval" => $params['supervisorApproval'],
                 "participant_supervisor" => $params['participantSupervisor'],
                 "user_comment" => $params['userComments'],
@@ -389,7 +386,7 @@ class Application_Service_Shipments {
             $data = array(
                 "shipment_receipt_date" =>'',
                 "shipment_test_date" =>'',
-                "attributes" => '',
+                "attributes" => '{}',
                 "shipment_test_report_date" => '',
                 "supervisor_approval" =>'',
                 "participant_supervisor" =>'',
@@ -418,7 +415,7 @@ class Application_Service_Shipments {
             $data = array(
                 "shipment_receipt_date" =>'',
                 "shipment_test_date" =>'',
-                "attributes" => '',
+                "attributes" => '{}',
                 "shipment_test_report_date" => '',
                 "supervisor_approval" =>'',
                 "participant_supervisor" =>'',
@@ -492,11 +489,10 @@ class Application_Service_Shipments {
             $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
             $authNameSpace = new Zend_Session_Namespace('datamanagers');
             $attributes["sample_rehydration_date"] = Application_Service_Common::ParseDate($params['sampleRehydrationDate']);
-            $attributes = json_encode($attributes);
             $data = array(
                 "shipment_receipt_date" => Application_Service_Common::ParseDate($params['receiptDate']),
                 "shipment_test_date" => Application_Service_Common::ParseDate($params['testDate']),
-                "attributes" => $attributes,
+                "attributes" => json_encode($attributes),
                 "supervisor_approval" => $params['supervisorApproval'],
                 "participant_supervisor" => $params['participantSupervisor'],
                 "user_comment" => $params['userComments'],
@@ -552,10 +548,9 @@ class Application_Service_Shipments {
             "count_errors_encountered_over_month" => $params['countErrorsEncounteredOverMonth'],
             "error_codes_encountered_over_month" => $params['errorCodesEncounteredOverMonth']
         );
-        $attributes = json_encode($attributes);
         $data = array(
             "shipment_receipt_date" => Application_Service_Common::ParseDbDate($params['dateReceived']),
-            "attributes" => $attributes,
+            "attributes" => json_encode($attributes),
             "updated_by_user" => $authNameSpace->dm_id,
             "updated_on_user" => new Zend_Db_Expr('now()')
         );
@@ -687,10 +682,9 @@ class Application_Service_Shipments {
                 "count_errors_encountered_over_month" => $params['countErrorsEncounteredOverMonth'],
                 "error_codes_encountered_over_month" => $params['errorCodesEncounteredOverMonth']
             );
-            $attributes = json_encode($attributes);
             $data = array(
                 "shipment_receipt_date" => Application_Service_Common::ParseDate($params['receiptDate']),
-                "attributes" => $attributes,
+                "attributes" => json_encode($attributes),
                 "supervisor_approval" => $params['supervisorApproval'],
                 "participant_supervisor" => $params['participantSupervisor'],
                 "user_comment" => $params['userComments'],
