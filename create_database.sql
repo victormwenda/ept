@@ -783,21 +783,6 @@ CREATE TABLE `r_testkitname_dts` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `r_vl_assay`
---
-
-DROP TABLE IF EXISTS `r_vl_assay`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `r_vl_assay` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `short_name` varchar(255) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `reference_dbs_eia`
 --
 
@@ -1012,81 +997,6 @@ CREATE TABLE `reference_result_tb` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `reference_result_vl`
---
-
-DROP TABLE IF EXISTS `reference_result_vl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `reference_result_vl` (
-  `shipment_id` int(11) NOT NULL,
-  `sample_id` int(11) NOT NULL,
-  `sample_label` varchar(255) DEFAULT NULL,
-  `reference_result` varchar(45) DEFAULT NULL,
-  `control` int(11) DEFAULT NULL,
-  `mandatory` int(11) NOT NULL DEFAULT '0',
-  `sample_score` int(11) NOT NULL DEFAULT '1',
-  PRIMARY KEY (`shipment_id`,`sample_id`),
-  CONSTRAINT `reference_result_vl_ibfk_1` FOREIGN KEY (`shipment_id`) REFERENCES `shipment` (`shipment_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `reference_vl_calculation`
---
-
-DROP TABLE IF EXISTS `reference_vl_calculation`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `reference_vl_calculation` (
-  `shipment_id` int(11) NOT NULL,
-  `sample_id` int(11) NOT NULL,
-  `vl_assay` int(11) NOT NULL,
-  `q1` double(20,10) DEFAULT NULL,
-  `q3` double(20,10) DEFAULT NULL,
-  `iqr` double(20,10) DEFAULT NULL,
-  `quartile_low` double(20,10) DEFAULT NULL,
-  `quartile_high` double(20,10) DEFAULT NULL,
-  `mean` double(20,10) DEFAULT NULL,
-  `sd` double(20,10) DEFAULT NULL,
-  `cv` double(20,10) DEFAULT NULL,
-  `low_limit` double(20,10) DEFAULT NULL,
-  `high_limit` double(20,10) DEFAULT NULL,
-  `calculated_on` datetime DEFAULT NULL,
-  `manual_mean` double(20,10) DEFAULT NULL,
-  `manual_sd` double(20,10) DEFAULT NULL,
-  `manual_cv` double(20,10) DEFAULT NULL,
-  `manual_q1` double(20,10) DEFAULT NULL,
-  `manual_q3` double(20,10) DEFAULT NULL,
-  `manual_iqr` double(20,10) DEFAULT NULL,
-  `manual_quartile_low` double(20,10) DEFAULT NULL,
-  `manual_quartile_high` double(20,10) DEFAULT NULL,
-  `manual_low_limit` double(20,10) DEFAULT NULL,
-  `manual_high_limit` double(20,10) DEFAULT NULL,
-  `updated_on` datetime DEFAULT NULL,
-  `updated_by` int(11) DEFAULT NULL,
-  `use_range` varchar(255) NOT NULL DEFAULT 'calculated',
-  PRIMARY KEY (`shipment_id`,`sample_id`,`vl_assay`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `reference_vl_methods`
---
-
-DROP TABLE IF EXISTS `reference_vl_methods`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `reference_vl_methods` (
-  `shipment_id` int(11) NOT NULL,
-  `sample_id` int(11) NOT NULL,
-  `assay` int(11) NOT NULL,
-  `value` varchar(255) NOT NULL,
-  PRIMARY KEY (`shipment_id`,`sample_id`,`assay`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `report_config`
 --
 
@@ -1271,28 +1181,6 @@ CREATE TABLE `response_result_tb` (
   `updated_by` varchar(45) DEFAULT NULL,
   `updated_on` datetime DEFAULT NULL,
   KEY `index_in_response_res_tb`(`sample_id`, `shipment_map_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `response_result_vl`
---
-
-DROP TABLE IF EXISTS `response_result_vl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `response_result_vl` (
-  `shipment_map_id` int(11) NOT NULL,
-  `sample_id` varchar(45) NOT NULL,
-  `reported_viral_load` varchar(255) DEFAULT NULL,
-  `calculated_score` varchar(45) DEFAULT NULL,
-  `is_tnd` varchar(45) DEFAULT NULL,
-  `created_by` varchar(45) DEFAULT NULL,
-  `created_on` datetime DEFAULT NULL,
-  `updated_by` varchar(45) DEFAULT NULL,
-  `updated_on` datetime DEFAULT NULL,
-  PRIMARY KEY (`shipment_map_id`,`sample_id`),
-  CONSTRAINT `response_result_vl_ibfk_1` FOREIGN KEY (`shipment_map_id`) REFERENCES `shipment_participant_map` (`map_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

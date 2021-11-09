@@ -8,7 +8,6 @@ class Admin_EvaluateController extends Zend_Controller_Action {
                     ->addActionContext('update-shipment-comment', 'html')
                     ->addActionContext('update-shipment-status', 'html')
                     ->addActionContext('delete-dts-response', 'html')
-                    ->addActionContext('vl-range', 'html')
                     ->initContext();
         $this->_helper->layout()->pageName = 'analyze';
     }
@@ -60,9 +59,6 @@ class Admin_EvaluateController extends Zend_Controller_Action {
 
             } else if($scheme == 'dts') {
                 $this->view->allTestKits = $schemeService->getAllDtsTestKit();
-            } else if ($scheme == 'vl') {
-                $this->view->vlRange = $schemeService->getVlRange($sid);
-                $this->view->vlAssay = $schemeService->getVlAssay();
             } else if ($scheme == 'tb') {
                 $this->view->assays = $schemeService->getTbAssayReferenceMap();
             }
@@ -114,9 +110,6 @@ class Admin_EvaluateController extends Zend_Controller_Action {
                 } else if ($scheme == 'dbs') {
                     $this->view->wb = $schemeService->getDbsWb();
                     $this->view->eia = $schemeService->getDbsEia();
-                } else if ($scheme == 'vl') {
-                    $this->view->vlRange = $schemeService->getVlRange($sid);
-                    $this->view->vlAssay = $schemeService->getVlAssay();
                 } else if ($scheme == 'tb') {
                     $this->view->assays = $schemeService->getTbAssayReferenceMap();
                     if (isset($this->view->evaluateData['shipment']['follows_up_from']) &&
@@ -187,8 +180,6 @@ class Admin_EvaluateController extends Zend_Controller_Action {
 					$this->view->result = $shipmentService->removeDtsResults($mapId);
 				} else if ($schemeType == 'eid') {
 					$this->view->result = $shipmentService->removeDtsEidResults($mapId);
-				} else if ($schemeType == 'vl') {
-					$this->view->result = $shipmentService->removeDtsVlResults($mapId);
 				} else if ($schemeType == 'tb') {
                     $this->view->result = $shipmentService->removeDtsTbResults($mapId);
                 } else {
@@ -200,66 +191,7 @@ class Admin_EvaluateController extends Zend_Controller_Action {
         }
     }
 
-    public function vlRangeAction() {
-		if ($this->_hasParam('manualRange')) {
-			$params = $this->getRequest()->getPost();
-			$schemeService = new Application_Service_Schemes();
-			$schemeService->updateVlInformation($params);
-			$shipmentId = (int)base64_decode($this->_getParam('sid'));
-			$this->_redirect("/admin/evaluate/index/scheme/vl/showcalc/".base64_encode($shipmentId));
-		}
-		if ($this->_hasParam('sid')) {
-			if ($this->getRequest()->isPost()) {
-				$shipmentId = (int)base64_decode($this->_getParam('sid'));
-				$schemeService = new Application_Service_Schemes();
-				$this->view->result = $schemeService->getVlRangeInformation($shipmentId);
-				$this->view->shipmentId = $shipmentId;
-			}
-		} else {
-			$this->view->message = "Unable to fetch Viral Load Range for this Shipment.";
-		}
-    }
-
-    public function recalculateVlRangeAction() {
-        if ($this->_hasParam('sid')) {
-			$shipmentId = (int)($this->_getParam('sid'));
-			$schemeService = new Application_Service_Schemes();
-			$this->view->result = $schemeService->setVlRange($shipmentId);
-			$this->_redirect("/admin/evaluate/index/scheme/vl/showcalc/".base64_encode($shipmentId));
-		} else {
-			$this->_redirect("/admin/evaluate/");
-		}
-    }
-
-	public function vlSamplePlotAction() {
-		$shipmentId = $this->_getParam('shipment');
-		$sampleId = $this->_getParam('sample');
-		$schemeService = new Application_Service_Schemes();
-		$this->view->vlRange = $schemeService->getVlRange($shipmentId,$sampleId);
-		$this->view->shipmentId = $shipmentId;
-		$this->view->sampleId = $sampleId;
-	}
-
 	public function addManualLimitsAction() {
 		$this->_helper->layout()->disableLayout();
-        if ($this->_hasParam('id')) {
-            $this->_helper->layout()->setLayout('modal');
-            $schemeService = new Application_Service_Schemes();
-            $combineId = base64_decode($this->_getParam('id'));
-			$expStr=explode("#",$combineId);
-			$shipmentId=(int)$expStr[0];
-			$sampleId=(int)$expStr[1];
-			$vlAssay=(int)$expStr[2];
-			$this->view->result = $schemeService->getVlManualValue($shipmentId,$sampleId,$vlAssay);
-		}
-		if ($this->getRequest()->isPost()) {
-			$params = $this->getRequest()->getPost();
-			$updatedResult=$schemeService->updateVlManualValue($params);
-			$this->view->updatedResult=$updatedResult;
-			$this->view->sampleId=base64_decode($params['sampleId']);
-			$this->view->vlAssay=base64_decode($params['vlAssay']);
-			$this->view->mLowLimit=round($params['manualLowLimit'],4);
-			$this->view->mHighLimit=round($params['manualHighLimit'],4);
-		}
 	}
 }

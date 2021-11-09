@@ -4,13 +4,9 @@
     $actionName = Zend_Controller_Front::getInstance()->getRequest()->getActionName();
     $hideShipmentResponseReport = false;
     if (count($adminSession->activeSchemes) == 1 &&
-        in_array('vl',$adminSession->activeSchemes)) {
-        $hideShipmentResponseReport = true;
-    } elseif (count($adminSession->activeSchemes) == 1 &&
         in_array('tb',$adminSession->activeSchemes)) {
         $hideShipmentResponseReport = true;
     } elseif (count($adminSession->activeSchemes) == 2 &&
-        in_array('vl',$adminSession->activeSchemes) &&
         in_array('tb',$adminSession->activeSchemes)) {
         $hideShipmentResponseReport = true;
     }
@@ -168,11 +164,6 @@
                             <li>
                                 <a href="<?php echo $this->url(array('module'=>'admin','controller'=>'partners'),'default',true); ?>">
                                     Partners
-                                </a>
-                            </li>
-                            <li>
-                                <a href="<?php echo $this->url(array('module'=>'admin','controller'=>'vl-assay'),'default',true); ?>">
-                                    Vl Assay
                                 </a>
                             </li>
                             <li>
@@ -379,7 +370,7 @@
         });
 
         function validatePassword(obj) {
-            if (obj.vlaue!="") {
+            if (obj.value!="") {
                 var regex = /^(?=.*?[A-Za-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/;
                 if (!regex.test(obj.value)) {
                     obj.value="";

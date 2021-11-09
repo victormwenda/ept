@@ -153,11 +153,7 @@ class Application_Model_DbTable_ContactUs extends Zend_Db_Table_Abstract
 
             $output['aaData'][] = $row;
         }
-
         echo json_encode($output);
     }
-
-
-
 }
 
