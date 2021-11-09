@@ -1197,6 +1197,9 @@ class Application_Service_Shipments {
                     array_push($samplePassStatuses, $samplePassStatus);
                     $hasBlankResult = $hasBlankResult || !isset($sampleRes[$i]['res_mtb_detected']);
                 }
+                if(!isset($scoredSubmission['attributes']) || $scoredSubmission['attributes'] == "") {
+                    $scoredSubmission['attributes'] = "{}";
+                }
                 $attributes = json_decode($scoredSubmission['attributes'],true);
                 $shipmentData = array();
                 $shipmentData['shipment_score'] = $submissionShipmentScore;

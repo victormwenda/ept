@@ -93,15 +93,11 @@ class Application_Model_DbTable_ShipmentParticipantMap extends Zend_Db_Table_Abs
 
         if (isset($submitAction) && $submitAction == 'submit') {
             $params['date_submitted'] = new Zend_Db_Expr('now()');
-
             $params['evaluation_status'] = $row['evaluation_status'];
-
             // changing evaluation status 3rd character to 1 = responded
             $params['evaluation_status'][2] = 1;
-
             // changing evaluation status 5th character to 1 = via web user
             $params['evaluation_status'][4] = 1;
-
             // changing evaluation status 4th character to 1 = timely response or 2 = delayed response
             $date = new Zend_Date();
             /*
