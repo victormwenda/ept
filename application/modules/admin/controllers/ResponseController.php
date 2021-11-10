@@ -56,12 +56,15 @@ class Admin_ResponseController extends Zend_Controller_Action
                 "function" => "modules/admin/controllers/ResponseController/editAction POST",
                 "body" => $params
             ));
-            if ($responseService->updateShipmentResults($params)) {
+            $validationMessages = $responseService->updateShipmentResults($params);
+            if ($validationMessages == "")
+            {
+                $validationMessages = "Shipment Results updated successfully";
                 $shipmentService = new Application_Service_Shipments();
                 $shipmentService->sendShipmentSavedEmailToParticipantsAndPTCC($params['participantId'], $params['shipmentId']);
             }
             $alertMsg = new Zend_Session_Namespace('alertSpace');
-            $alertMsg->message = "Shipment Results updated successfully";
+            $alertMsg->message = $validationMessages;
             if (isset($params['whereToGo']) && $params['whereToGo'] != "") {
                $this->_redirect($params['whereToGo']);
             } else {

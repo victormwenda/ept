@@ -84,12 +84,15 @@ class Admin_EvaluateController extends Zend_Controller_Action {
                 "function" => "modules/admin/controllers/EvaluateController/editAction POST",
                 "body" => $params
             ));
-            $evalService->updateShipmentResults($params);
+            $validationMessages = $evalService->updateShipmentResults($params);
             $shipmentId = base64_encode($params['shipmentId']);
+            if ($validationMessages == "") {
+                $validationMessages = "Shipment Results updated successfully";
+            }
             $alertMsg = new Zend_Session_Namespace('alertSpace');
-            $alertMsg->message = "Shipment Results updated successfully";
+            $alertMsg->message = $validationMessages;
             if (isset($params['whereToGo']) && $params['whereToGo'] != "") {
-               $this->_redirect($params['whereToGo']);
+                $this->_redirect($params['whereToGo']);
             } else {
                 $this->_redirect("/admin/evaluate/shipment/sid/$shipmentId");
             }

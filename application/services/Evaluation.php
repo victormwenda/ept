@@ -367,6 +367,98 @@ class Application_Service_Evaluation {
         );
     }
 
+    public function validateUpdateShipmentResults($params, $shipmentMapFromDatabase) {
+        $validationErrors = array();
+        $evaluationStatus = $shipmentMapFromDatabase['evaluation_status'];
+        $submitted = $evaluationStatus[2] == '1' ||
+            (isset($params['submitAction']) && $params['submitAction'] == 'submit');
+        if (!$submitted) {
+            return $validationErrors;
+        }
+        if (isset($params['transferToParticipant']) && $params['transferToParticipant'] != "") {
+            return $validationErrors;
+        }
+        if ($params['unableToSubmit'] != "yes") {
+            if (!isset($params['receiptDate']) || $params["receiptDate"] == "") {
+                array_push($validationErrors,"Shipment Received on is a required field.");
+            }
+            if (!isset($params['assay']) || $params["assay"] == "") {
+                array_push($validationErrors,"Assay is a required field.");
+            }
+            $cartridgeLotNo = isset($params['cartridgeLotNo']) ? $params['cartridgeLotNo'] : $params['mtbRifKitLotNo'];
+            if (!isset($cartridgeLotNo) || $cartridgeLotNo == "") {
+                array_push($validationErrors,"Cartridge Lot No is a required field.");
+            }
+            if (!isset($params['expiryDate']) || $params["expiryDate"] == "") {
+                array_push($validationErrors,"Expiration date of Cartridge is a required field.");
+            }
+            if (!isset($params['testReceiptDate']) || $params["testReceiptDate"] == "") {
+                array_push($validationErrors,"Response Date is a required field.");
+            }
+            if (isset($params['qcDone']) && $params["qcDone"] == "yes") {
+                if (!isset($params['qcDate']) || $params["qcDate"] == "") {
+                    array_push($validationErrors,"Maintenance Date is a required field.");
+                }
+                if (!isset($params['qcDoneBy']) || $params["qcDoneBy"] == "") {
+                    array_push($validationErrors,"Maintenance Done By is a required field.");
+                }
+            }
+            if (!isset($params['supervisorApproval']) || $params["supervisorApproval"] == "") {
+                array_push($validationErrors,"Supervisor Review is a required field.");
+            } else if ($params["supervisorApproval"] == "yes" && (!isset($params['participantSupervisor']) || $params["participantSupervisor"] == "")) {
+                array_push($validationErrors,"Supervisor Name is a required field.");
+            }
+            $size = count($params['sampleId']);
+            if ($size < 5) {
+                array_push($validationErrors,"All 5 samples need to be tested and there values entered.");
+            }
+            for ($i = 0; $i < $size; $i++) {
+                if (!isset($params['dateTested'][$i]) || $params['dateTested'][$i] == "") {
+                    array_push($validationErrors,"Date Tested is a required field.");
+                }
+                if (!isset($params['mtbDetected'][$i]) || $params['mtbDetected'][$i] == "") {
+                    array_push($validationErrors,"MTB Detected is a required field.");
+                } else if ($params['mtbDetected'][$i] == "error") {
+                    if (!isset($params['errorCode'][$i]) || $params['errorCode'][$i] == "") {
+                        array_push($validationErrors,"Error Code is a required field when MTB Detected is Error.");
+                    }
+                } else if (in_array($params['mtbDetected'][$i], array("detected", "high", "medium", "low", "veryLow"))) {
+                    if (!isset($params['rifResistance'][$i]) || $params['rifResistance'][$i] == "" || $params['rifResistance'][$i] == "na") {
+                        array_push($validationErrors,"Rif Resistance is a required field when MTB Detected is one of Detected, High, Medium, Low or Very Low.");
+                    }
+                } else if (isset($params["assay"]) && $params["assay"] != "" &&
+                    in_array($params['mtbDetected'][$i], array("detected", "high", "medium", "low", "veryLow", "trace", "notDetected"))) {
+                    if (!isset($params['probe1'][$i]) || $params['probe1'][$i] == "" || !is_numeric($params['rifResistance'][$i])) {
+                        $probe1Name = $params["assay"] == "2" ? "SPC" : "Probe D";
+                        array_push($validationErrors,$probe1Name." is a required, numeric field when MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
+                    }
+                    if (!isset($params['probe2'][$i]) || $params['probe2'][$i] == "" || !is_numeric($params['probe2'][$i])) {
+                        $probe2Name = $params["assay"] == "2" ? "IS1081-IS6110" : "Probe C";
+                        array_push($validationErrors,$probe2Name." is a required, numeric field when MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
+                    }
+                    if (!isset($params['probe3'][$i]) || $params['probe3'][$i] == "" || !is_numeric($params['probe3'][$i])) {
+                        $probe3Name = $params["assay"] == "2" ? "rpoB1" : "Probe E";
+                        array_push($validationErrors,$probe3Name." is a required, numeric field when MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
+                    }
+                    if (!isset($params['probe4'][$i]) || $params['probe4'][$i] == "" || !is_numeric($params['probe4'][$i])) {
+                        $probe4Name = $params["assay"] == "2" ? "rpoB2" : "Probe B";
+                        array_push($validationErrors,$probe4Name." is a required, numeric field when MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
+                    }
+                    if (!isset($params['probe5'][$i]) || $params['probe5'][$i] == "" || !is_numeric($params['probe5'][$i])) {
+                        $probe5Name = $params["assay"] == "2" ? "rpoB3" : "SPC";
+                        array_push($validationErrors,$probe5Name." is a required, numeric field when MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
+                    }
+                    if (!isset($params['probe6'][$i]) || $params['probe6'][$i] == "" || !is_numeric($params['probe6'][$i])) {
+                        $probe6Name = $params["assay"] == "2" ? "rpoB4" : "Probe A";
+                        array_push($validationErrors,$probe6Name." is a required, numeric field when MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
+                    }
+                }
+            }
+        }
+        $uniqueValidationErrors = array_unique($validationErrors);
+        return implode("\n", $uniqueValidationErrors);
+    }
+
     public function updateShipmentResults($params) {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $authNameSpace = new Zend_Session_Namespace('administrators');
@@ -387,6 +479,10 @@ class Application_Service_Evaluation {
 
         $schemeService = new Application_Service_Schemes();
         $shipmentData = $schemeService->getShipmentData($params['shipmentId'], $params['participantId']);
+        $validationErrorMessages = $this->validateUpdateShipmentResults($params, $shipmentData);
+        if ($validationErrorMessages != "") {
+            return $validationErrorMessages;
+        }
         if (!isset($shipmentData['attributes']) || $shipmentData['attributes'] == "") {
             $shipmentData['attributes'] = "{}";
         }
@@ -606,6 +702,7 @@ class Application_Service_Evaluation {
                 $params['participantSupervisor'],
                 Application_Service_Common::ParseDate($params['responseDeadlineDate']));
             $db->update('shipment_participant_map', $mapData, "map_id = " . $params['smid']);
+            return "";
         }
 
         $params['isFollowUp'] = (isset($params['isFollowUp']) && $params['isFollowUp'] != "" ) ?
