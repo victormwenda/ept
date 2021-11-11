@@ -17,10 +17,15 @@ class TbController extends Zend_Controller_Action
                 "function" => "controllers/TbController/responseAction POST",
                 "body" => $data
             ));
-            if ($shipmentService->updateTbResults($data)) {
+            $validationMessages = $shipmentService->updateTbResults($data);
+            if ($validationMessages == "") {
                 $shipmentService->sendShipmentSavedEmailToParticipantsAndPTCC($data['participantId'], $data['shipmentId']);
+                $this->_redirect("/participant/dashboard");
+            } else {
+                $alertMsg = new Zend_Session_Namespace('alertSpace');
+                $alertMsg->message = $validationMessages;
+                $this->_redirect($this->getRequest()->getHeader('Referer'));
             }
-            $this->_redirect("/participant/dashboard");
         } else {
             $sID= $this->getRequest()->getParam('sid');
             $pID= $this->getRequest()->getParam('pid');
