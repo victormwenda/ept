@@ -13,7 +13,6 @@ class Application_Service_RawSubmission {
         }
 
         $detailsString = json_encode($details);
-        error_log($detailsString, 0);
         $rawSubmissionDb = new Application_Model_DbTable_RawSubmission();
         return $rawSubmissionDb->addRawSubmission($detailsString);
     }

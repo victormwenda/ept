@@ -57,18 +57,19 @@ class Admin_ResponseController extends Zend_Controller_Action
                 "body" => $params
             ));
             $validationMessages = $responseService->updateShipmentResults($params);
+            $alertMsg = new Zend_Session_Namespace('alertSpace');
             if ($validationMessages == "")
             {
-                $validationMessages = "Shipment Results updated successfully";
+                $alertMsg->message = "Shipment Results updated successfully";
                 $shipmentService = new Application_Service_Shipments();
                 $shipmentService->sendShipmentSavedEmailToParticipantsAndPTCC($params['participantId'], $params['shipmentId']);
-            }
-            $alertMsg = new Zend_Session_Namespace('alertSpace');
-            $alertMsg->message = $validationMessages;
-            if (isset($params['whereToGo']) && $params['whereToGo'] != "") {
-               $this->_redirect($params['whereToGo']);
+                if (isset($params['whereToGo']) && $params['whereToGo'] != "") {
+                    $this->_redirect($params['whereToGo']);
+                } else {
+                    $this->_redirect("/admin/response/shipment/sid/$shipmentId");
+                }
             } else {
-                $this->_redirect("/admin/response/shipment/sid/$shipmentId");
+                $alertMsg->message = $validationMessages;
             }
         } else {
             if ($this->_hasParam('sid') && $this->_hasParam('pid')  && $this->_hasParam('scheme')) {

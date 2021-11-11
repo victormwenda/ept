@@ -246,13 +246,14 @@ class Application_Service_Response {
                     if (!isset($params['errorCode'][$i]) || $params['errorCode'][$i] == "") {
                         array_push($validationErrors,"Error Code is a required field when MTB Detected is Error.");
                     }
-                } else if (in_array($params['mtbDetected'][$i], array("detected", "high", "medium", "low", "veryLow"))) {
-                    if (!isset($params['rifResistance'][$i]) || $params['rifResistance'][$i] == "" || $params['rifResistance'][$i] == "na") {
-                        array_push($validationErrors,"Rif Resistance is a required field when MTB Detected is one of Detected, High, Medium, Low or Very Low.");
-                    }
-                } else if (isset($params["assay"]) && $params["assay"] != "" &&
+                } else if (isset($params["assay"]) && $params["assay"] != "" && isset($params['mtbDetected'][$i]) &&
                     in_array($params['mtbDetected'][$i], array("detected", "high", "medium", "low", "veryLow", "trace", "notDetected"))) {
-                    if (!isset($params['probe1'][$i]) || $params['probe1'][$i] == "" || !is_numeric($params['rifResistance'][$i])) {
+                    if (isset($params['mtbDetected'][$i]) && in_array($params['mtbDetected'][$i], array("detected", "high", "medium", "low", "veryLow"))) {
+                        if (!isset($params['rifResistance'][$i]) || $params['rifResistance'][$i] == "" || $params['rifResistance'][$i] == "na") {
+                            array_push($validationErrors,"Rif Resistance is a required field when MTB Detected is one of Detected, High, Medium, Low or Very Low.");
+                        }
+                    }
+                    if (!isset($params['probe1'][$i]) || $params['probe1'][$i] == "" || (isset($params['rifResistance'][$i]) && !is_numeric($params['rifResistance'][$i]))) {
                         $probe1Name = $params["assay"] == "2" ? "SPC" : "Probe D";
                         array_push($validationErrors,$probe1Name." is a required, numeric field when MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
                     }

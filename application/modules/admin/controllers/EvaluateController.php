@@ -86,15 +86,16 @@ class Admin_EvaluateController extends Zend_Controller_Action {
             ));
             $validationMessages = $evalService->updateShipmentResults($params);
             $shipmentId = base64_encode($params['shipmentId']);
-            if ($validationMessages == "") {
-                $validationMessages = "Shipment Results updated successfully";
-            }
             $alertMsg = new Zend_Session_Namespace('alertSpace');
-            $alertMsg->message = $validationMessages;
-            if (isset($params['whereToGo']) && $params['whereToGo'] != "") {
-                $this->_redirect($params['whereToGo']);
+            if ($validationMessages == "") {
+                $alertMsg->message = "Shipment Results updated successfully";
+                if (isset($params['whereToGo']) && $params['whereToGo'] != "") {
+                    $this->_redirect($params['whereToGo']);
+                } else {
+                    $this->_redirect("/admin/evaluate/shipment/sid/$shipmentId");
+                }
             } else {
-                $this->_redirect("/admin/evaluate/shipment/sid/$shipmentId");
+                $alertMsg->message = $validationMessages;
             }
         } else {
             if ($this->_hasParam('sid') && $this->_hasParam('pid')  && $this->_hasParam('scheme')) {
