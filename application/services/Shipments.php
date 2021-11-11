@@ -549,7 +549,7 @@ class Application_Service_Shipments {
         $evaluationStatus = $shipmentMapFromDatabase['evaluation_status'];
         $submitted = $evaluationStatus[2] == '1';
         if (!$submitted) {
-            return $validationErrors;
+            return "";
         }
         if ($params['unableToSubmit'] == "yes") {
             if (!isset($params["unableToSubmitReason"]) || $params["unableToSubmitReason"] == "") {
@@ -648,7 +648,7 @@ class Application_Service_Shipments {
         $evaluationStatus = $shipmentMapFromDatabase['evaluation_status'];
         $submitted = $evaluationStatus[2] == '1';
         if (!$submitted) {
-            return $validationErrors;
+            return "";
         }
 
         if (!isset($params['dateTested']) || $params['dateTested'] == "") {
@@ -756,7 +756,13 @@ class Application_Service_Shipments {
         $submitted = $evaluationStatus[2] == '1' ||
             (isset($params['submitAction']) && $params['submitAction'] == 'submit');
         if (!$submitted && trim($params['submitResponse']) != 'yes') {
-            return $validationErrors;
+            return "";
+        }
+        if (isset($params['unableToSubmit']) && $params['unableToSubmit'] == "yes") {
+            return "";
+        }
+        if (isset($shipmentMapFromDatabase['is_pt_test_not_performed']) && $shipmentMapFromDatabase['is_pt_test_not_performed'] == "yes") {
+            return "";
         }
         if (!isset($shipmentMapFromDatabase['shipment_receipt_date']) || $shipmentMapFromDatabase["shipment_receipt_date"] == "") {
             array_push($validationErrors,"Shipment Received on is a required field.");
@@ -881,6 +887,20 @@ class Application_Service_Shipments {
             "updated_on_user" => new Zend_Db_Expr('now()'),
             "attributes" => json_encode($attributes)
         );
+        if ($params['unableToSubmit'] == "yes") {
+            $data['is_pt_test_not_performed'] = "yes";
+            if ($params["unableToSubmitReason"] == "other") {
+                $data['not_tested_reason'] = null;
+                $data['pt_test_not_performed_comments'] = $params["unableToSubmitComment"];
+            } else if (isset($params["unableToSubmitReason"]) && trim($params["unableToSubmitReason"]) != "") {
+                $data['not_tested_reason'] = $params["unableToSubmitReason"];
+                $data['pt_test_not_performed_comments'] = null;
+            }
+        } else {
+            $data['is_pt_test_not_performed'] = "no";
+            $data['not_tested_reason'] = null;
+            $data['pt_test_not_performed_comments'] = null;
+        }
         if (isset($params['testReceiptDate']) && trim($params['testReceiptDate'])!= '') {
             $data['shipment_test_report_date'] = Application_Service_Common::ParseDbDate($params['testReceiptDate']);
         } else {
@@ -901,7 +921,7 @@ class Application_Service_Shipments {
         $evaluationStatus = $shipmentMapFromDatabase['evaluation_status'];
         $submitted = $evaluationStatus[2] == '1';
         if (!$submitted) {
-            return $validationErrors;
+            return "";
         }
         if ($params['ableToEnterResults'] == "no") {
             if (!isset($params["notTestedReason"]) || $params["notTestedReason"] == "") {

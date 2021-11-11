@@ -196,10 +196,10 @@ class Application_Service_Response {
         $submitted = $evaluationStatus[2] == '1' ||
             (isset($params['submitAction']) && $params['submitAction'] == 'submit');
         if (!$submitted) {
-            return $validationErrors;
+            return "";
         }
         if (isset($params['transferToParticipant']) && $params['transferToParticipant'] != "") {
-            return $validationErrors;
+            return "";
         }
         if ($params['ableToEnterResults'] == "no") {
             if (!isset($params["notTestedReason"]) || $params["notTestedReason"] == "") {
