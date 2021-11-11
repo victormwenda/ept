@@ -253,7 +253,7 @@ class Application_Service_Response {
                             array_push($validationErrors,"Rif Resistance is a required field when MTB Detected is one of Detected, High, Medium, Low or Very Low.");
                         }
                     }
-                    if (!isset($params['probe1'][$i]) || $params['probe1'][$i] == "" || (isset($params['rifResistance'][$i]) && !is_numeric($params['rifResistance'][$i]))) {
+                    if (!isset($params['probe1'][$i]) || $params['probe1'][$i] == "" || !is_numeric($params['probe1'][$i])) {
                         $probe1Name = $params["assay"] == "2" ? "SPC" : "Probe D";
                         array_push($validationErrors,$probe1Name." is a required, numeric field when MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
                     }

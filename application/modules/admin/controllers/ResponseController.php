@@ -70,6 +70,7 @@ class Admin_ResponseController extends Zend_Controller_Action
                 }
             } else {
                 $alertMsg->message = $validationMessages;
+                $this->_redirect($this->getRequest()->getHeader('Referer'));
             }
         } else {
             if ($this->_hasParam('sid') && $this->_hasParam('pid')  && $this->_hasParam('scheme')) {
