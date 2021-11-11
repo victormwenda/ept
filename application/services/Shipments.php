@@ -660,7 +660,7 @@ class Application_Service_Shipments {
             if (!isset($params['errorCode']) || $params['errorCode'] == "") {
                 array_push($validationErrors,"Error Code is a required field when MTB Detected is Error.");
             }
-        } else if (isset($params["assay"]) && $params["assay"] != "" &&
+        } else if (isset($shipmentMapFromDatabase["attributes"]["assay"]) && $shipmentMapFromDatabase["attributes"]["assay"] != "" &&
             in_array($params['mtbDetected'], array("detected", "high", "medium", "low", "veryLow", "trace", "notDetected"))) {
             if (in_array($params['mtbDetected'], array("detected", "high", "medium", "low", "veryLow"))) {
                 if (!isset($params['rifResistance']) || $params['rifResistance'] == "" || $params['rifResistance'] == "na") {
@@ -842,22 +842,44 @@ class Application_Service_Shipments {
     }
 
     public function updateTbResultFooter($params) {
-        if (!$this->isShipmentEditable($params['shipmentId'], $params['participantId'])) {
+        if (!$this->isShipmentEditable($params["shipmentId"], $params["participantId"])) {
             return "The submission cannot be edited at this point in time.";
         }
-        $shipmentData = $this->getShipmentParticipantMap($params['shipmentId'], $params['participantId']);
+        $shipmentData = $this->getShipmentParticipantMap($params["shipmentId"], $params["participantId"]);
         $validationErrorMessages = $this->validateUpdateTbResultFooter($params, $shipmentData);
         if ($validationErrorMessages != "") {
             return $validationErrorMessages;
         }
         $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
-        $authNameSpace = new Zend_Session_Namespace('datamanagers');
+        $authNameSpace = new Zend_Session_Namespace("datamanagers");
+        $attributes = $shipmentData["attributes"];
+        if (isset($params["cartridgeLotNo"]) && $params["cartridgeLotNo"] != "") {
+            $attributes["cartridge_lot_no"] = $params["cartridgeLotNo"];
+        } else if (isset($params["mtbRifKitLotNo"]) && $params["mtbRifKitLotNo"] != "") {
+            $attributes["cartridge_lot_no"] = $params["mtbRifKitLotNo"];
+        }
+        if (isset($params["expiryDate"]) && $params["expiryDate"] != "") {
+            $attributes["expiry_date"] = $params["expiryDate"];
+        }
+        if (isset($params["assay"]) && $params["assay"] != "") {
+            $attributes["assay"] = $params["assay"];
+        }
+        if (isset($params["countTestsConductedOverMonth"]) && $params["countTestsConductedOverMonth"] != "") {
+            $attributes["count_tests_conducted_over_month"] = $params["countTestsConductedOverMonth"];
+        }
+        if (isset($params["countErrorsEncounteredOverMonth"]) && $params["countErrorsEncounteredOverMonth"] != "") {
+            $attributes["count_errors_encountered_over_month"] = $params["countErrorsEncounteredOverMonth"];
+        }
+        if (isset($params["errorCodesEncounteredOverMonth"]) && $params["errorCodesEncounteredOverMonth"] != "") {
+            $attributes["error_codes_encountered_over_month"] = $params["errorCodesEncounteredOverMonth"];
+        }
         $data = array(
             "supervisor_approval" => $params['supervisorApproval'],
             "participant_supervisor" => $params['participantSupervisor'],
             "user_comment" => $params['userComments'],
             "updated_by_user" => $authNameSpace->dm_id,
-            "updated_on_user" => new Zend_Db_Expr('now()')
+            "updated_on_user" => new Zend_Db_Expr('now()'),
+            "attributes" => json_encode($attributes)
         );
         if (isset($params['testReceiptDate']) && trim($params['testReceiptDate'])!= '') {
             $data['shipment_test_report_date'] = Application_Service_Common::ParseDbDate($params['testReceiptDate']);
