@@ -660,7 +660,7 @@ class Application_Service_Shipments {
             if (!isset($params['errorCode']) || $params['errorCode'] == "") {
                 array_push($validationErrors,"Error Code is a required field when MTB Detected is Error.");
             }
-        } else if (isset($params["assay"]) && $params["assay"] != "" &&
+        } else if (isset($shipmentMapFromDatabase["attributes"]["assay"]) && $shipmentMapFromDatabase["attributes"]["assay"] != "" &&
             in_array($params['mtbDetected'], array("detected", "high", "medium", "low", "veryLow", "trace", "notDetected"))) {
             if (in_array($params['mtbDetected'], array("detected", "high", "medium", "low", "veryLow"))) {
                 if (!isset($params['rifResistance']) || $params['rifResistance'] == "" || $params['rifResistance'] == "na") {
