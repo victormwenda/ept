@@ -373,10 +373,10 @@ class Application_Service_Evaluation {
         $submitted = $evaluationStatus[2] == '1' ||
             (isset($params['submitAction']) && $params['submitAction'] == 'submit');
         if (!$submitted) {
-            return $validationErrors;
+            return "";
         }
         if (isset($params['transferToParticipant']) && $params['transferToParticipant'] != "") {
-            return $validationErrors;
+            return "";
         }
         if ($params['unableToSubmit'] != "yes") {
             if (!isset($params['receiptDate']) || $params["receiptDate"] == "") {
