@@ -171,7 +171,7 @@ class Application_Service_Shipments {
                 $enrolled = '&nbsp;<a class="btn btn-primary btn-xs disabled" href="javascript:void(0);"><span><i class="icon-ambulance"></i> Shipped</span></a>';
                 $announcementMail = '&nbsp;<a class="btn btn-warning btn-xs" href="javascript:void(0);" onclick="mailShipment(\'' . base64_encode($aRow['shipment_id']) . '\')"><span><i class="icon-bullhorn"></i> New Shipment Mail</span></a>';
             }
-            if ($aRow['status'] == 'shipped' || $aRow['status'] == 'evaluated') {
+            if (in_array(ucfirst($aRow['status']), array("Shipped", "Evaluated", "Should be Re-Evaluated"))) {
                 $manageResponses='&nbsp;<a class="btn btn-info btn-xs" href="/admin/shipment/manage-responses/sid/' . base64_encode($aRow['shipment_id']) . '/sctype/'. base64_encode($aRow['scheme_type']) . '"><span><i class="icon-gear"></i> Responses</span></a>';
             }
             if ($aRow['status'] == 'configured') {

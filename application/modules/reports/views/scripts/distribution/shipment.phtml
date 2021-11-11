@@ -53,7 +53,7 @@ if (count($this->shipment) > 0) {
                             if (isset($shipment['reported_count']) && $shipment['reported_count'] > 0) { ?>
                             <a class="btn btn-warning btn-xs" href="/admin/evaluate/shipment/sid/<?php echo base64_encode($shipment['shipment_id']); ?>">
                                 <?php
-                                if (ucfirst($shipment['status']) == "Evaluated") { ?>
+                                if (in_array(ucfirst($shipment['status']), array("Evaluated", "Should be Re-Evaluated"))) { ?>
                                 <span><i class="icon-refresh"></i> Re-Evaluate</span>
                                     <?php
                                 } else { ?>
@@ -68,7 +68,7 @@ if (count($this->shipment) > 0) {
                             } else { ?>
                             <a class="btn btn-primary btn-xs disabled" href="javascript:void(0)">
                                 <?php
-                                if (ucfirst($shipment['status']) == "Evaluated") { ?>
+                                if (in_array(ucfirst($shipment['status']), array("Evaluated", "Should be Re-Evaluated"))) { ?>
                                 <span><i class="icon-refresh"></i> Re-Evaluate</span>
                                 <?php
                                 } else { ?>

@@ -56,7 +56,7 @@ if ($this->shipments == false && count($this->shipments) <= 0) { ?>
                 </td>
     			<td style="text-align: center;">
 <?php
-            if (isset($shipment['status']) && $shipment['status']=='evaluated') { ?>
+            if (isset($shipment['status']) && in_array(ucfirst($shipment['status']), array("Evaluated", "Should be Re-Evaluated"))) { ?>
 	    			<a class="btn btn-success btn-xs" href="/reports/distribution/finalize/sid/<?php echo base64_encode($shipment['shipment_id']); ?>">
                         <span>
                             <i class="icon-check"></i>
