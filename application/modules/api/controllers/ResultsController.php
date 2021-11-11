@@ -170,9 +170,14 @@ class Api_ResultsController extends Zend_Controller_Action {
             $params['shipmentId'] = $sID;
             $params['participantId'] = $pID;
             $shipmentService = new Application_Service_Shipments();
-            $shipmentService->updateTbResultHeader($params);
-            $this->getResponse()->setBody('OK');
-            $this->getResponse()->setHttpResponseCode(200);
+            $validationMessages = $shipmentService->updateTbResultHeader($params);
+            if ($validationMessages == "") {
+                $this->getResponse()->setBody('OK');
+                $this->getResponse()->setHttpResponseCode(200);
+            } else {
+                $this->getResponse()->setBody($validationMessages);
+                $this->getResponse()->setHttpResponseCode(400);
+            }
         }
     }
 
@@ -212,9 +217,14 @@ class Api_ResultsController extends Zend_Controller_Action {
                 $cartridgeLotNo = $params['mtbRifKitLotNo'];
             }
             $shipmentService = new Application_Service_Shipments();
-            $shipmentService->updateTbResult($params, $cartridgeExpirationDate, $cartridgeLotNo);
-            $this->getResponse()->setBody('OK');
-            $this->getResponse()->setHttpResponseCode(200);
+            $validationMessages = $shipmentService->updateTbResult($params, $cartridgeExpirationDate, $cartridgeLotNo);
+            if ($validationMessages == "") {
+                $this->getResponse()->setBody('OK');
+                $this->getResponse()->setHttpResponseCode(200);
+            } else {
+                $this->getResponse()->setBody($validationMessages);
+                $this->getResponse()->setHttpResponseCode(400);
+            }
         }
     }
 
@@ -245,11 +255,15 @@ class Api_ResultsController extends Zend_Controller_Action {
                 $params['submitResponse'] = 'no';
             }
             $shipmentService = new Application_Service_Shipments();
-            if($shipmentService->updateTbResultFooter($params)) {
+            $validationMessages = $shipmentService->updateTbResultFooter($params);
+            if ($validationMessages == "") {
                 $shipmentService->sendShipmentSavedEmailToParticipantsAndPTCC($pID, $sID);
+                $this->getResponse()->setBody('OK');
+                $this->getResponse()->setHttpResponseCode(200);
+            } else {
+                $this->getResponse()->setBody($validationMessages);
+                $this->getResponse()->setHttpResponseCode(400);
             }
-            $this->getResponse()->setBody('OK');
-            $this->getResponse()->setHttpResponseCode(200);
         }
     }
 }

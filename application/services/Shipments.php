@@ -534,11 +534,63 @@ class Application_Service_Shipments {
         }
     }
 
+    private function getShipmentParticipantMap($shipmentId, $participantId) {
+        $schemeService = new Application_Service_Schemes();
+        $shipmentData = $schemeService->getShipmentData($shipmentId, $participantId);
+        if (!isset($shipmentData['attributes']) || $shipmentData['attributes'] == "") {
+            $shipmentData['attributes'] = "{}";
+        }
+        $shipmentData['attributes'] = json_decode($shipmentData['attributes'], true);
+        return $shipmentData;
+    }
+
+    public function validateUpdateTbResultHeader($params, $shipmentMapFromDatabase) {
+        $validationErrors = array();
+        $evaluationStatus = $shipmentMapFromDatabase['evaluation_status'];
+        $submitted = $evaluationStatus[2] == '1';
+        if (!$submitted) {
+            return $validationErrors;
+        }
+        if ($params['unableToSubmit'] == "yes") {
+            if (!isset($params["unableToSubmitReason"]) || $params["unableToSubmitReason"] == "") {
+                array_push($validationErrors,"Reason for not testing the panel is a required field.");
+            } else if ($params["unableToSubmitReason"] == "other" &&
+                (!isset($params['unableToSubmitComment']) || $params['unableToSubmitComment'] == "")) {
+                array_push($validationErrors,"Please specify a reason for not testing the panel?");
+            }
+        } else {
+            if (!isset($params['assay']) || $params["assay"] == "") {
+                array_push($validationErrors,"Assay is a required field.");
+            }
+            $cartridgeLotNo = isset($params['cartridgeLotNo']) ? $params['cartridgeLotNo'] : $params['mtbRifKitLotNo'];
+            if (!isset($cartridgeLotNo) || $cartridgeLotNo == "") {
+                array_push($validationErrors,"Cartridge Lot No is a required field.");
+            }
+            if (!isset($params['expiryDate']) || $params["expiryDate"] == "") {
+                array_push($validationErrors,"Expiration date of Cartridge is a required field.");
+            }
+            if (isset($params['qcDone']) && $params["qcDone"] == "yes") {
+                if (!isset($params['qcDate']) || $params["qcDate"] == "") {
+                    array_push($validationErrors,"Maintenance Date is a required field.");
+                }
+                if (!isset($params['qcDoneBy']) || $params["qcDoneBy"] == "") {
+                    array_push($validationErrors,"Maintenance Done By is a required field.");
+                }
+            }
+        }
+        $uniqueValidationErrors = array_unique($validationErrors);
+        return implode("\n", $uniqueValidationErrors);
+    }
+
     public function updateTbResultHeader($params) {
         if (!$this->isShipmentEditable($params['shipmentId'], $params['participantId'])) {
-            return false;
+            return "The submission cannot be edited at this point in time.";
         }
-        $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
+        $shipmentData = $this->getShipmentParticipantMap($params['shipmentId'], $params['participantId']);
+        $validationErrorMessages = $this->validateUpdateTbResultHeader($params, $shipmentData);
+        if ($validationErrorMessages != "") {
+            return $validationErrorMessages;
+        }
         $authNameSpace = new Zend_Session_Namespace('datamanagers');
         $attributes = array(
             "cartridge_lot_no" => isset($params['cartridgeLotNo']) ? $params['cartridgeLotNo'] : $params['mtbRifKitLotNo'],
@@ -586,27 +638,86 @@ class Application_Service_Shipments {
                 $data['qc_created_on'] = NULL;
             }
         }
-
+        $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
         $shipmentParticipantDb->updateShipmentValues($data, $params['smid']);
+        return "";
+    }
+
+    public function validateUpdateTbResult($params, $shipmentMapFromDatabase) {
+        $validationErrors = array();
+        $evaluationStatus = $shipmentMapFromDatabase['evaluation_status'];
+        $submitted = $evaluationStatus[2] == '1';
+        if (!$submitted) {
+            return $validationErrors;
+        }
+
+        if (!isset($params['dateTested']) || $params['dateTested'] == "") {
+            array_push($validationErrors,"Date Tested is a required field.");
+        }
+        if (!isset($params['mtbDetected']) || $params['mtbDetected'] == "") {
+            array_push($validationErrors,"MTB Detected is a required field.");
+        } else if ($params['mtbDetected'] == "error") {
+            if (!isset($params['errorCode']) || $params['errorCode'] == "") {
+                array_push($validationErrors,"Error Code is a required field when MTB Detected is Error.");
+            }
+        } else if (isset($params["assay"]) && $params["assay"] != "" &&
+            in_array($params['mtbDetected'], array("detected", "high", "medium", "low", "veryLow", "trace", "notDetected"))) {
+            if (in_array($params['mtbDetected'], array("detected", "high", "medium", "low", "veryLow"))) {
+                if (!isset($params['rifResistance']) || $params['rifResistance'] == "" || $params['rifResistance'] == "na") {
+                    array_push($validationErrors,"Rif Resistance is a required field when MTB Detected is one of Detected, High, Medium, Low or Very Low.");
+                }
+            }
+            if (!isset($params['probe1']) || $params['probe1'] == "" || !is_numeric($params['rifResistance'])) {
+                $probe1Name = $shipmentMapFromDatabase["attributes"]["assay"] == "2" ? "SPC" : "Probe D";
+                array_push($validationErrors,$probe1Name." is a required, numeric field when MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
+            }
+            if (!isset($params['probe2']) || $params['probe2'] == "" || !is_numeric($params['probe2'])) {
+                $probe2Name = $shipmentMapFromDatabase["attributes"]["assay"] == "2" ? "IS1081-IS6110" : "Probe C";
+                array_push($validationErrors,$probe2Name." is a required, numeric field when MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
+            }
+            if (!isset($params['probe3']) || $params['probe3'] == "" || !is_numeric($params['probe3'])) {
+                $probe3Name = $shipmentMapFromDatabase["attributes"]["assay"] == "2" ? "rpoB1" : "Probe E";
+                array_push($validationErrors,$probe3Name." is a required, numeric field when MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
+            }
+            if (!isset($params['probe4']) || $params['probe4'] == "" || !is_numeric($params['probe4'])) {
+                $probe4Name = $shipmentMapFromDatabase["attributes"]["assay"] == "2" ? "rpoB2" : "Probe B";
+                array_push($validationErrors,$probe4Name." is a required, numeric field when MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
+            }
+            if (!isset($params['probe5']) || $params['probe5'] == "" || !is_numeric($params['probe5'])) {
+                $probe5Name = $shipmentMapFromDatabase["attributes"]["assay"] == "2" ? "rpoB3" : "SPC";
+                array_push($validationErrors,$probe5Name." is a required, numeric field when MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
+            }
+            if (!isset($params['probe6']) || $params['probe6'] == "" || !is_numeric($params['probe6'])) {
+                $probe6Name = $shipmentMapFromDatabase["attributes"]["assay"] == "2" ? "rpoB4" : "Probe A";
+                array_push($validationErrors,$probe6Name." is a required, numeric field when MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
+            }
+        }
+
+        $uniqueValidationErrors = array_unique($validationErrors);
+        return implode("\n", $uniqueValidationErrors);
     }
 
     public function updateTbResult($params, $cartridgeExpirationDate, $cartridgeLotNo) {
         if (!$this->isShipmentEditable($params['shipmentId'], $params['participantId'])) {
-            return false;
+            return "The submission cannot be edited at this point in time.";
+        }
+        $shipmentData = $this->getShipmentParticipantMap($params['shipmentId'], $params['participantId']);
+        $validationErrorMessages = $this->validateUpdateTbResult($params, $shipmentData);
+        if ($validationErrorMessages != "") {
+            return $validationErrorMessages;
         }
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $db->beginTransaction();
         try {
-
             $mtbDetected = $params['mtbDetected'];
             $rifResistance = $params['rifResistance'];
             $errorCode = $params['errorCode'];
             if ($mtbDetected != "error") {
                 $errorCode = null;
                 if(!in_array($mtbDetected, array("detected", "high", "medium", "low", "veryLow")) && ($rifResistance == null || $rifResistance == "")) {
-                    if($mtbDetected=="trace") {
+                    if ($mtbDetected=="trace") {
                         $rifResistance = "indeterminate";
-                    }else{
+                    } else {
                         $rifResistance = "na";
                     }
                 }
@@ -630,16 +741,114 @@ class Application_Service_Shipments {
             }
 
             $db->commit();
+            return "";
         } catch (Exception $e) {
             $db->rollBack();
             error_log($e->getMessage());
             error_log($e->getTraceAsString());
+            return "An unexpected error occurred when trying to submit these results.";
         }
+    }
+
+    public function validateUpdateTbResultFooter($params, $shipmentMapFromDatabase) {
+        $validationErrors = array();
+        $evaluationStatus = $shipmentMapFromDatabase['evaluation_status'];
+        $submitted = $evaluationStatus[2] == '1' ||
+            (isset($params['submitAction']) && $params['submitAction'] == 'submit');
+        if (!$submitted && trim($params['submitResponse']) != 'yes') {
+            return $validationErrors;
+        }
+        if (!isset($shipmentMapFromDatabase['shipment_receipt_date']) || $shipmentMapFromDatabase["shipment_receipt_date"] == "") {
+            array_push($validationErrors,"Shipment Received on is a required field.");
+        }
+        if (!isset($shipmentMapFromDatabase["attributes"]["assay"]) || $shipmentMapFromDatabase["attributes"]["assay"] == "") {
+            array_push($validationErrors,"Assay is a required field.");
+        }
+        if (!isset($shipmentMapFromDatabase["attributes"]["cartridgeLotNo"]) || $shipmentMapFromDatabase["attributes"]["cartridgeLotNo"] == "") {
+            array_push($validationErrors,"Cartridge Lot No is a required field.");
+        }
+        if (!isset($shipmentMapFromDatabase["attributes"]['expiryDate']) || $params["expiryDate"] == "") {
+            array_push($validationErrors,"Expiration date of Cartridge is a required field.");
+        }
+        if (!isset($shipmentMapFromDatabase['shipment_test_report_date']) || $shipmentMapFromDatabase["shipment_test_report_date"] == "") {
+            array_push($validationErrors,"Response Date is a required field.");
+        }
+        if (isset($shipmentMapFromDatabase['qc_done']) && $params["qcDone"] == "yes") {
+            if (!isset($shipmentMapFromDatabase['qc_date']) || $shipmentMapFromDatabase['qc_date'] == "") {
+                array_push($validationErrors,"Maintenance Date is a required field.");
+            }
+            if (!isset($shipmentMapFromDatabase['qc_done_by']) || $shipmentMapFromDatabase['qc_done_by'] == "") {
+                array_push($validationErrors,"Maintenance Done By is a required field.");
+            }
+        }
+
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $sql = $db->select()->from(array('res' => 'response_result_tb'))
+            ->where("res.shipment_map_id = ?", $shipmentMapFromDatabase["map_id"]);
+        $sampleResults = $db->fetchAll($sql);
+        $size = count($sampleResults);
+        if ($size != 5) {
+            array_push($validationErrors,"All 5 samples need to be tested and there values entered.");
+        }
+        for ($i = 0; $i < $size; $i++) {
+            if (!isset($sampleResults[$i]['date_tested']) || $sampleResults[$i]['date_tested'] == "") {
+                array_push($validationErrors,"Date Tested is a required field for each sample.");
+            }
+            if (!isset($sampleResults[$i]['mtb_detected']) || $sampleResults[$i]['mtb_detected'] == "") {
+                array_push($validationErrors,"MTB Detected is a required field for each sample.");
+            } else if ($sampleResults[$i]['mtb_detected'] == "error") {
+                if (!isset($sampleResults[$i]['error_code']) || $sampleResults[$i]['error_code'] == "") {
+                    array_push($validationErrors,"Error Code is a required field for a sample when MTB Detected is Error.");
+                }
+            } else if (in_array($sampleResults[$i]['mtb_detected'], array("detected", "high", "medium", "low", "veryLow"))) {
+                if (!isset($sampleResults[$i]['rif_resistance']) || $sampleResults[$i]['rif_resistance'] == "" || $sampleResults[$i]['rif_resistance'] == "na") {
+                    array_push($validationErrors,"Rif Resistance is a required field for each sample where MTB Detected is one of Detected, High, Medium, Low or Very Low.");
+                }
+            } else if (isset($shipmentMapFromDatabase["attributes"]["assay"]) && $shipmentMapFromDatabase["attributes"]["assay"] != "" &&
+                in_array($sampleResults[$i]['mtb_detected'], array("detected", "high", "medium", "low", "veryLow", "trace", "notDetected"))) {
+                if (!isset($sampleResults[$i]['probe_1']) || $sampleResults[$i]['probe_1'] == "" || !is_numeric($sampleResults[$i]['probe_1'])) {
+                    $probe1Name = $shipmentMapFromDatabase["attributes"]["assay"] == "2" ? "SPC" : "Probe D";
+                    array_push($validationErrors,$probe1Name." is a required, numeric field for each sample where MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
+                }
+                if (!isset($sampleResults[$i]['probe_2']) || $sampleResults[$i]['probe_2'] == "" || !is_numeric($sampleResults[$i]['probe_2'])) {
+                    $probe2Name = $shipmentMapFromDatabase["attributes"]["assay"] == "2" ? "IS1081-IS6110" : "Probe C";
+                    array_push($validationErrors,$probe2Name." is a required, numeric field for each sample where MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
+                }
+                if (!isset($sampleResults[$i]['probe_3']) || $sampleResults[$i]['probe_3'] == "" || !is_numeric($sampleResults[$i]['probe_3'])) {
+                    $probe3Name = $shipmentMapFromDatabase["attributes"]["assay"] == "2" ? "rpoB1" : "Probe E";
+                    array_push($validationErrors,$probe3Name." is a required, numeric field for each sample where MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
+                }
+                if (!isset($sampleResults[$i]['probe_4']) || $sampleResults[$i]['probe_4'] == "" || !is_numeric($sampleResults[$i]['probe_4'])) {
+                    $probe4Name = $shipmentMapFromDatabase["attributes"]["assay"] == "2" ? "rpoB2" : "Probe B";
+                    array_push($validationErrors,$probe4Name." is a required, numeric field for each sample where MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
+                }
+                if (!isset($sampleResults[$i]['probe_5']) || $sampleResults[$i]['probe_5'] == "" || !is_numeric($sampleResults[$i]['probe_5'])) {
+                    $probe5Name = $shipmentMapFromDatabase["attributes"]["assay"] == "2" ? "rpoB3" : "SPC";
+                    array_push($validationErrors,$probe5Name." is a required, numeric field for each sample where MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
+                }
+                if (!isset($sampleResults[$i]['probe_6']) || $sampleResults[$i]['probe_6'] == "" || !is_numeric($sampleResults[$i]['probe_6'])) {
+                    $probe6Name = $shipmentMapFromDatabase["attributes"]["assay"] == "2" ? "rpoB4" : "Probe A";
+                    array_push($validationErrors,$probe6Name." is a required, numeric field for each sample where MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
+                }
+            }
+        }
+        if (!isset($params['supervisorApproval']) || $params["supervisorApproval"] == "") {
+            array_push($validationErrors,"Supervisor Review is a required field.");
+        } else if ($params["supervisorApproval"] == "yes" && (!isset($params['participantSupervisor']) || $params["participantSupervisor"] == "")) {
+            array_push($validationErrors,"Supervisor Name is a required field.");
+        }
+        $uniqueValidationErrors = array_unique($validationErrors);
+        return implode("\n", $uniqueValidationErrors);
     }
 
     public function updateTbResultFooter($params) {
         if (!$this->isShipmentEditable($params['shipmentId'], $params['participantId'])) {
-            return false;
+            return "The submission cannot be edited at this point in time.";
+        }
+        $shipmentData = $this->getShipmentParticipantMap($params['shipmentId'], $params['participantId']);
+        $validationErrorMessages = $this->validateUpdateTbResultFooter($params, $shipmentData);
+        if ($validationErrorMessages != "") {
+            return $validationErrorMessages;
         }
         $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
         $authNameSpace = new Zend_Session_Namespace('datamanagers');
@@ -665,9 +874,107 @@ class Application_Service_Shipments {
         return true;
     }
 
+    public function validateUpdateTbResults($params, $shipmentMapFromDatabase) {
+        $validationErrors = array();
+        $evaluationStatus = $shipmentMapFromDatabase['evaluation_status'];
+        $submitted = $evaluationStatus[2] == '1';
+        if (!$submitted) {
+            return $validationErrors;
+        }
+        if ($params['ableToEnterResults'] == "no") {
+            if (!isset($params["notTestedReason"]) || $params["notTestedReason"] == "") {
+                array_push($validationErrors,"Reason for not testing the panel is a required field.");
+            } else if ($params["notTestedReason"] == "other" &&
+                (!isset($params['notTestedOtherReason']) || $params['notTestedOtherReason'] == "")) {
+                array_push($validationErrors,"Please specify a reason for not testing the panel?");
+            }
+        } else {
+            if (!isset($params['assay']) || $params["assay"] == "") {
+                array_push($validationErrors,"Assay is a required field.");
+            }
+            $cartridgeLotNo = isset($params['cartridgeLotNo']) ? $params['cartridgeLotNo'] : $params['mtbRifKitLotNo'];
+            if (!isset($cartridgeLotNo) || $cartridgeLotNo == "") {
+                array_push($validationErrors,"Cartridge Lot No is a required field.");
+            }
+            if (!isset($params['expiryDate']) || $params["expiryDate"] == "") {
+                array_push($validationErrors,"Expiration date of Cartridge is a required field.");
+            }
+            if (isset($params['qcDone']) && $params["qcDone"] == "yes") {
+                if (!isset($params['qcDate']) || $params["qcDate"] == "") {
+                    array_push($validationErrors,"Maintenance Date is a required field.");
+                }
+                if (!isset($params['qcDoneBy']) || $params["qcDoneBy"] == "") {
+                    array_push($validationErrors,"Maintenance Done By is a required field.");
+                }
+            }
+            if (!isset($params['receiptDate']) || $params["receiptDate"] == "") {
+                array_push($validationErrors,"Shipment Received on is a required field.");
+            }
+            $size = count($params['sampleId']);
+            if ($size < 5) {
+                array_push($validationErrors,"All 5 samples need to be tested and there values entered.");
+            }
+            for ($i = 0; $i < $size; $i++) {
+                if (!isset($params['dateTested'][$i]) || $params['dateTested'][$i] == "") {
+                    array_push($validationErrors,"Date Tested is a required field.");
+                }
+                if (!isset($params['mtbDetected'][$i]) || $params['mtbDetected'][$i] == "") {
+                    array_push($validationErrors,"MTB Detected is a required field.");
+                } else if ($params['mtbDetected'][$i] == "error") {
+                    if (!isset($params['errorCode'][$i]) || $params['errorCode'][$i] == "") {
+                        array_push($validationErrors,"Error Code is a required field when MTB Detected is Error.");
+                    }
+                } else if (isset($params["assay"]) && $params["assay"] != "" && isset($params['mtbDetected'][$i]) &&
+                    in_array($params['mtbDetected'][$i], array("detected", "high", "medium", "low", "veryLow", "trace", "notDetected"))) {
+                    if (isset($params['mtbDetected'][$i]) && in_array($params['mtbDetected'][$i], array("detected", "high", "medium", "low", "veryLow"))) {
+                        if (!isset($params['rifResistance'][$i]) || $params['rifResistance'][$i] == "" || $params['rifResistance'][$i] == "na") {
+                            array_push($validationErrors,"Rif Resistance is a required field when MTB Detected is one of Detected, High, Medium, Low or Very Low.");
+                        }
+                    }
+                    if (!isset($params['probe1'][$i]) || $params['probe1'][$i] == "" || !is_numeric($params['probe1'][$i])) {
+                        $probe1Name = $params["assay"] == "2" ? "SPC" : "Probe D";
+                        array_push($validationErrors,$probe1Name." is a required, numeric field when MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
+                    }
+                    if (!isset($params['probe2'][$i]) || $params['probe2'][$i] == "" || !is_numeric($params['probe2'][$i])) {
+                        $probe2Name = $params["assay"] == "2" ? "IS1081-IS6110" : "Probe C";
+                        array_push($validationErrors,$probe2Name." is a required, numeric field when MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
+                    }
+                    if (!isset($params['probe3'][$i]) || $params['probe3'][$i] == "" || !is_numeric($params['probe3'][$i])) {
+                        $probe3Name = $params["assay"] == "2" ? "rpoB1" : "Probe E";
+                        array_push($validationErrors,$probe3Name." is a required, numeric field when MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
+                    }
+                    if (!isset($params['probe4'][$i]) || $params['probe4'][$i] == "" || !is_numeric($params['probe4'][$i])) {
+                        $probe4Name = $params["assay"] == "2" ? "rpoB2" : "Probe B";
+                        array_push($validationErrors,$probe4Name." is a required, numeric field when MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
+                    }
+                    if (!isset($params['probe5'][$i]) || $params['probe5'][$i] == "" || !is_numeric($params['probe5'][$i])) {
+                        $probe5Name = $params["assay"] == "2" ? "rpoB3" : "SPC";
+                        array_push($validationErrors,$probe5Name." is a required, numeric field when MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
+                    }
+                    if (!isset($params['probe6'][$i]) || $params['probe6'][$i] == "" || !is_numeric($params['probe6'][$i])) {
+                        $probe6Name = $params["assay"] == "2" ? "rpoB4" : "Probe A";
+                        array_push($validationErrors,$probe6Name." is a required, numeric field when MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
+                    }
+                }
+            }
+            if (!isset($params['supervisorApproval']) || $params["supervisorApproval"] == "") {
+                array_push($validationErrors,"Supervisor Review is a required field.");
+            } else if ($params["supervisorApproval"] == "yes" && (!isset($params['participantSupervisor']) || $params["participantSupervisor"] == "")) {
+                array_push($validationErrors,"Supervisor Name is a required field.");
+            }
+        }
+        $uniqueValidationErrors = array_unique($validationErrors);
+        return implode("\n", $uniqueValidationErrors);
+    }
+
     public function updateTbResults($params) {
         if (!$this->isShipmentEditable($params['shipmentId'], $params['participantId'])) {
-            return false;
+            return "The submission cannot be edited at this point in time.";
+        }
+        $shipmentData = $this->getShipmentParticipantMap($params['shipmentId'], $params['participantId']);
+        $validationErrorMessages = $this->validateUpdateTbResultFooter($params, $shipmentData);
+        if ($validationErrorMessages != "") {
+            return $validationErrorMessages;
         }
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $db->beginTransaction();
@@ -766,13 +1073,13 @@ class Application_Service_Shipments {
                 }
             }
             $db->commit();
-            return true;
+            return "";
         } catch (Exception $e) {
             $db->rollBack();
             error_log($e->getMessage());
             error_log($e->getTraceAsString());
+            return "An unexpected error occurred when trying to submit these results.";
         }
-        return false;
     }
 
     public function addShipment($params) {

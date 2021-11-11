@@ -190,293 +190,394 @@ class Application_Service_Response {
         );
     }
 
+    public function validateUpdateShipmentResults($params, $shipmentMapFromDatabase) {
+        $validationErrors = array();
+        $evaluationStatus = $shipmentMapFromDatabase['evaluation_status'];
+        $submitted = $evaluationStatus[2] == '1' ||
+            (isset($params['submitAction']) && $params['submitAction'] == 'submit');
+        if (!$submitted) {
+            return $validationErrors;
+        }
+        if (isset($params['transferToParticipant']) && $params['transferToParticipant'] != "") {
+            return $validationErrors;
+        }
+        if ($params['ableToEnterResults'] == "no") {
+            if (!isset($params["notTestedReason"]) || $params["notTestedReason"] == "") {
+                array_push($validationErrors,"Reason for not testing the panel is a required field.");
+            } else if ($params["notTestedReason"] == "other" &&
+                (!isset($params['notTestedOtherReason']) || $params['notTestedOtherReason'] == "")) {
+                array_push($validationErrors,"Please specify a reason for not testing the panel?");
+            }
+        } else {
+            if (!isset($params['receiptDate']) || $params["receiptDate"] == "") {
+                array_push($validationErrors,"Shipment Received on is a required field.");
+            }
+            if (!isset($params['assay']) || $params["assay"] == "") {
+                array_push($validationErrors,"Assay is a required field.");
+            }
+            if (!isset($params['cartridgeLotNo']) || $params["cartridgeLotNo"] == "") {
+                array_push($validationErrors,"Cartridge Lot No is a required field.");
+            }
+            if (!isset($params['expiryDate']) || $params["expiryDate"] == "") {
+                array_push($validationErrors,"Expiration date of Cartridge is a required field.");
+            }
+            if (!isset($params['testReceiptDate']) || $params["testReceiptDate"] == "") {
+                array_push($validationErrors,"Response Date is a required field.");
+            }
+            if (isset($params['qcDone']) && $params["qcDone"] == "yes") {
+                if (!isset($params['qcDate']) || $params["qcDate"] == "") {
+                    array_push($validationErrors,"Maintenance Date is a required field.");
+                }
+                if (!isset($params['qcDoneBy']) || $params["qcDoneBy"] == "") {
+                    array_push($validationErrors,"Maintenance Done By is a required field.");
+                }
+            }
+            $size = count($params['sampleId']);
+            if ($size < 5) {
+                array_push($validationErrors,"All 5 samples need to be tested and there values entered.");
+            }
+            for ($i = 0; $i < $size; $i++) {
+                if (!isset($params['dateTested'][$i]) || $params['dateTested'][$i] == "") {
+                    array_push($validationErrors,"Date Tested is a required field.");
+                }
+                if (!isset($params['mtbDetected'][$i]) || $params['mtbDetected'][$i] == "") {
+                    array_push($validationErrors,"MTB Detected is a required field.");
+                } else if ($params['mtbDetected'][$i] == "error") {
+                    if (!isset($params['errorCode'][$i]) || $params['errorCode'][$i] == "") {
+                        array_push($validationErrors,"Error Code is a required field when MTB Detected is Error.");
+                    }
+                } else if (isset($params["assay"]) && $params["assay"] != "" && isset($params['mtbDetected'][$i]) &&
+                    in_array($params['mtbDetected'][$i], array("detected", "high", "medium", "low", "veryLow", "trace", "notDetected"))) {
+                    if (isset($params['mtbDetected'][$i]) && in_array($params['mtbDetected'][$i], array("detected", "high", "medium", "low", "veryLow"))) {
+                        if (!isset($params['rifResistance'][$i]) || $params['rifResistance'][$i] == "" || $params['rifResistance'][$i] == "na") {
+                            array_push($validationErrors,"Rif Resistance is a required field when MTB Detected is one of Detected, High, Medium, Low or Very Low.");
+                        }
+                    }
+                    if (!isset($params['probe1'][$i]) || $params['probe1'][$i] == "" || !is_numeric($params['probe1'][$i])) {
+                        $probe1Name = $params["assay"] == "2" ? "SPC" : "Probe D";
+                        array_push($validationErrors,$probe1Name." is a required, numeric field when MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
+                    }
+                    if (!isset($params['probe2'][$i]) || $params['probe2'][$i] == "" || !is_numeric($params['probe2'][$i])) {
+                        $probe2Name = $params["assay"] == "2" ? "IS1081-IS6110" : "Probe C";
+                        array_push($validationErrors,$probe2Name." is a required, numeric field when MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
+                    }
+                    if (!isset($params['probe3'][$i]) || $params['probe3'][$i] == "" || !is_numeric($params['probe3'][$i])) {
+                        $probe3Name = $params["assay"] == "2" ? "rpoB1" : "Probe E";
+                        array_push($validationErrors,$probe3Name." is a required, numeric field when MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
+                    }
+                    if (!isset($params['probe4'][$i]) || $params['probe4'][$i] == "" || !is_numeric($params['probe4'][$i])) {
+                        $probe4Name = $params["assay"] == "2" ? "rpoB2" : "Probe B";
+                        array_push($validationErrors,$probe4Name." is a required, numeric field when MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
+                    }
+                    if (!isset($params['probe5'][$i]) || $params['probe5'][$i] == "" || !is_numeric($params['probe5'][$i])) {
+                        $probe5Name = $params["assay"] == "2" ? "rpoB3" : "SPC";
+                        array_push($validationErrors,$probe5Name." is a required, numeric field when MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
+                    }
+                    if (!isset($params['probe6'][$i]) || $params['probe6'][$i] == "" || !is_numeric($params['probe6'][$i])) {
+                        $probe6Name = $params["assay"] == "2" ? "rpoB4" : "Probe A";
+                        array_push($validationErrors,$probe6Name." is a required, numeric field when MTB Detected is one of Detected, High, Medium, Low, Very Low, Trace or Not Detected.");
+                    }
+                }
+            }
+            if (!isset($params['supervisorApproval']) || $params["supervisorApproval"] == "") {
+                array_push($validationErrors,"Supervisor Review is a required field.");
+            } else if ($params["supervisorApproval"] == "yes" && (!isset($params['participantSupervisor']) || $params["participantSupervisor"] == "")) {
+                array_push($validationErrors,"Supervisor Name is a required field.");
+            }
+        }
+        $uniqueValidationErrors = array_unique($validationErrors);
+        return implode("\n", $uniqueValidationErrors);
+    }
+
     public function updateShipmentResults($params) {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $authNameSpace = new Zend_Session_Namespace('administrators');
         $admin = $authNameSpace->primary_email;
-        $size = count($params['sampleId']);
 
-        if ($params['scheme'] == 'tb') {
-            $attributes = array(
-                "cartridge_lot_no" => isset($params['cartridgeLotNo']) ? $params['cartridgeLotNo'] : $params['mtbRifKitLotNo'],
-                "expiry_date" =>  Application_Service_Common::ParseDate($params['expiryDate']),
-                "assay" => $params['assay'],
-                "count_tests_conducted_over_month" => $params['countTestsConductedOverMonth'],
-                "count_errors_encountered_over_month" => $params['countErrorsEncounteredOverMonth'],
-                "error_codes_encountered_over_month" => $params['errorCodesEncounteredOverMonth']
-            );
-            if (isset($params['transferToParticipant']) && $params['transferToParticipant'] != "") {
-                $attributes["transferToParticipantId"] = $params['transferToParticipant'];
-            }
-            $mapData = array(
-                "shipment_receipt_date" => Application_Service_Common::ParseDate($params['receiptDate']),
-                "attributes" => json_encode($attributes),
-                "supervisor_approval" => $params['supervisorApproval'],
-                "participant_supervisor" => $params['participantSupervisor'],
-                "user_comment" => $params['userComments'],
-                "updated_by_admin" => $admin,
-                "updated_on_admin" => new Zend_Db_Expr('now()')
-            );
-            if (isset($params['testDate'])) {
-                $mapData['shipment_test_date'] = Application_Service_Common::ParseDate($params['testDate']);
-            }
-            if (isset($params['modeOfReceipt'])) {
-                $mapData['mode_id'] = $params['modeOfReceipt'];
-            }
-            if ($params['ableToEnterResults'] == "no") {
-                $mapData['is_pt_test_not_performed'] = "yes";
-                if ($params["notTestedReason"] == "other") {
-                    $mapData['not_tested_reason'] = null;
-                    $mapData['pt_test_not_performed_comments'] = $params["notTestedOtherReason"];
-                } else if (isset($params["notTestedReason"]) && trim($params["notTestedReason"]) != "") {
-                    $mapData['not_tested_reason'] = $params["notTestedReason"];
-                    $mapData['pt_test_not_performed_comments'] = null;
-                }
+        $shipmentMap = $db->fetchRow($db->select()->from(array('spm' => 'shipment_participant_map'))
+            ->where("spm.map_id = ?", $params['smid']));
+        $validationErrorMessages = $this->validateUpdateShipmentResults($params, $shipmentMap);
+        if ($validationErrorMessages != "") {
+            return $validationErrorMessages;
+        }
 
-                if (isset($params['submitAction']) && $params['submitAction'] == 'submit') {
-                    $transferToParticipantId = "";
-                    if (isset($attributes)) {
-                        if (isset($attributes['transferToParticipantId'])) {
-                            $transferToParticipantId = $attributes['transferToParticipantId'];
-                        }
-                    }
-                    if ($transferToParticipantId != "") {
-                        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
-                        $sql = $db->select()
-                            ->from(array('spm' => 'shipment_participant_map'))
-                            ->where("spm.shipment_id = ?", $params["shipmentId"])
-                            ->where("spm.participant_id = ?", $transferToParticipantId);
-                        $enrolledParticipant = $db->fetchRow($sql);
-                        if (!isset($enrolledParticipant) || !$enrolledParticipant) {
-                            $enrollmentData = array(
-                                'shipment_id' => $params['shipmentId'],
-                                'participant_id' => $transferToParticipantId,
-                                'evaluation_status' => '19901190',
-                                'created_by_admin' => $authNameSpace->admin_id,
-                                "created_on_admin" => new Zend_Db_Expr('now()'));
-                            $db->insert('shipment_participant_map', $enrollmentData);
-
-                            $emailParticipantDetailsQuery = $db->select()->from(array('sp' => 'shipment_participant_map'),
-                                array(
-                                    'sp.participant_id',
-                                    'sp.shipment_id',
-                                    'sp.map_id',
-                                    'sp.new_shipment_mail_count'
-                                ))
-                                ->join(array('s' => 'shipment'), 's.shipment_id=sp.shipment_id', array('s.shipment_code', 's.shipment_code'))
-                                ->join(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id',
-                                    array('distribution_code', 'distribution_date'))
-                                ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id',
-                                    array(
-                                        'p.email',
-                                        'participantName' => new Zend_Db_Expr(
-                                            "GROUP_CONCAT(DISTINCT p.lab_name ORDER BY p.lab_name SEPARATOR ', ')"
-                                        )
-                                    ))
-                                ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('SCHEME' => 'sl.scheme_name'))
-                                ->joinLeft(array('pmm' => 'participant_manager_map'), 'pmm.participant_id = sp.participant_id', array())
-                                ->joinLeft(array('pnt' => 'push_notification_token'), 'pnt.dm_id = pmm.dm_id',
-                                    array('push_notification_token'))
-                                ->where("sp.shipment_id = ?", $params['shipmentId'])
-                                ->where("sp.participant_id = ?", $transferToParticipantId)
-                                ->group("p.participant_id");
-                            $participantEmailDetailsList = $db->fetchAll($emailParticipantDetailsQuery);
-
-                            if (isset($participantEmailDetailsList) && count($participantEmailDetailsList) > 0) {
-                                foreach ($participantEmailDetailsList as $participantEmailDetails) {
-                                    if (isset($participantEmailDetails['email']) && $participantEmailDetails['email'] != '') {
-                                        $commonServices = new Application_Service_Common();
-                                        $general = new Pt_Commons_General();
-                                        $newShipmentMailContent = $commonServices->getEmailTemplate('new_shipment');
-
-                                        $surveyDate = $general->humanDateFormat($participantEmailDetails['distribution_date']);
-                                        $search = array('##NAME##', '##SHIPCODE##', '##SHIPTYPE##', '##SURVEYCODE##', '##SURVEYDATE##',);
-                                        $replace = array(
-                                            $participantEmailDetails['participantName'],
-                                            $participantEmailDetails['shipment_code'],
-                                            $participantEmailDetails['SCHEME'],
-                                            $participantEmailDetails['distribution_code'],
-                                            $surveyDate
-                                        );
-                                        $content = $newShipmentMailContent['mail_content'];
-                                        $message = str_replace($search, $replace, $content);
-                                        $subject = $newShipmentMailContent['mail_subject'];
-                                        $fromEmail = $newShipmentMailContent['mail_from'];
-                                        $fromFullName = $newShipmentMailContent['from_name'];
-                                        $toEmail = $participantEmailDetails['email'];
-                                        $cc = $newShipmentMailContent['mail_cc'];
-                                        $bcc = $newShipmentMailContent['mail_bcc'];
-                                        $commonServices->insertTempMail($toEmail, $cc, $bcc, $subject, $message, $fromEmail, $fromFullName);
-                                        $count = $participantEmailDetails['new_shipment_mail_count'] + 1;
-                                        $db->update('shipment_participant_map', array(
-                                            'last_new_shipment_mailed_on' => new Zend_Db_Expr('now()'),
-                                            'new_shipment_mail_count' => $count
-                                        ), 'map_id = ' . $participantEmailDetails['map_id']);
-                                    }
-                                    if (isset($participantEmailDetails['push_notification_token']) && $participantEmailDetails['push_notification_token'] != '') {
-                                        $tempPushNotificationsDb = new Application_Model_DbTable_TempPushNotification();
-                                        $tempPushNotificationsDb->insertTempPushNotificationDetails(
-                                            $participantEmailDetails['push_notification_token'],
-                                            'default', 'ePT ' . $participantEmailDetails['shipment_code'] . ' Transferred',
-                                            'ePT panel ' . $participantEmailDetails['shipment_code'] . ' has been transferred to ' . $participantEmailDetails['participantName'] . '. Did you receive it?',
-                                            '{"title": "ePT ' . $participantEmailDetails['shipment_code'] . ' Transferred", "body": "ePT panel ' . $participantEmailDetails['shipment_code'] . ' has been transferred to ' . $participantEmailDetails['participantName'] . '. Did you receive it?", "dismissText": "Close", "actionText": "Confirm", "shipmentId": ' . $participantEmailDetails['shipment_id'] . ', "participantId": ' . $participantEmailDetails['participant_id'] . ', "action": "receive_shipment"}');
-                                    }
-                                }
-                            }
-
-                        }
-                    }
-                }
-            } else {
-                $mapData['is_pt_test_not_performed'] = "no";
+        $attributes = array(
+            "cartridge_lot_no" => isset($params['cartridgeLotNo']) ? $params['cartridgeLotNo'] : $params['mtbRifKitLotNo'],
+            "expiry_date" =>  Application_Service_Common::ParseDate($params['expiryDate']),
+            "assay" => $params['assay'],
+            "count_tests_conducted_over_month" => $params['countTestsConductedOverMonth'],
+            "count_errors_encountered_over_month" => $params['countErrorsEncounteredOverMonth'],
+            "error_codes_encountered_over_month" => $params['errorCodesEncounteredOverMonth']
+        );
+        if (isset($params['transferToParticipant']) && $params['transferToParticipant'] != "") {
+            $attributes["transferToParticipantId"] = $params['transferToParticipant'];
+        }
+        $mapData = array(
+            "shipment_receipt_date" => Application_Service_Common::ParseDate($params['receiptDate']),
+            "attributes" => json_encode($attributes),
+            "supervisor_approval" => $params['supervisorApproval'],
+            "participant_supervisor" => $params['participantSupervisor'],
+            "user_comment" => $params['userComments'],
+            "updated_by_admin" => $admin,
+            "updated_on_admin" => new Zend_Db_Expr('now()')
+        );
+        if (isset($params['testDate'])) {
+            $mapData['shipment_test_date'] = Application_Service_Common::ParseDate($params['testDate']);
+        }
+        if (isset($params['modeOfReceipt'])) {
+            $mapData['mode_id'] = $params['modeOfReceipt'];
+        }
+        if ($params['ableToEnterResults'] == "no") {
+            $mapData['is_pt_test_not_performed'] = "yes";
+            if ($params["notTestedReason"] == "other") {
                 $mapData['not_tested_reason'] = null;
+                $mapData['pt_test_not_performed_comments'] = $params["notTestedOtherReason"];
+            } else if (isset($params["notTestedReason"]) && trim($params["notTestedReason"]) != "") {
+                $mapData['not_tested_reason'] = $params["notTestedReason"];
                 $mapData['pt_test_not_performed_comments'] = null;
             }
-            if (isset($params['testReceiptDate']) && trim($params['testReceiptDate'])!= '') {
-                $mapData['shipment_test_report_date'] = Application_Service_Common::ParseDate($params['testReceiptDate']);
-            } else {
-                $mapData['shipment_test_report_date'] = new Zend_Db_Expr('now()');
-            }
 
-            $mapData['qc_done'] = isset($params['qcDone']) ? $params['qcDone'] : 'no';
-            if (isset($mapData['qc_done']) && trim($mapData['qc_done']) == "yes") {
-                $mapData['qc_date'] =  Application_Service_Common::ParseDate($params['qcDate']);
-                $mapData['qc_done_by'] = trim($params['qcDoneBy']);
-                $mapData['qc_created_on'] = new Zend_Db_Expr('now()');
-            } else {
-                $mapData['qc_date'] = null;
-                $mapData['qc_done_by'] = null;
-                $mapData['qc_created_on'] = null;
-            }
-
-            if (isset($params['customField1']) && trim($params['customField1']) != "") {
-                $mapData['custom_field_1'] = $params['customField1'];
-            }
-
-            if (isset($params['customField2']) && trim($params['customField2']) != "") {
-                $mapData['custom_field_2'] = $params['customField2'];
-            }
-
-            $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
-            $shipmentParticipantDb->updateShipment($mapData, $params['smid'], $params['hdLastDate'], $params['submitAction']);
-
-            $instrumentsDb = new Application_Model_DbTable_Instruments();
-            $headerInstrumentSerials = $params['headerInstrumentSerial'];
-            $instrumentDetails = array();
-            foreach ($headerInstrumentSerials as $key => $headerInstrumentSerial) {
-                if (isset($headerInstrumentSerial) &&
-                    $headerInstrumentSerial != "") {
-                    $headerInstrumentDetails = array(
-                        'instrument_serial' => $headerInstrumentSerial,
-                        'instrument_installed_on' => Application_Service_Common::ParseDate($params['headerInstrumentInstalledOn'][$key]),
-                        'instrument_last_calibrated_on' => Application_Service_Common::ParseDate($params['headerInstrumentLastCalibratedOn'][$key])
-                    );
-                    $instrumentsDb->upsertInstrument($params['participantId'], $headerInstrumentDetails);
-                    $instrumentDetails[$headerInstrumentSerial] = array(
-                        'instrument_installed_on' => Application_Service_Common::ParseDate($params['headerInstrumentInstalledOn'][$key]),
-                        'instrument_last_calibrated_on' => Application_Service_Common::ParseDate($params['headerInstrumentLastCalibratedOn'][$key])
-                    );
+            if (isset($params['submitAction']) && $params['submitAction'] == 'submit') {
+                $transferToParticipantId = "";
+                if (isset($attributes)) {
+                    if (isset($attributes['transferToParticipantId'])) {
+                        $transferToParticipantId = $attributes['transferToParticipantId'];
+                    }
                 }
-            }
-
-            $shipmentMap = $db->fetchRow($db->select()->from(array('spm' => 'shipment_participant_map'))
-                ->where("spm.map_id = ?", $params['smid']));
-            $evaluationStatus = $shipmentMap['evaluation_status'];
-            $submitted = $evaluationStatus[2] == '1' ||
-                (isset($params['submitAction']) && $params['submitAction'] == 'submit');
-
-            if ($params['ableToEnterResults'] == "no" && $submitted) {
-                $db->delete('response_result_tb', "shipment_map_id = " . $params['smid']);
-            } else {
-                for ($i = 0; $i < $size; $i++) {
+                if ($transferToParticipantId != "") {
+                    $db = Zend_Db_Table_Abstract::getDefaultAdapter();
                     $sql = $db->select()
-                        ->from("response_result_tb")
-                        ->where("shipment_map_id = " . $params['smid'] . " and sample_id = " . $params['sampleId'][$i]);
-                    $res = $db->fetchRow($sql);
+                        ->from(array('spm' => 'shipment_participant_map'))
+                        ->where("spm.shipment_id = ?", $params["shipmentId"])
+                        ->where("spm.participant_id = ?", $transferToParticipantId);
+                    $enrolledParticipant = $db->fetchRow($sql);
+                    if (!isset($enrolledParticipant) || !$enrolledParticipant) {
+                        $enrollmentData = array(
+                            'shipment_id' => $params['shipmentId'],
+                            'participant_id' => $transferToParticipantId,
+                            'evaluation_status' => '19901190',
+                            'created_by_admin' => $authNameSpace->admin_id,
+                            "created_on_admin" => new Zend_Db_Expr('now()'));
+                        $db->insert('shipment_participant_map', $enrollmentData);
 
-                    $mtbDetected = $params['mtbDetected'][$i];
-                    $rifResistance = isset($params['rifResistance'][$i]) ? $params['rifResistance'][$i] : null;
-                    $errorCode = isset($params['errorCode'][$i]) ? $params['errorCode'][$i] : null;
-                    if ($mtbDetected != "error") {
-                        $errorCode = null;
-                        if(!in_array($mtbDetected, array("detected", "high", "medium", "low", "veryLow")) && ($rifResistance == null || $rifResistance == "")) {
-                            if($mtbDetected=="trace") {
-                                $rifResistance = "indeterminate";
-                            }else{
-                                $rifResistance = "na";
+                        $emailParticipantDetailsQuery = $db->select()->from(array('sp' => 'shipment_participant_map'),
+                            array(
+                                'sp.participant_id',
+                                'sp.shipment_id',
+                                'sp.map_id',
+                                'sp.new_shipment_mail_count'
+                            ))
+                            ->join(array('s' => 'shipment'), 's.shipment_id=sp.shipment_id', array('s.shipment_code', 's.shipment_code'))
+                            ->join(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id',
+                                array('distribution_code', 'distribution_date'))
+                            ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id',
+                                array(
+                                    'p.email',
+                                    'participantName' => new Zend_Db_Expr(
+                                        "GROUP_CONCAT(DISTINCT p.lab_name ORDER BY p.lab_name SEPARATOR ', ')"
+                                    )
+                                ))
+                            ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('SCHEME' => 'sl.scheme_name'))
+                            ->joinLeft(array('pmm' => 'participant_manager_map'), 'pmm.participant_id = sp.participant_id', array())
+                            ->joinLeft(array('pnt' => 'push_notification_token'), 'pnt.dm_id = pmm.dm_id',
+                                array('push_notification_token'))
+                            ->where("sp.shipment_id = ?", $params['shipmentId'])
+                            ->where("sp.participant_id = ?", $transferToParticipantId)
+                            ->group("p.participant_id");
+                        $participantEmailDetailsList = $db->fetchAll($emailParticipantDetailsQuery);
+
+                        if (isset($participantEmailDetailsList) && count($participantEmailDetailsList) > 0) {
+                            foreach ($participantEmailDetailsList as $participantEmailDetails) {
+                                if (isset($participantEmailDetails['email']) && $participantEmailDetails['email'] != '') {
+                                    $commonServices = new Application_Service_Common();
+                                    $general = new Pt_Commons_General();
+                                    $newShipmentMailContent = $commonServices->getEmailTemplate('new_shipment');
+
+                                    $surveyDate = $general->humanDateFormat($participantEmailDetails['distribution_date']);
+                                    $search = array('##NAME##', '##SHIPCODE##', '##SHIPTYPE##', '##SURVEYCODE##', '##SURVEYDATE##',);
+                                    $replace = array(
+                                        $participantEmailDetails['participantName'],
+                                        $participantEmailDetails['shipment_code'],
+                                        $participantEmailDetails['SCHEME'],
+                                        $participantEmailDetails['distribution_code'],
+                                        $surveyDate
+                                    );
+                                    $content = $newShipmentMailContent['mail_content'];
+                                    $message = str_replace($search, $replace, $content);
+                                    $subject = $newShipmentMailContent['mail_subject'];
+                                    $fromEmail = $newShipmentMailContent['mail_from'];
+                                    $fromFullName = $newShipmentMailContent['from_name'];
+                                    $toEmail = $participantEmailDetails['email'];
+                                    $cc = $newShipmentMailContent['mail_cc'];
+                                    $bcc = $newShipmentMailContent['mail_bcc'];
+                                    $commonServices->insertTempMail($toEmail, $cc, $bcc, $subject, $message, $fromEmail, $fromFullName);
+                                    $count = $participantEmailDetails['new_shipment_mail_count'] + 1;
+                                    $db->update('shipment_participant_map', array(
+                                        'last_new_shipment_mailed_on' => new Zend_Db_Expr('now()'),
+                                        'new_shipment_mail_count' => $count
+                                    ), 'map_id = ' . $participantEmailDetails['map_id']);
+                                }
+                                if (isset($participantEmailDetails['push_notification_token']) && $participantEmailDetails['push_notification_token'] != '') {
+                                    $tempPushNotificationsDb = new Application_Model_DbTable_TempPushNotification();
+                                    $tempPushNotificationsDb->insertTempPushNotificationDetails(
+                                        $participantEmailDetails['push_notification_token'],
+                                        'default', 'ePT ' . $participantEmailDetails['shipment_code'] . ' Transferred',
+                                        'ePT panel ' . $participantEmailDetails['shipment_code'] . ' has been transferred to ' . $participantEmailDetails['participantName'] . '. Did you receive it?',
+                                        '{"title": "ePT ' . $participantEmailDetails['shipment_code'] . ' Transferred", "body": "ePT panel ' . $participantEmailDetails['shipment_code'] . ' has been transferred to ' . $participantEmailDetails['participantName'] . '. Did you receive it?", "dismissText": "Close", "actionText": "Confirm", "shipmentId": ' . $participantEmailDetails['shipment_id'] . ', "participantId": ' . $participantEmailDetails['participant_id'] . ', "action": "receive_shipment"}');
+                                }
                             }
                         }
-                    } else {
-                        $rifResistance = "na";
-                    }
-                    $params['rifResistance'][$i] = $rifResistance;
-                    $params['errorCode'][$i] = $errorCode;
 
-                    $dateTested = Application_Service_Common::ParseDate($params['dateTested'][$i]);
-                    $instrumentInstalledOn = null;
-                    $instrumentLastCalibratedOn = null;
-                    if (isset($params['instrumentSerial'][$i]) &&
-                        isset($instrumentDetails[$params['instrumentSerial'][$i]])) {
-                        if (isset($instrumentDetails[$params['instrumentSerial'][$i]]['instrument_installed_on'])) {
-                            $instrumentInstalledOn = $instrumentDetails[$params['instrumentSerial'][$i]]['instrument_installed_on'];
-                        }
-                        if (isset($instrumentDetails[$params['instrumentSerial'][$i]]['instrument_last_calibrated_on'])) {
-                            $instrumentLastCalibratedOn = $instrumentDetails[$params['instrumentSerial'][$i]]['instrument_last_calibrated_on'];
-                        }
-                    }
-                    $cartridgeExpirationDate = Application_Service_Common::ParseDate($params['expiryDate']);
-                    if ($res == null || count($res) == 0) {
-                        $db->insert('response_result_tb', array(
-                            'shipment_map_id' => $params['smid'],
-                            'sample_id' => $params['sampleId'][$i],
-                            'date_tested' => $dateTested,
-                            'mtb_detected' => $params['mtbDetected'][$i],
-                            'error_code' => $params['errorCode'][$i],
-                            'rif_resistance' => $params['rifResistance'][$i],
-                            'probe_1' => $params['probe1'][$i],
-                            'probe_2' => $params['probe2'][$i],
-                            'probe_3' => $params['probe3'][$i],
-                            'probe_4' => $params['probe4'][$i],
-                            'probe_5' => $params['probe5'][$i],
-                            'probe_6' => $params['probe6'][$i],
-                            'instrument_serial' => $params['instrumentSerial'][$i],
-                            'instrument_installed_on' => $instrumentInstalledOn,
-                            'instrument_last_calibrated_on' => $instrumentLastCalibratedOn,
-                            'module_name' => $params['moduleName'][$i],
-                            'instrument_user' => $params['instrumentUser'][$i],
-                            'cartridge_expiration_date' => $cartridgeExpirationDate,
-                            'reagent_lot_id' => isset($params['cartridgeLotNo']) ? $params['cartridgeLotNo'] : $params['mtbRifKitLotNo'],
-                            'created_by' => $admin,
-                            'created_on' => new Zend_Db_Expr('now()')
-                        ));
-                    } else {
-                        $db->update('response_result_tb', array(
-                            'date_tested' => $dateTested,
-                            'mtb_detected' => $params['mtbDetected'][$i],
-                            'error_code' => $params['errorCode'][$i],
-                            'rif_resistance' => $params['rifResistance'][$i],
-                            'probe_1' => $params['probe1'][$i],
-                            'probe_2' => $params['probe2'][$i],
-                            'probe_3' => $params['probe3'][$i],
-                            'probe_4' => $params['probe4'][$i],
-                            'probe_5' => $params['probe5'][$i],
-                            'probe_6' => $params['probe6'][$i],
-                            'instrument_serial' => $params['instrumentSerial'][$i],
-                            'instrument_installed_on' => $instrumentInstalledOn,
-                            'instrument_last_calibrated_on' => $instrumentLastCalibratedOn,
-                            'module_name' => $params['moduleName'][$i],
-                            'instrument_user' => $params['instrumentUser'][$i],
-                            'cartridge_expiration_date' => $cartridgeExpirationDate,
-                            'reagent_lot_id' => isset($params['cartridgeLotNo']) ? $params['cartridgeLotNo'] : $params['mtbRifKitLotNo'],
-                            'updated_by' => $admin,
-                            'updated_on' => new Zend_Db_Expr('now()')
-                        ), "shipment_map_id = " . $params['smid'] . " and sample_id = " . $params['sampleId'][$i]);
                     }
                 }
             }
-            return true;
+        } else {
+            $mapData['is_pt_test_not_performed'] = "no";
+            $mapData['not_tested_reason'] = null;
+            $mapData['pt_test_not_performed_comments'] = null;
         }
-        return false;
+        if (isset($params['testReceiptDate']) && trim($params['testReceiptDate'])!= '') {
+            $mapData['shipment_test_report_date'] = Application_Service_Common::ParseDate($params['testReceiptDate']);
+        } else {
+            $mapData['shipment_test_report_date'] = new Zend_Db_Expr('now()');
+        }
+
+        $mapData['qc_done'] = isset($params['qcDone']) ? $params['qcDone'] : 'no';
+        if (isset($mapData['qc_done']) && trim($mapData['qc_done']) == "yes") {
+            $mapData['qc_date'] =  Application_Service_Common::ParseDate($params['qcDate']);
+            $mapData['qc_done_by'] = trim($params['qcDoneBy']);
+            $mapData['qc_created_on'] = new Zend_Db_Expr('now()');
+        } else {
+            $mapData['qc_date'] = null;
+            $mapData['qc_done_by'] = null;
+            $mapData['qc_created_on'] = null;
+        }
+
+        if (isset($params['customField1']) && trim($params['customField1']) != "") {
+            $mapData['custom_field_1'] = $params['customField1'];
+        }
+
+        if (isset($params['customField2']) && trim($params['customField2']) != "") {
+            $mapData['custom_field_2'] = $params['customField2'];
+        }
+
+        $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
+        $shipmentParticipantDb->updateShipment($mapData, $params['smid'], $params['hdLastDate'], $params['submitAction']);
+
+        $instrumentsDb = new Application_Model_DbTable_Instruments();
+        $headerInstrumentSerials = $params['headerInstrumentSerial'];
+        $instrumentDetails = array();
+        foreach ($headerInstrumentSerials as $key => $headerInstrumentSerial) {
+            if (isset($headerInstrumentSerial) &&
+                $headerInstrumentSerial != "") {
+                $headerInstrumentDetails = array(
+                    'instrument_serial' => $headerInstrumentSerial,
+                    'instrument_installed_on' => Application_Service_Common::ParseDate($params['headerInstrumentInstalledOn'][$key]),
+                    'instrument_last_calibrated_on' => Application_Service_Common::ParseDate($params['headerInstrumentLastCalibratedOn'][$key])
+                );
+                $instrumentsDb->upsertInstrument($params['participantId'], $headerInstrumentDetails);
+                $instrumentDetails[$headerInstrumentSerial] = array(
+                    'instrument_installed_on' => Application_Service_Common::ParseDate($params['headerInstrumentInstalledOn'][$key]),
+                    'instrument_last_calibrated_on' => Application_Service_Common::ParseDate($params['headerInstrumentLastCalibratedOn'][$key])
+                );
+            }
+        }
+
+        $evaluationStatus = $shipmentMap['evaluation_status'];
+        $submitted = $evaluationStatus[2] == '1' ||
+            (isset($params['submitAction']) && $params['submitAction'] == 'submit');
+
+        if ($params['ableToEnterResults'] == "no" && $submitted) {
+            $db->delete('response_result_tb', "shipment_map_id = " . $params['smid']);
+        } else {
+            $size = count($params['sampleId']);
+            for ($i = 0; $i < $size; $i++) {
+                $sql = $db->select()
+                    ->from("response_result_tb")
+                    ->where("shipment_map_id = " . $params['smid'] . " and sample_id = " . $params['sampleId'][$i]);
+                $res = $db->fetchRow($sql);
+
+                $mtbDetected = $params['mtbDetected'][$i];
+                $rifResistance = isset($params['rifResistance'][$i]) ? $params['rifResistance'][$i] : null;
+                $errorCode = isset($params['errorCode'][$i]) ? $params['errorCode'][$i] : null;
+                if ($mtbDetected != "error") {
+                    $errorCode = null;
+                    if(!in_array($mtbDetected, array("detected", "high", "medium", "low", "veryLow")) && ($rifResistance == null || $rifResistance == "")) {
+                        if($mtbDetected=="trace") {
+                            $rifResistance = "indeterminate";
+                        }else{
+                            $rifResistance = "na";
+                        }
+                    }
+                } else {
+                    $rifResistance = "na";
+                }
+                $params['rifResistance'][$i] = $rifResistance;
+                $params['errorCode'][$i] = $errorCode;
+
+                $dateTested = Application_Service_Common::ParseDate($params['dateTested'][$i]);
+                $instrumentInstalledOn = null;
+                $instrumentLastCalibratedOn = null;
+                if (isset($params['instrumentSerial'][$i]) &&
+                    isset($instrumentDetails[$params['instrumentSerial'][$i]])) {
+                    if (isset($instrumentDetails[$params['instrumentSerial'][$i]]['instrument_installed_on'])) {
+                        $instrumentInstalledOn = $instrumentDetails[$params['instrumentSerial'][$i]]['instrument_installed_on'];
+                    }
+                    if (isset($instrumentDetails[$params['instrumentSerial'][$i]]['instrument_last_calibrated_on'])) {
+                        $instrumentLastCalibratedOn = $instrumentDetails[$params['instrumentSerial'][$i]]['instrument_last_calibrated_on'];
+                    }
+                }
+                $cartridgeExpirationDate = Application_Service_Common::ParseDate($params['expiryDate']);
+                if ($res == null || count($res) == 0) {
+                    $db->insert('response_result_tb', array(
+                        'shipment_map_id' => $params['smid'],
+                        'sample_id' => $params['sampleId'][$i],
+                        'date_tested' => $dateTested,
+                        'mtb_detected' => $params['mtbDetected'][$i],
+                        'error_code' => $params['errorCode'][$i],
+                        'rif_resistance' => $params['rifResistance'][$i],
+                        'probe_1' => $params['probe1'][$i],
+                        'probe_2' => $params['probe2'][$i],
+                        'probe_3' => $params['probe3'][$i],
+                        'probe_4' => $params['probe4'][$i],
+                        'probe_5' => $params['probe5'][$i],
+                        'probe_6' => $params['probe6'][$i],
+                        'instrument_serial' => $params['instrumentSerial'][$i],
+                        'instrument_installed_on' => $instrumentInstalledOn,
+                        'instrument_last_calibrated_on' => $instrumentLastCalibratedOn,
+                        'module_name' => $params['moduleName'][$i],
+                        'instrument_user' => $params['instrumentUser'][$i],
+                        'cartridge_expiration_date' => $cartridgeExpirationDate,
+                        'reagent_lot_id' => isset($params['cartridgeLotNo']) ? $params['cartridgeLotNo'] : $params['mtbRifKitLotNo'],
+                        'created_by' => $admin,
+                        'created_on' => new Zend_Db_Expr('now()')
+                    ));
+                } else {
+                    $db->update('response_result_tb', array(
+                        'date_tested' => $dateTested,
+                        'mtb_detected' => $params['mtbDetected'][$i],
+                        'error_code' => $params['errorCode'][$i],
+                        'rif_resistance' => $params['rifResistance'][$i],
+                        'probe_1' => $params['probe1'][$i],
+                        'probe_2' => $params['probe2'][$i],
+                        'probe_3' => $params['probe3'][$i],
+                        'probe_4' => $params['probe4'][$i],
+                        'probe_5' => $params['probe5'][$i],
+                        'probe_6' => $params['probe6'][$i],
+                        'instrument_serial' => $params['instrumentSerial'][$i],
+                        'instrument_installed_on' => $instrumentInstalledOn,
+                        'instrument_last_calibrated_on' => $instrumentLastCalibratedOn,
+                        'module_name' => $params['moduleName'][$i],
+                        'instrument_user' => $params['instrumentUser'][$i],
+                        'cartridge_expiration_date' => $cartridgeExpirationDate,
+                        'reagent_lot_id' => isset($params['cartridgeLotNo']) ? $params['cartridgeLotNo'] : $params['mtbRifKitLotNo'],
+                        'updated_by' => $admin,
+                        'updated_on' => new Zend_Db_Expr('now()')
+                    ), "shipment_map_id = " . $params['smid'] . " and sample_id = " . $params['sampleId'][$i]);
+                }
+            }
+        }
+        return "";
     }
 
     public function getOtherUnenrolledParticipants($shipmentId, $currentParticipantId, $transferredToParticipantId) {
