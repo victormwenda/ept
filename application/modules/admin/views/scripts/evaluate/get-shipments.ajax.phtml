@@ -42,7 +42,15 @@ if ($this->shipments == false && count($this->shipments) <= 0) {
                         if ($adminSession->is_ptcc_coordinator == 0) {
                             if (isset($shipment["reported_count"]) && $shipment["reported_count"] > 0) { ?>
 						<a class="btn btn-success btn-xs" href="/admin/evaluate/shipment/sid/<?php echo base64_encode($shipment['shipment_id']); ?>">
+                            <?php
+                                if (ucfirst($shipment['shipment_status']) == "Evaluated") { ?>
+
+                            <span><i class="icon-refresh"></i> Re-Evaluate</span>
+                            <?php
+                                } else { ?>
                             <span><i class="icon-edit"></i> Evaluate</span>
+                            <?php
+                                } ?>
                         </a>
 						<?php
 							    if ($nonResponse > 0) { ?>
@@ -53,7 +61,15 @@ if ($this->shipments == false && count($this->shipments) <= 0) {
 						        }
                             } else { ?>
                         <a class="btn btn-primary btn-xs disabled" href="javascript:void(0)">
+                            <?php
+                            if (ucfirst($shipment['shipment_status']) == "Evaluated") { ?>
+
+                            <span><i class="icon-refresh"></i> Re-Evaluate</span>
+                                <?php
+                            } else { ?>
                             <span><i class="icon-edit"></i> Evaluate</span>
+                                <?php
+                            } ?>
                         </a>
                         <?php
                             }
