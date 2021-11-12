@@ -89,10 +89,13 @@ class Application_Model_DbTable_Distribution extends Zend_Db_Table_Abstract {
          * Get data to display
          */
         $sQuery = $this->getAdapter()->select()->from(array('d' => $this->_name))
-			->joinLeft(array('s'=>'shipment'),'s.distribution_id=d.distribution_id',array('shipments' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT s.shipment_code SEPARATOR ', ')")))
-            ->joinLeft(array('spm'=>'shipment_participant_map'),'s.shipment_id=spm.shipment_id',array())
-            ->joinLeft(array('p'=>'participant'),'spm.participant_id=p.participant_id',array())
-            ->group('d.distribution_id');
+			->joinLeft(array("s" => "shipment"), "s.distribution_id = d.distribution_id", array(
+                'shipments' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT s.shipment_code SEPARATOR ', ')"),
+                "shipment_status" => "s.status"
+            ))
+            ->joinLeft(array("spm" => "shipment_participant_map"), "s.shipment_id = spm.shipment_id", array())
+            ->joinLeft(array("p" => "participant"), "spm.participant_id = p.participant_id", array())
+            ->group("d.distribution_id");
 
         $authNameSpace = new Zend_Session_Namespace('administrators');
         if($authNameSpace->is_ptcc_coordinator) {
@@ -139,7 +142,7 @@ class Application_Model_DbTable_Distribution extends Zend_Db_Table_Abstract {
             $row[] = Application_Service_Common::ParseDateHumanFormat($aRow['distribution_date']);
             $row[] = '<a href="/admin/shipment/index/searchString/' . $aRow['distribution_code'].'">' . $aRow['distribution_code'] . '</a>';
             $row[] = $aRow['shipments'];
-            $row[] = ucwords($aRow['status']);
+            $row[] = isset($aRow['shipment_status']) ? ucwords($aRow['shipment_status']) : ucwords($aRow['status']);
 	        $action = '<a class="btn btn-primary btn-xs" href="/admin/distributions/edit/id/' . base64_encode($aRow['distribution_id']) . '"><span><i class="icon-pencil"></i> Edit</span></a>';
             if (isset($aRow['status']) && $aRow['status'] == 'configured') {
                 $action .= '&nbsp;<a class="btn btn-primary btn-xs" href="javascript:void(0);" onclick="shipDistribution(\'' . base64_encode($aRow['distribution_id']) . '\')"><span><i class="icon-ambulance"></i> Ship Now</span></a>';
@@ -171,6 +174,7 @@ class Application_Model_DbTable_Distribution extends Zend_Db_Table_Abstract {
         );
         return $this->insert($data);
     }
+
     public function addDistributionAsShipmentCode($params) {
         $authNameSpace = new Zend_Session_Namespace('administrators');
         $data = array(
@@ -181,10 +185,6 @@ class Application_Model_DbTable_Distribution extends Zend_Db_Table_Abstract {
             'created_on' => new Zend_Db_Expr('now()')
         );
         return $this->insert($data);
-    }
-
-    public function shipDistribution($params) {
-
     }
 
     public function getDistributionDates() {
@@ -305,18 +305,19 @@ class Application_Model_DbTable_Distribution extends Zend_Db_Table_Abstract {
         $authNameSpace = new Zend_Session_Namespace('administrators');
 		$dbAdapter = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sQuery = $dbAdapter->select()->from(array('d' => 'distributions'))
-				->joinLeft(array('s'=>'shipment'),'s.distribution_id=d.distribution_id',array(
-				    'shipments' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT s.shipment_code SEPARATOR ', ')"),
-                    'not_finalized_count' => new Zend_Db_Expr("SUM(IF(s.status!='finalized',1,0))")
+				->joinLeft(array("s" => "shipment"), "s.distribution_id=d.distribution_id", array(
+				    "shipments" => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT s.shipment_code SEPARATOR ', ')"),
+                    "not_finalized_count" => new Zend_Db_Expr("SUM(IF(s.status!='finalized',1,0))"),
+                    "shipment_status" => "s.status"
                 ));
         if ($authNameSpace->is_ptcc_coordinator) {
-            $sQuery = $sQuery->joinLeft(array('spm' => 'shipment_participant_map'), 's.shipment_id=spm.shipment_id', array())
-                ->joinLeft(array('p' => 'participant'), 'spm.participant_id=p.participant_id', array())
+            $sQuery = $sQuery->joinLeft(array("spm" => "shipment_participant_map"), "s.shipment_id=spm.shipment_id", array())
+                ->joinLeft(array("p" => "participant"), "spm.participant_id=p.participant_id", array())
                 ->where("p.country IS NULL OR p.country IN (".implode(",", $authNameSpace->countries).")");
         }
         $sQuery = $sQuery
             ->where("d.status='shipped'")
-            ->group('d.distribution_id');
+            ->group("d.distribution_id");
         if (isset($sWhere) && $sWhere != "") {
             $sQuery = $sQuery->where($sWhere);
         }
@@ -364,18 +365,19 @@ class Application_Model_DbTable_Distribution extends Zend_Db_Table_Abstract {
             $row[] = Application_Service_Common::ParseDateHumanFormat($aRow['distribution_date']);
             $row[] = $aRow['distribution_code'];
             $row[] = $aRow['shipments'];
-            $row[] = ucwords($aRow['status']);
+            $row[] = isset($aRow['shipment_status']) ? ucwords($aRow['shipment_status']) : ucwords($aRow['status']);
             $row[] = '<a class="btn btn-primary btn-xs" href="javascript:void(0);" onclick="getShipmentInReports(\''.($aRow['distribution_id']).'\')"><span><i class="icon-search"></i> View</span></a>';
             $output['aaData'][] = $row;
         }
 
         echo json_encode($output);
     }
+
     public function getAllDistributionStatusDetails() {
         $sql = $this->select()->from(array('d' => 'distributions'));
         $authNameSpace = new Zend_Session_Namespace('administrators');
         if ($authNameSpace->is_ptcc_coordinator) {
-            $sql = $sql->joinLeft(array('s'=>'shipment'),'s.distribution_id=d.distribution_id', array())
+            $sql = $sql->joinLeft(array('s'=>'shipment'),'s.distribution_id=d.distribution_id', array("shipment_status" => "s.status"))
                 ->joinLeft(array('spm' => 'shipment_participant_map'), 's.shipment_id=spm.shipment_id', array())
                 ->joinLeft(array('p' => 'participant'), 'spm.participant_id=p.participant_id', array())
                 ->where("p.country IS NULL OR p.country IN (".implode(",", $authNameSpace->countries).")")

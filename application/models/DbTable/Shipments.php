@@ -1623,7 +1623,6 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
         /* Array of database columns which should be read and sent back to DataTables. Use a space where
          * you want to insert a non-database field (for example a counter or static image)
          */
-
         $aColumns = array("DATE_FORMAT(distribution_date,'%d-%b-%Y')", 'distribution_code', 's.shipment_code' ,'d.status');
         $orderColumns = array('distribution_date', 'distribution_code', 's.shipment_code' ,'d.status');
 
@@ -1672,7 +1671,6 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
                     $sWhereSub .= " AND (";
                 }
                 $colSize = count($aColumns);
-
                 for ($i = 0; $i < $colSize; $i++) {
                     if($aColumns[$i] == "" || $aColumns[$i] == null){
                         continue;
@@ -1706,8 +1704,9 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
         $authNameSpace = new Zend_Session_Namespace('administrators');
 		$dbAdapter = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sQuery = $dbAdapter->select()->from(array('d' => 'distributions'))
-				->joinLeft(array('s'=>'shipment'),'s.distribution_id=d.distribution_id',array(
-				    'shipments' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT s.shipment_code SEPARATOR ', ')")
+				->joinLeft(array("s" => "shipment"), "s.distribution_id=d.distribution_id", array(
+				    "shipments" => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT s.shipment_code SEPARATOR ', ')"),
+                    "shipment_status" => "s.status"
                 ));
         if ($authNameSpace->is_ptcc_coordinator) {
             $sQuery = $sQuery->joinLeft(array('spm' => 'shipment_participant_map'), 's.shipment_id=spm.shipment_id', array())
@@ -1767,9 +1766,8 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
             $row[] = Application_Service_Common::ParseDateHumanFormat($aRow['distribution_date']);
             $row[] = $aRow['distribution_code'];
             $row[] = $aRow['shipments'];
-            $row[] = ucwords($aRow['status']);
+            $row[] = isset($aRow["shipment_status"]) ? ucwords($aRow["shipment_status"]) : ucwords($aRow["status"]);
             $row[] = '<a class="btn btn-primary btn-xs" href="javascript:void(0);" onclick="getShipmentInReports(\''.($aRow['distribution_id']).'\')"><span><i class="icon-search"></i> View</span></a>';
-
             $output['aaData'][] = $row;
         }
 

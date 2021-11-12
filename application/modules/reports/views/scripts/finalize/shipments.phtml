@@ -24,7 +24,6 @@
 <div id="shipments" style="clear:both;margin-top:30px;"></div>
 
 <script type="text/javascript" charset="utf-8">
-	
 	$('#myModal').on('hidden.bs.modal', function () {
 	  $(this).removeData('bs.modal');
 	});		
@@ -32,9 +31,7 @@
     var oTable = null;
     var currentHighlighted = null;
     $(document).ready(function() {
-		
 		currentHighlighted = getCookie('disId');
-		
         oTable = $('#distroTable').dataTable( {
             "oLanguage": {
                 "sLengthMenu": "_MENU_ records per page"
@@ -70,14 +67,10 @@
 						getShipmentInReports(currentHighlighted);
 						}
                     }
-
                 });
             }
         } );
-
-    } );
-
-	
+    });
 	
 	function getShipmentInReports(did) {
 		$.blockUI();
@@ -90,6 +83,5 @@
 		       $("#shipments").html(data);
 			$.unblockUI();
 		});
-	}	
-
+	}
 </script>
