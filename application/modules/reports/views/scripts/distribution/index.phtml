@@ -76,9 +76,13 @@
     setCookie('did', did);
 	$("#distroTable tr td").removeClass("highliter");
 	$("#dist"+currentHighlighted+" td").addClass("highliter");
-	$.post("<?php echo $this->url(array('module' => 'reports', 'controller' => 'distribution', 'action' => 'get-shipments')); ?>", { did: did, format: "html" }, function (data) {
-	$("#shipments").html(data);
-	$.unblockUI();
-	});
+	$.post(
+        "<?php echo $this->url(array('module' => 'reports', 'controller' => 'distribution', 'action' => 'get-shipments')); ?>",
+        { did: did, format: "html" },
+        function (data) {
+          $("#shipments").html(data);
+          $.unblockUI();
+        }
+    );
   }
 </script>

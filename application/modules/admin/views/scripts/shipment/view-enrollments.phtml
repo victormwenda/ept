@@ -3,7 +3,7 @@
 	#unEnrollmentTable_wrapper{
 		display: none;
 	}
-	<?php if($this->shipment['status']=="evaluated"){ ?>
+	<?php if(in_array(ucfirst($this->shipment['status']), array("Evaluated", "Should be Re-Evaluated"))){ ?>
 	.hide_column{
 		display : none;
 	}
@@ -67,7 +67,7 @@
 	$(document).ready(function() {
 		
 		drawTable();
-		<?php if($this->shipment['status']!="evaluated"){ ?>
+		<?php if(!in_array(ucfirst($this->shipment['status']), array("Evaluated", "Should be Re-Evaluated"))){ ?>
 		unEnrollDrawTable();
 		<?php } ?>
 		

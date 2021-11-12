@@ -44,7 +44,17 @@ if (count($this->shipment) > 0) { ?>
                 <td style="text-align: center;"><?php echo ucfirst($shipment['status']); ?></td>
                 <td style="text-align: center;">
 <?php
-            if (isset($shipment['status']) && $shipment['status'] == 'evaluated') { ?>
+            if (isset($shipment['status']) && in_array(ucfirst($shipment['status']), array("Evaluated", "Should be Re-Evaluated"))) { ?>
+                    <a class="btn btn-warning btn-xs" href="/admin/evaluate/shipment/sid/<?php echo base64_encode($shipment['shipment_id']); ?>">
+<?php
+                        if (in_array(ucfirst($shipment['status']), array("Evaluated", "Should be Re-Evaluated"))) { ?>
+                        <span><i class="icon-refresh"></i> Re-Evaluate</span>
+<?php
+                        } else { ?>
+                        <span><i class="icon-edit"></i> Evaluate</span>
+<?php
+                        } ?>
+                    </a>
                     <a class="btn btn-success btn-xs" href="/reports/distribution/finalize/sid/<?php echo base64_encode($shipment['shipment_id']); ?>">
                         <span><i class="icon-check"></i> Finalize</span>
                     </a>
