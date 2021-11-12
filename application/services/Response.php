@@ -154,22 +154,37 @@ class Application_Service_Response {
 
     public function getShipmentToEdit($shipmentId) {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
-        $sql = $db->select()->from(array('s' => 'shipment'), array('s.shipment_id', 's.shipment_code', 's.scheme_type', 's.shipment_date', 's.lastdate_response', 's.distribution_id', 's.number_of_samples', 's.max_score', 's.shipment_comment', 's.created_by_admin', 's.created_on_admin', 's.updated_by_admin', 's.updated_on_admin', 'shipment_status' => 's.status'))
-                ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id')
-                ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id')
-                ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type')
-                ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array(
-                    'sorting_unique_identifier' => new Zend_Db_Expr("LPAD(p.unique_identifier, 10, '0')"),
-                    'p.*'
-                ))
-                ->where("s.shipment_id = ?", $shipmentId);
-        $authNameSpace = new Zend_Session_Namespace('administrators');
+        $sql = $db->select()->from(array('s' => 'shipment'), array(
+            "s.shipment_id",
+            "s.shipment_code",
+            "s.scheme_type",
+            "s.shipment_date",
+            "s.lastdate_response",
+            "s.distribution_id",
+            "s.number_of_samples",
+            "s.max_score",
+            "s.shipment_comment",
+            "s.created_by_admin",
+            "s.created_on_admin",
+            "s.updated_by_admin",
+            "s.updated_on_admin",
+            "shipment_status" => "s.status"
+        ))
+            ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id')
+            ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id = s.shipment_id')
+            ->joinLeft(array('rr' => 'r_results'), 'sp.final_result = rr.result_id', array("display_result" => "rr.result_name"))
+            ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type')
+            ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array(
+                "sorting_unique_identifier" => new Zend_Db_Expr("LPAD(p.unique_identifier, 10, '0')"),
+                "p.*"
+            ))
+            ->where("s.shipment_id = ?", $shipmentId);
+        $authNameSpace = new Zend_Session_Namespace("administrators");
         if(isset($authNameSpace) && $authNameSpace->is_ptcc_coordinator) {
             $sql = $sql->where("p.country IN (".implode(",",$authNameSpace->countries).")");
         }
         $sql = $sql->order(new Zend_Db_Expr("sorting_unique_identifier"));
-        $shipmentResult = $db->fetchAll($sql);
-        return $shipmentResult;
+        return $db->fetchAll($sql);
     }
 
     public function editResponse($shipmentId, $participantId, $scheme) {
