@@ -97,10 +97,11 @@ class Application_Service_Evaluation {
         $dbAdapter = Zend_Db_Table_Abstract::getDefaultAdapter();
 
         $sQuery = $dbAdapter->select()->from(array('d' => 'distributions'))
-                ->joinLeft(array('s' => 'shipment'), 's.distribution_id=d.distribution_id',
+                ->joinLeft(array("s" => "shipment"), "s.distribution_id = d.distribution_id",
                     array(
-                        'shipments' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT s.shipment_code SEPARATOR ', ')"),
-                        'not_finalized_count' => new Zend_Db_Expr("SUM(IF(s.status!='finalized',1,0))")
+                        "shipments" => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT s.shipment_code SEPARATOR ', ')"),
+                        "not_finalized_count" => new Zend_Db_Expr("SUM(IF(s.status!='finalized',1,0))"),
+                        "shipment_status" => "s.status"
                     )
                 )
                 ->joinLeft(array('spm'=>'shipment_participant_map'),'s.shipment_id=spm.shipment_id',array())
@@ -154,12 +155,11 @@ class Application_Service_Evaluation {
             $row[] = Application_Service_Common::ParseDateHumanFormat($aRow['distribution_date']);
             $row[] = $aRow['distribution_code'];
             $row[] = $aRow['shipments'];
-            $row[] = ucwords($aRow['status']);
+            $row[] = isset($aRow["shipment_status"]) ? ucwords($aRow["shipment_status"]) : ucwords($aRow["status"]);
             $row[] = '<a class="btn btn-primary btn-xs" href="javascript:void(0);" onclick="getShipments(\'' . ($aRow['distribution_id']) . '\')"><span><i class="icon-search"></i> View</span></a>';
 
             $output['aaData'][] = $row;
         }
-
         echo json_encode($output);
     }
 
@@ -1364,11 +1364,10 @@ class Application_Service_Evaluation {
             "updated_on_admin" => new Zend_Db_Expr("now()")
         ), "shipment_id=" . $shipmentId);
 
-        $result = array(
+        return array(
             'shipment' => $shipmentResult,
             'dmResult' => $mapRes,
             'previousSixShipments' => $previousSixShipments);
-        return $result;
     }
 
     public function getSummaryReportsInPdf($shipmentId) {

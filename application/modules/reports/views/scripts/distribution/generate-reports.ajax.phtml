@@ -24,11 +24,11 @@ if (sizeof($this->result['shipment']) > 0) {
         public function Header() {
             $html = '<h3 style="background-color:#000000;color:#ffffff;font-weight: bold;text-align:center;"><span style="font-size:5px;"><br /></span>';
             $html .= 'CDC/ILB XPERT TB PROFICIENCY TESTING PROGRAM: INDIVIDUAL FINAL REPORT</h3>';
-            $html .= '<h3 style="width:100%;text-align:center;margin: 0;padding:0;">'.$this->result['distribution_code'].'</h3>';
+            $html .= '<h3 style="width:100%;text-align:center;margin:0;padding:0;">'.$this->result['distribution_code'].'</h3>';
             $html .= '<table cellpadding="2" style="width:100%;font-size:8pt;">';
             $html .= '    <tr>';
-            $html .= '	     <td style="border-top:solid 10px #000000;border-bottom:solid 10px #000000;background-color:#777777;color:#ffffff;text-align:center;width:20%;"><strong>Country</strong></td>';
-            $html .= '	     <td style="border-top:solid 10px #000000;border-bottom:solid 10px #000000;background-color:#777777;color:#ffffff;text-align:center;width:50%;"><strong>Testing Site</strong></td>';
+            $html .= '	     <td style="border-top:solid 10px #000000;border-bottom:solid 10px #000000;background-color:#777777;color:#ffffff;text-align:center;width:25%;"><strong>Country</strong></td>';
+            $html .= '	     <td style="border-top:solid 10px #000000;border-bottom:solid 10px #000000;background-color:#777777;color:#ffffff;text-align:center;width:45%;"><strong>Testing Site</strong></td>';
             $html .= '	     <td style="border-top:solid 10px #000000;border-bottom:solid 10px #000000;background-color:#777777;color:#ffffff;text-align:center;width:15%;"><strong>PT-ID Number</strong></td>';
             $html .= '	     <td style="border-top:solid 10px #000000;border-bottom:solid 10px #000000;background-color:#777777;color:#ffffff;text-align:center;width:15%;"><strong>Page Number</strong></td>';
             $html .= '    </tr>';
@@ -129,7 +129,7 @@ if (sizeof($this->result['shipment']) > 0) {
 
         $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
 
-        $pdf->SetMargins(PDF_MARGIN_LEFT, 50, PDF_MARGIN_RIGHT);
+        $pdf->SetMargins(PDF_MARGIN_LEFT, 52, PDF_MARGIN_RIGHT);
         $pdf->SetHeaderMargin(1);
         $pdf->SetFooterMargin(1);
 
@@ -484,6 +484,8 @@ if (sizeof($this->result['shipment']) > 0) {
             }
             $ptccDetails .= '    </tr>';
             $ptccDetails .= '</table><br/><br/>';
+        } else {
+            $ptccDetails = '';
         }
 
         $cdcDetails = '<div style="border:solid 1px #000000;">';
