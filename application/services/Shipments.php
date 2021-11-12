@@ -77,7 +77,7 @@ class Application_Service_Shipments {
         */
         $sQuery = $db->select()->from(array('s' => 'shipment'))
             ->join(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id', array('distribution_code', 'distribution_date','distribution_id'))
-            ->joinLeft(array('spm' => 'shipment_participant_map'), 's.shipment_id = spm.shipment_id', array('total_participants'=> new Zend_Db_Expr('count(map_id)'),'last_new_shipment_mailed_on','new_shipment_mail_count'))
+            ->joinLeft(array('spm' => 'shipment_participant_map'), 's.shipment_id = spm.shipment_id', array('total_participants'=> new Zend_Db_Expr('count(map_id)'),'last_new_shipment_mailed_on','new_shipment_mail_count', 'last_submission_updated_on'=> new Zend_Db_Expr('GREATEST(MAX(spm.updated_on_admin), MAX(spm.updated_on_user))')))
             ->joinLeft(array('p' => 'participant'), 'spm.participant_id = p.participant_id', array())
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('SCHEME' => 'sl.scheme_name'))
             ->group('s.shipment_id');
@@ -128,62 +128,65 @@ class Application_Service_Shipments {
             "aaData" => array()
         );
 
-        foreach ($rResult as $aRow) {
+        for ($i = 0; $i < count($rResult); $i++) {
             $row = array();
-            if ($aRow['status'] == 'ready' || $aRow['status'] == 'shipped') {
+            if ($rResult[$i]['status'] == 'ready' || $rResult[$i]['status'] == 'shipped') {
                 $btn = "btn-success";
-            } else if ($aRow['status'] == 'pending') {
+            } else if ($rResult[$i]['status'] == 'pending') {
                 $btn = "btn-danger";
             } else {
                 $btn = "btn-primary";
             }
-            if ($aRow['status'] != 'finalized' && $aRow['status'] != 'ready' && $aRow['status'] != 'pending') {
-                $responseSwitch = "<select onchange='responseSwitch(this.value,".$aRow['shipment_id'].")'>";
-                $responseSwitch .= "<option value='on'".(isset($aRow['response_switch']) && $aRow['response_switch'] =="on" ? " selected='selected' " : "").">On</option>";
-                $responseSwitch .= "<option value='off'".(isset($aRow['response_switch']) && $aRow['response_switch'] =="off" ? " selected='selected' " : "").">Off</option>";
+            if ($rResult[$i]['status'] != 'finalized' && $rResult[$i]['status'] != 'ready' && $rResult[$i]['status'] != 'pending') {
+                $responseSwitch = "<select onchange='responseSwitch(this.value,".$rResult[$i]['shipment_id'].")'>";
+                $responseSwitch .= "<option value='on'".(isset($aRow['response_switch']) && $rResult[$i]['response_switch'] =="on" ? " selected='selected' " : "").">On</option>";
+                $responseSwitch .= "<option value='off'".(isset($aRow['response_switch']) && $rResult[$i]['response_switch'] =="off" ? " selected='selected' " : "").">Off</option>";
                 $responseSwitch .= "</select>";
             } else {
                 $responseSwitch = '-';
             }
+            if ($rResult[$i]['status'] == 'evaluated' && $rResult[$i]['last_submission_updated_on'] > $rResult[$i]['updated_on_admin']) {
+                $rResult[$i]['status'] = "Should be Re-Evaluated";
+            }
 
-            $row[] = $aRow['shipment_code'];
-            $row[] = $aRow['SCHEME'];
-            $row[] = $aRow['distribution_code'];
-            $row[] = Application_Service_Common::ParseDateHumanFormat($aRow['distribution_date']);
-            $row[] = Application_Service_Common::ParseDateHumanFormat($aRow['lastdate_response']);
-            $row[] = $aRow['number_of_samples'];
-            $row[] = $aRow['total_participants'];
+            $row[] = $rResult[$i]['shipment_code'];
+            $row[] = $rResult[$i]['SCHEME'];
+            $row[] = $rResult[$i]['distribution_code'];
+            $row[] = Application_Service_Common::ParseDateHumanFormat($rResult[$i]['distribution_date']);
+            $row[] = Application_Service_Common::ParseDateHumanFormat($rResult[$i]['lastdate_response']);
+            $row[] = $rResult[$i]['number_of_samples'];
+            $row[] = $rResult[$i]['total_participants'];
             $row[] = $responseSwitch;
-            $row[] = ucfirst($aRow['status']);
+            $row[] = ucfirst($rResult[$i]['status']);
             $enrolled = '';
             $shipped = '';
             $announcementMail = '';
             $manageResponses = '';
 
-            if ($aRow['status'] != 'finalized') {
-                $edit = '&nbsp;<a class="btn btn-primary btn-xs" href="/admin/shipment/edit/sid/' . base64_encode($aRow['shipment_id']) . '"><span><i class="icon-edit"></i> Edit</span></a>';
-                $shipped = '&nbsp;<a class="btn ' . $btn . ' btn-xs" href="/admin/shipment/ship-it/sid/' . base64_encode($aRow['shipment_id']) . '"><span><i class="icon-user"></i> Enroll</span></a>';
+            if ($rResult[$i]['status'] != 'finalized') {
+                $edit = '&nbsp;<a class="btn btn-primary btn-xs" href="/admin/shipment/edit/sid/' . base64_encode($rResult[$i]['shipment_id']) . '"><span><i class="icon-edit"></i> Edit</span></a>';
+                $shipped = '&nbsp;<a class="btn ' . $btn . ' btn-xs" href="/admin/shipment/ship-it/sid/' . base64_encode($rResult[$i]['shipment_id']) . '"><span><i class="icon-user"></i> Enroll</span></a>';
             } else {
                 $edit = '&nbsp;<a class="btn btn-danger btn-xs disabled" href="javascript:void(0);"><span><i class="icon-check"></i> Finalized</span></a>';
             }
 
-            if($aRow['status'] == 'shipped') {
+            if($rResult[$i]['status'] == 'shipped') {
                 $enrolled = '&nbsp;<a class="btn btn-primary btn-xs disabled" href="javascript:void(0);"><span><i class="icon-ambulance"></i> Shipped</span></a>';
-                $announcementMail = '&nbsp;<a class="btn btn-warning btn-xs" href="javascript:void(0);" onclick="mailShipment(\'' . base64_encode($aRow['shipment_id']) . '\')"><span><i class="icon-bullhorn"></i> New Shipment Mail</span></a>';
+                $announcementMail = '&nbsp;<a class="btn btn-warning btn-xs" href="javascript:void(0);" onclick="mailShipment(\'' . base64_encode($rResult[$i]['shipment_id']) . '\')"><span><i class="icon-bullhorn"></i> New Shipment Mail</span></a>';
             }
-            if (in_array(ucfirst($aRow['status']), array("Shipped", "Evaluated", "Should be Re-Evaluated"))) {
-                $manageResponses='&nbsp;<a class="btn btn-info btn-xs" href="/admin/shipment/manage-responses/sid/' . base64_encode($aRow['shipment_id']) . '/sctype/'. base64_encode($aRow['scheme_type']) . '"><span><i class="icon-gear"></i> Responses</span></a>';
+            if (in_array(ucfirst($rResult[$i]['status']), array("Shipped", "Evaluated", "Should be Re-Evaluated"))) {
+                $manageResponses='&nbsp;<a class="btn btn-info btn-xs" href="/admin/shipment/manage-responses/sid/' . base64_encode($rResult[$i]['shipment_id']) . '/sctype/'. base64_encode($rResult[$i]['scheme_type']) . '"><span><i class="icon-gear"></i> Responses</span></a>';
             }
-            if ($aRow['status'] == 'configured') {
-                $manageResponses .= '&nbsp;<a class="btn btn-primary btn-xs" href="javascript:void(0);" onclick="shipDistribution(\'' . base64_encode($aRow['distribution_id']) . '\')"><span><i class="icon-ambulance"></i> Ship Now</span></a>';
+            if ($rResult[$i]['status'] == 'configured') {
+                $manageResponses .= '&nbsp;<a class="btn btn-primary btn-xs" href="javascript:void(0);" onclick="shipDistribution(\'' . base64_encode($rResult[$i]['distribution_id']) . '\')"><span><i class="icon-ambulance"></i> Ship Now</span></a>';
             }
             $delete = '';
             if (!$authNameSpace->is_ptcc_coordinator) {
-                $delete = '&nbsp;<a class="btn btn-primary btn-xs" href="javascript:void(0);" onclick="removeShipment(\'' . base64_encode($aRow['shipment_id']) . '\', \'' . $aRow['shipment_id'] . '\')"><span><i class="icon-remove"></i> Delete</span></a>';
+                $delete = '&nbsp;<a class="btn btn-primary btn-xs" href="javascript:void(0);" onclick="removeShipment(\'' . base64_encode($rResult[$i]['shipment_id']) . '\', \'' . $rResult[$i]['shipment_id'] . '\')"><span><i class="icon-remove"></i> Delete</span></a>';
             }
             $generateForms = '';
             if (!$authNameSpace->is_ptcc_coordinator) {
-                $generateForms = '&nbsp;<a class="btn btn-success btn-xs" href="javascript:void(0);" onclick="generateForms(\'' . base64_encode($aRow['shipment_id']) . '\')"><span><i class="icon-file"></i> Generate Forms</span></a>';
+                $generateForms = '&nbsp;<a class="btn btn-success btn-xs" href="javascript:void(0);" onclick="generateForms(\'' . base64_encode($rResult[$i]['shipment_id']) . '\')"><span><i class="icon-file"></i> Generate Forms</span></a>';
             }
             $row[] = $edit . $shipped . $enrolled . $delete . $announcementMail . $manageResponses . $generateForms;
             $output['aaData'][] = $row;
@@ -212,7 +215,7 @@ class Application_Service_Shipments {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sQuery = $db->select()->from(array('s' => 'shipment'))
             ->join(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id', array('distribution_code', 'distribution_date'))
-            ->joinLeft(array('spm' => 'shipment_participant_map'), 's.shipment_id = spm.shipment_id', array('total_participants'=> new Zend_Db_Expr('count(map_id)'),'last_new_shipment_mailed_on','new_shipment_mail_count'))
+            ->joinLeft(array('spm' => 'shipment_participant_map'), 's.shipment_id = spm.shipment_id', array('total_participants'=> new Zend_Db_Expr('count(map_id)'),'last_new_shipment_mailed_on','new_shipment_mail_count', 'last_submission_updated_on'=> new Zend_Db_Expr('GREATEST(MAX(spm.updated_on_admin), MAX(spm.updated_on_user))')))
             ->joinLeft(array('p' => 'participant'), 'spm.participant_id = p.participant_id', array())
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('SCHEME' => 'sl.scheme_name'))
             ->where('s.scheme_type = ?', $scheme)
@@ -223,7 +226,11 @@ class Application_Service_Shipments {
             $sQuery = $sQuery->where("p.country IS NULL OR p.country IN (".implode(",",$authNameSpace->countries).")");
         }
         $rResult = $db->fetchAll($sQuery);
-
+        for ($i = 0; $i < count($rResult); $i++) {
+            if ($rResult[$i]['status'] == 'evaluated' && $rResult[$i]['last_submission_updated_on'] > $rResult[$i]['updated_on_admin']) {
+                $rResult[$i]['status'] = "Should be Re-Evaluated";
+            }
+        }
         return $rResult;
     }
 
@@ -1272,8 +1279,17 @@ class Application_Service_Shipments {
     }
 
     public function getShipment($sid) {
-        $db = new Application_Model_DbTable_Shipments();
-        return $db->fetchRow($db->select()->where("shipment_id = ?", $sid));
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $shipment = $db->fetchRow($db->select()->from(array('s' => 'shipment'))
+            ->join(array("sp" => "shipment_participant_map"), "sp.shipment_id=s.shipment_id", array(
+                "last_submission_updated_on" => new Zend_Db_Expr("GREATEST(MAX(sp.updated_on_admin), MAX(sp.updated_on_user))")
+            ))
+            ->where("s.shipment_id = ?", $sid)
+            ->group("s.shipment_id"));
+        if ($shipment['status'] == 'evaluated' && $shipment['last_submission_updated_on'] > $shipment['updated_on_admin']) {
+            $shipment['status'] = "Should be Re-Evaluated";
+        }
+        return $shipment;
     }
 
     public function shipItNow($params) {
@@ -1413,12 +1429,12 @@ class Application_Service_Shipments {
     public function updateShipment($params) {
         $dbAdapter = Zend_Db_Table_Abstract::getDefaultAdapter();
         $shipmentRow = $dbAdapter->fetchRow($dbAdapter->select()
-            ->from(array('s' => 'shipment'))
-            ->where('shipment_id = ' . $params['shipmentId']));
-        $size = count($params['sampleName']);
+            ->from(array("s" => "shipment"))
+            ->where("shipment_id = " . $params["shipmentId"]));
+        $size = count($params["sampleName"]);
 		$controlCount = 0;
-		if (isset($params['control'])) {
-            foreach ($params['control'] as $control) {
+		if (isset($params["control"])) {
+            foreach ($params["control"] as $control) {
                 if ($control == 1) {
                     $controlCount += 1;
                 }
@@ -1426,182 +1442,196 @@ class Application_Service_Shipments {
         }
 
         $existingSamples = $dbAdapter->fetchAll($dbAdapter->select()
-            ->from('reference_result_tb')
-            ->where('shipment_id = ' . $params['shipmentId']));
+            ->from("reference_result_tb")
+            ->where("shipment_id = " . $params["shipmentId"]));
         $existingSampleMap = array();
         foreach ($existingSamples as $existingResult) {
-            $existingSampleMap[$existingResult['sample_id']] = array(
-                'mtb_rif_mtb_detected' => $existingResult['mtb_rif_mtb_detected'],
-                'mtb_rif_rif_resistance' => $existingResult['mtb_rif_rif_resistance'],
-                'ultra_mtb_detected' => $existingResult['ultra_mtb_detected'],
-                'ultra_rif_resistance' => $existingResult['ultra_rif_resistance'],
-                'mtb_rif_is_excluded' => $existingResult['mtb_rif_is_excluded'],
-                'mtb_rif_is_exempt' => $existingResult['mtb_rif_is_exempt'],
-                'ultra_is_excluded' => $existingResult['ultra_is_excluded'],
-                'ultra_is_exempt' => $existingResult['ultra_is_exempt'],
-                'excluded_reason' => $existingResult['excluded_reason']
+            $existingSampleMap[$existingResult["sample_id"]] = array(
+                "mtb_rif_mtb_detected" => $existingResult["mtb_rif_mtb_detected"],
+                "mtb_rif_rif_resistance" => $existingResult["mtb_rif_rif_resistance"],
+                "ultra_mtb_detected" => $existingResult["ultra_mtb_detected"],
+                "ultra_rif_resistance" => $existingResult["ultra_rif_resistance"],
+                "mtb_rif_is_excluded" => $existingResult["mtb_rif_is_excluded"],
+                "mtb_rif_is_exempt" => $existingResult["mtb_rif_is_exempt"],
+                "ultra_is_excluded" => $existingResult["ultra_is_excluded"],
+                "ultra_is_exempt" => $existingResult["ultra_is_exempt"],
+                "excluded_reason" => $existingResult["excluded_reason"]
             );
         }
-        $dbAdapter->delete('reference_result_tb', 'shipment_id = ' . $params['shipmentId']);
+        $dbAdapter->delete("reference_result_tb", "shipment_id = " . $params["shipmentId"]);
         $rescoringNecessary = false;
         $maxShipmentScore = 0;
         $newSampleMap = array();
         for ($i = 0; $i < $size; $i++) {
             $sampleId = strval($i + 1);
             $newSampleMap[$sampleId] = array(
-                'mtb_rif_mtb_detected' => $params['mtbDetectedMtbRif'][$i],
-                'mtb_rif_rif_resistance' => $params['rifResistanceMtbRif'][$i],
-                'ultra_mtb_detected' => $params['mtbDetectedUltra'][$i],
-                'ultra_rif_resistance' => $params['rifResistanceUltra'][$i],
-                'mtb_rif_is_excluded' => $params['mtb_rif_excluded'][$i] == 'yes_not_exempt' || $params['mtb_rif_excluded'][$i] == 'yes_exempt' ? 'yes' : 'no',
-                'mtb_rif_is_exempt' => $params['mtb_rif_excluded'][$i] == 'yes_exempt' ? 'yes' : 'no',
-                'ultra_is_excluded' => $params['ultra_excluded'][$i] == 'yes_not_exempt' || $params['ultra_excluded'][$i] == 'yes_exempt' ? 'yes' : 'no',
-                'ultra_is_exempt' => $params['ultra_excluded'][$i] == 'yes_exempt' ? 'yes' : 'no',
-                'excluded_reason' => $params['excludedReason'][$i]
+                "mtb_rif_mtb_detected" => $params["mtbDetectedMtbRif"][$i],
+                "mtb_rif_rif_resistance" => $params["rifResistanceMtbRif"][$i],
+                "ultra_mtb_detected" => $params["mtbDetectedUltra"][$i],
+                "ultra_rif_resistance" => $params["rifResistanceUltra"][$i],
+                "mtb_rif_is_excluded" => $params["mtb_rif_excluded"][$i] == "yes_not_exempt" || $params["mtb_rif_excluded"][$i] == "yes_exempt" ? "yes" : "no",
+                "mtb_rif_is_exempt" => $params["mtb_rif_excluded"][$i] == "yes_exempt" ? "yes" : "no",
+                "ultra_is_excluded" => $params["ultra_excluded"][$i] == "yes_not_exempt" || $params["ultra_excluded"][$i] == "yes_exempt" ? "yes" : "no",
+                "ultra_is_exempt" => $params["ultra_excluded"][$i] == "yes_exempt" ? "yes" : "no",
+                "excluded_reason" => $params["excludedReason"][$i]
             );
             if (!isset($existingSampleMap[$sampleId]) ||
-                $existingSampleMap[$sampleId]['mtb_rif_mtb_detected'] != $newSampleMap[$sampleId]['mtb_rif_mtb_detected'] ||
-                $existingSampleMap[$sampleId]['mtb_rif_rif_resistance'] != $newSampleMap[$sampleId]['mtb_rif_rif_resistance'] ||
-                $existingSampleMap[$sampleId]['ultra_mtb_detected'] != $newSampleMap[$sampleId]['ultra_mtb_detected'] ||
-                $existingSampleMap[$sampleId]['ultra_rif_resistance'] != $newSampleMap[$sampleId]['ultra_rif_resistance'] ||
-                $existingSampleMap[$sampleId]['mtb_rif_is_excluded'] != $newSampleMap[$sampleId]['mtb_rif_is_excluded'] ||
-                $existingSampleMap[$sampleId]['mtb_rif_is_exempt'] != $newSampleMap[$sampleId]['mtb_rif_is_exempt'] ||
-                $existingSampleMap[$sampleId]['ultra_is_excluded'] != $newSampleMap[$sampleId]['ultra_is_excluded'] ||
-                $existingSampleMap[$sampleId]['ultra_is_exempt'] != $newSampleMap[$sampleId]['ultra_is_exempt'] ||
-                $existingSampleMap[$sampleId]['excluded_reason'] != $newSampleMap[$sampleId]['excluded_reason']) {
+                $existingSampleMap[$sampleId]["mtb_rif_mtb_detected"] != $newSampleMap[$sampleId]["mtb_rif_mtb_detected"] ||
+                $existingSampleMap[$sampleId]["mtb_rif_rif_resistance"] != $newSampleMap[$sampleId]["mtb_rif_rif_resistance"] ||
+                $existingSampleMap[$sampleId]["ultra_mtb_detected"] != $newSampleMap[$sampleId]["ultra_mtb_detected"] ||
+                $existingSampleMap[$sampleId]["ultra_rif_resistance"] != $newSampleMap[$sampleId]["ultra_rif_resistance"] ||
+                $existingSampleMap[$sampleId]["mtb_rif_is_excluded"] != $newSampleMap[$sampleId]["mtb_rif_is_excluded"] ||
+                $existingSampleMap[$sampleId]["mtb_rif_is_exempt"] != $newSampleMap[$sampleId]["mtb_rif_is_exempt"] ||
+                $existingSampleMap[$sampleId]["ultra_is_excluded"] != $newSampleMap[$sampleId]["ultra_is_excluded"] ||
+                $existingSampleMap[$sampleId]["ultra_is_exempt"] != $newSampleMap[$sampleId]["ultra_is_exempt"] ||
+                $existingSampleMap[$sampleId]["excluded_reason"] != $newSampleMap[$sampleId]["excluded_reason"]) {
                 $rescoringNecessary = true;
             }
             $dbAdapter->insert('reference_result_tb', array(
-                'shipment_id' => $params['shipmentId'],
-                'sample_id' => $sampleId,
-                'sample_label' => $params['sampleName'][$i],
-                'sample_content' => $params['sampleContent'][$i],
-                'mtb_rif_mtb_detected' => $newSampleMap[$sampleId]['mtb_rif_mtb_detected'],
-                'mtb_rif_rif_resistance' => $newSampleMap[$sampleId]['mtb_rif_rif_resistance'],
-                'mtb_rif_probe_d' => $params['probeMtbRifD'][$i],
-                'mtb_rif_probe_c' => $params['probeMtbRifC'][$i],
-                'mtb_rif_probe_e' => $params['probeMtbRifE'][$i],
-                'mtb_rif_probe_b' => $params['probeMtbRifB'][$i],
-                'mtb_rif_probe_spc' => $params['probeMtbRifSpc'][$i],
-                'mtb_rif_probe_a' => $params['probeMtbRifA'][$i],
-                'ultra_mtb_detected' => $newSampleMap[$sampleId]['ultra_mtb_detected'],
-                'ultra_rif_resistance' => $newSampleMap[$sampleId]['ultra_rif_resistance'],
-                'ultra_probe_spc' => $params['probeUltraSpc'][$i],
-                'ultra_probe_is1081_is6110' => $params['probeUltraIS1081IS6110'][$i],
-                'ultra_probe_rpo_b1' => $params['probeUltraRpoB1'][$i],
-                'ultra_probe_rpo_b2' => $params['probeUltraRpoB2'][$i],
-                'ultra_probe_rpo_b3' => $params['probeUltraRpoB3'][$i],
-                'ultra_probe_rpo_b4' => $params['probeUltraRpoB4'][$i],
-                'control' => 0,
-                'mandatory' => 1,
-                'sample_score' => Application_Service_EvaluationScoring::SAMPLE_MAX_SCORE,
-                'mtb_rif_is_excluded' => $newSampleMap[$sampleId]['mtb_rif_is_excluded'],
-                'mtb_rif_is_exempt' => $newSampleMap[$sampleId]['mtb_rif_is_exempt'],
-                'ultra_is_excluded' => $newSampleMap[$sampleId]['ultra_is_excluded'],
-                'ultra_is_exempt' => $newSampleMap[$sampleId]['ultra_is_exempt'],
-                'excluded_reason' => $newSampleMap[$sampleId]['excluded_reason']
+                "shipment_id" => $params["shipmentId"],
+                "sample_id" => $sampleId,
+                "sample_label" => $params["sampleName"][$i],
+                "sample_content" => $params["sampleContent"][$i],
+                "mtb_rif_mtb_detected" => $newSampleMap[$sampleId]["mtb_rif_mtb_detected"],
+                "mtb_rif_rif_resistance" => $newSampleMap[$sampleId]["mtb_rif_rif_resistance"],
+                "mtb_rif_probe_d" => $params["probeMtbRifD"][$i],
+                "mtb_rif_probe_c" => $params["probeMtbRifC"][$i],
+                "mtb_rif_probe_e" => $params["probeMtbRifE"][$i],
+                "mtb_rif_probe_b" => $params["probeMtbRifB"][$i],
+                "mtb_rif_probe_spc" => $params["probeMtbRifSpc"][$i],
+                "mtb_rif_probe_a" => $params["probeMtbRifA"][$i],
+                "ultra_mtb_detected" => $newSampleMap[$sampleId]["ultra_mtb_detected"],
+                "ultra_rif_resistance" => $newSampleMap[$sampleId]["ultra_rif_resistance"],
+                "ultra_probe_spc" => $params["probeUltraSpc"][$i],
+                "ultra_probe_is1081_is6110" => $params["probeUltraIS1081IS6110"][$i],
+                "ultra_probe_rpo_b1" => $params["probeUltraRpoB1"][$i],
+                "ultra_probe_rpo_b2" => $params["probeUltraRpoB2"][$i],
+                "ultra_probe_rpo_b3" => $params["probeUltraRpoB3"][$i],
+                "ultra_probe_rpo_b4" => $params["probeUltraRpoB4"][$i],
+                "control" => 0,
+                "mandatory" => 1,
+                "sample_score" => Application_Service_EvaluationScoring::SAMPLE_MAX_SCORE,
+                "mtb_rif_is_excluded" => $newSampleMap[$sampleId]["mtb_rif_is_excluded"],
+                "mtb_rif_is_exempt" => $newSampleMap[$sampleId]["mtb_rif_is_exempt"],
+                "ultra_is_excluded" => $newSampleMap[$sampleId]["ultra_is_excluded"],
+                "ultra_is_exempt" => $newSampleMap[$sampleId]["ultra_is_exempt"],
+                "excluded_reason" => $newSampleMap[$sampleId]["excluded_reason"]
             ));
-            if ($newSampleMap[$sampleId]['mtb_rif_is_excluded'] == 'no' ||
-                $newSampleMap[$sampleId]['mtb_rif_is_exempt'] == 'yes' ||
-                $newSampleMap[$sampleId]['ultra_is_excluded'] == 'no' ||
-                $newSampleMap[$sampleId]['ultra_is_exempt'] == 'yes') {
+            if ($newSampleMap[$sampleId]["mtb_rif_is_excluded"] == "no" ||
+                $newSampleMap[$sampleId]["mtb_rif_is_exempt"] == "yes" ||
+                $newSampleMap[$sampleId]["ultra_is_excluded"] == "no" ||
+                $newSampleMap[$sampleId]["ultra_is_exempt"] == "yes") {
                 $maxShipmentScore += Application_Service_EvaluationScoring::SAMPLE_MAX_SCORE;
             }
         }
+        $authNameSpace = new Zend_Session_Namespace('administrators');
+        $admin = $authNameSpace->primary_email;
         if ($rescoringNecessary) {
-            $assayRecords = $dbAdapter->fetchAll($dbAdapter->select()->from('r_tb_assay'));
+            $assayRecords = $dbAdapter->fetchAll($dbAdapter->select()->from("r_tb_assay"));
+            $assays = array();
             foreach ($assayRecords as $assayRecord) {
-                $assays[$assayRecord['id']] = $assayRecord['short_name'];
+                $assays[$assayRecord["id"]] = $assayRecord["short_name"];
             }
             $scoredSubmissions = $dbAdapter->fetchAll($dbAdapter->select()
-                ->from('shipment_participant_map')
-                ->where('shipment_score is not null')
-                ->where('shipment_id = '.$params['shipmentId']));
+                ->from("shipment_participant_map")
+                ->where("shipment_score is not null")
+                ->where("shipment_id = ".$params["shipmentId"]));
             $schemeService = new Application_Service_Schemes();
             $scoringService = new Application_Service_EvaluationScoring();
             $samplePassStatuses = array();
             foreach ($scoredSubmissions as $scoredSubmission) {
-                $finalResult = $scoredSubmission['final_result'];
-                $sampleRes = $schemeService->getTbSamples($params['shipmentId'],
-                    $scoredSubmission['participant_id']);
+                $finalResult = $scoredSubmission["final_result"];
+                $sampleRes = $schemeService->getTbSamples($params["shipmentId"],
+                    $scoredSubmission["participant_id"]);
                 $submissionShipmentScore = 0;
                 $failureReason = array();
                 $hasBlankResult = false;
                 $assayName = "Unspecified";
-                if (isset($attributes['assay']) && $attributes['assay'] != '' && array_key_exists($attributes['assay'], $assays)) {
-                    $assayName = $assays[$attributes['assay']];
+                if (isset($attributes["assay"]) && $attributes["assay"] != '' && array_key_exists($attributes["assay"], $assays)) {
+                    $assayName = $assays[$attributes["assay"]];
                 }
                 for ($i = 0; $i < count($sampleRes); $i++) {
-                    $sampleId = $sampleRes[$i]['sample_id'];
+                    $sampleId = $sampleRes[$i]["sample_id"];
                     $samplePassStatus = $scoringService->calculateTbSamplePassStatus(
-                        $newSampleMap[$sampleId][$assayName == 'MTB Ultra' ? 'ultra_mtb_detected' : 'mtb_rif_mtb_detected'], $sampleRes[$i]['res_mtb_detected'],
-                        $newSampleMap[$sampleId][$assayName == 'MTB Ultra' ? 'ultra_rif_resistance' : 'mtb_rif_rif_resistance'], $sampleRes[$i]['res_rif_resistance'],
-                        $sampleRes[$i]['res_probe_1'], $sampleRes[$i]['res_probe_2'],
-                        $sampleRes[$i]['res_probe_3'], $sampleRes[$i]['res_probe_4'], $sampleRes[$i]['res_probe_5'],
-                        $sampleRes[$i]['res_probe_6'], $newSampleMap[$sampleId][$assayName == 'MTB Ultra' ? 'ultra_is_excluded' : 'mtb_rif_is_excluded'],
-                        $newSampleMap[$sampleId][$assayName == 'MTB Ultra' ? 'ultra_is_exempt' : 'mtb_rif_is_exempt']);
+                        $newSampleMap[$sampleId][$assayName == "MTB Ultra" ? 'ultra_mtb_detected' : "mtb_rif_mtb_detected"], $sampleRes[$i]["res_mtb_detected"],
+                        $newSampleMap[$sampleId][$assayName == "MTB Ultra" ? "ultra_rif_resistance" : "mtb_rif_rif_resistance"], $sampleRes[$i]["res_rif_resistance"],
+                        $sampleRes[$i]["res_probe_1"], $sampleRes[$i]["res_probe_2"],
+                        $sampleRes[$i]["res_probe_3"], $sampleRes[$i]["res_probe_4"], $sampleRes[$i]["res_probe_5"],
+                        $sampleRes[$i]["res_probe_6"], $newSampleMap[$sampleId][$assayName == "MTB Ultra" ? "ultra_is_excluded" : "mtb_rif_is_excluded"],
+                        $newSampleMap[$sampleId][$assayName == "MTB Ultra" ? "ultra_is_exempt" : "mtb_rif_is_exempt"]);
                     $submissionShipmentScore += $scoringService->calculateTbSampleScore(
                         $samplePassStatus,
-                        $sampleRes[$i]['ref_sample_score']);
+                        $sampleRes[$i]["ref_sample_score"]);
                     array_push($samplePassStatuses, $samplePassStatus);
-                    $hasBlankResult = $hasBlankResult || !isset($sampleRes[$i]['res_mtb_detected']);
+                    $hasBlankResult = $hasBlankResult || !isset($sampleRes[$i]["res_mtb_detected"]);
                 }
-                if(!isset($scoredSubmission['attributes']) || $scoredSubmission['attributes'] == "") {
-                    $scoredSubmission['attributes'] = "{}";
+                if(!isset($scoredSubmission["attributes"]) || $scoredSubmission["attributes"] == "") {
+                    $scoredSubmission["attributes"] = "{}";
                 }
-                $attributes = json_decode($scoredSubmission['attributes'],true);
-                $shipmentData = array();
-                $shipmentData['shipment_score'] = $submissionShipmentScore;
-                $shipmentData['documentation_score'] = $scoringService->calculateTbDocumentationScore($shipmentRow['shipment_date'],
-                    $attributes['expiry_date'], $scoredSubmission['shipment_receipt_date'], $scoredSubmission['supervisor_approval'],
-                    $scoredSubmission['participant_supervisor'], $shipmentRow['lastdate_response']);
+                $attributes = json_decode($scoredSubmission["attributes"],true);
+                $shipmentData = array(
+                    "updated_by_admin" => $admin,
+                    "updated_on_admin" => new Zend_Db_Expr("now()")
+                );
+                $shipmentData["shipment_score"] = $submissionShipmentScore;
+                $shipmentData["documentation_score"] = $scoringService->calculateTbDocumentationScore($shipmentRow["shipment_date"],
+                    $attributes["expiry_date"], $scoredSubmission["shipment_receipt_date"], $scoredSubmission["supervisor_approval"],
+                    $scoredSubmission["participant_supervisor"], $shipmentRow["lastdate_response"]);
                 $submissionPassStatus = $scoringService->calculateSubmissionPassStatus(
-                    $submissionShipmentScore, $shipmentData['documentation_score'], $maxShipmentScore,
+                    $submissionShipmentScore, $shipmentData["documentation_score"], $maxShipmentScore,
                     $samplePassStatuses);
-                if ($scoredSubmission['is_excluded'] == 'yes') {
-                    $failureReason[] = array('warning' => 'Excluded from Evaluation');
+                if ($scoredSubmission["is_excluded"] == "yes") {
                     $finalResult = 3;
+                    $failureReason[] = array("warning" => "Excluded from Evaluation");
                 } else if ($hasBlankResult) {
-                    $failureReason[]['warning'] = "Could not determine score. Not enough responses found in the submission.";
+                    $failureReason[]["warning"] = "Could not determine score. Not enough responses found in the submission.";
                     $finalResult = 4;
-                } else if ($submissionPassStatus == 'fail') {
+                } else if ($submissionPassStatus == "fail") {
                     $totalScore = $shipmentData['shipment_score'] + $shipmentData['documentation_score'];
                     $maxTotalScore = $maxShipmentScore + Application_Service_EvaluationScoring::MAX_DOCUMENTATION_SCORE;
-                    $failureReason[]['warning'] = "Participant did not meet the score criteria (Participant Score - <strong>$totalScore</strong> out of <strong>$maxTotalScore</strong>)";
+                    $failureReason[]["warning"] = "Participant did not meet the score criteria (Participant Score - <strong>$totalScore</strong> out of <strong>$maxTotalScore</strong>)";
                     $finalResult = 2;
-                } else if ($submissionPassStatus == 'pass') {
+                } else if ($submissionPassStatus == "pass") {
                     $finalResult = 1;
                 }
-                $shipmentData['failure_reason'] = json_encode($failureReason);
-                $shipmentData['final_result'] = $finalResult;
-                $dbAdapter->update('shipment_participant_map', $shipmentData,
-                    "map_id = " . $scoredSubmission['map_id']);
+                $shipmentData["failure_reason"] = json_encode($failureReason);
+                $shipmentData["final_result"] = $finalResult;
+                $dbAdapter->update(
+                    "shipment_participant_map",
+                    $shipmentData,
+                    "map_id = " . $scoredSubmission["map_id"]
+                );
             }
         }
 
-        $dbAdapter->update('shipment', array(
-            'number_of_samples' => $size - $controlCount,
-            'number_of_controls' => $controlCount,
-			'shipment_code' => $params['shipmentCode'],
-			'lastdate_response' => Application_Service_Common::ParseDate($params['lastDate']),
-            'is_official' => $params['isOfficial'] == 'yes' ? 1 : 0
-        ), 'shipment_id = ' . $params['shipmentId']);
+        $dbAdapter->update("shipment", array(
+            "number_of_samples" => $size - $controlCount,
+            "number_of_controls" => $controlCount,
+			"shipment_code" => $params["shipmentCode"],
+			"lastdate_response" => Application_Service_Common::ParseDate($params["lastDate"]),
+            "is_official" => $params["isOfficial"] == "yes" ? 1 : 0,
+            "updated_by_admin" => $admin,
+            "updated_on_admin" => new Zend_Db_Expr("now()")
+        ), "shipment_id = " . $params["shipmentId"]);
     }
 
     public function receiveShipment($params) {
         $dbAdapter = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $authNameSpace = new Zend_Session_Namespace('datamanagers');
         $evaluationStatusRow = $dbAdapter->fetchRow(
             $dbAdapter->select()
                 ->from(array('spm' => 'shipment_participant_map'), array('evaluation_status'))
                 ->where('shipment_id = ' . $params['shipment_id'] . ' AND participant_id = '. $params['participant_id']));
         $evaluationStatus = $evaluationStatusRow['evaluation_status'];
         $evaluationStatus[1] = '1';
-        $dbAdapter->update('shipment_participant_map',
+        $dbAdapter->update("shipment_participant_map",
             array(
-                'shipment_receipt_date' => $params['shipment_receipt_date'],
-                'evaluation_status' => $evaluationStatus
+                "shipment_receipt_date" => $params["shipment_receipt_date"],
+                "evaluation_status" => $evaluationStatus,
+                "updated_by_user" => $authNameSpace->dm_id,
+                "updated_on_user" => new Zend_Db_Expr('now()')
             ),
-            'shipment_id = ' . $params['shipment_id'] . ' AND participant_id = '. $params['participant_id']);
+            "shipment_id = " . $params["shipment_id"] . " AND participant_id = ". $params["participant_id"]);
     }
 
     public function getShipmentOverview($parameters) {
@@ -1636,20 +1666,27 @@ class Application_Service_Shipments {
 
     public function getShipmentInReports($distributionId) {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
-        $sql = $db->select()->from(array('s' => 'shipment',array('shipment_id','shipment_code','status','number_of_samples')))
-            ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id', array(
-                'distribution_code','distribution_date'))
-            ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array(
-                'report_generated',
-                'participant_count' => new Zend_Db_Expr('count("participant_id")'),
-                'reported_count' => new Zend_Db_Expr("COUNT(CASE substr(sp.evaluation_status,4,1) WHEN '1' THEN 1 WHEN '2' THEN 1 END)"),
-                'number_passed' => new Zend_Db_Expr("SUM(final_result = 1)")))
-            ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type',array('scheme_name'))
-            ->joinLeft(array('rr' => 'r_results'), 'sp.final_result=rr.result_id')
+        $sql = $db->select()->from(array("s" => "shipment", array("shipment_id", "shipment_code", "status", "number_of_samples", "s.updated_on_admin")))
+            ->join(array("d" => "distributions"), "d.distribution_id=s.distribution_id", array(
+                "distribution_code", "distribution_date"))
+            ->join(array("sp" => "shipment_participant_map"), "sp.shipment_id=s.shipment_id", array(
+                "report_generated",
+                "participant_count" => new Zend_Db_Expr("count(sp.participant_id)"),
+                "reported_count" => new Zend_Db_Expr("COUNT(CASE substr(sp.evaluation_status,4,1) WHEN '1' THEN 1 WHEN '2' THEN 1 END)"),
+                "number_passed" => new Zend_Db_Expr("SUM(final_result = 1)"),
+                "last_submission_updated_on" => new Zend_Db_Expr("GREATEST(MAX(sp.updated_on_admin), MAX(sp.updated_on_user))")
+            ))
+            ->join(array("sl" => "scheme_list"), "sl.scheme_id=s.scheme_type", array("scheme_name"))
+            ->joinLeft(array("rr" => "r_results"), "sp.final_result=rr.result_id")
             ->where("s.distribution_id = ?", $distributionId)
-            ->group('s.shipment_id');
-
-        return $db->fetchAll($sql);
+            ->group("s.shipment_id");
+        $rResult = $db->fetchAll($sql);
+        for ($i = 0; $i < count($rResult); $i++) {
+            if ($rResult[$i]['status'] == 'evaluated' && $rResult[$i]['last_submission_updated_on'] > $rResult[$i]['updated_on_admin']) {
+                $rResult[$i]['status'] = "Should be Re-Evaluated";
+            }
+        }
+        return $rResult;
     }
 
     public function getParticipantCountBasedOnScheme() {
@@ -1785,10 +1822,10 @@ class Application_Service_Shipments {
                 $bcc=$newShipmentMailContent['mail_bcc'];
                 $commonServices->insertTempMail($toEmail,$cc,$bcc, $subject, $message, $fromEmail, $fromFullName);
                 $count=$participantDetails['new_shipment_mail_count']+1;
-                $return=$db->update('shipment_participant_map', array(
-                        'last_new_shipment_mailed_on' => new Zend_Db_Expr('now()'),
-                        'new_shipment_mail_count' => $count
-                ), 'map_id = ' . $participantDetails['map_id']);
+                $return=$db->update("shipment_participant_map", array(
+                        "last_new_shipment_mailed_on" => new Zend_Db_Expr("now()"),
+                        "new_shipment_mail_count" => $count
+                ), "map_id = " . $participantDetails['map_id']);
             }
         }
         return $return;
@@ -1886,10 +1923,10 @@ class Application_Service_Shipments {
                 $bcc=$notParticipatedMailContent['mail_bcc'];
                 $commonServices->insertTempMail($toEmail,$cc,$bcc, $subject, $message, $fromEmail, $fromFullName);
                 $count=$participantDetails['last_not_participated_mail_count']+1;
-                $return=$db->update('shipment_participant_map', array(
-                    'last_not_participated_mailed_on' => new Zend_Db_Expr('now()'),
-                    'last_not_participated_mail_count' => $count
-                ),'map_id = ' . $participantDetails['map_id']);
+                $return=$db->update("shipment_participant_map", array(
+                    "last_not_participated_mailed_on" => new Zend_Db_Expr("now()"),
+                    "last_not_participated_mail_count" => $count
+                ), "map_id = " . $participantDetails["map_id"]);
             }
         }
         return $return;
@@ -2008,10 +2045,10 @@ class Application_Service_Shipments {
                 $bcc = $newShipmentMailContent['mail_bcc'];
                 $commonServices->insertTempMail($toEmail,$cc,$bcc, $subject, $message, $fromEmail, $fromFullName);
                 $count = $participantDetails['new_shipment_mail_count']+1;
-                $db->update('shipment_participant_map', array(
-                    'last_new_shipment_mailed_on' => new Zend_Db_Expr('now()'),
-                    'new_shipment_mail_count' => $count
-                ), 'map_id = ' . $participantDetails['map_id']);
+                $db->update("shipment_participant_map", array(
+                    "last_new_shipment_mailed_on" => new Zend_Db_Expr("now()"),
+                    "new_shipment_mail_count" => $count
+                ), "map_id = " . $participantDetails["map_id"]);
             }
         }
     }
@@ -2150,17 +2187,20 @@ class Application_Service_Shipments {
 
     public function getShipments($distributionId) {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
-        $sql = $db->select()->from(array('s' => 'shipment'))
-            ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id')
-            ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array(
-                'map_id',
-                'responseDate' => 'shipment_test_report_date',
-                'participant_count' => new Zend_Db_Expr('count("participant_id")'),
-                'reported_count' => new Zend_Db_Expr("SUM(substr(sp.evaluation_status,3,1) = 1 AND (substr(sp.evaluation_status,4,1) = '1' OR substr(sp.evaluation_status,4,1) = '2'))"),
-                'number_passed' => new Zend_Db_Expr("SUM(final_result = 1)"),
-                'last_not_participated_mailed_on',
-                'last_not_participated_mail_count',
-                'shipment_status' => 's.status'))
+        $sql = $db->select()->from(array("s" => "shipment"))
+            ->join(array("d" => "distributions"), "d.distribution_id=s.distribution_id")
+            ->join(array("sp" => "shipment_participant_map"), "sp.shipment_id=s.shipment_id", array(
+                "map_id",
+                "responseDate" => "shipment_test_report_date",
+                "participant_count" => new Zend_Db_Expr("count(sp.participant_id)"),
+                "reported_count" => new Zend_Db_Expr("SUM(substr(sp.evaluation_status,3,1) = 1 AND (substr(sp.evaluation_status,4,1) = '1' OR substr(sp.evaluation_status,4,1) = '2'))"),
+                "number_passed" => new Zend_Db_Expr("SUM(final_result = 1)"),
+                "last_not_participated_mailed_on",
+                "last_not_participated_mail_count",
+                "shipment_status" => "s.status",
+                "last_submission_updated_on" => new Zend_Db_Expr("GREATEST(MAX(sp.updated_on_admin), MAX(sp.updated_on_user))"),
+                "shipment_updated_on_admin" => new Zend_Db_Expr("MAX(s.updated_on_admin)")
+            ))
             ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id')
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type')
             ->joinLeft(array('rr' => 'r_results'), 'sp.final_result=rr.result_id')
@@ -2170,6 +2210,13 @@ class Application_Service_Shipments {
             $sql = $sql->where("p.country IN (".implode(",",$authNameSpace->countries).")");
         }
         $sql = $sql->group('s.shipment_id');
-        return $db->fetchAll($sql);
+        $rResult = $db->fetchAll($sql);
+        for ($i = 0; $i < count($rResult); $i++) {
+            if ($rResult[$i]['shipment_status'] == 'evaluated' && $rResult[$i]['last_submission_updated_on'] > $rResult[$i]['shipment_updated_on_admin']) {
+                error_log($rResult[$i]['shipment_status']."\t".$rResult[$i]['last_submission_updated_on']."\t".$rResult[$i]['shipment_updated_on_admin'], 0);
+                $rResult[$i]['shipment_status'] = "Should be Re-Evaluated";
+            }
+        }
+        return $rResult;
     }
 }

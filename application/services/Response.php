@@ -362,10 +362,10 @@ class Application_Service_Response {
 
                         $emailParticipantDetailsQuery = $db->select()->from(array('sp' => 'shipment_participant_map'),
                             array(
-                                'sp.participant_id',
-                                'sp.shipment_id',
-                                'sp.map_id',
-                                'sp.new_shipment_mail_count'
+                                "sp.participant_id",
+                                "sp.shipment_id",
+                                "sp.map_id",
+                                "sp.new_shipment_mail_count"
                             ))
                             ->join(array('s' => 'shipment'), 's.shipment_id=sp.shipment_id', array('s.shipment_code', 's.shipment_code'))
                             ->join(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id',
@@ -402,20 +402,22 @@ class Application_Service_Response {
                                         $participantEmailDetails['distribution_code'],
                                         $surveyDate
                                     );
-                                    $content = $newShipmentMailContent['mail_content'];
+                                    $content = $newShipmentMailContent["mail_content"];
                                     $message = str_replace($search, $replace, $content);
-                                    $subject = $newShipmentMailContent['mail_subject'];
-                                    $fromEmail = $newShipmentMailContent['mail_from'];
-                                    $fromFullName = $newShipmentMailContent['from_name'];
-                                    $toEmail = $participantEmailDetails['email'];
-                                    $cc = $newShipmentMailContent['mail_cc'];
-                                    $bcc = $newShipmentMailContent['mail_bcc'];
+                                    $subject = $newShipmentMailContent["mail_subject"];
+                                    $fromEmail = $newShipmentMailContent["mail_from"];
+                                    $fromFullName = $newShipmentMailContent["from_name"];
+                                    $toEmail = $participantEmailDetails["email"];
+                                    $cc = $newShipmentMailContent["mail_cc"];
+                                    $bcc = $newShipmentMailContent["mail_bcc"];
                                     $commonServices->insertTempMail($toEmail, $cc, $bcc, $subject, $message, $fromEmail, $fromFullName);
-                                    $count = $participantEmailDetails['new_shipment_mail_count'] + 1;
-                                    $db->update('shipment_participant_map', array(
-                                        'last_new_shipment_mailed_on' => new Zend_Db_Expr('now()'),
-                                        'new_shipment_mail_count' => $count
-                                    ), 'map_id = ' . $participantEmailDetails['map_id']);
+                                    $count = $participantEmailDetails["new_shipment_mail_count"] + 1;
+                                    $db->update("shipment_participant_map", array(
+                                        "last_new_shipment_mailed_on" => new Zend_Db_Expr("now()"),
+                                        "new_shipment_mail_count" => $count,
+                                        "updated_by_admin" => $admin,
+                                        "updated_on_admin" => new Zend_Db_Expr('now()')
+                                    ), "map_id = " . $participantEmailDetails["map_id"]);
                                 }
                                 if (isset($participantEmailDetails['push_notification_token']) && $participantEmailDetails['push_notification_token'] != '') {
                                     $tempPushNotificationsDb = new Application_Model_DbTable_TempPushNotification();
@@ -432,14 +434,14 @@ class Application_Service_Response {
                 }
             }
         } else {
-            $mapData['is_pt_test_not_performed'] = "no";
-            $mapData['not_tested_reason'] = null;
-            $mapData['pt_test_not_performed_comments'] = null;
+            $mapData["is_pt_test_not_performed"] = "no";
+            $mapData["not_tested_reason"] = null;
+            $mapData["pt_test_not_performed_comments"] = null;
         }
-        if (isset($params['testReceiptDate']) && trim($params['testReceiptDate'])!= '') {
-            $mapData['shipment_test_report_date'] = Application_Service_Common::ParseDate($params['testReceiptDate']);
+        if (isset($params["testReceiptDate"]) && trim($params["testReceiptDate"])!= '') {
+            $mapData["shipment_test_report_date"] = Application_Service_Common::ParseDate($params["testReceiptDate"]);
         } else {
-            $mapData['shipment_test_report_date'] = new Zend_Db_Expr('now()');
+            $mapData["shipment_test_report_date"] = new Zend_Db_Expr("now()");
         }
 
         $mapData['qc_done'] = isset($params['qcDone']) ? $params['qcDone'] : 'no';
