@@ -1364,11 +1364,10 @@ class Application_Service_Evaluation {
             "updated_on_admin" => new Zend_Db_Expr("now()")
         ), "shipment_id=" . $shipmentId);
 
-        $result = array(
+        return array(
             'shipment' => $shipmentResult,
             'dmResult' => $mapRes,
             'previousSixShipments' => $previousSixShipments);
-        return $result;
     }
 
     public function getSummaryReportsInPdf($shipmentId) {

@@ -484,6 +484,8 @@ if (sizeof($this->result['shipment']) > 0) {
             }
             $ptccDetails .= '    </tr>';
             $ptccDetails .= '</table><br/><br/>';
+        } else {
+            $ptccDetails = '';
         }
 
         $cdcDetails = '<div style="border:solid 1px #000000;">';
