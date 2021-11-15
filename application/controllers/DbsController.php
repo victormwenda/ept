@@ -15,7 +15,6 @@ class DbsController extends Zend_Controller_Action
 
     public function responseAction()
     {
-		
 		$schemeService = new Application_Service_Schemes();
 		$shipmentService = new Application_Service_Shipments();		
 		if($this->_request->isPost()){		
@@ -51,8 +50,9 @@ class DbsController extends Zend_Controller_Action
 			$this->view->shipId = $sID;
 			$this->view->participantId = $pID;
 			$this->view->eID = $eID;
-			//
-			$this->view->isEditable = $shipmentService->isShipmentEditable($sID,$pID);
+
+            $authNameSpace = new Zend_Session_Namespace('administrators');
+            $this->view->isEditable = $shipmentService->isShipmentEditable($sID, !$authNameSpace->is_ptcc_coordinator);
 			
 			$commonService = new Application_Service_Common();
 			$this->view->modeOfReceipt=$commonService->getAllModeOfReceipt();

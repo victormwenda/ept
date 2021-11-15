@@ -480,7 +480,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
 		if (isset($parameters['currentType'])) {
 			if ($parameters['currentType'] == 'active') {
 				$sQuery = $sQuery->where("s.response_switch = 'on'");
-			} else if ($parameters['currentType'] == 'inactive'){
+			} else if ($parameters['currentType'] == 'inactive') {
 				$sQuery = $sQuery->where("s.response_switch = 'off'");
 			}
 		}
@@ -537,7 +537,8 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
                     "evaluationStatus" => $aRow['evaluation_status']
                 );
             } else {
-                $isEditable=$shipmentParticipantDb->isShipmentEditable($aRow['shipment_id'],$aRow['participant_id']);
+                $authNameSpace = new Zend_Session_Namespace('administrators');
+                $isEditable=$shipmentParticipantDb->isShipmentEditable($aRow['shipment_id'], !$authNameSpace->is_ptcc_coordinator);
                 $row = array();
                 $row[] = $general->humanDateFormat($aRow['shipment_date']);
                 $row[] = ($aRow['scheme_name']);
@@ -721,7 +722,8 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
         $general = new Pt_Commons_General();
         $shipmentParticipantDb = new Application_Model_DbTable_ShipmentParticipantMap();
         foreach ($rResult as $aRow) {
-            $isEditable=$shipmentParticipantDb->isShipmentEditable($aRow['shipment_id'],$aRow['participant_id']);
+            $authNameSpace = new Zend_Session_Namespace('administrators');
+            $isEditable=$shipmentParticipantDb->isShipmentEditable($aRow['shipment_id'], !$authNameSpace->is_ptcc_coordinator);
             $row = array();
             if ($aRow['ACTION'] == "View") {
                 $aRow['ACTION'] = "View";
@@ -908,8 +910,8 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
         foreach ($rResult as $aRow) {
             $qcChkbox='';
 			$qcResponse='';
-
-            $isEditable=$shipmentParticipantDb->isShipmentEditable($aRow['shipment_id'],$aRow['participant_id']);
+            $authNameSpace = new Zend_Session_Namespace('administrators');
+            $isEditable=$shipmentParticipantDb->isShipmentEditable($aRow['shipment_id'], !$authNameSpace->is_ptcc_coordinator);
             $row = array();
             if ($aRow['RESPONSE'] == "View") {
                 $aRow['RESPONSE'] = "View";

@@ -29,7 +29,6 @@ class TbController extends Zend_Controller_Action
         } else {
             $sID= $this->getRequest()->getParam('sid');
             $pID= $this->getRequest()->getParam('pid');
-
             $participantService = new Application_Service_Participants();
             $this->view->participant = $participantService->getParticipantDetails($pID);
             $this->view->allSamples = $schemeService->getTbSamples($sID,$pID);
@@ -38,14 +37,12 @@ class TbController extends Zend_Controller_Action
             $this->view->assays = $schemeService->getTbAssayReferenceMap();
             $instrumentDb = new Application_Model_DbTable_Instruments();
             $this->view->instruments = $instrumentDb->getInstruments($pID, true);
-
             $this->view->shipment = $shipment;
             $this->view->shipId = $sID;
             $this->view->participantId = $pID;
             $this->view->eID = $shipment['evaluation_status'];
-
-            $this->view->isEditable = $shipmentService->isShipmentEditable($sID,$pID);
-
+            $authNameSpace = new Zend_Session_Namespace('administrators');
+            $this->view->isEditable = $shipmentService->isShipmentEditable($sID, !$authNameSpace->is_ptcc_coordinator);
             $commonService = new Application_Service_Common();
             $this->view->globalQcAccess = $commonService->getConfig('qc_access');
             $this->view->allNotTestedReason = $schemeService->getNotTestedReasons('tb');

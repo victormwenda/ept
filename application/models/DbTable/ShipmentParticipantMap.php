@@ -151,14 +151,14 @@ es","participant_supervisor":"Thomas S. Ayodeji","user_comment":"only two module
         return $this->update($params, "map_id = " . $mapId);
     }
 
-    public function isShipmentEditable($shipmentId, $participantId) {
+    public function isShipmentEditable($shipmentId, $isAdministrator) {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $shipment = $db->fetchRow($db->select()->from(array('s' => 'shipment'))
                         ->where("s.shipment_id = ?", $shipmentId));
 
-        if($shipment["status"] == 'finalized' || $shipment["response_switch"] == 'off'){
+        if($shipment["status"] == 'finalized' || ($shipment["response_switch"] == 'off' && !$isAdministrator)){
             return false;
-        }else{
+        } else {
             return true;
         }
     }
