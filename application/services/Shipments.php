@@ -139,8 +139,8 @@ class Application_Service_Shipments {
             }
             if ($rResult[$i]['status'] != 'finalized' && $rResult[$i]['status'] != 'ready' && $rResult[$i]['status'] != 'pending') {
                 $responseSwitch = "<select onchange='responseSwitch(this.value,".$rResult[$i]['shipment_id'].")'>";
-                $responseSwitch .= "<option value='on'".(isset($aRow['response_switch']) && $rResult[$i]['response_switch'] =="on" ? " selected='selected' " : "").">On</option>";
-                $responseSwitch .= "<option value='off'".(isset($aRow['response_switch']) && $rResult[$i]['response_switch'] =="off" ? " selected='selected' " : "").">Off</option>";
+                $responseSwitch .= "<option value='on'".(isset($rResult[$i]['response_switch']) && $rResult[$i]['response_switch'] =="on" ? " selected='selected' " : "").">On</option>";
+                $responseSwitch .= "<option value='off'".(isset($rResult[$i]['response_switch']) && $rResult[$i]['response_switch'] =="off" ? " selected='selected' " : "").">Off</option>";
                 $responseSwitch .= "</select>";
             } else {
                 $responseSwitch = '-';
@@ -235,7 +235,7 @@ class Application_Service_Shipments {
     }
 
     public function updateEidResults($params) {
-        if (!$this->isShipmentEditable($params['shipmentId'], $params['participantId'])) {
+        if (!$this->isShipmentEditableToDataManager($params['shipmentId'])) {
             return false;
         }
 
@@ -319,7 +319,7 @@ class Application_Service_Shipments {
     }
 
     public function updateDtsResults($params) {
-        if (!$this->isShipmentEditable($params['shipmentId'], $params['participantId'])) {
+        if (!$this->isShipmentEditableToDataManager($params['shipmentId'])) {
             return false;
         }
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
@@ -486,7 +486,7 @@ class Application_Service_Shipments {
     }
 
     public function updateDbsResults($params) {
-        if (!$this->isShipmentEditable($params['shipmentId'], $params['participantId'])) {
+        if (!$this->isShipmentEditableToDataManager($params['shipmentId'])) {
             return false;
         }
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
@@ -590,7 +590,7 @@ class Application_Service_Shipments {
     }
 
     public function updateTbResultHeader($params) {
-        if (!$this->isShipmentEditable($params['shipmentId'], $params['participantId'])) {
+        if (!$this->isShipmentEditableToDataManager($params['shipmentId'])) {
             return "The submission cannot be edited at this point in time.";
         }
         $shipmentData = $this->getShipmentParticipantMap($params['shipmentId'], $params['participantId']);
@@ -705,7 +705,7 @@ class Application_Service_Shipments {
     }
 
     public function updateTbResult($params, $cartridgeExpirationDate, $cartridgeLotNo) {
-        if (!$this->isShipmentEditable($params['shipmentId'], $params['participantId'])) {
+        if (!$this->isShipmentEditableToDataManager($params['shipmentId'])) {
             return "The submission cannot be edited at this point in time.";
         }
         $shipmentData = $this->getShipmentParticipantMap($params['shipmentId'], $params['participantId']);
@@ -855,7 +855,7 @@ class Application_Service_Shipments {
     }
 
     public function updateTbResultFooter($params) {
-        if (!$this->isShipmentEditable($params["shipmentId"], $params["participantId"])) {
+        if (!$this->isShipmentEditableToDataManager($params["shipmentId"])) {
             return "The submission cannot be edited at this point in time.";
         }
         $shipmentData = $this->getShipmentParticipantMap($params["shipmentId"], $params["participantId"]);
@@ -1017,7 +1017,7 @@ class Application_Service_Shipments {
     }
 
     public function updateTbResults($params) {
-        if (!$this->isShipmentEditable($params['shipmentId'], $params['participantId'])) {
+        if (!$this->isShipmentEditableToDataManager($params['shipmentId'])) {
             return "The submission cannot be edited at this point in time.";
         }
         $shipmentData = $this->getShipmentParticipantMap($params['shipmentId'], $params['participantId']);
@@ -1330,14 +1330,19 @@ class Application_Service_Shipments {
         }
     }
 
-    public function isShipmentEditable($shipmentId=NULL, $participantId=NULL) {
+    public function isShipmentEditableToDataManager($shipmentId=NULL) {
         $authNameSpace = new Zend_Session_Namespace('datamanagers');
-		if ($authNameSpace->view_only_access=='yes') {
-			return false;
-		}
+        if ($authNameSpace->view_only_access=='yes') {
+            return false;
+        }
 
+        $spMap = new Application_Model_DbTable_ShipmentParticipantMap();
+        return $spMap->isShipmentEditable($shipmentId, false);
+    }
+
+    public function isShipmentEditable($shipmentId,$isAdministrator) {
 		$spMap = new Application_Model_DbTable_ShipmentParticipantMap();
-        return $spMap->isShipmentEditable($shipmentId, $participantId);
+        return $spMap->isShipmentEditable($shipmentId, $isAdministrator);
     }
 
     public function checkParticipantAccess($participantId) {
@@ -2213,7 +2218,6 @@ class Application_Service_Shipments {
         $rResult = $db->fetchAll($sql);
         for ($i = 0; $i < count($rResult); $i++) {
             if ($rResult[$i]['shipment_status'] == 'evaluated' && $rResult[$i]['last_submission_updated_on'] > $rResult[$i]['shipment_updated_on_admin']) {
-                error_log($rResult[$i]['shipment_status']."\t".$rResult[$i]['last_submission_updated_on']."\t".$rResult[$i]['shipment_updated_on_admin'], 0);
                 $rResult[$i]['shipment_status'] = "Should be Re-Evaluated";
             }
         }

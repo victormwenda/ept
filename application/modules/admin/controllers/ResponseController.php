@@ -105,6 +105,9 @@ class Admin_ResponseController extends Zend_Controller_Action
                         $responseService->getOtherUnenrolledParticipants(
                             $sid, $pid, $transferToParticipantId);
                 }
+                $authNameSpace = new Zend_Session_Namespace('administrators');
+                $shipmentService = new Application_Service_Shipments();
+                $this->view->isEditable = $shipmentService->isShipmentEditable($sid, !$authNameSpace->is_ptcc_coordinator);
             } else {
                 $this->_redirect("/admin/response/");
             }

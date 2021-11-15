@@ -73,7 +73,7 @@ if ($this->shipments == false && count($this->shipments) <= 0) {
                         <?php
                             }
                         }
-                        if ($nonResponse > 0 && $shipment['scheme_type'] == 'tb') { ?>
+                        if ($nonResponse > 0 && $shipment['scheme_type'] == 'tb' && ($shipment['response_switch'] == 'on' || $adminSession->is_ptcc_coordinator == 0)) { ?>
                         <a class="btn btn-success btn-xs" href="/admin/response/shipment/sid/<?php echo base64_encode($shipment['shipment_id']); ?>">
                             <span><i class="icon-edit"></i> Enter Response</span>
                         </a>

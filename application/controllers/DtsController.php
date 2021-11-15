@@ -52,8 +52,8 @@ class DtsController extends Zend_Controller_Action
 	    $this->view->shipId = $sID;
 	    $this->view->participantId = $pID;
 	    $this->view->eID = $eID;
-	    //
-	    $this->view->isEditable = $shipmentService->isShipmentEditable($sID,$pID);
+
+        $this->view->isEditable = $shipmentService->isShipmentEditableToDataManager($sID);
 		
 	    $globalConfigDb = new Application_Model_DbTable_GlobalConfig();
 	    $this->view->customField1 = $globalConfigDb->getValue('custom_field_1');

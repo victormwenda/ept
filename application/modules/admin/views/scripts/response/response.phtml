@@ -4,6 +4,7 @@
     }
 </style>
 <?php
+$adminSession = new Zend_Session_Namespace('administrators');
 if (count($this->shipment) > 0) { ?>
 <div class="well" style="clear: both;">
     <a href="javascript:void(0);" onclick="$('#allShipmentList').fadeToggle()"
@@ -46,7 +47,7 @@ if (count($this->shipment) > 0) { ?>
                 <td style="text-align: center;"><?php echo ucfirst($shipment['shipment_status']) ?></td>
 				<td style="text-align: center;">
                     <?php
-                    if ($nonResponse > 0) { ?>
+                    if ($nonResponse > 0 && ($shipment['response_switch'] == 'on' || $adminSession->is_ptcc_coordinator == 0)) { ?>
                         <a class="btn btn-success btn-xs" href="/admin/response/shipment/sid/<?php echo base64_encode($shipment['shipment_id']); ?>"><span><i class="icon-edit"></i> Enter Response</span></a>
                         <?php
                     } else { ?>

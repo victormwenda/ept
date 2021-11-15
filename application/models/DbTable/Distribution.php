@@ -374,7 +374,8 @@ class Application_Model_DbTable_Distribution extends Zend_Db_Table_Abstract {
     }
 
     public function getAllDistributionStatusDetails() {
-        $sql = $this->select()->from(array('d' => 'distributions'));
+        $db = $this->getAdapter();
+        $sql = $db->select()->from(array('d' => 'distributions'));
         $authNameSpace = new Zend_Session_Namespace('administrators');
         if ($authNameSpace->is_ptcc_coordinator) {
             $sql = $sql->joinLeft(array('s'=>'shipment'),'s.distribution_id=d.distribution_id', array("shipment_status" => "s.status"))
@@ -383,7 +384,7 @@ class Application_Model_DbTable_Distribution extends Zend_Db_Table_Abstract {
                 ->where("p.country IS NULL OR p.country IN (".implode(",", $authNameSpace->countries).")")
                 ->group('d.distribution_id');
         }
-        return $this->fetchAll($sql);
+        return $db->fetchAll($sql);
     }
 }
 
