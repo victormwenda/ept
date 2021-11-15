@@ -2213,7 +2213,6 @@ class Application_Service_Shipments {
         $rResult = $db->fetchAll($sql);
         for ($i = 0; $i < count($rResult); $i++) {
             if ($rResult[$i]['shipment_status'] == 'evaluated' && $rResult[$i]['last_submission_updated_on'] > $rResult[$i]['shipment_updated_on_admin']) {
-                error_log($rResult[$i]['shipment_status']."\t".$rResult[$i]['last_submission_updated_on']."\t".$rResult[$i]['shipment_updated_on_admin'], 0);
                 $rResult[$i]['shipment_status'] = "Should be Re-Evaluated";
             }
         }

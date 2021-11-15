@@ -46,7 +46,7 @@ if (count($this->shipment) > 0) { ?>
                 <td style="text-align: center;"><?php echo ucfirst($shipment['shipment_status']) ?></td>
 				<td style="text-align: center;">
                     <?php
-                    if ($nonResponse > 0) { ?>
+                    if ($nonResponse > 0 && $shipment['response_switch'] == 'on') { ?>
                         <a class="btn btn-success btn-xs" href="/admin/response/shipment/sid/<?php echo base64_encode($shipment['shipment_id']); ?>"><span><i class="icon-edit"></i> Enter Response</span></a>
                         <?php
                     } else { ?>
