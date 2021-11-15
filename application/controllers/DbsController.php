@@ -51,8 +51,7 @@ class DbsController extends Zend_Controller_Action
 			$this->view->participantId = $pID;
 			$this->view->eID = $eID;
 
-            $authNameSpace = new Zend_Session_Namespace('administrators');
-            $this->view->isEditable = $shipmentService->isShipmentEditable($sID, !$authNameSpace->is_ptcc_coordinator);
+            $this->view->isEditable = $shipmentService->isShipmentEditableToDataManager($sID);
 			
 			$commonService = new Application_Service_Common();
 			$this->view->modeOfReceipt=$commonService->getAllModeOfReceipt();

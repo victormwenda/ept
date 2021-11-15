@@ -41,8 +41,7 @@ class TbController extends Zend_Controller_Action
             $this->view->shipId = $sID;
             $this->view->participantId = $pID;
             $this->view->eID = $shipment['evaluation_status'];
-            $authNameSpace = new Zend_Session_Namespace('administrators');
-            $this->view->isEditable = $shipmentService->isShipmentEditable($sID, !$authNameSpace->is_ptcc_coordinator);
+            $this->view->isEditable = $shipmentService->isShipmentEditableToDataManager($sID);
             $commonService = new Application_Service_Common();
             $this->view->globalQcAccess = $commonService->getConfig('qc_access');
             $this->view->allNotTestedReason = $schemeService->getNotTestedReasons('tb');
