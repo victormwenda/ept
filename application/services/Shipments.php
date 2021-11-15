@@ -139,8 +139,8 @@ class Application_Service_Shipments {
             }
             if ($rResult[$i]['status'] != 'finalized' && $rResult[$i]['status'] != 'ready' && $rResult[$i]['status'] != 'pending') {
                 $responseSwitch = "<select onchange='responseSwitch(this.value,".$rResult[$i]['shipment_id'].")'>";
-                $responseSwitch .= "<option value='on'".(isset($aRow['response_switch']) && $rResult[$i]['response_switch'] =="on" ? " selected='selected' " : "").">On</option>";
-                $responseSwitch .= "<option value='off'".(isset($aRow['response_switch']) && $rResult[$i]['response_switch'] =="off" ? " selected='selected' " : "").">Off</option>";
+                $responseSwitch .= "<option value='on'".(isset($rResult[$i]['response_switch']) && $rResult[$i]['response_switch'] =="on" ? " selected='selected' " : "").">On</option>";
+                $responseSwitch .= "<option value='off'".(isset($rResult[$i]['response_switch']) && $rResult[$i]['response_switch'] =="off" ? " selected='selected' " : "").">Off</option>";
                 $responseSwitch .= "</select>";
             } else {
                 $responseSwitch = '-';
