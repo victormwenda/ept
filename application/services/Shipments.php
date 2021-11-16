@@ -77,7 +77,12 @@ class Application_Service_Shipments {
         */
         $sQuery = $db->select()->from(array('s' => 'shipment'))
             ->join(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id', array('distribution_code', 'distribution_date','distribution_id'))
-            ->joinLeft(array('spm' => 'shipment_participant_map'), 's.shipment_id = spm.shipment_id', array('total_participants'=> new Zend_Db_Expr('count(map_id)'),'last_new_shipment_mailed_on','new_shipment_mail_count', 'last_submission_updated_on'=> new Zend_Db_Expr('GREATEST(MAX(spm.updated_on_admin), MAX(spm.updated_on_user))')))
+            ->joinLeft(array('spm' => 'shipment_participant_map'), 's.shipment_id = spm.shipment_id', array(
+                "total_participants" => new Zend_Db_Expr("count(map_id)"),
+                "last_new_shipment_mailed_on",
+                "new_shipment_mail_count",
+                "last_submission_updated_on" => new Zend_Db_Expr("GREATEST(MAX(spm.updated_on_admin), MAX(spm.updated_on_user))")
+            ))
             ->joinLeft(array('p' => 'participant'), 'spm.participant_id = p.participant_id', array())
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('SCHEME' => 'sl.scheme_name'))
             ->group('s.shipment_id');
@@ -215,7 +220,12 @@ class Application_Service_Shipments {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sQuery = $db->select()->from(array('s' => 'shipment'))
             ->join(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id', array('distribution_code', 'distribution_date'))
-            ->joinLeft(array('spm' => 'shipment_participant_map'), 's.shipment_id = spm.shipment_id', array('total_participants'=> new Zend_Db_Expr('count(map_id)'),'last_new_shipment_mailed_on','new_shipment_mail_count', 'last_submission_updated_on'=> new Zend_Db_Expr('GREATEST(MAX(spm.updated_on_admin), MAX(spm.updated_on_user))')))
+            ->joinLeft(array("spm" => "shipment_participant_map"), "s.shipment_id = spm.shipment_id", array(
+                "total_participants" => new Zend_Db_Expr("COUNT(map_id)"),
+                "last_new_shipment_mailed_on",
+                "new_shipment_mail_count",
+                "last_submission_updated_on" => new Zend_Db_Expr("GREATEST(MAX(spm.updated_on_admin), MAX(spm.updated_on_user))")
+            ))
             ->joinLeft(array('p' => 'participant'), 'spm.participant_id = p.participant_id', array())
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('SCHEME' => 'sl.scheme_name'))
             ->where('s.scheme_type = ?', $scheme)
@@ -1281,7 +1291,7 @@ class Application_Service_Shipments {
     public function getShipment($sid) {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $shipment = $db->fetchRow($db->select()->from(array('s' => 'shipment'))
-            ->join(array("sp" => "shipment_participant_map"), "sp.shipment_id=s.shipment_id", array(
+            ->joinLeft(array("sp" => "shipment_participant_map"), "sp.shipment_id=s.shipment_id", array(
                 "last_submission_updated_on" => new Zend_Db_Expr("GREATEST(MAX(sp.updated_on_admin), MAX(sp.updated_on_user))")
             ))
             ->where("s.shipment_id = ?", $sid)
@@ -1674,7 +1684,7 @@ class Application_Service_Shipments {
         $sql = $db->select()->from(array("s" => "shipment", array("shipment_id", "shipment_code", "status", "number_of_samples", "s.updated_on_admin")))
             ->join(array("d" => "distributions"), "d.distribution_id=s.distribution_id", array(
                 "distribution_code", "distribution_date"))
-            ->join(array("sp" => "shipment_participant_map"), "sp.shipment_id=s.shipment_id", array(
+            ->joinLeft(array("sp" => "shipment_participant_map"), "sp.shipment_id=s.shipment_id", array(
                 "report_generated",
                 "participant_count" => new Zend_Db_Expr("count(sp.participant_id)"),
                 "reported_count" => new Zend_Db_Expr("COUNT(CASE substr(sp.evaluation_status,4,1) WHEN '1' THEN 1 WHEN '2' THEN 1 END)"),
@@ -2194,7 +2204,7 @@ class Application_Service_Shipments {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $sql = $db->select()->from(array("s" => "shipment"))
             ->join(array("d" => "distributions"), "d.distribution_id=s.distribution_id")
-            ->join(array("sp" => "shipment_participant_map"), "sp.shipment_id=s.shipment_id", array(
+            ->joinLeft(array("sp" => "shipment_participant_map"), "sp.shipment_id=s.shipment_id", array(
                 "map_id",
                 "responseDate" => "shipment_test_report_date",
                 "participant_count" => new Zend_Db_Expr("count(sp.participant_id)"),

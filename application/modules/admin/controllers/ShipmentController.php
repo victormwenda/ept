@@ -107,8 +107,8 @@ class Admin_ShipmentController extends Zend_Controller_Action {
             if ($this->_hasParam('sid')) {
                 $participantService = new Application_Service_Participants();
                 $sid = (int)base64_decode($this->_getParam('sid'));
-                $this->view->shipment = $shipmentDetails = $shipmentService->getShipment($sid);
-                $this->view->countries = $countries = $participantService->getEnrolledAndUnEnrolledParticipants($sid);
+                $this->view->shipment = $shipmentService->getShipment($sid);
+                $this->view->countries = $participantService->getEnrolledAndUnEnrolledParticipants($sid);
                 return false;
             }
         }
