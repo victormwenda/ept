@@ -91,26 +91,25 @@ class Admin_ShipmentController extends Zend_Controller_Action {
         $shipmentService = new Application_Service_Shipments();
         if ($this->getRequest()->isPost()) {
             $params = $this->getRequest()->getPost();
-            if(isset($params['participants']) && count($params['participants']) > 0) {
+            if (isset($params['participants']) && count($params['participants']) > 0) {
                 $shipmentService->UpdateDistributionStatusByShipmentId($params['shipmentId'],'configured');
             } else {
                 $shipmentService->UpdateDistributionStatusByShipmentId($params['shipmentId'], 'created');
             }
             $shipmentService->shipItNow($params);
             $CountryShipmentMapService = new Application_Service_CountryShipmentMap();
-            if(isset($params['country_last_dates'])){
+            if (isset($params['country_last_dates'])) {
                 $country_ids=(new Application_Model_DbTable_Countries())->getCountryIds(array_keys($params['country_last_dates']));
                 $CountryShipmentMapService->updateOrInsertCountryShipmetDueDate($country_ids,$params['shipmentId'],array_values($params['country_last_dates']));
             }
             $this->_redirect("/admin/shipment");
         } else {
-            if ($this->_hasParam('sid')) {
-                $participantService = new Application_Service_Participants();
-                $sid = (int)base64_decode($this->_getParam('sid'));
-                $this->view->shipment = $shipmentService->getShipment($sid);
-                $this->view->countries = $participantService->getEnrolledAndUnEnrolledParticipants($sid);
-                return false;
-            }
+            $participantService = new Application_Service_Participants();
+            $sid = (int)base64_decode($this->_getParam('sid'));
+            $shipment = $shipmentService->getShipment($sid);
+            $this->view->shipment = (object)$shipment;
+            $countries = $participantService->getEnrolledAndUnEnrolledParticipants($sid);
+            $this->view->countries = $countries;
         }
     }
 
