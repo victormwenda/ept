@@ -124,7 +124,6 @@ class Application_Service_Reports {
                 'reported_percentage' => new Zend_Db_Expr("ROUND((COUNT(CASE substr(sp.evaluation_status,4,1) WHEN '1' THEN 1 WHEN '2' THEN 1 END)/count('participant_id'))*100,2)"),
                 'number_passed' => new Zend_Db_Expr("SUM(final_result = 1)")))
             ->joinLeft(array('p' => 'participant'), 'p.participant_id=sp.participant_id')
-            //->joinLeft(array('pmm'=>'participant_manager_map'),'pmm.participant_id=p.participant_id')
             ->joinLeft(array('rr' => 'r_results'), 'sp.final_result=rr.result_id')
             ->group(array('s.shipment_id'));
 

@@ -107,10 +107,23 @@ class Admin_ParticipantsController extends Zend_Controller_Action {
 
     public function importAction() {
         if ($this->getRequest()->isPost()) {
-            $params = $this->getRequest()->getPost();
-            error_log(json_encode($params), 0);
-            // Load excel file into temp table and render temp details in import.phtml
-            // test in edge
+            $upload = new Zend_File_Transfer_Adapter_Http();
+            try {
+                if (!$upload->receive()) {
+                    $messages = $upload->getMessages();
+                    error_log(implode("\n", $messages), 0);
+                } else {
+                    $location = $upload->getFileName('importParticipantsExcelFile');
+                    $excelReaderService = new Application_Service_ExcelProcessor();
+                    $importDataOnFirstSheet = $excelReaderService->readParticipantImport($location);
+                    error_log(json_encode($importDataOnFirstSheet), 0);
+                    // Load excel file into temp table and render temp details in import.phtml
+                    // test in edge
+                }
+            }
+            catch(Zend_File_Transfer_Exception $e){
+                error_log($e->getMessage(), 0);
+            }
         }
     }
 }
