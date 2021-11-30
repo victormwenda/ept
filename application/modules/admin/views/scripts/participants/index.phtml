@@ -1,7 +1,8 @@
-<h4 style="width:100%;height:50px;border-bottom:1px solid #777;">
+<h4 style="width:100%;height:60px;border-bottom:1px solid #777;">
     <div style="font-size:22.5px;line-height:36px;color:#333;float:left;">List of All PE Participants</div>
-    <div style="margin-top:10px;">
-        <a href="<?php echo $this->url(array('module' => 'admin', 'controller' => 'participants', 'action' => 'add'), 'default', true); ?>" class="btn btn-primary" style="float:right;"><i class="icon-user"></i>&nbsp;&nbsp;Add New Participant</a>
+    <div style="margin-top:10px; float: right;">
+        <a href="<?php echo $this->url(array('module' => 'admin', 'controller' => 'participants', 'action' => 'add'), 'default', true); ?>" class="btn btn-primary"><i class="icon-user"></i>&nbsp;&nbsp;Add New Participant</a>
+        <a id="importParticipantsExcelAnchor" href="#" class="btn btn-success" style="margin-left: 10px;"><i class="icon-table"></i>&nbsp;&nbsp;Import Participants</a>
     </div>
 </h4>
 <a href="/admin/participants/pending" class="btn btn-warning">Show only Pending Participants</a>
@@ -28,6 +29,9 @@
     </tr>
     </tbody>
 </table>
+<form name="participantImportForm" id="participantImportForm" action="<?php echo $this->url(array("module" => "admin", "controller" => "participants", "action" => "import"), 'default', true) ?>" method="post">
+    <input type="file" id="importParticipantsExcelFile" name="importParticipantsExcelFile" style="visibility: hidden; width: 1px; height: 1px; display: none;" accept=".xlsx,.xls" />
+</form>
 <script type="text/javascript" charset="utf-8">
     /* Table initialisation */
     var oTable = null;
@@ -68,6 +72,12 @@
                     "success": fnCallback
                 });
             }
+        });
+        $('#importParticipantsExcelAnchor').on('click', function() {
+            $('#importParticipantsExcelFile').trigger('click');
+        });
+        $('#importParticipantsExcelFile').on('change', function () {
+            $('#participantImportForm').submit();
         });
     });
 </script>

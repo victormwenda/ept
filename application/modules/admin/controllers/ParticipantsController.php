@@ -104,6 +104,15 @@ class Admin_ParticipantsController extends Zend_Controller_Action {
         }
         $this->view->participants = $participantService->getAllActiveParticipants();
     }
+
+    public function importAction() {
+        if ($this->getRequest()->isPost()) {
+            $params = $this->getRequest()->getPost();
+            error_log(json_encode($params), 0);
+            // Load excel file into temp table and render temp details in import.phtml
+            // test in edge
+        }
+    }
 }
 
 
