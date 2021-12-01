@@ -428,25 +428,6 @@ CREATE TABLE `participant_monthly_indicators` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `participant_temp`
---
-
-DROP TABLE IF EXISTS `participant_temp`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `participant_temp` (
-  `unique_identifier` varchar(255) NOT NULL,
-  `lab_name` varchar(500) DEFAULT NULL,
-  `country` varchar(255) DEFAULT NULL,
-  `region` varchar(255) DEFAULT NULL,
-  `username` varchar(255) DEFAULT NULL,
-  `password` varchar(255) DEFAULT NULL,
-  `active` varchar(45) DEFAULT NULL,
-  `mobile` varchar(45) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `partners`
 --
 
@@ -481,6 +462,48 @@ CREATE TABLE `ptcc_country_map` (
   KEY `country_id` (`country_id`),
   CONSTRAINT `ptcc_country_map_ibfk_1` FOREIGN KEY (`admin_id`) REFERENCES `system_admin` (`admin_id`) ON DELETE CASCADE,
   CONSTRAINT `ptcc_country_map_ibfk_2` FOREIGN KEY (`country_id`) REFERENCES `countries` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `participant_temp`
+--
+
+DROP TABLE IF EXISTS `participant_temp`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `participant_temp` (
+  `unique_identifier` varchar(255) NOT NULL,
+  `lab_name` varchar(500) DEFAULT NULL,
+  `country` varchar(255) DEFAULT NULL,
+  `region` varchar(255) DEFAULT NULL,
+  `username` varchar(255) DEFAULT NULL,
+  `password` varchar(45) DEFAULT NULL,
+  `status` varchar(255) DEFAULT NULL,
+  `phone_number` varchar(45) DEFAULT NULL,
+  `participant_id` int(11) DEFAULT NULL,
+  `dm_id` int(11) DEFAULT NULL,
+  `country_id` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ptcc_temp`
+--
+
+DROP TABLE IF EXISTS `ptcc_temp`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ptcc_temp` (
+  `country` varchar(255) DEFAULT NULL,
+  `first_name` varchar(255) DEFAULT NULL,
+  `last_name` varchar(255) DEFAULT NULL,
+  `phone_number` varchar(255) DEFAULT NULL,
+  `primary_email` varchar(255) DEFAULT NULL,
+  `password` varchar(255) DEFAULT NULL,
+  `status` varchar(255) DEFAULT NULL,
+  `admin_id` int(11) DEFAULT NULL,
+  `country_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
