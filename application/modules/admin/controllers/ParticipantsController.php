@@ -118,7 +118,17 @@ class Admin_ParticipantsController extends Zend_Controller_Action {
                     $importDataOnFirstSheet = $excelReaderService->readParticipantImport($location);
 
                     $participantService = new Application_Service_Participants();
-                    $this->view->tempParticipants = $participantService->saveTempParticipants($importDataOnFirstSheet);
+                    $tempParticipants = $participantService->saveTempParticipants($importDataOnFirstSheet);
+                    $this->view->tempParticipants = $tempParticipants;
+                    $this->view->numberOfUnchanged = count(array_filter($tempParticipants, function($tempParticipant) {
+                        return !$tempParticipant["insert"] && !$tempParticipant["update"];
+                    }));
+                    $this->view->numberOfUpdates = count(array_filter($tempParticipants, function($tempParticipant) {
+                        return $tempParticipant["update"];
+                    }));
+                    $this->view->numberOfInserts = count(array_filter($tempParticipants, function($tempParticipant) {
+                        return $tempParticipant["insert"];
+                    }));
                     // Load excel file into temp table and render temp details in import.phtml
                     // test in edge
                 }

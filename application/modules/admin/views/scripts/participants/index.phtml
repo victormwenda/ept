@@ -3,10 +3,10 @@ $adminSession = new Zend_Session_Namespace('administrators'); ?>
 <h4 style="width:100%;height:60px;border-bottom:1px solid #777;">
     <div style="font-size:22.5px;line-height:36px;color:#333;float:left;">List of All PE Participants</div>
     <div style="margin-top:10px; float: right;">
-        <a href="<?php echo $this->url(array('module' => 'admin', 'controller' => 'participants', 'action' => 'add'), 'default', true); ?>" class="btn btn-primary"><i class="icon-user"></i>&nbsp;&nbsp;Add New Participant</a>
+        <a href="<?php echo $this->url(array('module' => 'admin', 'controller' => 'participants', 'action' => 'add'), 'default', true); ?>" class="btn btn-primary"><i class="icon-user"></i>&nbsp;Add New Participant</a>
         <?php
         if ($adminSession->is_ptcc_coordinator == 0) { ?>
-        <a id="importParticipantsExcelAnchor" href="#" class="btn btn-success" style="margin-left: 10px;"><i class="icon-table"></i>&nbsp;&nbsp;Import Participants</a>
+        <a id="importParticipantsExcelAnchor" href="#" class="btn btn-success" style="margin-left: 10px;"><i class="icon-table"></i>&nbsp;Import Participants</a>
         <?php
         } ?>
     </div>

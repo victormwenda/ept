@@ -63,7 +63,17 @@ class Admin_PtccProfilesController extends Zend_Controller_Action {
                     $importDataOnFirstSheet = $excelReaderService->readPtccImport($location);
 
                     $ptccProfileService = new Application_Service_PtccProfile();
-                    $this->view->tempPtccs = $ptccProfileService->saveTempPtccs($importDataOnFirstSheet);
+                    $tempPtccs = $ptccProfileService->saveTempPtccs($importDataOnFirstSheet);
+                    $this->view->tempPtccs = $tempPtccs;
+                    $this->view->numberOfUnchanged = count(array_filter($tempPtccs, function($tempPtcc) {
+                        return !$tempPtcc["insert"] && !$tempPtcc["update"];
+                    }));
+                    $this->view->numberOfUpdates = count(array_filter($tempPtccs, function($tempPtcc) {
+                        return $tempPtcc["update"];
+                    }));
+                    $this->view->numberOfInserts = count(array_filter($tempPtccs, function($tempPtcc) {
+                        return $tempPtcc["insert"];
+                    }));
                     // Load excel file into temp table and render temp details in import.phtml
                     // test in edge
                 }

@@ -65,6 +65,21 @@ class Application_Service_PtccProfile {
             if ($tempPtccs[$i]["Active"] === "No") {
                 $tempPtccs[$i]["status"] = "inactive";
             }
+            if (!$tempPtccs[$i]["country_id"]) {
+                throw new Exception("The sheet contains a record where the country cannot be determined. Please check ".$tempPtccs[$i]["Email Address"]." in ".$tempPtccs[$i]["Country"]." to make sure that the country is correctly specified?");
+            }
+            if (!$tempPtccs[$i]["First Name"]) {
+                throw new Exception("The sheet contains a record with a blank First Name which is a required field. Please check ".$tempPtccs[$i]["Email Address"]." in ".$tempPtccs[$i]["Country"]."?");
+            }
+            if (!$tempPtccs[$i]["Last Name"]) {
+                throw new Exception("The sheet contains a record with a blank Last Name which is a required field. Please check ".$tempPtccs[$i]["Email Address"]." in ".$tempPtccs[$i]["Country"]."?");
+            }
+            if (!$tempPtccs[$i]["Email Address"]) {
+                throw new Exception("The sheet contains a record with a blank First Name which is a required field. Please check ".$tempPtccs[$i]["First Name"]." ".$tempPtccs[$i]["Last Name"]." in ".$tempPtccs[$i]["Country"]."?");
+            }
+            if (!$tempPtccs[$i]["admin_id"] && !$tempPtccs[$i]["Password"]) {
+                throw new Exception("The sheet contains a record with a blank Password which is a required field when the user does not yet exist in ePT. Please check ".$tempPtccs[$i]["Email Address"]." in ".$tempPtccs[$i]["Country"]."?");
+            }
         }
         $ptccTempDb = new Application_Model_DbTable_PtccTemp();
         $ptccTempDb->clearPtccTempRecords();

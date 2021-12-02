@@ -730,6 +730,18 @@ class Application_Service_Participants {
             if ($tempParticipants[$i]["Active"] === "No") {
                 $tempParticipants[$i]["status"] = "inactive";
             }
+            if (!$tempParticipants[$i]["Country"]) {
+                throw new Exception("The sheet contains a record with a blank Country which is a required field. Please check ".$tempParticipants[$i]["PT ID"]."?");
+            }
+            if (!$tempParticipants[$i]["PT ID"]) {
+                throw new Exception("The sheet contains a record with a blank PT ID which is a required field. Please check ".$tempParticipants[$i]["Lab Name"]."?");
+            }
+            if (!$tempParticipants[$i]["country_id"]) {
+                throw new Exception("The sheet contains a record where the country cannot be determined. Please check ".$tempParticipants[$i]["PT ID"]." in ".$tempParticipants[$i]["Country"]." to make sure that the country is correctly specified?");
+            }
+            if (!$tempParticipants[$i]["Lab Name"]) {
+                throw new Exception("The sheet contains a record with a blank Lab Name which is a required field. Please check ".$tempParticipants[$i]["PT ID"]." in ".$tempParticipants[$i]["Country"]."?");
+            }
         }
         $participantTempDb = new Application_Model_DbTable_ParticipantTemp();
         $participantTempDb->clearParticipantTempRecords();
