@@ -116,7 +116,9 @@ class Admin_ParticipantsController extends Zend_Controller_Action {
                     $location = $upload->getFileName('importParticipantsExcelFile');
                     $excelReaderService = new Application_Service_ExcelProcessor();
                     $importDataOnFirstSheet = $excelReaderService->readParticipantImport($location);
-                    error_log(json_encode($importDataOnFirstSheet), 0);
+
+                    $participantService = new Application_Service_Participants();
+                    $this->view->tempParticipants = $participantService->saveTempParticipants($importDataOnFirstSheet);
                     // Load excel file into temp table and render temp details in import.phtml
                     // test in edge
                 }

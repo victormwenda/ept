@@ -49,6 +49,30 @@ class Admin_PtccProfilesController extends Zend_Controller_Action {
             $this->view->ptccProfile = $ptccProfileService->getSystemPtccProfileDetails();
         }
     }
+
+    public function importAction() {
+        if ($this->getRequest()->isPost()) {
+            $upload = new Zend_File_Transfer_Adapter_Http();
+            try {
+                if (!$upload->receive()) {
+                    $messages = $upload->getMessages();
+                    error_log(implode("\n", $messages), 0);
+                } else {
+                    $location = $upload->getFileName('importPtccsExcelFile');
+                    $excelReaderService = new Application_Service_ExcelProcessor();
+                    $importDataOnFirstSheet = $excelReaderService->readPtccImport($location);
+
+                    $systemAdminService = new Application_Service_SystemAdmin();
+                    $this->view->tempPtccs = $systemAdminService->saveTempPtccs($importDataOnFirstSheet);
+                    // Load excel file into temp table and render temp details in import.phtml
+                    // test in edge
+                }
+            }
+            catch(Zend_File_Transfer_Exception $e){
+                error_log($e->getMessage(), 0);
+            }
+        }
+    }
 }
 
 

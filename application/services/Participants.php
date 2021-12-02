@@ -676,5 +676,64 @@ class Application_Service_Participants {
 				error_log($exc->getTraceAsString());
 		}
 	}
+
+    public function saveTempParticipants($tempParticipants) {
+        $ptIdsInImport = array_column($tempParticipants, "PT ID");
+        $participantDb = new Application_Model_DbTable_Participants();
+        $existingParticipants = $participantDb->getParticipantsByUniqueIds($ptIdsInImport);
+        $existingParticipantsMap = array();
+        $existingParticipantsMap = array_reduce($existingParticipants, function($accumulator, $existingParticipant) {
+            $accumulator[$existingParticipant["unique_identifier"]] = $existingParticipant;
+            return $accumulator;
+        }, $existingParticipantsMap);
+        $countriesDb = new Application_Model_DbTable_Countries();
+        $countries = $countriesDb->getAllCountries();
+        $countriesMap = array();
+        $countriesMap = array_reduce($countries, function($accumulator, $country) {
+            $accumulator[$country["iso_name"]] = $country;
+            return $accumulator;
+        }, $countriesMap);
+        for ($i = 0; $i < count($tempParticipants); $i++) {
+            $existingParticipant = array(
+                "participant_id" => null,
+                "dm_id" => null,
+                "country_id" => null,
+                "username" => null,
+                "password" => null,
+                "status" => null,
+                "lab_name" => null
+            );
+            if (isset($existingParticipantsMap[$tempParticipants[$i]["PT ID"]])) {
+                $existingParticipant = $existingParticipantsMap[$tempParticipants[$i]["PT ID"]];
+            }
+            $tempParticipants[$i]["participant_id"] = $existingParticipant["participant_id"];
+            $tempParticipants[$i]["dm_id"] = $existingParticipant["dm_id"];
+            $tempParticipants[$i]["country_id"] = $existingParticipant["country_id"];
+            $tempParticipants[$i]["username"] = $existingParticipant["username"];
+            $tempParticipants[$i]["password"] = $existingParticipant["password"];
+            $tempParticipants[$i]["status"] = "active";
+            if (isset($countriesMap[$tempParticipants[$i]["Country"]])) {
+                $tempParticipants[$i]["country_id"] = $countriesMap[$tempParticipants[$i]["Country"]]["id"];
+            }
+            if ($tempParticipants[$i]["Username"]) {
+                $tempParticipants[$i]["username"] = $tempParticipants[$i]["Username"];
+            } else if (!$tempParticipants[$i]["username"]) {
+                $tempParticipants[$i]["username"] = $tempParticipants[$i]["PT ID"]."@ept.systemone.id";
+            }
+            if ($tempParticipants[$i]["Password"]) {
+                $tempParticipants[$i]["password"] = $tempParticipants[$i]["Password"];
+            } else if (!$tempParticipants[$i]["password"]) {
+                $tempParticipants[$i]["password"] = $tempParticipants[$i]["PT ID"];
+            }
+            if ($tempParticipants[$i]["Active"] === "No") {
+                $tempParticipants[$i]["status"] = "inactive";
+            }
+        }
+        $participantTempDb = new Application_Model_DbTable_ParticipantTemp();
+        $participantTempDb->clearParticipantTempRecords();
+        $participantTempDb->addParticipantTempRecords($tempParticipants);
+
+        return $participantTempDb->getParticipantTempRecords();
+    }
 }
 

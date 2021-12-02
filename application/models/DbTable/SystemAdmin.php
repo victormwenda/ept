@@ -311,7 +311,6 @@ class Application_Model_DbTable_SystemAdmin extends Zend_Db_Table_Abstract {
         return $this->insert($data);
     }
 
-
     public function getSystemAdminDetails ($adminId) {
         $dbAdapter= $this->getAdapter();
         $sql = $dbAdapter->select()->from(array('a' => $this->_name));
@@ -455,6 +454,30 @@ class Application_Model_DbTable_SystemAdmin extends Zend_Db_Table_Abstract {
             );
         }
         return $ptccProfile;
+    }
+
+    public function getPtccsByEmailAddresses($emailAddresses) {
+        return $this->getAdapter()->fetchAll(
+            $this->getAdapter()
+                ->select()
+                ->from(array("sa" => $this->_name), array(
+                    "sa.admin_id",
+                    "sa.primary_email",
+                    "sa.first_name",
+                    "sa.last_name",
+                    "sa.password",
+                    "sa.phone",
+                    "sa.status",
+                    "sa.is_ptcc_coordinator",
+                    "sa.include_as_pecc_in_reports"
+                ))
+                ->joinLeft(array("pcm" => "ptcc_country_map", "sa.admin_id = pcm.admin_id"))
+                ->joinLeft(array("c" => "countries", "pcm.country_id = c.id"), array(
+                    "country_id" => "c.id",
+                    "country_name" => "c.iso_name"
+                ))
+                ->joinLeft(array("dm" => "data_manager", "pmm.dm_id = dm.dm_id"), array("dm.dm_id", "dm.primary_email as username", "dm.password"))
+                ->where("sa.primary_email IN (?)", $emailAddresses));
     }
 }
 
