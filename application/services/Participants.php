@@ -714,6 +714,8 @@ class Application_Service_Participants {
             $tempParticipants[$i]["status"] = "active";
             if (isset($countriesMap[$tempParticipants[$i]["Country"]])) {
                 $tempParticipants[$i]["country_id"] = $countriesMap[$tempParticipants[$i]["Country"]]["id"];
+            } else {
+                throw new Exception("The sheet contains a country name of \"".$tempParticipants[$i]["Country"]."\" which is not recognised by ePT. Please edit the sheet using the following country names only: ".implode(", ", array_keys($countriesMap))."?");
             }
             if ($tempParticipants[$i]["Username"]) {
                 $tempParticipants[$i]["username"] = $tempParticipants[$i]["Username"];

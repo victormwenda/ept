@@ -62,8 +62,8 @@ class Admin_PtccProfilesController extends Zend_Controller_Action {
                     $excelReaderService = new Application_Service_ExcelProcessor();
                     $importDataOnFirstSheet = $excelReaderService->readPtccImport($location);
 
-                    $systemAdminService = new Application_Service_SystemAdmin();
-                    $this->view->tempPtccs = $systemAdminService->saveTempPtccs($importDataOnFirstSheet);
+                    $ptccProfileService = new Application_Service_PtccProfile();
+                    $this->view->tempPtccs = $ptccProfileService->saveTempPtccs($importDataOnFirstSheet);
                     // Load excel file into temp table and render temp details in import.phtml
                     // test in edge
                 }

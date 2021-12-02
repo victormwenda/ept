@@ -67,8 +67,16 @@ class Application_Service_ExcelProcessor {
                 if (isset($columnIndexes["Phone Number"])) {
                     $participant["Phone Number"] = $rowData[0][$columnIndexes["Phone Number"]];
                 }
-                $returnArray[] = $participant;
+                $blankRecord = $this->array_every(array_values($participant), function($value) {
+                    return !$value;
+                });
+                if (!$blankRecord) {
+                    $returnArray[] = $participant;
+                }
             }
+        }
+        if (count($returnArray) === 0) {
+            throw new Exception('The first sheet of this documents contains no records');
         }
         return $returnArray;
     }
@@ -94,9 +102,9 @@ class Application_Service_ExcelProcessor {
                 if ($countryIndex === false || $firstNameIndex === false || $lastNameIndex === false || $emailAddressIndex === false || $passwordIndex === false) {
                     throw new Exception('Required columns are not present in the first row of the sheet of this document');
                 }
-                $columnIndexes["Country"] = $firstNameIndex;
-                $columnIndexes["First Name"] = $lastNameIndex;
-                $columnIndexes["Last Name"] = $countryIndex;
+                $columnIndexes["Country"] = $countryIndex;
+                $columnIndexes["First Name"] = $firstNameIndex;
+                $columnIndexes["Last Name"] = $lastNameIndex;
                 $columnIndexes["Email Address"] = $emailAddressIndex;
                 $columnIndexes["Password"] = $passwordIndex;
                 $phoneNumberIndex = array_search("Phone Number", $rowData[0]);
@@ -121,9 +129,26 @@ class Application_Service_ExcelProcessor {
                 if (isset($columnIndexes["Active"])) {
                     $ptcc["Active"] = $rowData[0][$columnIndexes["Active"]];
                 }
-                $returnArray[] = $ptcc;
+                $blankRecord = $this->array_every(array_values($ptcc),function($value) {
+                    return !$value;
+                });
+                if (!$blankRecord) {
+                    $returnArray[] = $ptcc;
+                }
             }
         }
+        if (count($returnArray) === 0) {
+            throw new Exception('The first sheet of this documents contains no records');
+        }
         return $returnArray;
+    }
+
+    private function array_every(array $arr, callable $predicate) {
+        foreach ($arr as $e) {
+            if (!call_user_func($predicate, $e)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

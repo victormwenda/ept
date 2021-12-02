@@ -18,7 +18,6 @@ class Admin_SystemAdminsController extends Zend_Controller_Action {
         }
     }
 
-
     public function addAction()
     {
         $adminService = new Application_Service_SystemAdmin();

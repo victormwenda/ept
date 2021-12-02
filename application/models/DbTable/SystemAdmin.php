@@ -471,12 +471,11 @@ class Application_Model_DbTable_SystemAdmin extends Zend_Db_Table_Abstract {
                     "sa.is_ptcc_coordinator",
                     "sa.include_as_pecc_in_reports"
                 ))
-                ->joinLeft(array("pcm" => "ptcc_country_map", "sa.admin_id = pcm.admin_id"))
-                ->joinLeft(array("c" => "countries", "pcm.country_id = c.id"), array(
+                ->joinLeft(array("pcm" => "ptcc_country_map"), "sa.admin_id = pcm.admin_id", array())
+                ->joinLeft(array("c" => "countries"), "pcm.country_id = c.id", array(
                     "country_id" => "c.id",
                     "country_name" => "c.iso_name"
                 ))
-                ->joinLeft(array("dm" => "data_manager", "pmm.dm_id = dm.dm_id"), array("dm.dm_id", "dm.primary_email as username", "dm.password"))
                 ->where("sa.primary_email IN (?)", $emailAddresses));
     }
 }
