@@ -49,7 +49,9 @@ class Application_Model_DbTable_ParticipantTemp extends Zend_Db_Table_Abstract {
             $participantTempRecords[$i]["update_password"] = false;
             $participantTempRecords[$i]["update_status"] = false;
             $participantTempRecords[$i]["update_phone_number"] = false;
-            if (!$participantTempRecords[$i]["insert"]) {
+            if ($participantTempRecords[$i]["insert"]) {
+                $participantTempRecords[$i]["import_action"] = "New";
+            } else {
                 $participantTempRecords[$i]["update_lab_name"] = $participantTempRecords[$i]["lab_name"] !== $participantTempRecords[$i]["old_lab_name"];
                 $participantTempRecords[$i]["update_country"] = $participantTempRecords[$i]["country"] !== $participantTempRecords[$i]["old_country"];
                 $participantTempRecords[$i]["update_region"] = $participantTempRecords[$i]["region"] !== $participantTempRecords[$i]["old_region"];
@@ -61,8 +63,6 @@ class Application_Model_DbTable_ParticipantTemp extends Zend_Db_Table_Abstract {
                 if ($participantTempRecords[$i]["update"]) {
                     $participantTempRecords[$i]["import_action"] = "Change";
                 }
-            } else {
-                $participantTempRecords[$i]["import_action"] = "New";
             }
         }
         return $participantTempRecords;

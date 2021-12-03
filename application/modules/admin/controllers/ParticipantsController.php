@@ -129,13 +129,24 @@ class Admin_ParticipantsController extends Zend_Controller_Action {
                     $this->view->numberOfInserts = count(array_filter($tempParticipants, function($tempParticipant) {
                         return $tempParticipant["insert"];
                     }));
-                    // Load excel file into temp table and render temp details in import.phtml
-                    // test in edge
                 }
+            } catch(Exception $e) {
+                error_log($e->getMessage());
+                error_log($e->getTraceAsString());
+                $this->view->error = $e->getMessage();
             }
-            catch(Zend_File_Transfer_Exception $e){
-                error_log($e->getMessage(), 0);
-            }
+        }
+    }
+
+    public function confirmImportAction() {
+        try {
+            $participantService = new Application_Service_Participants();
+            $participantService->confirmImportTempParticipants();
+            $this->_redirect("/admin/participants");
+        } catch(Exception $e) {
+            error_log($e->getMessage());
+            error_log($e->getTraceAsString());
+            $this->view->error = $e->getMessage();
         }
     }
 }

@@ -181,6 +181,15 @@ class Application_Model_DbTable_DataManagers extends Zend_Db_Table_Abstract {
         return $this->fetchRow("dm_id = '".$userSystemId."'")->toArray();
     }
 
+    public function getDataManagersByEmailAddresses($emailAddresses)
+    {
+        return $this->getAdapter()->fetchAll(
+            $this->getAdapter()
+                ->select()
+                ->from(array("d" => $this->_name))
+                ->where("d.primary_email IN (?)", $emailAddresses));
+    }
+
     public function updateUser($params) {
 	    $authNameSpace = new Zend_Session_Namespace('administrators');
         $data = array(

@@ -15,6 +15,7 @@ class Application_Service_PtccProfile {
         $ptccProfileDb = new Application_Model_DbTable_SystemAdmin();
 		return $ptccProfileDb->getPtccProfileDetails($adminId);
 	}
+
     public function saveTempPtccs($tempPtccs) {
         $usernamesInImport = array_column($tempPtccs, "Email Address");
         $systemAdminsDb = new Application_Model_DbTable_SystemAdmin();
@@ -86,6 +87,10 @@ class Application_Service_PtccProfile {
         $ptccTempDb->addPtccTempRecords($tempPtccs);
 
         return $ptccTempDb->getPtccTempRecords();
+    }
+
+    public function confirmImportTempPtccs() {
+
     }
 }
 

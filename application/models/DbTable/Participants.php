@@ -26,11 +26,15 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
 	}
 
     public function getParticipant($partSysId) {
-        return $this->getAdapter()->fetchRow($this->getAdapter()->select()->from(array('p' => $this->_name))
-                                ->joinLeft(array('pmm' => 'participant_manager_map'), 'pmm.participant_id=p.participant_id', array('data_manager' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT pmm.dm_id SEPARATOR ', ')")))
-                                ->joinLeft(array('pe' => 'participant_enrolled_programs_map'), 'pe.participant_id=p.participant_id', array('enrolled_prog' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT pe.ep_id SEPARATOR ', ')")))
-                                ->where("p.participant_id = ?", $partSysId)
-                                ->group('p.participant_id'));
+        return $this->getAdapter()->fetchRow(
+            $this->getAdapter()->select()
+                ->from(array('p' => $this->_name))
+                ->joinLeft(array('pmm' => 'participant_manager_map'), 'pmm.participant_id=p.participant_id',
+                    array('data_manager' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT pmm.dm_id SEPARATOR ', ')")))
+                ->joinLeft(array('pe' => 'participant_enrolled_programs_map'), 'pe.participant_id=p.participant_id',
+                    array('enrolled_prog' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT pe.ep_id SEPARATOR ', ')")))
+                ->where("p.participant_id = ?", $partSysId)
+                ->group('p.participant_id'));
     }
 
     public function getParticipantByUniqueId($uniqueId) {
@@ -55,7 +59,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
                     "country_id" => "c.id",
                     "country_name" => "c.iso_name"
                 ))
-                ->joinLeft(array("pmm" => "participant_manager_map"), "p.participant_id = pmm.participant_id")
+                ->joinLeft(array("pmm" => "participant_manager_map"), "p.participant_id = pmm.participant_id", array())
                 ->joinLeft(array("dm" => "data_manager"), "pmm.dm_id = dm.dm_id", array("dm.dm_id", "dm.primary_email as username", "dm.password"))
                 ->where("p.unique_identifier IN (?)", $uniqueIds));
     }
@@ -247,7 +251,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
             'updated_on' => new Zend_Db_Expr('now()')
         );
 
-        $data['lab_name']=$params['pname'];
+        $data['lab_name'] = $params['pname'];
 
         if (isset($params['status']) && $params['status'] != "" && $params['status'] != null) {
             $data['status'] = $params['status'];
@@ -289,7 +293,6 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
 
     public function addParticipant($params) {
         $authNameSpace = new Zend_Session_Namespace('administrators');
-
         $data = array(
             'unique_identifier' => $params['pid'],
             'institute_name' => $params['instituteName'],
@@ -337,7 +340,6 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
 
     public function addParticipantForDataManager($params) {
         $authNameSpace = new Zend_Session_Namespace('datamanagers');
-
         $data = array(
             'unique_identifier' => $params['pid'],
             'institute_name' => $params['instituteName'],

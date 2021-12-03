@@ -363,6 +363,11 @@ class Application_Service_Participants {
 		return $db->fetchAll($db->select()->from('r_site_type')->order('site_type ASC'));
 	}
 
+    public function getSiteType($siteTypeName) {
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        return $db->fetchRow($db->select()->from('r_site_type')->where('site_type = ?', $siteTypeName));
+    }
+
 	public function getNetworkTierList() {
 		$db = Zend_Db_Table_Abstract::getDefaultAdapter();
 		return $db->fetchAll($db->select()->from('r_network_tiers')->order('network_name ASC'));
@@ -693,6 +698,14 @@ class Application_Service_Participants {
             $accumulator[$country["iso_name"]] = $country;
             return $accumulator;
         }, $countriesMap);
+        $dataManagerDb = new Application_Model_DbTable_DataManagers();
+        $emailAddressesInImport = array_column($tempParticipants, "Username");
+        $existingDataManagers = $dataManagerDb->getDataManagersByEmailAddresses($emailAddressesInImport);
+        $existingDataManagersMap = array();
+        $existingDataManagersMap = array_reduce($existingDataManagers, function($accumulator, $existingDataManager) {
+            $accumulator[$existingDataManager["primary_email"]] = $existingDataManager;
+            return $accumulator;
+        }, $existingDataManagersMap);
         for ($i = 0; $i < count($tempParticipants); $i++) {
             $existingParticipant = array(
                 "participant_id" => null,
@@ -708,6 +721,9 @@ class Application_Service_Participants {
             }
             $tempParticipants[$i]["participant_id"] = $existingParticipant["participant_id"];
             $tempParticipants[$i]["dm_id"] = $existingParticipant["dm_id"];
+            if (isset($existingDataManagersMap[$tempParticipants[$i]["Username"]])) {
+                $tempParticipants[$i]["dm_id"] = $existingDataManagersMap[$tempParticipants[$i]["Username"]]["dm_id"];
+            }
             $tempParticipants[$i]["country_id"] = $existingParticipant["country_id"];
             $tempParticipants[$i]["username"] = $existingParticipant["username"];
             $tempParticipants[$i]["password"] = $existingParticipant["password"];
@@ -748,6 +764,229 @@ class Application_Service_Participants {
         $participantTempDb->addParticipantTempRecords($tempParticipants);
 
         return $participantTempDb->getParticipantTempRecords();
+    }
+
+    public function confirmImportTempParticipants() {
+        $participantTempDb = new Application_Model_DbTable_ParticipantTemp();
+        $participantTempRecords = $participantTempDb->getParticipantTempRecords();
+
+        $participantDb = new Application_Model_DbTable_Participants();
+        $siteType = $this->getSiteType("Laboratory");
+        $userService = new Application_Service_DataManagers();
+        foreach ($participantTempRecords as $participantTempRecord) {
+            if ($participantTempRecord["insert"]) {
+                $newParticipant = array(
+                    "pid" => $participantTempRecord["unique_identifier"],
+                    "country" => $participantTempRecord["country_id"],
+                    "pname" => $participantTempRecord["lab_name"],
+                    "pphone1" => $participantTempRecord["phone_number"],
+                    "pemail" => $participantTempRecord["username"],
+                    "siteType" => $siteType["r_stid"],
+                    "region" => $participantTempRecord["region"],
+                    "status" => $participantTempRecord["status"],
+                    "dataManager" => array(),
+                    "instituteName" => null,
+                    "departmentName" => null,
+                    "address" => null,
+                    "city" => null,
+                    "state" => null,
+                    "zip" => null,
+                    "long" => null,
+                    "lat" => null,
+                    "shippingAddress" => null,
+                    "pphone2" => null,
+                    "contactname" => null,
+                    "partAff" => null,
+                    "network" => null,
+                    "testingVolume" => null,
+                    "fundingSource" => null
+                );
+                if (isset($participantTempRecord["dm_id"]) && $participantTempRecord["dm_id"]) {
+                    $newParticipant["dataManager"][] = $participantTempRecord["dm_id"];
+                } else {
+                    $dataManager = $userService->getUserInfo($participantTempRecord["username"]);
+                    if ($dataManager && isset($dataManager["dm_id"])) {
+                        if ($participantTempRecord["update_username"] ||
+                            $participantTempRecord["update_password"] ||
+                            $participantTempRecord["update_phone_number"] ||
+                            $participantTempRecord["update_status"]) {
+                            $updatedUser = array(
+                                "userSystemId" => $dataManager["dm_id"],
+                                "fname" => $dataManager["first_name"],
+                                "lname" => $dataManager["last_name"],
+                                "phone1" => $dataManager["mobile"],
+                                "semail" => $dataManager["secondary_email"]
+                            );
+                            if (!isset($dataManager["last_name"]) || $dataManager["last_name"] == null || $dataManager["last_name"] == "") {
+                                $updatedUser["fname"] = $participantTempRecord["lab_name"];
+                            }
+                            if ($participantTempRecord["update_username"]) {
+                                $updatedUser["userId"] = $participantTempRecord['username'];
+                            }
+                            if ($participantTempRecord["update_password"]) {
+                                $updatedUser["password"] = $participantTempRecord['password'];
+                            }
+                            if ($participantTempRecord["update_phone_number"]) {
+                                $updatedUser["phone2"] = $participantTempRecord['phone_number'];
+                            }
+                            if ($participantTempRecord["update_status"]) {
+                                $updatedUser["status"] = $participantTempRecord['status'];
+                            }
+                            $userService->updateUser($updatedUser);
+                        }
+                        $newParticipant["dataManager"][] = $dataManager["dm_id"];
+                    } else {
+                        $newUser = array(
+                            'fname' => $participantTempRecord["lab_name"],
+                            'phone2' => $participantTempRecord['phone_number'],
+                            'userId' => $participantTempRecord['username'],
+                            'password' => $participantTempRecord['password'],
+                            'force_password_reset' => 1,
+                            'qcAccess' => "yes",
+                            'receiptDateOption' => "yes",
+                            'modeOfReceiptOption' => "yes",
+                            'viewOnlyAccess' => "no",
+                            'status' => $participantTempRecord["status"],
+                            "lname" => null,
+                            "institute" => null,
+                            "phone1" => null,
+                            "semail" => null
+                        );
+                        $newParticipant["dataManager"][] = $userService->addUser($newUser);
+                    }
+                }
+                $participantDb->addParticipant($newParticipant);
+            } else if ($participantTempRecord["update"]) {
+                $participant = $participantDb->getParticipant($participantTempRecord["participant_id"]);
+                if ($participant &&
+                    ($participantTempRecord["update_lab_name"] ||
+                        $participantTempRecord["update_country"] ||
+                        $participantTempRecord["update_region"] ||
+                        $participantTempRecord["update_username"] ||
+                        $participantTempRecord["update_status"] ||
+                        $participantTempRecord["update_phone_number"])) {
+                    $updatedParticipant = array(
+                        "participantId" => $participant["participant_id"],
+                        "pid" => $participant["unique_identifier"],
+                        "country" => $participant["country"],
+                        "pname" => $participant["lab_name"],
+                        "pphone1" => $participant["phone"],
+                        "pemail" => $participant["email"],
+                        "siteType" => $participant["site_type"],
+                        "region" => $participant["region"],
+                        "status" => $participant["status"],
+                        "instituteName" => $participant["status"],
+                        "departmentName" => $participant["department_name"],
+                        "address" => $participant["address"],
+                        "city" => $participant["city"],
+                        "state" => $participant["state"],
+                        "zip" => $participant["zip"],
+                        "long" => $participant["long"],
+                        "lat" => $participant["lat"],
+                        "shippingAddress" => $participant["shipping_address"],
+                        "pphone2" => $participant["mobile"],
+                        "contactname" => $participant["contact_name"],
+                        "partAff" => $participant["affiliation"],
+                        "network" => $participant["network_tier"],
+                        "testingVolume" => $participant["testing_volume"],
+                        "fundingSource" => $participant["funding_source"]
+                    );
+                    $participantManagerMaps = $userService->getParticipantDatamanagerList($participantTempRecord["participant_id"]);
+                    $dmIds = array_map(function($participantManagerMap) {
+                        return $participantManagerMap["dm_id"];
+                    }, $participantManagerMaps);
+                    $dmIdToUpdate = null;
+                    if (isset($participantTempRecord["dm_id"]) && $participantTempRecord["dm_id"]) {
+                        $dmIdToUpdate = $participantTempRecord["dm_id"];
+                        $updatedParticipant["dataManager"] = array();
+                        if (!in_array($participantTempRecord["dm_id"], $dmIds)) {
+                            $updatedParticipant["dataManager"][] = $participantTempRecord["dm_id"];
+                            if (count($dmIds) > 1) {
+                                foreach($dmIds as $dmId) {
+                                    $updatedParticipant["dataManager"][] = $dmId;
+                                }
+                            }
+                        }
+                    } else if (count($dmIds) === 1) {
+                        $dmIdToUpdate = $dmIds[0];
+                    }
+                    $dataManagerToUpdate = null;
+                    if ($dmIdToUpdate !== null) {
+                        $dataManagerToUpdate = $userService->getUserInfoBySystemId($dmIdToUpdate);
+                    } else {
+                        $dataManagerToUpdate = $userService->getUserInfo($participantTempRecord["username"]);
+                    }
+                    if ($dataManagerToUpdate && isset($dataManagerToUpdate["dm_id"])) {
+                        if ($participantTempRecord["update_username"] ||
+                            $participantTempRecord["update_password"] ||
+                            $participantTempRecord["update_phone_number"] ||
+                            $participantTempRecord["update_status"]) {
+                            $updatedUser = array(
+                                "userSystemId" => $dataManagerToUpdate["dm_id"],
+                                "fname" => $dataManagerToUpdate["first_name"],
+                                "lname" => $dataManagerToUpdate["last_name"],
+                                "phone1" => $dataManagerToUpdate["mobile"],
+                                "phone2" => $dataManagerToUpdate["phone"],
+                                "semail" => $dataManagerToUpdate["secondary_email"]
+                            );
+                            if (!isset($dataManagerToUpdate["last_name"]) || $dataManagerToUpdate["last_name"] == null || $dataManagerToUpdate["last_name"] == "") {
+                                $updatedUser["fname"] = substr($participantTempRecord["lab_name"], 0, 45);
+                            }
+                            if ($participantTempRecord["update_username"]) {
+                                $updatedUser["userId"] = $participantTempRecord['username'];
+                            }
+                            if ($participantTempRecord["update_password"]) {
+                                $updatedUser["password"] = $participantTempRecord['password'];
+                            }
+                            if ($participantTempRecord["update_phone_number"]) {
+                                $updatedUser["phone2"] = $participantTempRecord['phone_number'];
+                            }
+                            if ($participantTempRecord["update_status"]) {
+                                $updatedUser["status"] = $participantTempRecord['status'];
+                            }
+                            $userService->updateUser($updatedUser);
+                        }
+                    } else {
+                        $newUser = array(
+                            'fname' => $participantTempRecord["lab_name"],
+                            'phone2' => $participantTempRecord['phone_number'],
+                            'userId' => $participantTempRecord['username'],
+                            'password' => $participantTempRecord['password'],
+                            'force_password_reset' => 1,
+                            'qcAccess' => "yes",
+                            'receiptDateOption' => "yes",
+                            'modeOfReceiptOption' => "yes",
+                            'viewOnlyAccess' => "no",
+                            'status' => $participantTempRecord["status"],
+                            "lname" => null,
+                            "institute" => null,
+                            "phone1" => null,
+                            "semail" => null
+                        );
+                        $updatedParticipant["dataManager"][] = $userService->addUser($newUser);
+                    }
+                    if ($participantTempRecord["update_lab_name"]) {
+                        $updatedParticipant["pname"] = $participantTempRecord["lab_name"];
+                    }
+                    if ($participantTempRecord["update_country"]) {
+                        $updatedParticipant["country"] = $participantTempRecord["country_id"];
+                    }
+                    if ($participantTempRecord["update_region"]) {
+                        $updatedParticipant["region"] = $participantTempRecord["region"];
+                    }
+                    if ($participantTempRecord["update_username"]) {
+                        $updatedParticipant["pemail"] = $participantTempRecord["username"];
+                    }
+                    if ($participantTempRecord["update_status"]) {
+                        $updatedParticipant["status"] = $participantTempRecord["status"];
+                    }
+                    if ($participantTempRecord["update_phone_number"]) {
+                        $updatedParticipant["pphone1"] = $participantTempRecord["phone_number"];
+                    }
+                    $participantDb->updateParticipant($updatedParticipant);
+                }
+            }
+        }
     }
 }
 

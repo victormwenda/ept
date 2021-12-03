@@ -74,13 +74,24 @@ class Admin_PtccProfilesController extends Zend_Controller_Action {
                     $this->view->numberOfInserts = count(array_filter($tempPtccs, function($tempPtcc) {
                         return $tempPtcc["insert"];
                     }));
-                    // Load excel file into temp table and render temp details in import.phtml
-                    // test in edge
                 }
+            } catch(Exception $e) {
+                error_log($e->getMessage());
+                error_log($e->getTraceAsString());
+                $this->view->error = $e->getMessage();
             }
-            catch(Zend_File_Transfer_Exception $e){
-                error_log($e->getMessage(), 0);
-            }
+        }
+    }
+
+    public function confirmImportAction() {
+        try {
+            $ptccService = new Application_Service_PtccProfile();
+            $ptccService->confirmImportTempPtccs();
+            $this->_redirect("/admin/ptcc-profiles");
+        } catch(Exception $e) {
+            error_log($e->getMessage());
+            error_log($e->getTraceAsString());
+            $this->view->error = $e->getMessage();
         }
     }
 }

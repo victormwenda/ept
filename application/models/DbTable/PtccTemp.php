@@ -41,7 +41,9 @@ class Application_Model_DbTable_PtccTemp extends Zend_Db_Table_Abstract {
             $ptccTempRecords[$i]["update_primary_email"] = false;
             $ptccTempRecords[$i]["update_password"] = false;
             $ptccTempRecords[$i]["update_status"] = false;
-            if (!$ptccTempRecords[$i]["insert"]) {
+            if ($ptccTempRecords[$i]["insert"]) {
+                $ptccTempRecords[$i]["import_action"] = "New";
+            } else {
                 $ptccTempRecords[$i]["update_country"] = $ptccTempRecords[$i]["country"] !== $ptccTempRecords[$i]["old_country"];
                 $ptccTempRecords[$i]["update_first_name"] = $ptccTempRecords[$i]["first_name"] !== $ptccTempRecords[$i]["old_first_name"];
                 $ptccTempRecords[$i]["update_last_name"] = $ptccTempRecords[$i]["last_name"] !== $ptccTempRecords[$i]["old_last_name"];
@@ -53,8 +55,6 @@ class Application_Model_DbTable_PtccTemp extends Zend_Db_Table_Abstract {
                 if ($ptccTempRecords[$i]["update"]) {
                     $ptccTempRecords[$i]["import_action"] = "Change";
                 }
-            } else {
-                $ptccTempRecords[$i]["import_action"] = "New";
             }
         }
         return $ptccTempRecords;

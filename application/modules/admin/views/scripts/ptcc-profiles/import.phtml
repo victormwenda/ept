@@ -1,3 +1,6 @@
+<?php if ($this->error) { ?>
+    <h4><?php echo $this->error; ?></h4>
+<?php } else { ?>
 <h4 style="height: 60px;">
     <span style="font-size: 16px; font-style: italic;letter-spacing: 2px;font-weight: bold;">
         <span class="text-success"><?php echo $this->numberOfInserts; ?>&nbsp;new</span>,&nbsp;
@@ -61,5 +64,9 @@
             ],
             "aaSorting": [[ 0, "asc" ], [ 1, "asc" ], [ 2, "asc" ]]
         });
+        $("#importPtccsConfirmAnchor").on('click', function() {
+            $.blockUI();
+        })
     });
 </script>
+<?php } ?>
