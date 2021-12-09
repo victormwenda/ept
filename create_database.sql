@@ -480,6 +480,8 @@ CREATE TABLE `participant_temp` (
   `username` varchar(255) DEFAULT NULL,
   `password` varchar(45) DEFAULT NULL,
   `status` varchar(255) DEFAULT NULL,
+  `participant_status` varchar(255) DEFAULT NULL,
+  `email` VARCHAR(255) DEFAULT NULL,
   `phone_number` varchar(45) DEFAULT NULL,
   `participant_id` int(11) DEFAULT NULL,
   `dm_id` int(11) DEFAULT NULL,

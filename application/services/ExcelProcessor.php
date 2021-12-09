@@ -3,6 +3,29 @@
 include_once "PHPExcel.php";
 
 class Application_Service_ExcelProcessor {
+    public function downloadParticipantTemplate($participants)
+    {
+        $fileLocation = "./templates/Participant_Import_Template.xlsx";
+        $inputFileType = PHPExcel_IOFactory::identify($fileLocation);
+        $objReader = PHPExcel_IOFactory::createReader($inputFileType);
+        $objPHPExcel = $objReader->load($fileLocation);
+        $objPHPExcel->setActiveSheetIndex(0);
+        for ($i = 0; $i < count($participants); $i++) {
+            $firstSheet = $objPHPExcel->getActiveSheet();
+            $firstSheet->getCellByColumnAndRow(0, ($i+2))->setValueExplicit($participants[$i]["unique_identifier"], PHPExcel_Cell_DataType::TYPE_STRING);
+            $firstSheet->getCellByColumnAndRow(1, ($i+2))->setValueExplicit($participants[$i]["lab_name"], PHPExcel_Cell_DataType::TYPE_STRING);
+            $firstSheet->getCellByColumnAndRow(2, ($i+2))->setValueExplicit($participants[$i]["country_name"], PHPExcel_Cell_DataType::TYPE_STRING);
+            $firstSheet->getCellByColumnAndRow(3, ($i+2))->setValueExplicit($participants[$i]["region"], PHPExcel_Cell_DataType::TYPE_STRING);
+            $firstSheet->getCellByColumnAndRow(4, ($i+2))->setValueExplicit($participants[$i]["primary_email"], PHPExcel_Cell_DataType::TYPE_STRING);
+            $firstSheet->getCellByColumnAndRow(6, ($i+2))->setValueExplicit($participants[$i]["status"] === "inactive" ? "No" : "Yes", PHPExcel_Cell_DataType::TYPE_STRING);
+            $firstSheet->getCellByColumnAndRow(7, ($i+2))->setValueExplicit($participants[$i]["phone"], PHPExcel_Cell_DataType::TYPE_STRING);
+        }
+        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $inputFileType);
+        $savedFileName = "Participant_Import_Template.xlsx";
+        $objWriter->save(UPLOAD_PATH.DIRECTORY_SEPARATOR."generated-reports".DIRECTORY_SEPARATOR.$savedFileName);
+        return $savedFileName;
+    }
+
     public function readParticipantImport($fileLocation)
     {
         $inputFileType = PHPExcel_IOFactory::identify($fileLocation);

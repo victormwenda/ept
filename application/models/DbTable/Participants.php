@@ -54,7 +54,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
         return $this->getAdapter()->fetchAll(
             $this->getAdapter()
                 ->select()
-                ->from(array("p" => $this->_name), array("p.participant_id", "p.unique_identifier", "p.lab_name", "p.region", "p.status"))
+                ->from(array("p" => $this->_name), array("p.participant_id", "p.unique_identifier", "p.lab_name", "p.email", "p.phone", "p.region", "p.status"))
                 ->joinLeft(array("c" => "countries"), "p.country = c.id", array(
                     "country_id" => "c.id",
                     "country_name" => "c.iso_name"
@@ -276,7 +276,7 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
             }
 		}
 
-        if (isset($params['dataManager']) && $params['dataManager'] != "") {
+        if (isset($params['dataManager']) && count($params['dataManager']) > 0) {
             $db->delete('participant_manager_map', "participant_id = " . $params['participantId']);
             foreach ($params['dataManager'] as $dataManager) {
                 $db->insert('participant_manager_map', array('dm_id' => $dataManager, 'participant_id' => $params['participantId']));
@@ -758,8 +758,8 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
              }
          } else if (isset($params['participantId']) && $params['participantId'] != "") {
              $db->delete('participant_manager_map',"participant_id = " . $params['participantId']);
-             foreach($params['datamangers'] as $datamangers){
-                 $db->insert('participant_manager_map',array('dm_id'=>$datamangers,'participant_id'=>$params['participantId']));
+             foreach($params['datamanagers'] as $datamanager){
+                 $db->insert('participant_manager_map',array('dm_id'=>$datamanager,'participant_id'=>$params['participantId']));
              }
          }
 	}
@@ -1279,6 +1279,25 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
             $output['aaData'][] = $row;
         }
         echo json_encode($output);
+    }
+
+    public function generateParticipantDataForImportTemplate() {
+        $db = Zend_Db_Table_Abstract::getAdapter();
+        $sQuery = $db->select()
+            ->from(array("p" => "participant"), array(
+                "sorting_unique_identifier" => new Zend_Db_Expr("LPAD(p.unique_identifier, 10, '0')"),
+                "unique_identifier" => "p.unique_identifier",
+                "lab_name" => "p.lab_name",
+                "region" => "p.region",
+                "status" => "p.status",
+                "phone" => "p.phone"
+            ))
+            ->join(array("c" => "countries"), "p.country = c.id", array("country_name" => "c.iso_name"))
+            ->joinLeft(array("pmm" => "participant_manager_map"), "p.participant_id = pmm.participant_id", array())
+            ->joinLeft(array("dm" => "data_manager"), "pmm.dm_id = dm.dm_id", array("dm.primary_email"))
+            ->group(array("p.participant_id", "dm.primary_email"))
+            ->order("sorting_unique_identifier ASC");
+        return $db->fetchAll($sQuery);
     }
 }
 

@@ -174,7 +174,11 @@ class Application_Model_DbTable_DataManagers extends Zend_Db_Table_Abstract {
     }    
     
     public function getUserDetails($userId){
-        return $this->fetchRow("primary_email = '".$userId."'")->toArray();
+        $userDetails =  $this->fetchRow("primary_email = '".$userId."'");
+        if ($userDetails) {
+            return $userDetails->toArray();
+        }
+        return $userDetails;
     }
     
     public function getUserDetailsBySystemId($userSystemId){

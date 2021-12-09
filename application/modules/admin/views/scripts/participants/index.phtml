@@ -6,6 +6,7 @@ $adminSession = new Zend_Session_Namespace('administrators'); ?>
         <a href="<?php echo $this->url(array('module' => 'admin', 'controller' => 'participants', 'action' => 'add'), 'default', true); ?>" class="btn btn-primary"><i class="icon-user"></i>&nbsp;Add New Participant</a>
         <?php
         if ($adminSession->is_ptcc_coordinator == 0) { ?>
+        <a href="<?php echo $this->url(array('module' => 'admin', 'controller' => 'participants', 'action' => 'download-import-template'), 'default', true); ?>" class="btn btn-warning" style="margin-left: 10px;"><i class="icon-table"></i>&nbsp;Download Import Template</a>
         <a id="importParticipantsExcelAnchor" href="#" class="btn btn-success" style="margin-left: 10px;"><i class="icon-table"></i>&nbsp;Import Participants</a>
         <?php
         } ?>

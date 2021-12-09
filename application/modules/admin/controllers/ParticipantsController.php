@@ -105,6 +105,14 @@ class Admin_ParticipantsController extends Zend_Controller_Action {
         $this->view->participants = $participantService->getAllActiveParticipants();
     }
 
+    public function downloadImportTemplateAction() {
+        $participantsService = new Application_Service_Participants();
+        $participantData = $participantsService->generateParticipantDataForImportTemplate();
+        $excelReaderService = new Application_Service_ExcelProcessor();
+        $generatedFileName = $excelReaderService->downloadParticipantTemplate($participantData);
+        $this->_redirect("/uploads/generated-reports/".$generatedFileName);;
+    }
+
     public function importAction() {
         if ($this->getRequest()->isPost()) {
             $upload = new Zend_File_Transfer_Adapter_Http();
@@ -128,6 +136,12 @@ class Admin_ParticipantsController extends Zend_Controller_Action {
                     }));
                     $this->view->numberOfInserts = count(array_filter($tempParticipants, function($tempParticipant) {
                         return $tempParticipant["insert"];
+                    }));
+                    $this->view->numberOfUserInserts = count(array_filter($tempParticipants, function($tempParticipant) {
+                        return !$tempParticipant["insert"] && $tempParticipant["insert_user"];
+                    }));
+                    $this->view->numberOfUserLinks = count(array_filter($tempParticipants, function($tempParticipant) {
+                        return !$tempParticipant["insert"] && !$tempParticipant["insert_user"] && $tempParticipant["insert_user_link"];
                     }));
                 }
             } catch(Exception $e) {

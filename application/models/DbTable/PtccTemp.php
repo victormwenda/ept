@@ -49,7 +49,10 @@ class Application_Model_DbTable_PtccTemp extends Zend_Db_Table_Abstract {
                 $ptccTempRecords[$i]["update_last_name"] = $ptccTempRecords[$i]["last_name"] !== $ptccTempRecords[$i]["old_last_name"];
                 $ptccTempRecords[$i]["update_phone_number"] = $ptccTempRecords[$i]["phone_number"] !== $ptccTempRecords[$i]["old_phone_number"];
                 $ptccTempRecords[$i]["update_primary_email"] = $ptccTempRecords[$i]["primary_email"] !== $ptccTempRecords[$i]["old_primary_email"];
-                $ptccTempRecords[$i]["update_password"] = $ptccTempRecords[$i]["password"] !== $ptccTempRecords[$i]["old_password"] && $ptccTempRecords[$i]["old_force_password_reset"];
+                $ptccTempRecords[$i]["update_password"] = isset($ptccTempRecords[$i]["password"]) &&
+                    !!$ptccTempRecords[$i]["password"] &&
+                    $ptccTempRecords[$i]["password"] !== $ptccTempRecords[$i]["old_password"] &&
+                    $ptccTempRecords[$i]["old_force_password_reset"];
                 $ptccTempRecords[$i]["update_status"] = $ptccTempRecords[$i]["status"] !== $ptccTempRecords[$i]["old_status"];
                 $ptccTempRecords[$i]["update"] = $ptccTempRecords[$i]["update_country"] || $ptccTempRecords[$i]["update_first_name"] || $ptccTempRecords[$i]["update_last_name"] || $ptccTempRecords[$i]["update_phone_number"] || $ptccTempRecords[$i]["update_primary_email"] || $ptccTempRecords[$i]["update_password"] || $ptccTempRecords[$i]["update_status"];
                 if ($ptccTempRecords[$i]["update"]) {

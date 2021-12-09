@@ -683,14 +683,6 @@ class Application_Service_Participants {
 	}
 
     public function saveTempParticipants($tempParticipants) {
-        $ptIdsInImport = array_column($tempParticipants, "PT ID");
-        $participantDb = new Application_Model_DbTable_Participants();
-        $existingParticipants = $participantDb->getParticipantsByUniqueIds($ptIdsInImport);
-        $existingParticipantsMap = array();
-        $existingParticipantsMap = array_reduce($existingParticipants, function($accumulator, $existingParticipant) {
-            $accumulator[$existingParticipant["unique_identifier"]] = $existingParticipant;
-            return $accumulator;
-        }, $existingParticipantsMap);
         $countriesDb = new Application_Model_DbTable_Countries();
         $countries = $countriesDb->getAllCountries();
         $countriesMap = array();
@@ -698,70 +690,165 @@ class Application_Service_Participants {
             $accumulator[$country["iso_name"]] = $country;
             return $accumulator;
         }, $countriesMap);
-        $dataManagerDb = new Application_Model_DbTable_DataManagers();
+
         $emailAddressesInImport = array_column($tempParticipants, "Username");
+        $dataManagerDb = new Application_Model_DbTable_DataManagers();
         $existingDataManagers = $dataManagerDb->getDataManagersByEmailAddresses($emailAddressesInImport);
         $existingDataManagersMap = array();
         $existingDataManagersMap = array_reduce($existingDataManagers, function($accumulator, $existingDataManager) {
+            if (!isset($accumulator[$existingDataManager["primary_email"]])) {
+                $accumulator[$existingDataManager["primary_email"]] = array();
+            }
             $accumulator[$existingDataManager["primary_email"]] = $existingDataManager;
             return $accumulator;
         }, $existingDataManagersMap);
-        for ($i = 0; $i < count($tempParticipants); $i++) {
-            $existingParticipant = array(
-                "participant_id" => null,
-                "dm_id" => null,
-                "country_id" => null,
-                "username" => null,
-                "password" => null,
-                "status" => null,
-                "lab_name" => null
-            );
-            if (isset($existingParticipantsMap[$tempParticipants[$i]["PT ID"]])) {
-                $existingParticipant = $existingParticipantsMap[$tempParticipants[$i]["PT ID"]];
+
+        $ptIdsInImport = array_column($tempParticipants, "PT ID");
+        $participantDb = new Application_Model_DbTable_Participants();
+        $existingParticipants = $participantDb->getParticipantsByUniqueIds($ptIdsInImport);
+        $existingParticipantsMap = array();
+        $existingParticipantsMap = array_reduce($existingParticipants, function($accumulator, $existingParticipant) {
+            if (!isset($accumulator[$existingParticipant["unique_identifier"]])) {
+                $accumulator[$existingParticipant["unique_identifier"]] = array();
             }
-            $tempParticipants[$i]["participant_id"] = $existingParticipant["participant_id"];
-            $tempParticipants[$i]["dm_id"] = $existingParticipant["dm_id"];
-            if (isset($existingDataManagersMap[$tempParticipants[$i]["Username"]])) {
-                $tempParticipants[$i]["dm_id"] = $existingDataManagersMap[$tempParticipants[$i]["Username"]]["dm_id"];
-            }
-            $tempParticipants[$i]["country_id"] = $existingParticipant["country_id"];
-            $tempParticipants[$i]["username"] = $existingParticipant["username"];
-            $tempParticipants[$i]["password"] = $existingParticipant["password"];
-            $tempParticipants[$i]["status"] = "active";
-            if (isset($countriesMap[$tempParticipants[$i]["Country"]])) {
-                $tempParticipants[$i]["country_id"] = $countriesMap[$tempParticipants[$i]["Country"]]["id"];
+            if (isset($existingParticipant["username"]) && $existingParticipant["username"]) {
+                $accumulator[$existingParticipant["unique_identifier"]][$existingParticipant["username"]] = $existingParticipant;
             } else {
-                throw new Exception("The sheet contains a country name of \"".$tempParticipants[$i]["Country"]."\" which is not recognised by ePT. Please edit the sheet using the following country names only: ".implode(", ", array_keys($countriesMap))."?");
+                $accumulator[$existingParticipant["unique_identifier"]]["none"] = $existingParticipant;
             }
-            if ($tempParticipants[$i]["Username"]) {
-                $tempParticipants[$i]["username"] = $tempParticipants[$i]["Username"];
-            } else if (!$tempParticipants[$i]["username"]) {
-                $tempParticipants[$i]["username"] = $tempParticipants[$i]["PT ID"]."@ept.systemone.id";
-            }
-            if ($tempParticipants[$i]["Password"]) {
-                $tempParticipants[$i]["password"] = $tempParticipants[$i]["Password"];
-            } else if (!$tempParticipants[$i]["password"]) {
-                $tempParticipants[$i]["password"] = $tempParticipants[$i]["PT ID"];
-            }
-            if ($tempParticipants[$i]["Active"] === "No") {
-                $tempParticipants[$i]["status"] = "inactive";
-            }
-            if (!$tempParticipants[$i]["Country"]) {
-                throw new Exception("The sheet contains a record with a blank Country which is a required field. Please check ".$tempParticipants[$i]["PT ID"]."?");
-            }
+            return $accumulator;
+        }, $existingParticipantsMap);
+        $tempParticipantsMap = array();
+        for($i = 0; $i < count($tempParticipants); $i++) {
             if (!$tempParticipants[$i]["PT ID"]) {
                 throw new Exception("The sheet contains a record with a blank PT ID which is a required field. Please check ".$tempParticipants[$i]["Lab Name"]."?");
             }
-            if (!$tempParticipants[$i]["country_id"]) {
-                throw new Exception("The sheet contains a record where the country cannot be determined. Please check ".$tempParticipants[$i]["PT ID"]." in ".$tempParticipants[$i]["Country"]." to make sure that the country is correctly specified?");
+            if (!isset($tempParticipantsMap[$tempParticipants[$i]["PT ID"]])) {
+                $tempParticipantsMap[$tempParticipants[$i]["PT ID"]] = array();
             }
-            if (!$tempParticipants[$i]["Lab Name"]) {
+            $username = "none";
+            if (isset($tempParticipants[$i]["Username"]) && $tempParticipants[$i]["Username"]) {
+                $username = $tempParticipants[$i]["Username"];
+            }
+            if (isset($tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$username])) {
+                throw new Exception("The sheet contains a duplicate records for ".$tempParticipants[$i]["PT ID"]." and ".$username.".");
+            }
+            if (!isset($tempParticipants[$i]["Country"]) || !$tempParticipants[$i]["Country"]) {
+                throw new Exception("The sheet contains a record with a blank Country which is a required field. Please check ".$tempParticipants[$i]["PT ID"]."?");
+            }
+            if (!isset($tempParticipants[$i]["Lab Name"]) || !$tempParticipants[$i]["Lab Name"]) {
                 throw new Exception("The sheet contains a record with a blank Lab Name which is a required field. Please check ".$tempParticipants[$i]["PT ID"]." in ".$tempParticipants[$i]["Country"]."?");
+            }
+            foreach (array_keys($tempParticipantsMap[$tempParticipants[$i]["PT ID"]]) as $participantUsername) {
+                if ($tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$participantUsername]["Country"] != $tempParticipants[$i]["Country"]) {
+                    throw new Exception("The sheet contains a more than one row with different countries for the same PT ID. Please check ".$tempParticipants[$i]["PT ID"]." with countries ".$tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$participantUsername]["Country"]." and ".$tempParticipants[$i]["Country"]."?");
+                }
+                if ($tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$participantUsername]["Region"] != $tempParticipants[$i]["Region"]) {
+                    if (isset($tempParticipants[$i]["Region"]) &&
+                        $tempParticipants[$i]["Region"] != null &&
+                        $tempParticipants[$i]["Region"] != "" &&
+                        (!isset($tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$participantUsername]["Region"]) ||
+                            $tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$participantUsername]["Region"] == null ||
+                            $tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$participantUsername]["Region"] == "")) {
+                        $tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$participantUsername]["Region"] = $tempParticipants[$i]["Region"];
+                    } else if (isset($tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$participantUsername]["Region"]) &&
+                        $tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$participantUsername]["Region"] != null &&
+                        $tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$participantUsername]["Region"] != "" &&
+                        (!isset($tempParticipants[$i]["Region"]) ||
+                            $tempParticipants[$i]["Region"] == null ||
+                            $tempParticipants[$i]["Region"] == "")) {
+                        $tempParticipants[$i]["Region"] = $tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$participantUsername]["Region"];
+                    } else {
+                        throw new Exception("The sheet contains a more than one row with different regions for the same PT ID. Please check ".$tempParticipants[$i]["PT ID"]." with regions ".$tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$participantUsername]["Region"]." and ".$tempParticipants[$i]["Region"]."?");
+                    }
+                }
+            }
+            $tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$username] = $tempParticipants[$i];
+            $tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$username]["country_id"] = null;
+            $tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$username]["dm_id"] = null;
+            $tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$username]["participant_id"] = null;
+            if (isset($countriesMap[$tempParticipants[$i]["Country"]])) {
+                $tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$username]["country_id"] = $countriesMap[$tempParticipants[$i]["Country"]]["id"];
+            } else {
+                throw new Exception("The sheet contains a record where the country cannot be determined. Please check ".$tempParticipants[$i]["PT ID"]." in ".$tempParticipants[$i]["Country"]." to make sure that the country name is correctly spelled?");
+            }
+            if (isset($existingDataManagersMap[$tempParticipants[$i]["Username"]])) {
+                $tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$username]["dm_id"] = $existingDataManagersMap[$username]["dm_id"];
+            }
+            if (isset($existingParticipantsMap[$tempParticipants[$i]["PT ID"]])) {
+                $tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$username]["participant_id"] = array_values($existingParticipantsMap[$tempParticipants[$i]["PT ID"]])[0]["participant_id"];
+                if (isset($existingParticipantsMap[$tempParticipants[$i]["PT ID"]][$username]) && !isset($tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$username]["dm_id"])) {
+                    $tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$username]["dm_id"] = $existingParticipantsMap[$tempParticipants[$i]["PT ID"]][$username]["dm_id"];
+                }
+            }
+        }
+
+        $tempParticipantInserts = array();
+        foreach (array_keys($tempParticipantsMap) as $ptId) {
+            $participantLabName = null;
+            $participantEmailAddress = null;
+            $participantPhoneNumber = null;
+            $participantActive = "No";
+            $existingParticipant = $existingParticipantsMap[$ptId];
+            foreach (array_keys($tempParticipantsMap[$ptId]) as $participantUsername) {
+                if(isset($existingParticipant) && isset($existingParticipant[$participantUsername])) {
+                    $existingParticipantUser = $existingParticipant[$participantUsername];
+                    if ($participantLabName == null && $existingParticipantUser["lab_name"] == $tempParticipantsMap[$ptId][$participantUsername]["Lab Name"]) {
+                        $participantLabName = $existingParticipantUser["lab_name"];
+                    }
+                    if ($participantEmailAddress == null && $existingParticipantUser["email"] == $tempParticipantsMap[$ptId][$participantUsername]["Username"] && $tempParticipantsMap[$ptId][$participantUsername]["Username"] != $tempParticipantsMap[$ptId][$participantUsername]["PT ID"] . "@ept.systemone.id") {
+                        $participantEmailAddress = $existingParticipantUser["email"];
+                    }
+                    if ($participantPhoneNumber == null && $existingParticipantUser["phone"] == $tempParticipantsMap[$ptId][$participantUsername]["Phone Number"]) {
+                        $participantPhoneNumber = $existingParticipantUser["phone"];
+                    }
+                }
+                if ($participantActive == "No" && $tempParticipantsMap[$ptId][$participantUsername]["Active"] != "No") {
+                    $participantActive = "Yes";
+                }
+            }
+            foreach (array_keys($tempParticipantsMap[$ptId]) as $participantUsername) {
+                if ($participantLabName == null && $tempParticipantsMap[$ptId][$participantUsername]["Lab Name"]) {
+                    $participantLabName = $tempParticipantsMap[$ptId][$participantUsername]["Lab Name"];
+                }
+                if ($participantEmailAddress == null && $tempParticipantsMap[$ptId][$participantUsername]["Username"] &&
+                    $tempParticipantsMap[$ptId][$participantUsername]["Username"] != $tempParticipantsMap[$ptId][$participantUsername]["PT ID"]."@ept.systemone.id") {
+                    $participantEmailAddress = $tempParticipantsMap[$ptId][$participantUsername]["Username"];
+                }
+                if ($participantPhoneNumber == null && $tempParticipantsMap[$ptId][$participantUsername]["Phone Number"]) {
+                    $participantPhoneNumber = $tempParticipantsMap[$ptId][$participantUsername]["Phone Number"];
+                }
+            }
+            if (isset($existingParticipant) && count($existingParticipant) > 0) {
+                $existingParticipantUser = array_values($existingParticipant)[0];
+                if ($participantLabName == null) {
+                    $participantLabName = $existingParticipantUser["lab_name"];
+                }
+                if ($participantEmailAddress == null) {
+                    $participantEmailAddress = $existingParticipantUser["email"];
+                }
+                if ($participantPhoneNumber == null) {
+                    $participantPhoneNumber = $existingParticipantUser["phone"];
+                }
+            }
+            foreach (array_keys($tempParticipantsMap[$ptId]) as $participantUsername) {
+                $tempParticipantsMap[$ptId][$participantUsername]["Lab Name"] = $participantLabName;
+                $tempParticipantsMap[$ptId][$participantUsername]["Email"] = $participantEmailAddress;
+                $tempParticipantsMap[$ptId][$participantUsername]["Phone Number"] = $participantPhoneNumber;
+                if (count($tempParticipantsMap[$ptId]) == 1 &&
+                    $participantEmailAddress &&
+                    $participantUsername == $tempParticipantsMap[$ptId][$participantUsername]["PT ID"]."@ept.systemone.id" &&
+                    $participantEmailAddress != $tempParticipantsMap[$ptId][$participantUsername]["PT ID"]."@ept.systemone.id") {
+                    $tempParticipantsMap[$ptId][$participantUsername]["Username"] = $participantEmailAddress;
+                }
+                $tempParticipantsMap[$ptId][$participantUsername]["status"] = $tempParticipantsMap[$ptId][$participantUsername]["Active"] == "No" ? "inactive" : "active";
+                $tempParticipantsMap[$ptId][$participantUsername]["participant_status"] = $participantActive == "No" ? "inactive" : "active";
+                $tempParticipantInserts[] = $tempParticipantsMap[$ptId][$participantUsername];
             }
         }
         $participantTempDb = new Application_Model_DbTable_ParticipantTemp();
         $participantTempDb->clearParticipantTempRecords();
-        $participantTempDb->addParticipantTempRecords($tempParticipants);
+        $participantTempDb->addParticipantTempRecords($tempParticipantInserts);
 
         return $participantTempDb->getParticipantTempRecords();
     }
@@ -773,6 +860,7 @@ class Application_Service_Participants {
         $participantDb = new Application_Model_DbTable_Participants();
         $siteType = $this->getSiteType("Laboratory");
         $userService = new Application_Service_DataManagers();
+        $participantManagerMaps = array();
         foreach ($participantTempRecords as $participantTempRecord) {
             if ($participantTempRecord["insert"]) {
                 $newParticipant = array(
@@ -780,11 +868,10 @@ class Application_Service_Participants {
                     "country" => $participantTempRecord["country_id"],
                     "pname" => $participantTempRecord["lab_name"],
                     "pphone1" => $participantTempRecord["phone_number"],
-                    "pemail" => $participantTempRecord["username"],
+                    "pemail" => $participantTempRecord["email"],
                     "siteType" => $siteType["r_stid"],
                     "region" => $participantTempRecord["region"],
-                    "status" => $participantTempRecord["status"],
-                    "dataManager" => array(),
+                    "status" => $participantTempRecord["participant_status"],
                     "instituteName" => null,
                     "departmentName" => null,
                     "address" => null,
@@ -801,15 +888,16 @@ class Application_Service_Participants {
                     "testingVolume" => null,
                     "fundingSource" => null
                 );
+                $dataManagerIds = array();
                 if (isset($participantTempRecord["dm_id"]) && $participantTempRecord["dm_id"]) {
-                    $newParticipant["dataManager"][] = $participantTempRecord["dm_id"];
+                    $dataManagerIds[] = $participantTempRecord["dm_id"];
                 } else {
                     $dataManager = $userService->getUserInfo($participantTempRecord["username"]);
                     if ($dataManager && isset($dataManager["dm_id"])) {
                         if ($participantTempRecord["update_username"] ||
                             $participantTempRecord["update_password"] ||
                             $participantTempRecord["update_phone_number"] ||
-                            $participantTempRecord["update_status"]) {
+                            $participantTempRecord["update_dm_status"]) {
                             $updatedUser = array(
                                 "userSystemId" => $dataManager["dm_id"],
                                 "fname" => $dataManager["first_name"],
@@ -829,12 +917,12 @@ class Application_Service_Participants {
                             if ($participantTempRecord["update_phone_number"]) {
                                 $updatedUser["phone2"] = $participantTempRecord['phone_number'];
                             }
-                            if ($participantTempRecord["update_status"]) {
+                            if ($participantTempRecord["update_dm_status"]) {
                                 $updatedUser["status"] = $participantTempRecord['status'];
                             }
                             $userService->updateUser($updatedUser);
                         }
-                        $newParticipant["dataManager"][] = $dataManager["dm_id"];
+                        $dataManagerIds[] = $dataManager["dm_id"];
                     } else {
                         $newUser = array(
                             'fname' => $participantTempRecord["lab_name"],
@@ -852,18 +940,24 @@ class Application_Service_Participants {
                             "phone1" => null,
                             "semail" => null
                         );
-                        $newParticipant["dataManager"][] = $userService->addUser($newUser);
+                        $dataManagerIds[] = $userService->addUser($newUser);
                     }
                 }
-                $participantDb->addParticipant($newParticipant);
-            } else if ($participantTempRecord["update"]) {
+                $participantId = $participantDb->addParticipant($newParticipant);
+                foreach ($dataManagerIds as $dataManagerId) {
+                    $participantManagerMaps[] = array(
+                        "dm_id" => $dataManagerId,
+                        "participant_id" => $participantId
+                    );
+                }
+            } else if ($participantTempRecord["update"] || $participantTempRecord["insert_user"]) {
                 $participant = $participantDb->getParticipant($participantTempRecord["participant_id"]);
                 if ($participant &&
                     ($participantTempRecord["update_lab_name"] ||
                         $participantTempRecord["update_country"] ||
                         $participantTempRecord["update_region"] ||
-                        $participantTempRecord["update_username"] ||
-                        $participantTempRecord["update_status"] ||
+                        $participantTempRecord["update_email"] ||
+                        $participantTempRecord["update_participant_status"] ||
                         $participantTempRecord["update_phone_number"])) {
                     $updatedParticipant = array(
                         "participantId" => $participant["participant_id"],
@@ -891,36 +985,21 @@ class Application_Service_Participants {
                         "testingVolume" => $participant["testing_volume"],
                         "fundingSource" => $participant["funding_source"]
                     );
-                    $participantManagerMaps = $userService->getParticipantDatamanagerList($participantTempRecord["participant_id"]);
-                    $dmIds = array_map(function($participantManagerMap) {
-                        return $participantManagerMap["dm_id"];
-                    }, $participantManagerMaps);
-                    $dmIdToUpdate = null;
-                    if (isset($participantTempRecord["dm_id"]) && $participantTempRecord["dm_id"]) {
-                        $dmIdToUpdate = $participantTempRecord["dm_id"];
-                        $updatedParticipant["dataManager"] = array();
-                        if (!in_array($participantTempRecord["dm_id"], $dmIds)) {
-                            $updatedParticipant["dataManager"][] = $participantTempRecord["dm_id"];
-                            if (count($dmIds) > 1) {
-                                foreach($dmIds as $dmId) {
-                                    $updatedParticipant["dataManager"][] = $dmId;
-                                }
-                            }
-                        }
-                    } else if (count($dmIds) === 1) {
-                        $dmIdToUpdate = $dmIds[0];
-                    }
                     $dataManagerToUpdate = null;
-                    if ($dmIdToUpdate !== null) {
-                        $dataManagerToUpdate = $userService->getUserInfoBySystemId($dmIdToUpdate);
+                    if ($dataManagerToUpdate["dm_id"] != null) {
+                        $dataManagerToUpdate = $userService->getUserInfoBySystemId($dataManagerToUpdate["dm_id"]);
                     } else {
                         $dataManagerToUpdate = $userService->getUserInfo($participantTempRecord["username"]);
                     }
                     if ($dataManagerToUpdate && isset($dataManagerToUpdate["dm_id"])) {
+                        $participantManagerMaps[] = array(
+                            "dm_id" => $dataManagerToUpdate["dm_id"],
+                            "participant_id" => $participant["participant_id"]
+                        );
                         if ($participantTempRecord["update_username"] ||
                             $participantTempRecord["update_password"] ||
                             $participantTempRecord["update_phone_number"] ||
-                            $participantTempRecord["update_status"]) {
+                            $participantTempRecord["update_dm_status"]) {
                             $updatedUser = array(
                                 "userSystemId" => $dataManagerToUpdate["dm_id"],
                                 "fname" => $dataManagerToUpdate["first_name"],
@@ -941,14 +1020,14 @@ class Application_Service_Participants {
                             if ($participantTempRecord["update_phone_number"]) {
                                 $updatedUser["phone2"] = $participantTempRecord['phone_number'];
                             }
-                            if ($participantTempRecord["update_status"]) {
+                            if ($participantTempRecord["update_dm_status"]) {
                                 $updatedUser["status"] = $participantTempRecord['status'];
                             }
                             $userService->updateUser($updatedUser);
                         }
                     } else {
                         $newUser = array(
-                            'fname' => $participantTempRecord["lab_name"],
+                            'fname' => substr($participantTempRecord["lab_name"], 0, 45),
                             'phone2' => $participantTempRecord['phone_number'],
                             'userId' => $participantTempRecord['username'],
                             'password' => $participantTempRecord['password'],
@@ -963,7 +1042,11 @@ class Application_Service_Participants {
                             "phone1" => null,
                             "semail" => null
                         );
-                        $updatedParticipant["dataManager"][] = $userService->addUser($newUser);
+                        $newDataManagerId = $userService->addUser($newUser);
+                        $participantManagerMaps[] = array(
+                            "dm_id" => $newDataManagerId,
+                            "participant_id" => $participant["participant_id"]
+                        );
                     }
                     if ($participantTempRecord["update_lab_name"]) {
                         $updatedParticipant["pname"] = $participantTempRecord["lab_name"];
@@ -974,11 +1057,11 @@ class Application_Service_Participants {
                     if ($participantTempRecord["update_region"]) {
                         $updatedParticipant["region"] = $participantTempRecord["region"];
                     }
-                    if ($participantTempRecord["update_username"]) {
-                        $updatedParticipant["pemail"] = $participantTempRecord["username"];
+                    if ($participantTempRecord["update_email"]) {
+                        $updatedParticipant["pemail"] = $participantTempRecord["email"];
                     }
-                    if ($participantTempRecord["update_status"]) {
-                        $updatedParticipant["status"] = $participantTempRecord["status"];
+                    if ($participantTempRecord["update_participant_status"]) {
+                        $updatedParticipant["status"] = $participantTempRecord["participant_status"];
                     }
                     if ($participantTempRecord["update_phone_number"]) {
                         $updatedParticipant["pphone1"] = $participantTempRecord["phone_number"];
@@ -987,6 +1070,26 @@ class Application_Service_Participants {
                 }
             }
         }
+
+        $participantIdsToLink = array();
+        $participantIdsToLink = array_reduce($participantManagerMaps, function($accumulator, $participantManagerMap) {
+            if (!isset($accumulator[$participantManagerMap["participant_id"]])) {
+                $accumulator[$participantManagerMap["participant_id"]] = array();
+            }
+            $accumulator[$participantManagerMap["participant_id"]][] = $participantManagerMap["dm_id"];
+            return $accumulator;
+        }, $participantIdsToLink);
+        foreach($participantIdsToLink as $participantId => $dataManagerIds) {
+            $participantDb->addParticipantManager(array(
+                "participantId" => $participantId,
+                "datamanagers" => array_unique($dataManagerIds)
+            ));
+        }
+    }
+
+    public function generateParticipantDataForImportTemplate() {
+        $participantDb = new Application_Model_DbTable_Participants();
+        return $participantDb->generateParticipantDataForImportTemplate();
     }
 }
 
