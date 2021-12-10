@@ -6,11 +6,11 @@
 <?php } else { ?>
 <h4 style="height: 60px;">
     <span style="font-size: 16px; font-style: italic;letter-spacing: 2px;font-weight: bold;">
-        <span class="text-success"><?php echo $this->numberOfInserts; ?>&nbsp;new</span>,&nbsp;<span class="text-info"><?php echo $this->numberOfUpdates; ?>&nbsp;changed</span>&nbsp;&amp;amp;&nbsp;<?php echo $this->numberOfUnchanged; ?> unchanged&nbsp;participant users in worksheet.
+        <span class="text-success"><?php echo $this->numberOfInserts; ?> new</span>, <span class="text-info"><?php echo $this->numberOfUpdates; ?> changed</span> &amp; <?php echo $this->numberOfUnchanged; ?> unchanged participant users in worksheet.
         <br />
         Create <span class="text-success"><?php echo $this->numberOfUserInserts; ?>&nbsp;new users</span> to existing participants.
         <br />
-        Link <span class="text-info"><?php echo $this->numberOfUserLinks; ?>&nbsp;existing users</span> to existing participants.&nbsp;
+        Link <span class="text-info"><?php echo $this->numberOfUserLinks; ?>&nbsp;existing users</span> to existing participants.
     </span>
     <a id="importParticipantsConfirmAnchor" href="<?php echo $this->url(array("module" => "admin", "controller" => "participants", "action" => "confirm-import"), 'default', true) ?>" class="btn btn-success" style="float: right;"><i class="icon-check"></i>&nbsp;Confirm&nbsp;Import</a>
 </h4>

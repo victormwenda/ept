@@ -841,7 +841,9 @@ class Application_Service_Participants {
                     $participantEmailAddress != $tempParticipantsMap[$ptId][$participantUsername]["PT ID"]."@ept.systemone.id") {
                     $tempParticipantsMap[$ptId][$participantUsername]["Username"] = $participantEmailAddress;
                 }
-                $tempParticipantsMap[$ptId][$participantUsername]["status"] = $tempParticipantsMap[$ptId][$participantUsername]["Active"] == "No" ? "inactive" : "active";
+                if ($tempParticipantsMap[$ptId][$participantUsername]["Username"]) {
+                    $tempParticipantsMap[$ptId][$participantUsername]["status"] = $tempParticipantsMap[$ptId][$participantUsername]["Active"] == "No" ? "inactive" : "active";
+                }
                 $tempParticipantsMap[$ptId][$participantUsername]["participant_status"] = $participantActive == "No" ? "inactive" : "active";
                 $tempParticipantInserts[] = $tempParticipantsMap[$ptId][$participantUsername];
             }
@@ -958,7 +960,10 @@ class Application_Service_Participants {
                         $participantTempRecord["update_region"] ||
                         $participantTempRecord["update_email"] ||
                         $participantTempRecord["update_participant_status"] ||
-                        $participantTempRecord["update_phone_number"])) {
+                        $participantTempRecord["update_phone_number"] ||
+                        $participantTempRecord["update_username"] ||
+                        $participantTempRecord["update_password"] ||
+                        $participantTempRecord["update_dm_status"])) {
                     $updatedParticipant = array(
                         "participantId" => $participant["participant_id"],
                         "pid" => $participant["unique_identifier"],
@@ -1025,7 +1030,7 @@ class Application_Service_Participants {
                             }
                             $userService->updateUser($updatedUser);
                         }
-                    } else {
+                    } else if (isset($participantTempRecord['username']) && $participantTempRecord['username']) {
                         $newUser = array(
                             'fname' => substr($participantTempRecord["lab_name"], 0, 45),
                             'phone2' => $participantTempRecord['phone_number'],

@@ -43,10 +43,23 @@ class Application_Model_DbTable_ParticipantTemp extends Zend_Db_Table_Abstract {
                     "insert_user_link" => new Zend_Db_Expr("pmm.dm_id IS NULL AND pt.dm_id IS NOT NULL AND pt.participant_id IS NOT NULL")
                 ))
                 ->order("sorting_unique_identifier ASC"));
+        $usernamesInImport = array_unique(array_column($participantTempRecords, "username"));
+        $ptIdsInImport = array_unique(array_column($participantTempRecords, "unique_identifier"));
+        $participantActiveUsernamesNotInImport = $this->getAdapter()->fetchAll(
+            $this->getAdapter()
+                ->select()
+                ->from(array('p' => 'participant'), array())
+                ->join(array('pmm' => 'participant_manager_map'), 'p.participant_id = pmm.participant_id', array())
+                ->join(array('dm' => 'data_manager'), 'pmm.dm_id = dm.dm_id', array("primary_email" => "dm.primary_email"))
+                ->where("dm.primary_email IN (?)", $usernamesInImport)
+                ->where("p.unique_identifier NOT IN (?)", $ptIdsInImport)
+                ->where("dm.status = 'active'")
+                ->distinct());
+
         for ($i = 0; $i < count($participantTempRecords); $i++) {
             $participantTempRecords[$i]["import_action"] = "None";
             $participantTempRecords[$i]["insert"] = !$participantTempRecords[$i]["participant_id"];
-            $participantTempRecords[$i]["insert_user"] = !$participantTempRecords[$i]["dm_id"];
+            $participantTempRecords[$i]["insert_user"] = $participantTempRecords[$i]["username"] && !$participantTempRecords[$i]["dm_id"];
             $participantTempRecords[$i]["update"] = false;
             $participantTempRecords[$i]["update_lab_name"] = false;
             $participantTempRecords[$i]["update_country"] = false;
@@ -59,10 +72,6 @@ class Application_Model_DbTable_ParticipantTemp extends Zend_Db_Table_Abstract {
             $participantTempRecords[$i]["update_phone_number"] = false;
             if ($participantTempRecords[$i]["insert"]) {
                 $participantTempRecords[$i]["import_action"] = "New";
-            } else if ($participantTempRecords[$i]["insert_user"]) {
-                $participantTempRecords[$i]["import_action"] = "New User";
-            } else if ($participantTempRecords[$i]["insert_user_link"]) {
-                $participantTempRecords[$i]["import_action"] = "Link User";
             } else {
                 $participantTempRecords[$i]["update_lab_name"] = $participantTempRecords[$i]["lab_name"] != $participantTempRecords[$i]["old_lab_name"];
                 $participantTempRecords[$i]["update_country"] = $participantTempRecords[$i]["country"] != $participantTempRecords[$i]["old_country"];
@@ -74,6 +83,24 @@ class Application_Model_DbTable_ParticipantTemp extends Zend_Db_Table_Abstract {
                     $participantTempRecords[$i]["password"] != $participantTempRecords[$i]["old_password"] &&
                     $participantTempRecords[$i]["old_force_password_reset"];
                 $participantTempRecords[$i]["update_dm_status"] = $participantTempRecords[$i]["status"] != $participantTempRecords[$i]["old_dm_status"];
+                if ($participantTempRecords[$i]["update_dm_status"] && $participantTempRecords[$i]["status"] == "inactive") {
+                    if (in_array($participantTempRecords[$i]["username"], $participantActiveUsernamesNotInImport)) {
+                        $participantTempRecords[$i]["update_dm_status"] = false;
+                        $participantTempRecords[$i]["status"] = "active";
+                    } else {
+                        $ptId = $participantTempRecords[$i]["unique_identifier"];
+                        $username = $participantTempRecords[$i]["username"];
+                        $otherParticipantsInWorksheetLinkedToUserWithActiveStatus = array_filter($participantTempRecords, function ($participantTempRecord) use ($username, $ptId) {
+                            return $participantTempRecord["username"] == $username &&
+                                $participantTempRecord["unique_identifier"] != $ptId &&
+                                $participantTempRecord["status"] == 'active';
+                        });
+                        if (count($otherParticipantsInWorksheetLinkedToUserWithActiveStatus)) {
+                            $participantTempRecords[$i]["update_dm_status"] = false;
+                            $participantTempRecords[$i]["status"] = "active";
+                        }
+                    }
+                }
                 $participantTempRecords[$i]["update_participant_status"] = $participantTempRecords[$i]["participant_status"] != $participantTempRecords[$i]["old_participant_status"];
                 $participantTempRecords[$i]["update_phone_number"] = $participantTempRecords[$i]["phone_number"] != $participantTempRecords[$i]["old_phone"];
                 $participantTempRecords[$i]["update"] = $participantTempRecords[$i]["update_lab_name"] ||
@@ -84,7 +111,11 @@ class Application_Model_DbTable_ParticipantTemp extends Zend_Db_Table_Abstract {
                     $participantTempRecords[$i]["update_dm_status"] ||
                     $participantTempRecords[$i]["update_participant_status"] ||
                     $participantTempRecords[$i]["update_phone_number"];
-                if ($participantTempRecords[$i]["update"]) {
+                if ($participantTempRecords[$i]["insert_user"]) {
+                    $participantTempRecords[$i]["import_action"] = "New User";
+                } else if ($participantTempRecords[$i]["insert_user_link"]) {
+                    $participantTempRecords[$i]["import_action"] = "Link User";
+                } else if ($participantTempRecords[$i]["update"]) {
                     $participantTempRecords[$i]["import_action"] = "Change";
                 }
             }
@@ -102,6 +133,9 @@ class Application_Model_DbTable_ParticipantTemp extends Zend_Db_Table_Abstract {
         foreach ($records as $record) {
             if (!isset($record["password"])) {
                 $record["password"] = null;
+            }
+            if (!isset($record["status"])) {
+                $record["status"] = null;
             }
             $db->insert('participant_temp', array(
                 'unique_identifier' => $record["PT ID"],
