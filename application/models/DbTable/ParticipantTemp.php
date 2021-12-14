@@ -55,7 +55,6 @@ class Application_Model_DbTable_ParticipantTemp extends Zend_Db_Table_Abstract {
                 ->where("p.unique_identifier NOT IN (?)", $ptIdsInImport)
                 ->where("dm.status = 'active'")
                 ->distinct());
-
         for ($i = 0; $i < count($participantTempRecords); $i++) {
             $participantTempRecords[$i]["import_action"] = "None";
             $participantTempRecords[$i]["insert"] = !$participantTempRecords[$i]["participant_id"];
@@ -106,6 +105,7 @@ class Application_Model_DbTable_ParticipantTemp extends Zend_Db_Table_Abstract {
                 $participantTempRecords[$i]["update"] = $participantTempRecords[$i]["update_lab_name"] ||
                     $participantTempRecords[$i]["update_country"] ||
                     $participantTempRecords[$i]["update_region"] ||
+                    $participantTempRecords[$i]["update_email"] ||
                     $participantTempRecords[$i]["update_username"] ||
                     $participantTempRecords[$i]["update_password"] ||
                     $participantTempRecords[$i]["update_dm_status"] ||

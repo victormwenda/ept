@@ -796,7 +796,9 @@ class Application_Service_Participants {
                     if ($participantLabName == null && $existingParticipantUser["lab_name"] == $tempParticipantsMap[$ptId][$participantUsername]["Lab Name"]) {
                         $participantLabName = $existingParticipantUser["lab_name"];
                     }
-                    if ($participantEmailAddress == null && $existingParticipantUser["email"] == $tempParticipantsMap[$ptId][$participantUsername]["Username"] && $tempParticipantsMap[$ptId][$participantUsername]["Username"] != $tempParticipantsMap[$ptId][$participantUsername]["PT ID"] . "@ept.systemone.id") {
+                    if ($participantEmailAddress == null && $existingParticipantUser["email"] == $tempParticipantsMap[$ptId][$participantUsername]["Username"] &&
+                        (strlen($tempParticipantsMap[$ptId][$participantUsername]["Username"]) < 12 ||
+                            substr($tempParticipantsMap[$ptId][$participantUsername]["Username"], -12, 10) != "systemone.")) {
                         $participantEmailAddress = $existingParticipantUser["email"];
                     }
                     if ($participantPhoneNumber == null && $existingParticipantUser["phone"] == $tempParticipantsMap[$ptId][$participantUsername]["Phone Number"]) {
@@ -812,7 +814,8 @@ class Application_Service_Participants {
                     $participantLabName = $tempParticipantsMap[$ptId][$participantUsername]["Lab Name"];
                 }
                 if ($participantEmailAddress == null && $tempParticipantsMap[$ptId][$participantUsername]["Username"] &&
-                    $tempParticipantsMap[$ptId][$participantUsername]["Username"] != $tempParticipantsMap[$ptId][$participantUsername]["PT ID"]."@ept.systemone.id") {
+                    (strlen($tempParticipantsMap[$ptId][$participantUsername]["Username"]) < 12 ||
+                        substr($tempParticipantsMap[$ptId][$participantUsername]["Username"], -12, 10) != "systemone.")) {
                     $participantEmailAddress = $tempParticipantsMap[$ptId][$participantUsername]["Username"];
                 }
                 if ($participantPhoneNumber == null && $tempParticipantsMap[$ptId][$participantUsername]["Phone Number"]) {
@@ -837,8 +840,9 @@ class Application_Service_Participants {
                 $tempParticipantsMap[$ptId][$participantUsername]["Phone Number"] = $participantPhoneNumber;
                 if (count($tempParticipantsMap[$ptId]) == 1 &&
                     $participantEmailAddress &&
-                    $participantUsername == $tempParticipantsMap[$ptId][$participantUsername]["PT ID"]."@ept.systemone.id" &&
-                    $participantEmailAddress != $tempParticipantsMap[$ptId][$participantUsername]["PT ID"]."@ept.systemone.id") {
+                    $tempParticipantsMap[$ptId][$participantUsername]["Username"] &&
+                    (strlen($participantUsername) < 12 || substr($participantUsername, -12, 10) != "systemone.") &&
+                    (strlen($participantEmailAddress) < 12 || substr($participantEmailAddress, -12, 10) != "systemone.")) {
                     $tempParticipantsMap[$ptId][$participantUsername]["Username"] = $participantEmailAddress;
                 }
                 if ($tempParticipantsMap[$ptId][$participantUsername]["Username"]) {

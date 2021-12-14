@@ -39,16 +39,76 @@
     foreach($this->tempParticipants as $tempParticipant) { ?>
     <tr>
         <td class="hidden"><?php echo $tempParticipant["sorting_unique_identifier"]; ?></td>
-        <td <?php echo $tempParticipant["insert"] ? $insertStyle : $unchangedStyle; ?>><?php echo $tempParticipant["unique_identifier"]; ?></td>
-        <td <?php echo $tempParticipant["insert"] ? $insertStyle : ($tempParticipant["update_lab_name"] ? $updateStyle : $unchangedStyle); ?>><?php echo $tempParticipant["lab_name"]; ?></td>
-        <td <?php echo $tempParticipant["insert"] ? $insertStyle : ($tempParticipant["update_region"] ? (!$tempParticipant["region"] && $tempParticipant["old_region"] ? $removeStyle : $updateStyle) : $unchangedStyle); ?>><?php echo !$tempParticipant["region"] && $tempParticipant["old_region"] ? $tempParticipant["old_region"] : $tempParticipant["region"]; ?></td>
-        <td <?php echo $tempParticipant["insert"] ? $insertStyle : ($tempParticipant["update_country"] ? $updateStyle : $unchangedStyle); ?>><?php echo $tempParticipant["country"]; ?></td>
-        <td <?php echo $tempParticipant["insert"] ? $insertStyle : ($tempParticipant["update_phone_number"] ? (!$tempParticipant["phone_number"] && $tempParticipant["old_phone"] ? $removeStyle : $updateStyle) : $unchangedStyle); ?>><?php echo !$tempParticipant["phone_number"] && $tempParticipant["old_phone"] ? $tempParticipant["old_phone"] : $tempParticipant["phone_number"]; ?></td>
-        <td <?php echo $tempParticipant["insert"] ? $insertStyle : ($tempParticipant["update_email"] ? (!$tempParticipant["email"] && $tempParticipant["old_email"] ? $removeStyle : $updateStyle) : $unchangedStyle); ?>><?php echo !$tempParticipant["email"] && $tempParticipant["old_email"] ? $tempParticipant["old_email"] : $tempParticipant["email"]; ?></td>
-        <td <?php echo $tempParticipant["insert_user"] ? $insertStyle : ($tempParticipant["update_username"] || $tempParticipant["insert_user_link"] ? (!$tempParticipant["username"] && $tempParticipant["old_username"] ? $removeStyle : $updateStyle) : $unchangedStyle); ?>><?php echo !$tempParticipant["username"] && $tempParticipant["old_username"] ? $tempParticipant["old_username"] : $tempParticipant["username"]; ?></td>
-        <td <?php echo $tempParticipant["insert_user"] ? $insertStyle : ($tempParticipant["update_password"] ? $updateStyle : $unchangedStyle); ?>><?php echo $tempParticipant["password"]; ?></td>
-        <td <?php echo $tempParticipant["insert_user"] ? $insertStyle : ($tempParticipant["update_dm_status"] || $tempParticipant["update_participant_status"] ? $updateStyle : $unchangedStyle); ?>><?php echo ucwords($tempParticipant["status"]); ?></td>
-        <td <?php echo $tempParticipant["insert"] || $tempParticipant["insert_user"] ? $insertStyle : ($tempParticipant["update"] || $tempParticipant["insert_user_link"] ? $updateStyle : $unchangedStyle); ?>><?php echo ucwords($tempParticipant["import_action"]); ?></td>
+        <td <?php echo $tempParticipant["insert"] ? $insertStyle : $unchangedStyle; ?>>
+            <?php echo $tempParticipant["unique_identifier"]; ?>
+        </td>
+        <td <?php echo $tempParticipant["insert"] ? $insertStyle : ($tempParticipant["update_lab_name"] ? $updateStyle : $unchangedStyle); ?>>
+            <?php echo $tempParticipant["lab_name"]; ?>
+            <?php if ($tempParticipant["update_lab_name"] && $tempParticipant["old_lab_name"]) { ?>
+                <?php if ($tempParticipant["lab_name"]) { ?>
+                <br />
+                <?php } ?>
+                <span <?php echo $removeStyle; ?>>
+                <?php echo $tempParticipant["old_lab_name"]; ?>
+            </span>
+            <?php } ?>
+        </td>
+        <td <?php echo $tempParticipant["insert"] ? $insertStyle : ($tempParticipant["update_region"] ? $updateStyle : $unchangedStyle); ?>>
+            <?php echo $tempParticipant["region"]; ?>
+            <?php if ($tempParticipant["update_region"] && $tempParticipant["old_region"]) { ?>
+                <?php if ($tempParticipant["region"]) { ?>
+                <br />
+                <?php } ?>
+                <span <?php echo $removeStyle; ?>>
+                <?php echo $tempParticipant["old_region"]; ?>
+            </span>
+            <?php } ?>
+        </td>
+        <td <?php echo $tempParticipant["insert"] ? $insertStyle : ($tempParticipant["update_country"] ? $updateStyle : $unchangedStyle); ?>>
+            <?php echo $tempParticipant["country"]; ?>
+        </td>
+        <td <?php echo $tempParticipant["insert"] ? $insertStyle : ($tempParticipant["update_phone_number"] ? $updateStyle : $unchangedStyle); ?>>
+            <?php echo $tempParticipant["phone_number"]; ?>
+            <?php if ($tempParticipant["update_phone_number"] && $tempParticipant["old_phone"]) { ?>
+                <?php if ($tempParticipant["phone_number"]) { ?>
+                <br />
+                <?php } ?>
+                <span <?php echo $removeStyle; ?>>
+                <?php echo $tempParticipant["old_phone"]; ?>
+            </span>
+            <?php } ?>
+        </td>
+        <td <?php echo $tempParticipant["insert"] ? $insertStyle : ($tempParticipant["update_email"] ? $updateStyle : $unchangedStyle); ?>>
+            <?php echo $tempParticipant["email"]; ?>
+            <?php if ($tempParticipant["update_email"] && $tempParticipant["old_email"]) { ?>
+            <?php if ($tempParticipant["email"]) { ?>
+            <br />
+            <?php } ?>
+            <span <?php echo $removeStyle; ?>>
+                <?php echo $tempParticipant["old_email"]; ?>
+            </span>
+            <?php } ?>
+        </td>
+        <td <?php echo $tempParticipant["insert_user"] ? $insertStyle : ($tempParticipant["update_username"] || $tempParticipant["insert_user_link"] ? $updateStyle : $unchangedStyle); ?>>
+            <?php echo $tempParticipant["username"]; ?>
+            <?php if ($tempParticipant["update_username"] && $tempParticipant["old_username"]) { ?>
+            <?php if ($tempParticipant["username"]) { ?>
+            <br />
+            <?php } ?>
+            <span <?php echo $removeStyle; ?>>
+                <?php echo $tempParticipant["old_username"]; ?>
+            </span>
+            <?php } ?>
+        </td>
+        <td <?php echo $tempParticipant["insert_user"] ? $insertStyle : ($tempParticipant["update_password"] ? $updateStyle : $unchangedStyle); ?>>
+            <?php echo $tempParticipant["password"]; ?>
+        </td>
+        <td <?php echo $tempParticipant["insert_user"] ? $insertStyle : ($tempParticipant["update_dm_status"] || $tempParticipant["update_participant_status"] ? $updateStyle : $unchangedStyle); ?>>
+            <?php echo ucwords($tempParticipant["status"]); ?>
+        </td>
+        <td <?php echo $tempParticipant["insert"] || $tempParticipant["insert_user"] ? $insertStyle : ($tempParticipant["update"] || $tempParticipant["insert_user_link"] ? $updateStyle : $unchangedStyle); ?>>
+            <?php echo ucwords($tempParticipant["import_action"]); ?>
+        </td>
     </tr>
     <?php
     } ?>
