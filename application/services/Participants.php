@@ -779,6 +779,10 @@ class Application_Service_Participants {
                 $tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$username]["participant_id"] = array_values($existingParticipantsMap[$tempParticipants[$i]["PT ID"]])[0]["participant_id"];
                 if (isset($existingParticipantsMap[$tempParticipants[$i]["PT ID"]][$username]) && !isset($tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$username]["dm_id"])) {
                     $tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$username]["dm_id"] = $existingParticipantsMap[$tempParticipants[$i]["PT ID"]][$username]["dm_id"];
+                } else if (!$tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$username]["dm_id"] &&
+                    $username != "none" && count($existingParticipantsMap[$tempParticipants[$i]["PT ID"]]) == 1) {
+                    $tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$username]["dm_id"] =
+                        array_values($existingParticipantsMap[$tempParticipants[$i]["PT ID"]])[0]["dm_id"];
                 }
             }
         }

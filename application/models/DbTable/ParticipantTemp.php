@@ -75,13 +75,16 @@ class Application_Model_DbTable_ParticipantTemp extends Zend_Db_Table_Abstract {
                 $participantTempRecords[$i]["update_lab_name"] = $participantTempRecords[$i]["lab_name"] != $participantTempRecords[$i]["old_lab_name"];
                 $participantTempRecords[$i]["update_country"] = $participantTempRecords[$i]["country"] != $participantTempRecords[$i]["old_country"];
                 $participantTempRecords[$i]["update_region"] = $participantTempRecords[$i]["region"] != $participantTempRecords[$i]["old_region"];
-                $participantTempRecords[$i]["update_username"] = $participantTempRecords[$i]["username"] != $participantTempRecords[$i]["old_username"];
+                $participantTempRecords[$i]["update_username"] = $participantTempRecords[$i]["old_username"] &&
+                    $participantTempRecords[$i]["username"] != $participantTempRecords[$i]["old_username"];
                 $participantTempRecords[$i]["update_email"] = $participantTempRecords[$i]["email"] != $participantTempRecords[$i]["old_email"];
-                $participantTempRecords[$i]["update_password"] = isset($participantTempRecords[$i]["password"]) &&
+                $participantTempRecords[$i]["update_password"] = $participantTempRecords[$i]["old_password"] &&
+                    isset($participantTempRecords[$i]["password"]) &&
                     !!$participantTempRecords[$i]["password"] &&
                     $participantTempRecords[$i]["password"] != $participantTempRecords[$i]["old_password"] &&
                     $participantTempRecords[$i]["old_force_password_reset"];
-                $participantTempRecords[$i]["update_dm_status"] = $participantTempRecords[$i]["status"] != $participantTempRecords[$i]["old_dm_status"];
+                $participantTempRecords[$i]["update_dm_status"] = $participantTempRecords[$i]["old_dm_status"] &&
+                    $participantTempRecords[$i]["status"] != $participantTempRecords[$i]["old_dm_status"];
                 if ($participantTempRecords[$i]["update_dm_status"] && $participantTempRecords[$i]["status"] == "inactive") {
                     if (in_array($participantTempRecords[$i]["username"], $participantActiveUsernamesNotInImport)) {
                         $participantTempRecords[$i]["update_dm_status"] = false;
