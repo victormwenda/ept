@@ -718,6 +718,7 @@ class Application_Service_Participants {
             }
             return $accumulator;
         }, $existingParticipantsMap);
+        $usernamePasswordMap = array();
         $tempParticipantsMap = array();
         for($i = 0; $i < count($tempParticipants); $i++) {
             if (!$tempParticipants[$i]["PT ID"]) {
@@ -783,6 +784,14 @@ class Application_Service_Participants {
                     $username != "none" && count($existingParticipantsMap[$tempParticipants[$i]["PT ID"]]) == 1) {
                     $tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$username]["dm_id"] =
                         array_values($existingParticipantsMap[$tempParticipants[$i]["PT ID"]])[0]["dm_id"];
+                }
+            }
+            if ($tempParticipants[$i]["Password"]) {
+                $tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$username]["password"] = $tempParticipants[$i]["Password"];
+                if (!isset($usernamePasswordMap[$username])) {
+                    $usernamePasswordMap[$username] = $tempParticipants[$i]["Password"];
+                } else if ($usernamePasswordMap[$username] != $tempParticipants[$i]["Password"]) {
+                    throw new Exception("The sheet contains a different passwords for the same user. Please check passwords entered for ".$username."?");
                 }
             }
         }
