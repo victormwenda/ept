@@ -1,15 +1,16 @@
 <?php
 $authNameSpace = new Zend_Session_Namespace('administrators');
 ?>
-<h4 style="width:100%;height:50px;border-bottom:1px solid #777;">
+<h4 style="width:100%;height:60px;border-bottom:1px solid #777;">
     <div style="font-size:22.5px;line-height:36px;color:#333;float:left;">
         Proficiency Testing Country Coordinators
     </div>
-    <div style="margin-top:10px;">
+    <div style="margin-top:10px; float: right;">
         <?php if (!$authNameSpace->is_ptcc_coordinator) { ?>
-        <a href="<?php echo $this->url(array('module' => 'admin', 'controller' => 'ptcc-profiles', 'action' => 'edit'), 'default', true); ?>" class="btn btn-primary" style="float:right;">
-            <i class="icon-user"></i>&nbsp;&nbsp;Add New Proficiency Testing Country Coordinator
+        <a href="<?php echo $this->url(array('module' => 'admin', 'controller' => 'ptcc-profiles', 'action' => 'edit'), 'default', true); ?>" class="btn btn-primary">
+            <i class="icon-user"></i>&nbsp;&nbsp;Add New PTCC
         </a>
+        <!--<a id="importPtccsExcelAnchor" href="#" class="btn btn-success" style="margin-left: 10px;"><i class="icon-table"></i>&nbsp;&nbsp;Import PTCCs</a>-->
         <?php } ?>
     </div>
 </h4>
@@ -30,6 +31,13 @@ $authNameSpace = new Zend_Session_Namespace('administrators');
         </tr>
     </tbody>
 </table>
+<?php
+if ($authNameSpace->is_ptcc_coordinator == 0) { ?>
+    <form name="ptccsImportForm" id="ptccsImportForm" enctype="multipart/form-data" action="<?php echo $this->url(array("module" => "admin", "controller" => "ptcc-profiles", "action" => "import"), 'default', true) ?>" method="post">
+        <input type="file" id="importPtccsExcelFile" name="importPtccsExcelFile" style="visibility: hidden; width: 1px; height: 1px; display: none;" accept=".xlsx,.xls" />
+    </form>
+    <?php
+} ?>
 <script type="text/javascript" charset="utf-8">
     /* Table initialisation */
     var oTable = null;
@@ -66,5 +74,16 @@ $authNameSpace = new Zend_Session_Namespace('administrators');
                 });
             }
         });
+        <?php
+        if ($authNameSpace->is_ptcc_coordinator == 0) { ?>
+        $('#importPtccsExcelAnchor').on('click', function() {
+            $('#importPtccsExcelFile').trigger('click');
+        });
+        $('#importPtccsExcelFile').on('change', function () {
+            $.blockUI();
+            $('#ptccsImportForm').submit();
+        });
+        <?php
+        } ?>
     });
 </script>

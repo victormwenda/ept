@@ -174,11 +174,24 @@ class Application_Model_DbTable_DataManagers extends Zend_Db_Table_Abstract {
     }    
     
     public function getUserDetails($userId){
-        return $this->fetchRow("primary_email = '".$userId."'")->toArray();
+        $userDetails =  $this->fetchRow("primary_email = '".$userId."'");
+        if ($userDetails) {
+            return $userDetails->toArray();
+        }
+        return $userDetails;
     }
     
     public function getUserDetailsBySystemId($userSystemId){
         return $this->fetchRow("dm_id = '".$userSystemId."'")->toArray();
+    }
+
+    public function getDataManagersByEmailAddresses($emailAddresses)
+    {
+        return $this->getAdapter()->fetchAll(
+            $this->getAdapter()
+                ->select()
+                ->from(array("d" => $this->_name))
+                ->where("d.primary_email IN (?)", $emailAddresses));
     }
 
     public function updateUser($params) {

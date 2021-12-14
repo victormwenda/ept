@@ -104,6 +104,65 @@ class Admin_ParticipantsController extends Zend_Controller_Action {
         }
         $this->view->participants = $participantService->getAllActiveParticipants();
     }
+
+    public function downloadImportTemplateAction() {
+        $participantsService = new Application_Service_Participants();
+        $participantData = $participantsService->generateParticipantDataForImportTemplate();
+        $excelReaderService = new Application_Service_ExcelProcessor();
+        $generatedFileName = $excelReaderService->downloadParticipantTemplate($participantData);
+        $this->_redirect("/uploads/generated-reports/".$generatedFileName);;
+    }
+
+    public function importAction() {
+        if ($this->getRequest()->isPost()) {
+            $upload = new Zend_File_Transfer_Adapter_Http();
+            try {
+                if (!$upload->receive()) {
+                    $messages = $upload->getMessages();
+                    error_log(implode("\n", $messages), 0);
+                } else {
+                    $location = $upload->getFileName('importParticipantsExcelFile');
+                    $excelReaderService = new Application_Service_ExcelProcessor();
+                    $importDataOnFirstSheet = $excelReaderService->readParticipantImport($location);
+
+                    $participantService = new Application_Service_Participants();
+                    $tempParticipants = $participantService->saveTempParticipants($importDataOnFirstSheet);
+                    $this->view->tempParticipants = $tempParticipants;
+                    $this->view->numberOfUnchanged = count(array_filter($tempParticipants, function($tempParticipant) {
+                        return !$tempParticipant["insert"] && !$tempParticipant["update"];
+                    }));
+                    $this->view->numberOfUpdates = count(array_filter($tempParticipants, function($tempParticipant) {
+                        return $tempParticipant["update"];
+                    }));
+                    $this->view->numberOfInserts = count(array_filter($tempParticipants, function($tempParticipant) {
+                        return $tempParticipant["insert"];
+                    }));
+                    $this->view->numberOfUserInserts = count(array_filter($tempParticipants, function($tempParticipant) {
+                        return !$tempParticipant["insert"] && $tempParticipant["insert_user"];
+                    }));
+                    $this->view->numberOfUserLinks = count(array_filter($tempParticipants, function($tempParticipant) {
+                        return !$tempParticipant["insert"] && !$tempParticipant["insert_user"] && $tempParticipant["insert_user_link"];
+                    }));
+                }
+            } catch(Exception $e) {
+                error_log($e->getMessage());
+                error_log($e->getTraceAsString());
+                $this->view->error = $e->getMessage();
+            }
+        }
+    }
+
+    public function confirmImportAction() {
+        try {
+            $participantService = new Application_Service_Participants();
+            $participantService->confirmImportTempParticipants();
+            $this->_redirect("/admin/participants");
+        } catch(Exception $e) {
+            error_log($e->getMessage());
+            error_log($e->getTraceAsString());
+            $this->view->error = $e->getMessage();
+        }
+    }
 }
 
 

@@ -49,6 +49,51 @@ class Admin_PtccProfilesController extends Zend_Controller_Action {
             $this->view->ptccProfile = $ptccProfileService->getSystemPtccProfileDetails();
         }
     }
+
+    public function importAction() {
+        if ($this->getRequest()->isPost()) {
+            $upload = new Zend_File_Transfer_Adapter_Http();
+            try {
+                if (!$upload->receive()) {
+                    $messages = $upload->getMessages();
+                    error_log(implode("\n", $messages), 0);
+                } else {
+                    $location = $upload->getFileName('importPtccsExcelFile');
+                    $excelReaderService = new Application_Service_ExcelProcessor();
+                    $importDataOnFirstSheet = $excelReaderService->readPtccImport($location);
+
+                    $ptccProfileService = new Application_Service_PtccProfile();
+                    $tempPtccs = $ptccProfileService->saveTempPtccs($importDataOnFirstSheet);
+                    $this->view->tempPtccs = $tempPtccs;
+                    $this->view->numberOfUnchanged = count(array_filter($tempPtccs, function($tempPtcc) {
+                        return !$tempPtcc["insert"] && !$tempPtcc["update"];
+                    }));
+                    $this->view->numberOfUpdates = count(array_filter($tempPtccs, function($tempPtcc) {
+                        return $tempPtcc["update"];
+                    }));
+                    $this->view->numberOfInserts = count(array_filter($tempPtccs, function($tempPtcc) {
+                        return $tempPtcc["insert"];
+                    }));
+                }
+            } catch(Exception $e) {
+                error_log($e->getMessage());
+                error_log($e->getTraceAsString());
+                $this->view->error = $e->getMessage();
+            }
+        }
+    }
+
+    public function confirmImportAction() {
+        try {
+            $ptccService = new Application_Service_PtccProfile();
+            $ptccService->confirmImportTempPtccs();
+            $this->_redirect("/admin/ptcc-profiles");
+        } catch(Exception $e) {
+            error_log($e->getMessage());
+            error_log($e->getTraceAsString());
+            $this->view->error = $e->getMessage();
+        }
+    }
 }
 
 

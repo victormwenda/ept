@@ -1,0 +1,75 @@
+<?php if ($this->error) { ?>
+<div class="alert alert-danger">
+    <h4><?php echo $this->error; ?></h4>
+</div>
+<a href="/admin/ptcc-profiles"><i class="icon-arrow-left"></i>&nbsp;go back</a>
+<?php } else { ?>
+<h4 style="height: 60px;">
+    <span style="font-size: 16px; font-style: italic;letter-spacing: 2px;font-weight: bold;">
+        <span class="text-success"><?php echo $this->numberOfInserts; ?>&nbsp;new</span>,&nbsp;
+        <span class="text-info"><?php echo $this->numberOfUpdates; ?>&nbsp;changed</span>&nbsp;&amp;&nbsp;
+        <?php echo $this->numberOfUnchanged; ?>&nbsp;unchanged&nbsp;PTCCs in worksheet.
+    </span>
+    <a id="importPtccsConfirmAnchor" href="#" class="btn btn-success" style="float: right;"><i class="icon-check"></i>&nbsp;Confirm&nbsp;Import</a>
+</h4>
+<table cellpadding="0" cellspacing="0" border="0" class="table table-striped table-bordered table-hover" id="ptccImportTable">
+    <thead>
+    <tr>
+        <th>Country</th>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Phone Number</th>
+        <th>Email Address</th>
+        <th>Password</th>
+        <th>Status</th>
+        <th>Import Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <?php
+    $insertStyle = 'class="text-success"';
+    $updateStyle = 'class="text-info"';
+    $unchangedStyle = 'class="text-primary"';
+    foreach($this->tempPtccs as $tempPtcc) { ?>
+        <tr>
+            <td <?php echo $tempPtcc["insert"] ? $insertStyle : $unchangedStyle; ?>><?php echo $tempPtcc["primary_email"]; ?></td>
+            <td <?php echo $tempPtcc["insert"] ? $insertStyle : ($tempPtcc["update_first_name"] ? $updateStyle : $unchangedStyle); ?>><?php echo $tempPtcc["first_name"]; ?></td>
+            <td <?php echo $tempPtcc["insert"] ? $insertStyle : ($tempPtcc["update_last_name"] ? $updateStyle : $unchangedStyle); ?>><?php echo $tempPtcc["last_name"]; ?></td>
+            <td <?php echo $tempPtcc["insert"] ? $insertStyle : ($tempPtcc["update_country"] ? $updateStyle : $unchangedStyle); ?>><?php echo $tempPtcc["country"]; ?></td>
+            <td <?php echo $tempPtcc["insert"] ? $insertStyle : ($tempPtcc["update_phone_number"] ? $updateStyle : $unchangedStyle); ?>><?php echo $tempPtcc["phone_number"]; ?></td>
+            <td <?php echo $tempPtcc["insert"] ? $insertStyle : ($tempPtcc["update_password"] ? $updateStyle : $unchangedStyle); ?>><?php echo $tempPtcc["password"]; ?></td>
+            <td <?php echo $tempPtcc["insert"] ? $insertStyle : ($tempPtcc["update_status"] ? $updateStyle : $unchangedStyle); ?>><?php echo ucwords($tempPtcc["status"]); ?></td>
+            <td <?php echo $tempPtcc["insert"] ? $insertStyle : ($tempPtcc["update"] ? $updateStyle : $unchangedStyle); ?>><?php echo ucwords($tempPtcc["import_action"]); ?></td>
+        </tr>
+        <?php
+    } ?>
+    </tbody>
+</table>
+<script type="text/javascript" charset="utf-8">
+    /* Table initialisation */
+    var oTable = null;
+    $(document).ready(function() {
+        oTable = $('#ptccImportTable').dataTable( {
+            "oLanguage": {
+                "sLengthMenu": "_MENU_ records per page"
+            },
+            "sPaginationType": "bootstrap",
+            "aoColumns": [
+                { "sClass": "" },
+                { "sClass": "", "iDataSort": 1 },
+                { "sClass": "", "iDataSort": 2 },
+                { "sClass": "", "iDataSort": 0 },
+                { "sClass": "" },
+                { "sClass": "" },
+                { "sClass": "" },
+                { "sClass": "" },
+                { "sClass": "" }
+            ],
+            "aaSorting": [[ 0, "asc" ], [ 1, "asc" ], [ 2, "asc" ]]
+        });
+        $("#importPtccsConfirmAnchor").on('click', function() {
+            $.blockUI();
+        })
+    });
+</script>
+<?php } ?>

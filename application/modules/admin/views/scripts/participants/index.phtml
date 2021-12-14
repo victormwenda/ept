@@ -1,7 +1,15 @@
-<h4 style="width:100%;height:50px;border-bottom:1px solid #777;">
+<?php
+$adminSession = new Zend_Session_Namespace('administrators'); ?>
+<h4 style="width:100%;height:60px;border-bottom:1px solid #777;">
     <div style="font-size:22.5px;line-height:36px;color:#333;float:left;">List of All PE Participants</div>
-    <div style="margin-top:10px;">
-        <a href="<?php echo $this->url(array('module' => 'admin', 'controller' => 'participants', 'action' => 'add'), 'default', true); ?>" class="btn btn-primary" style="float:right;"><i class="icon-user"></i>&nbsp;&nbsp;Add New Participant</a>
+    <div style="margin-top:10px; float: right;">
+        <a href="<?php echo $this->url(array('module' => 'admin', 'controller' => 'participants', 'action' => 'add'), 'default', true); ?>" class="btn btn-primary"><i class="icon-user"></i>&nbsp;Add New Participant</a>
+        <?php
+        if ($adminSession->is_ptcc_coordinator == 0) { ?>
+        <a href="<?php echo $this->url(array('module' => 'admin', 'controller' => 'participants', 'action' => 'download-import-template'), 'default', true); ?>" class="btn btn-warning" style="margin-left: 10px;"><i class="icon-table"></i>&nbsp;Download Import Template</a>
+        <a id="importParticipantsExcelAnchor" href="#" class="btn btn-success" style="margin-left: 10px;"><i class="icon-table"></i>&nbsp;Import Participants</a>
+        <?php
+        } ?>
     </div>
 </h4>
 <a href="/admin/participants/pending" class="btn btn-warning">Show only Pending Participants</a>
@@ -28,6 +36,13 @@
     </tr>
     </tbody>
 </table>
+<?php
+if ($adminSession->is_ptcc_coordinator == 0) { ?>
+<form name="participantImportForm" id="participantImportForm" enctype="multipart/form-data" action="<?php echo $this->url(array("module" => "admin", "controller" => "participants", "action" => "import"), 'default', true) ?>" method="post">
+    <input type="file" id="importParticipantsExcelFile" name="importParticipantsExcelFile" style="visibility: hidden; width: 1px; height: 1px; display: none;" accept=".xlsx,.xls" />
+</form>
+    <?php
+} ?>
 <script type="text/javascript" charset="utf-8">
     /* Table initialisation */
     var oTable = null;
@@ -69,5 +84,16 @@
                 });
             }
         });
+        <?php
+        if ($adminSession->is_ptcc_coordinator == 0) { ?>
+        $('#importParticipantsExcelAnchor').on('click', function() {
+            $('#importParticipantsExcelFile').trigger('click');
+        });
+        $('#importParticipantsExcelFile').on('change', function () {
+            $.blockUI();
+            $('#participantImportForm').submit();
+        });
+        <?php
+        } ?>
     });
 </script>

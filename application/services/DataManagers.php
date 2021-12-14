@@ -23,23 +23,22 @@ class Application_Service_DataManagers {
         return $userDb->getAllUsers($params);
     }
     
-    public function getUserInfo($userId = null){
-
-	$userDb = new Application_Model_DbTable_DataManagers();
-        if($userId == null){
+    public function getUserInfo($userId = null) {
+	    $userDb = new Application_Model_DbTable_DataManagers();
+        if($userId == null) {
             $authNameSpace = new Zend_Session_Namespace('datamanagers');
             $userId = $authNameSpace->UserID;
         }
 		return $userDb->getUserDetails($userId);
-    }    
-    public function getUserInfoBySystemId($userSystemId = null){
+    }
 
-	$userDb = new Application_Model_DbTable_DataManagers();
+    public function getUserInfoBySystemId($userSystemId = null) {
+	    $userDb = new Application_Model_DbTable_DataManagers();
         if($userSystemId == null){
             $authNameSpace = new Zend_Session_Namespace('datamanagers');
             $userSystemId = $authNameSpace->dm_id;
         }
-	return $userDb->getUserDetailsBySystemId($userSystemId);
+	    return $userDb->getUserDetailsBySystemId($userSystemId);
     }
 	
     public function resetPassword ($email) {
@@ -59,21 +58,20 @@ class Application_Service_DataManagers {
             $sessionAlert->status = "failure";
         }
     }
-	
-	
-    public function getDataManagerList(){
+
+    public function getDataManagerList() {
 	    $userDb = new Application_Model_DbTable_DataManagers();
 	    return $userDb->getAllDataManagers();
     }
 	
     public function getParticipantDatamanagerList($participantId){
-	$db = Zend_Db_Table_Abstract::getDefaultAdapter();
-	return $db->fetchAll($db->select()->from('participant_manager_map')->where("participant_id= ?",$participantId));
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        return $db->fetchAll($db->select()->from('participant_manager_map')->where("participant_id= ?",$participantId));
     }
 	
     public function getDatamanagerParticipantList($datamanagerId){
-	$db = Zend_Db_Table_Abstract::getDefaultAdapter();
-	return $db->fetchAll($db->select()->from('participant_manager_map')->where("dm_id= ?",$datamanagerId)->group('participant_id'));
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        return $db->fetchAll($db->select()->from('participant_manager_map')->where("dm_id= ?",$datamanagerId)->group('participant_id'));
     }
 	
     public function changePassword($oldPassword,$newPassword){
