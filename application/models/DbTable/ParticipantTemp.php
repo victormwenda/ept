@@ -36,7 +36,7 @@ class Application_Model_DbTable_ParticipantTemp extends Zend_Db_Table_Abstract {
                 ->joinLeft(array('dm' => 'data_manager'), 'pt.dm_id = dm.dm_id', array(
                     "old_username" => "dm.primary_email",
                     "old_password" => "dm.password",
-                    "old_force_password_reset" => "dm.force_password_reset",
+                    "old_force_password_reset" => new Zend_Db_Expr("IFNULL(dm.force_password_reset, 1)"),
                     "old_dm_status" => "dm.status"
                 ))
                 ->joinLeft(array('pmm' => 'participant_manager_map'), 'pt.participant_id = pmm.participant_id AND pt.dm_id = pmm.dm_id', array(
@@ -78,8 +78,7 @@ class Application_Model_DbTable_ParticipantTemp extends Zend_Db_Table_Abstract {
                 $participantTempRecords[$i]["update_username"] = $participantTempRecords[$i]["old_username"] &&
                     $participantTempRecords[$i]["username"] != $participantTempRecords[$i]["old_username"];
                 $participantTempRecords[$i]["update_email"] = $participantTempRecords[$i]["email"] != $participantTempRecords[$i]["old_email"];
-                $participantTempRecords[$i]["update_password"] = $participantTempRecords[$i]["old_password"] &&
-                    isset($participantTempRecords[$i]["password"]) &&
+                $participantTempRecords[$i]["update_password"] = isset($participantTempRecords[$i]["password"]) &&
                     !!$participantTempRecords[$i]["password"] &&
                     $participantTempRecords[$i]["password"] != $participantTempRecords[$i]["old_password"] &&
                     $participantTempRecords[$i]["old_force_password_reset"];
