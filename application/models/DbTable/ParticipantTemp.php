@@ -78,8 +78,7 @@ class Application_Model_DbTable_ParticipantTemp extends Zend_Db_Table_Abstract {
                 $participantTempRecords[$i]["update_username"] = $participantTempRecords[$i]["old_username"] &&
                     $participantTempRecords[$i]["username"] != $participantTempRecords[$i]["old_username"];
                 $participantTempRecords[$i]["update_email"] = $participantTempRecords[$i]["email"] != $participantTempRecords[$i]["old_email"];
-                $participantTempRecords[$i]["update_password"] = $participantTempRecords[$i]["old_password"] &&
-                    isset($participantTempRecords[$i]["password"]) &&
+                $participantTempRecords[$i]["update_password"] = isset($participantTempRecords[$i]["password"]) &&
                     !!$participantTempRecords[$i]["password"] &&
                     $participantTempRecords[$i]["password"] != $participantTempRecords[$i]["old_password"] &&
                     $participantTempRecords[$i]["old_force_password_reset"];
