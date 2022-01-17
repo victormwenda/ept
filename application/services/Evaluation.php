@@ -746,9 +746,11 @@ class Application_Service_Evaluation {
     public function updateShipmentStatus($shipmentId, $status) {
         $shipmentDb = new Application_Model_DbTable_Shipments();
         $schemeType = '';
+        $shipmentData = $shipmentDb->getShipmentRowInfo($shipmentId);
         if ($status == 'finalized') {
-            $shipmentData = $shipmentDb->getShipmentRowInfo($shipmentId);
             $schemeType = $shipmentData['scheme_type'];
+        } else if ($shipmentData["status"] == "finalized") {
+            $status = "finalized";
         }
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $authNameSpace = new Zend_Session_Namespace('administrators');
@@ -954,7 +956,9 @@ class Application_Service_Evaluation {
             's.scheme_type',
             's.shipment_date',
             's.lastdate_response',
-            's.max_score'))
+            's.max_score',
+            'shipment_status' => 's.status',
+            ))
             ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id', array(
                 'd.distribution_id',
                 'd.distribution_code',
@@ -1358,8 +1362,12 @@ class Application_Service_Evaluation {
                 "updated_on_admin" => new Zend_Db_Expr("now()")
             ), "map_id=" . $res["map_id"]);
         }
+        $nextStatus = "evaluated";
+        if ($shipmentResult["shipment_status"] == "finalized") {
+            $nextStatus = "finalized";
+        }
         $db->update('shipment', array(
-            "status" => "evaluated",
+            "status" => $nextStatus,
             "updated_by_admin" => $admin,
             "updated_on_admin" => new Zend_Db_Expr("now()")
         ), "shipment_id=" . $shipmentId);
@@ -1380,7 +1388,8 @@ class Application_Service_Evaluation {
                 's.shipment_date',
                 's.lastdate_response',
                 's.max_score',
-                's.shipment_comment'))
+                's.shipment_comment',
+                'shipment_status' => 's.status'))
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('sl.scheme_name'))
             ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id', array('d.distribution_code'))
             ->where("s.shipment_id = ?", $shipmentId);
@@ -1393,8 +1402,12 @@ class Application_Service_Evaluation {
         if ($shipmentResult != "") {
             $authNameSpace = new Zend_Session_Namespace('administrators');
             $admin = $authNameSpace->primary_email;
+            $nextStatus = "evaluated";
+            if ($shipmentResult["shipment_status"] == "finalized") {
+                $nextStatus = "finalized";
+            }
             $db->update("shipment", array(
-                "status" => "evaluated",
+                "status" => $nextStatus,
                 "updated_by_admin" => $admin,
                 "updated_on_admin" => new Zend_Db_Expr("now()")
             ),
