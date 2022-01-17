@@ -91,10 +91,9 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
 
     public function updateShipmentStatus($shipmentId, $status) {
         if (isset($status) && $status != null && $status != "") {
-            return $this->update(array('status' => $status), "shipment_id = $shipmentId");
-        } else {
-            return 0;
+            return $this->update(array('status' => $status), "shipment_id = $shipmentId AND status <> 'finalized'");
         }
+        return 0;
     }
 
     public function responseSwitch($shipmentId, $switchStatus) {
@@ -111,7 +110,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
             return $this->update(array(
                 'response_switch' => 'on',
                 'status' => $status),
-                "distribution_id = $distributionId");
+                "distribution_id = $distributionId AND status <> 'finalized'");
         } else {
             return 0;
         }
