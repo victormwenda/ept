@@ -957,7 +957,7 @@ class Application_Service_Evaluation {
             's.shipment_date',
             's.lastdate_response',
             's.max_score',
-            'shipment_status' => 's.status',
+            'shipment_status' => 's.status'
             ))
             ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id', array(
                 'd.distribution_id',
