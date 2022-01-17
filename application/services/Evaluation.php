@@ -1041,7 +1041,11 @@ class Application_Service_Evaluation {
         $scoringService = new Application_Service_EvaluationScoring();
         $authNameSpace = new Zend_Session_Namespace('administrators');
         $admin = $authNameSpace->primary_email;
+        $nextStatus = "evaluated";
         foreach ($shipmentResult as $res) {
+            if ($nextStatus != "finalized" && $res["shipment_status"] == "finalized") {
+                $nextStatus = "finalized";
+            }
             $dmSql = $db->select()
                 ->from(array('pmm' => 'participant_manager_map'))
                 ->join(array('dm' => 'data_manager'), 'dm.dm_id = pmm.dm_id',
@@ -1361,10 +1365,6 @@ class Application_Service_Evaluation {
                 "updated_by_admin" => $admin,
                 "updated_on_admin" => new Zend_Db_Expr("now()")
             ), "map_id=" . $res["map_id"]);
-        }
-        $nextStatus = "evaluated";
-        if ($shipmentResult["shipment_status"] == "finalized") {
-            $nextStatus = "finalized";
         }
         $db->update('shipment', array(
             "status" => $nextStatus,
