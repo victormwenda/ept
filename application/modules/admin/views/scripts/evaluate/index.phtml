@@ -36,9 +36,7 @@
     var oTable = null;
     var currentHighlighted = null;
     $(document).ready(function () {
-
         currentHighlighted = getCookie('did');
-
         oTable = $('#distroTable').dataTable({
             "oLanguage": {
                 "sLengthMenu": "_MENU_ records per page"
@@ -58,7 +56,6 @@
             ],
             "aaSorting": [[0, "desc"]],
             "bProcessing": true,
-            //"bSortClasses": false,
             "bServerSide": true,
             "sAjaxSource": "<?php echo $this->url(array('module' => 'admin', 'controller' => 'evaluate', 'action' => 'index', 'format' => 'html')); ?>",
             "fnServerData": function (sSource, aoData, fnCallback) {
@@ -74,7 +71,6 @@
                             getShipments(currentHighlighted);
                         }
                     }
-
                 });
             }
         });
@@ -83,7 +79,6 @@
 
     function getShipments(did) {
         $.blockUI();
-        //oTable.fnStandingRedraw();
         currentHighlighted = did;
         setCookie('did', did);
 
