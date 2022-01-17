@@ -27,7 +27,7 @@ if ($this->shipments == false && count($this->shipments) <= 0) {
                     $totalParticipant = $shipment['participant_count'];
                     $passed = (isset($shipment['number_passed']) && $shipment['number_passed'] >= 0) ? $shipment['number_passed'] : 0;
                     $nonResponse = $totalParticipant - $reported;
-                    if ($shipment['status'] != "finalized") { ?>
+                    if ($shipment['shipment_status'] != "finalized") { ?>
 				<tr>
 					<td style="text-align: center;"><?php echo $shipment['shipment_code'] ?></td>
 					<td style="text-align: center;"><?php echo ($shipment['scheme_name']) ?></td>
