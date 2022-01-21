@@ -802,24 +802,30 @@ class Application_Service_Participants {
             $participantEmailAddress = null;
             $participantPhoneNumber = null;
             $participantActive = "No";
-            $existingParticipant = $existingParticipantsMap[$ptId];
-            foreach (array_keys($tempParticipantsMap[$ptId]) as $participantUsername) {
-                if(isset($existingParticipant) && isset($existingParticipant[$participantUsername])) {
-                    $existingParticipantUser = $existingParticipant[$participantUsername];
-                    if ($participantLabName == null && $existingParticipantUser["lab_name"] == $tempParticipantsMap[$ptId][$participantUsername]["Lab Name"]) {
-                        $participantLabName = $existingParticipantUser["lab_name"];
-                    }
-                    if ($participantEmailAddress == null && $existingParticipantUser["email"] == $tempParticipantsMap[$ptId][$participantUsername]["Username"] &&
-                        (strlen($tempParticipantsMap[$ptId][$participantUsername]["Username"]) < 12 ||
-                            substr($tempParticipantsMap[$ptId][$participantUsername]["Username"], -12, 10) != "systemone.")) {
-                        $participantEmailAddress = $existingParticipantUser["email"];
-                    }
-                    if ($participantPhoneNumber == null && $existingParticipantUser["phone"] == $tempParticipantsMap[$ptId][$participantUsername]["Phone Number"]) {
-                        $participantPhoneNumber = $existingParticipantUser["phone"];
+            if (isset($existingParticipantsMap[$ptId])) {
+                $existingParticipant = $existingParticipantsMap[$ptId];
+                foreach (array_keys($tempParticipantsMap[$ptId]) as $participantUsername) {
+                    if (isset($existingParticipant) && isset($existingParticipant[$participantUsername])) {
+                        $existingParticipantUser = $existingParticipant[$participantUsername];
+                        if ($participantLabName == null && $existingParticipantUser["lab_name"] == $tempParticipantsMap[$ptId][$participantUsername]["Lab Name"]) {
+                            $participantLabName = $existingParticipantUser["lab_name"];
+                        }
+                        if ($participantEmailAddress == null && $existingParticipantUser["email"] == $tempParticipantsMap[$ptId][$participantUsername]["Username"] &&
+                            (strlen($tempParticipantsMap[$ptId][$participantUsername]["Username"]) < 12 ||
+                                substr($tempParticipantsMap[$ptId][$participantUsername]["Username"], -12, 10) != "systemone.")) {
+                            $participantEmailAddress = $existingParticipantUser["email"];
+                        }
+                        if ($participantPhoneNumber == null && $existingParticipantUser["phone"] == $tempParticipantsMap[$ptId][$participantUsername]["Phone Number"]) {
+                            $participantPhoneNumber = $existingParticipantUser["phone"];
+                        }
                     }
                 }
-                if ($participantActive == "No" && $tempParticipantsMap[$ptId][$participantUsername]["Active"] != "No") {
-                    $participantActive = "Yes";
+            }
+            if (isset($tempParticipantsMap[$ptId])) {
+                foreach (array_keys($tempParticipantsMap[$ptId]) as $participantUsername) {
+                    if ($participantActive == "No" && $tempParticipantsMap[$ptId][$participantUsername]["Active"] != "No") {
+                        $participantActive = "Yes";
+                    }
                 }
             }
             foreach (array_keys($tempParticipantsMap[$ptId]) as $participantUsername) {
