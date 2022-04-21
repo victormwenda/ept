@@ -52,10 +52,9 @@ if (sizeof($this->result['shipment']) > 0) {
             $this->SetY(-15);
             // Set font
             $this->SetFont('Helvetica', '', 8);
-            // Page number
-            $this->Cell(0, 10, 'Form: ILB-500-F29A', 0, false, 'L', 0, '', 0, false, 'T', 'M');
-            // Generated at....
-            $this->Cell(0, 10, "CDC/ILB is currently preparing for accreditation by A2LA to the ISO 17043 Standard", 0, false, 'R', 0, '', 0, false, 'T', 'M');
+            $this->Cell(30, 10, 'Form: ILB-500-F29A', 0, false, 'L', 0, '', 0, false, 'T', 'M');
+            $this->Cell(120, 10, 'Issuing Authority: David Turgeon, PhD', 0, false, 'C', 0, '', 0, false, 'T', 'M');
+            $this->Cell(30, 10, sprintf('Effective Date: %s', date('F Y')), 0, false, 'R', 0, '', 0, false, 'T', 'M');
         }
 
         public function writeHTMLTogether($html, $ln=true, $fill=false, $reseth=false, $cell=false, $align='') {
