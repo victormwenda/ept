@@ -649,7 +649,13 @@ if (isset($this->evaluateData['evalComments'])) {
     </table>
 </fieldset>
 <?php } ?>
-<?php $config = new Zend_Config_Ini(APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini", APPLICATION_ENV); ?>
+<?php
+    $configFile = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.local.ini";
+    if (!is_file($configFile)) {
+        $configFile = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini";
+    }
+    $config = new Zend_Config_Ini($configFile, APPLICATION_ENV);
+?>
 <br/>
 <?php if (isset($this->evaluateData['shipment']['shipment_comment']) && $this->evaluateData['shipment']['shipment_comment'] != "") { ?>
     <legend>Comment from PE Admin</legend>

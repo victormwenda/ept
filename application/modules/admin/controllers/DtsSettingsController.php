@@ -8,11 +8,14 @@ class Admin_DtsSettingsController extends Zend_Controller_Action
     }
 
     public function indexAction() {
-        
+
         // some config settings are in config file and some in global_config table.
         $commonServices = new Application_Service_Common();
         $schemeService = new Application_Service_Schemes();
-        $file = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini";
+        $file = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.local.ini";
+        if (!is_file($file)) {
+            $file = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini";
+        }
         if ($this->getRequest()->isPost()) {
            // Zend_Debug::dump($this->_getAllParams());die;
             $testKits[1] =$this->getRequest()->getPost('testkit1');
@@ -36,7 +39,7 @@ class Admin_DtsSettingsController extends Zend_Controller_Action
 
         }
 
-        
+
         $this->view->config = new Zend_Config_Ini($file, APPLICATION_ENV);
         $this->view->allTestKits = $schemeService->getAllDtsTestKitList(true);
         $this->view->recommendedTestkits = $schemeService->getRecommededDtsTestkit();

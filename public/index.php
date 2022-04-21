@@ -12,7 +12,7 @@ defined('APPLICATION_ENV')
 // Define path to u directory
 defined('UPLOAD_PATH')
     || define('UPLOAD_PATH', realpath(dirname(__FILE__) . '/uploads'));
-    
+
 // Ensure library/ is on include_path
 set_include_path(implode(PATH_SEPARATOR, array(
     realpath(APPLICATION_PATH . '/../library'),
@@ -25,8 +25,12 @@ require_once 'Zend/Application.php';
 // Create application, bootstrap, and run
 $application = new Zend_Application(
     APPLICATION_ENV,
-    APPLICATION_PATH . '/configs/application.ini'
+    [
+      'config' => [
+        APPLICATION_PATH . '/configs/application.ini',
+        APPLICATION_PATH . '/configs/application.local.ini',
+      ],
+    ]
 );
 $application->bootstrap()
 	->run();
-

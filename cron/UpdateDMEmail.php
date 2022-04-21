@@ -2,7 +2,11 @@
 
 include_once 'CronInit.php';
 
-$conf = new Zend_Config_Ini(APPLICATION_PATH . '/configs/application.ini', APPLICATION_ENV);
+$confFile = APPLICATION_PATH . '/configs/application.local.ini';
+if (!is_file($confFile)) {
+    $confFile = APPLICATION_PATH . '/configs/application.ini';
+}
+$conf = new Zend_Config_Ini($confFile, APPLICATION_ENV);
 
 try {
 
@@ -27,15 +31,15 @@ try {
                     $oldDmId='';
                 }
             }
-            
+
             if($oldDmId==''){
                 $oldDmId=$result['dm_id'];
                 $oldUniqIden=$result['unique_identifier'];
             }
-           
+
             $email=$result['unique_identifier']."_pt@vlsmartconnect.com";
             $db->update('data_manager',array('primary_email'=>$email), 'dm_id=' . $result['dm_id']);
-            
+
             $db->insert('participant_manager_map',array('participant_id'=>$result['participant_id'],'dm_id'=>$result['dm_id']));
 
         }

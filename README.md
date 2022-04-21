@@ -8,14 +8,14 @@ Welcome to the Open Source repository of the e-Proficiency Testing (ePT) softwar
 - Internet facing, static IP address with domain name
 
 #### Provision Server
-##### Install Apache 2 Web Server, PHP 5 & Certbot 
+##### Install Apache 2 Web Server, PHP 5 & Certbot
 ```
 sudo apt update
 sudo apt upgrade -y
 sudo apt install apache2
 sudo add-apt-repository -y ppa:ondrej/php
 sudo apt update
-sudo apt install php5.6 mysql-client php5.6-mysql php5.6-gd software-properties-common -y 
+sudo apt install php5.6 mysql-client php5.6-mysql php5.6-gd software-properties-common -y
 sudo add-apt-repository universe
 sudo add-apt-repository ppa:certbot/certbot
 sudo apt-get update
@@ -80,7 +80,7 @@ sudo systemctl restart apache2
 ```
 
 
-* [Download the ePT Source Code](https://github.com/SystemOne/ept/releases) and put it into your server's root folder (www or htdocs). 
+* [Download the ePT Source Code](https://github.com/SystemOne/ept/releases) and put it into your server's root folder (www or htdocs).
 * Create a database and [import the sql file that you can find in the downloads section of this repository](https://github.com/SystemOne/ept/releases)
 * Modify the config file (application/configs/application.ini) and update the database parameters
 * Create a virtual host pointing to the public folder of the source code
@@ -102,6 +102,42 @@ The SSL certificate for the website was essued by [Let's Encrypt](https://letsen
 There should be a cron job or service that automatically renews the SSL certificate every 3 months but if it expires, it can be manually renewed by following these steps:
 1. Ensure that the let's encrypt config is present on the server in /etc/letsencrypt. If it isn't restore it from the relevant `etc-letsencrypt.tar.gz` archive in the [ePT Google Drive](https://drive.google.com/drive/u/1/folders/1CAYmMOAKExvfctmwJ62MpfLLCpJnEeq7)
 2. Run the [certbot client](https://certbot.eff.org/lets-encrypt/ubuntubionic-apache) `$ sudo certbot renew`
+
+---
+
+## Dev Tools
+
+### Docker
+The docker environment has been provisioned for local development machines according to the current production environment. To use this environment,
+
+1. Ensure that [Docker Engine](https://docs.docker.com/engine/) and [Docker Compose](https://docs.docker.com/compose/) is correctly installed and working,
+
+2. Copy `docker/.env` to `docker/.env.local` and set variables accordingly
+```sh
+DATABASE_PASS="a strong password"
+GOOGLE_MAPS_KEY="key from Google (optional)"
+```
+3. Ensure that the following ports are available on your localhost,
+
+    * `8000` nginx - The web application gateway
+    * `8001` phpMyAdmin - A web GUI for the local database
+    * `8002` Mailhog - An email testing client for outbound emails
+
+
+4. Navigate to the `docker` folder and run:
+```sh
+docker-compose --env-file=.env.local up
+```
+5. During the first build, Docker will create an initial sample database and then run the stack.
+
+6. To restore the sample database,
+    1. Stop the database container,
+    2. Delete the `docker/var/mysql` directory,
+    3. Start the container again (this may take a couple minutes).
+
+You can find relevant logs in the `docker/var` directory. Inspect containers and the `./docker/docker-compose.yml` file for more information.
+
+---
 
 ### Who do I talk to? ###
 

@@ -1609,7 +1609,10 @@ class Application_Service_Reports {
 			//<-------- Document Score Sheet Heading (Sheet Four)-------
 
 			if ($result['scheme_type'] == 'dts') {
-				$file = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini";
+				$file = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.local.ini";
+				if (!is_file($file)) {
+					$file = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini";
+				}
 				$config = new Zend_Config_Ini($file, APPLICATION_ENV);
 				$documentationScorePerItem = ($config->evaluation->dts->documentationScore / 5);
 			}
@@ -1803,7 +1806,11 @@ class Application_Service_Reports {
 					}
 
 					if (isset($sampleRehydrationDate) && $shipmentTestDate != "") {
-						$config = new Zend_Config_Ini(APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini", APPLICATION_ENV);
+						$configFile = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.local.ini";
+						if (!is_file($configFile)) {
+							$configFile = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini";
+						}
+						$config = new Zend_Config_Ini($configFile, APPLICATION_ENV);
 						$sampleRehydrationDate = new DateTime($attributes['sample_rehydration_date']);
 						$testedOnDate = new DateTime($aRow['shipment_test_date']);
 						$interval = $sampleRehydrationDate->diff($testedOnDate);
@@ -3952,11 +3959,11 @@ class Application_Service_Reports {
         FlattenedEvaluationResults.`5-Date Tested`, FlattenedEvaluationResults.`5-Instrument Serial`, FlattenedEvaluationResults.`5-Instrument Last Calibrated`,
         FlattenedEvaluationResults.`5-MTB`, FlattenedEvaluationResults.`5-Rif`, FlattenedEvaluationResults.`5-Probe 1`, FlattenedEvaluationResults.`5-Probe 2`,
         FlattenedEvaluationResults.`5-Probe 3`, FlattenedEvaluationResults.`5-Probe 4`, FlattenedEvaluationResults.`5-Probe 5`, FlattenedEvaluationResults.`5-Probe 6`,
-        
+
         FlattenedEvaluationResults.`Comments`, FlattenedEvaluationResults.`Comments for reports`,
         FlattenedEvaluationResults.`1-Score`, FlattenedEvaluationResults.`2-Score`, FlattenedEvaluationResults.`3-Score`, FlattenedEvaluationResults.`4-Score`,
-        FlattenedEvaluationResults.`5-Score`, 
-        
+        FlattenedEvaluationResults.`5-Score`,
+
         FlattenedEvaluationResults.`Fin Score`, FlattenedEvaluationResults.`Sat/Unsat`
         FROM (
         SELECT countries.iso_name AS `Country`,
@@ -4169,10 +4176,10 @@ class Application_Service_Reports {
         response_result_tb_5.probe_4 AS `5-Probe 4`,
         response_result_tb_5.probe_5 AS `5-Probe 5`,
         response_result_tb_5.probe_6 AS `5-Probe 6`,
-        
+
         TRIM(shipment_participant_map.user_comment) AS `Comments`,
         TRIM(COALESCE(CASE WHEN r_evaluation_comments.`comment` = '' THEN NULL ELSE r_evaluation_comments.`comment` END, shipment_participant_map.optional_eval_comment)) AS `Comments for reports`,
-        
+
         CASE
         WHEN response_result_tb_1.calculated_score IN ('pass', 'concern', 'exempt') THEN 20
         WHEN response_result_tb_1.calculated_score = 'partial' THEN 10
@@ -4208,12 +4215,12 @@ class Application_Service_Reports {
         WHEN response_result_tb_5.calculated_score IN ('fail', 'excluded') THEN 0
         ELSE 0
         END AS `5-Score`,
-        
+
         IFNULL(shipment_participant_map.documentation_score, 0) + IFNULL(shipment_participant_map.shipment_score, 0) AS `Fin Score`,
         CASE
         WHEN r_results.result_name = 'Pass' THEN 'Satisfactory'
         ELSE 'Unsatisfactory'
-        END AS `Sat/Unsat` 
+        END AS `Sat/Unsat`
         FROM shipment
         JOIN shipment_participant_map ON shipment_participant_map.shipment_id = shipment.shipment_id
         JOIN participant ON participant.participant_id = shipment_participant_map.participant_id

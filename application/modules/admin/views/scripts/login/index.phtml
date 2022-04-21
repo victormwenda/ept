@@ -148,7 +148,13 @@
         </div>
     </div>
     <div class="container">
-        <?php $config = new Zend_Config_Ini(APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini",APPLICATION_ENV); ?>
+        <?php
+        $configFile = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.local.ini";
+        if (!is_file($configFile)) {
+            $configFile = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini";
+        }
+        $config = new Zend_Config_Ini($configFile, APPLICATION_ENV);
+        ?>
         <form class="form-signin" name="loginForm" id="loginForm" method="post" action="<?php echo $this->url(array("module"=>"admin","controller" => "login", "action" => "index"), null, true) ?>">
             <div style="text-align:center;">
                 <h3 class="form-signin-heading"><span><?php echo $config->instituteName; ?></span><br/>PE Admin Sign in</h3>

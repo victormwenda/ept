@@ -300,7 +300,11 @@ class Application_Service_Evaluation {
         }
 
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
-        $config = new Zend_Config_Ini(APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini", APPLICATION_ENV);
+        $configFile = APPLICATION_PATH . '/configs/config.local.ini';
+        if (!is_file($conigfFile)) {
+            $configFile = APPLICATION_PATH . '/configs/config.ini';
+        }
+        $config = new Zend_Config_Ini($configFile, APPLICATION_ENV);
         $sql = $db->select()->from(array('s' => 'shipment'))
                 ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id')
                 ->join(array('sp' => 'shipment_participant_map'), 'sp.shipment_id=s.shipment_id', array('fullscore' => new Zend_Db_Expr("(if((sp.shipment_score+sp.documentation_score) >= " . $config->evaluation->dts->passPercentage . ", 1, 0))")))

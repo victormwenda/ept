@@ -1,6 +1,12 @@
 <?php
 require_once('tcpdf/tcpdf.php');
-$config = new Zend_Config_Ini(APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini", APPLICATION_ENV);
+
+$configFile = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.local.ini";
+if (!is_file($configFile)) {
+    $configFile = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini";
+}
+
+$config = new Zend_Config_Ini($configFile, APPLICATION_ENV);
 $fileSafeShipmentCode = str_replace( ' ', '-', str_replace(array_merge(
         array_map('chr', range(0, 31)),
         array('<', '>', ':', '"', '/', '\\', '|', '?', '*')

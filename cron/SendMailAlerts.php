@@ -2,14 +2,17 @@
 
 include_once 'CronInit.php';
 
-$conf = new Zend_Config_Ini(APPLICATION_PATH . '/configs/application.ini', APPLICATION_ENV);
+$confFile = APPLICATION_PATH . '/configs/application.local.ini';
+if (!is_file($confFile)) {
+    $confFile = APPLICATION_PATH . '/configs/application.ini';
+}
+$conf = new Zend_Config_Ini($confFile, APPLICATION_ENV);
 
 try {
 
     $db = Zend_Db::factory($conf->resources->db);
     Zend_Db_Table::setDefaultAdapter($db);
 
-    $conf = new Zend_Config_Ini(APPLICATION_PATH . '/configs/application.ini', APPLICATION_ENV);
     $smtpTransportObj = new Zend_Mail_Transport_Smtp($conf->email->host, $conf->email->config->toArray());
 
     $limit = '10';
@@ -27,11 +30,11 @@ try {
                 $alertMail->setBodyHtml($result['message']);
                 $alertMail->setFrom($fromEmail, $fromFullName);
                 $alertMail->setReplyTo($fromEmail, $fromFullName);
-                
+
                 $toArray = explode(",",$result['to_email']);
                 foreach($toArray as $toId){
                     if($toId!=''){
-                       $alertMail->addTo($toId); 
+                       $alertMail->addTo($toId);
                     }
                 }
                  if (isset($result['cc']) && trim($result['cc']) != "") {
@@ -51,13 +54,13 @@ try {
                             }
                         }
                     }
-                
+
                 $alertMail->setSubject($subject);
                 $sendResult=$alertMail->send($smtpTransportObj);
                 if($sendResult==true){
                   $db->delete('temp_mail', $id);
                 }
-               
+
         }
     }
 } catch (Exception $e) {

@@ -7,10 +7,13 @@ class Admin_GlobalConfigController extends Zend_Controller_Action {
     }
 
     public function indexAction() {
-        
+
         // some config settings are in config file and some in global_config table.
         $commonServices = new Application_Service_Common();
-        $file = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini";
+        $file = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.local.ini";
+        if (!is_file($file)) {
+            $file = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini";
+        }
         if ($this->getRequest()->isPost()) {
            // Zend_Debug::dump($this->_getAllParams());die;
             $config = new Zend_Config_Ini($file, null, array('allowModifications' => true));
@@ -18,7 +21,7 @@ class Admin_GlobalConfigController extends Zend_Controller_Action {
             $config->$sec->map->center = $this->getRequest()->getPost('mapCenter');
             $config->$sec->map->zoom = $this->getRequest()->getPost('mapZoom');
             $config->$sec->instituteName = $this->getRequest()->getPost('instituteName');
-            
+
 
             $writer = new Zend_Config_Writer_Ini();
             $writer->setConfig($config)
