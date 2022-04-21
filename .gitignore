@@ -9,6 +9,10 @@ live_web_logs/
 application/configs/config.local.ini
 application/configs/application.local.ini
 
+# Docker and related
+docker/.env.local
+docker/var
+
 # Generated Files
 application/cache
 

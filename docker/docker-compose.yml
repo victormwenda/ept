@@ -1,0 +1,112 @@
+version: "3.7"
+
+services:
+
+    mysql:
+
+        image: mysql:5.7
+        container_name: ePT-MySQL
+
+        profiles:
+          - local
+
+        command: --default-authentication-plugin=mysql_native_password --sql_mode="STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION"
+
+        environment:
+            MYSQL_ALLOW_EMPTY_PASSWORD: "false"
+            MYSQL_ROOT_PASSWORD: ${DATABASE_PASS}
+            MYSQL_DATABASE: ${DATABASE_NAME}
+
+        volumes:
+            - ./mysql/init.d/:/docker-entrypoint-initdb.d
+            - ./var/mysql/:/var/lib/mysql/
+
+    php:
+
+        build:
+            context: ../
+            dockerfile: ./docker/php/Dockerfile
+        container_name: ePT-PHP
+
+        profiles:
+          - local
+
+        environment:
+            APPLICATION_ENV: docker
+            GOOGLE_MAPS_KEY: ${GOOGLE_MAPS_KEY}
+            DB_DRIVER: PDO_MYSQL
+            DB_HOST: ${DATABASE_HOST}
+            DB_NAME: ${DATABASE_NAME}
+            DB_USER: root
+            DB_PORT: ${DATABASE_PORT}
+            DB_PASSWORD: ${DATABASE_PASS}
+            SMTP_HOST: mailhog
+            SMTP_PORT: 1025
+            SMTP_USER: ~
+            SMTP_PASSWORD: ~
+
+        volumes:
+            - ./php/initialise.sh:/usr/local/bin/initialise.sh
+            - ./php/php.ini:/usr/local/etc/php/php.ini
+            - ./php/msmtprc:/etc/msmtprc
+            - ./var/php:/var/www/data
+            - ../:/var/www/html
+            - /var/www/html/.git
+            - /var/www/html/docker
+
+        depends_on:
+            - mailhog
+
+        working_dir: /var/www/html
+
+        command: ["/usr/bin/env", "bash", "initialise.sh"]
+
+    nginx:
+        image: nginx:latest
+        container_name: ePT-nginx
+
+        profiles:
+          - local
+
+        working_dir: /var/www/html
+
+        volumes:
+            - ./nginx/sites/:/etc/nginx/conf.d/
+            - ./var/nginx/:/var/log/nginx/
+            - ../public/:/var/www/html/public/
+
+        depends_on:
+            - php
+            - mailhog
+
+        ports:
+            - 8000:80
+
+    phpmyadmin:
+
+        image: phpmyadmin:5.1
+        container_name: ePT-phpMyAdmin
+
+        profiles:
+          - local
+
+        environment:
+            PMA_HOST: ${DATABASE_HOST}
+            PMA_PORT: ${DATABASE_PORT}
+
+            # Enable auto-login on PMA
+            PMA_USER: root
+            PMA_PASSWORD: ${DATABASE_PASS}
+
+        ports:
+            - 8001:80
+
+    mailhog:
+        image: mailhog/mailhog:latest
+        container_name: ePT-Mailhog
+
+        profiles:
+          - local
+
+        ports:
+            - 8002:8025
