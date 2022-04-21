@@ -530,6 +530,16 @@ if (sizeof($this->result['shipment']) > 0) {
             ob_end_clean();
         }
 
+        // If headers User-Agent: ^Postman and X-Debug: ^preview$
+        // We are using Postman to develop/debug the PDF generation
+        if (
+            preg_match('/^postman/i', @$_SERVER['HTTP_USER_AGENT']) &&
+            preg_match('/^preview$/i', @$_SERVER['HTTP_X_DEBUG'])
+        ) {
+            $pdf->Output("", "I");
+            exit;
+        }
+
         $fileName = $result['lab_name']."-".$result['map_id'].".pdf";
         $fileName = preg_replace('/[^A-Za-z0-9.]/', '-', $fileName);
         $fileName = str_replace(" ", "-", $fileName);

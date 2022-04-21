@@ -137,6 +137,21 @@ docker-compose --env-file=.env.local up
 
 You can find relevant logs in the `docker/var` directory. Inspect containers and the `./docker/docker-compose.yml` file for more information.
 
+### Postman
+
+A [Postman](https://www.postman.com/) collection can be found in `ePT.postman_collection.json`. The collection contains requests that are generally cumbersome to develop/debug through the ePT interface such as PDF generation and API calls etc.
+
+Import the collection JSON file into a workspace on Postman, and configure the collection variables as follows;
+
+| Variable | Current Value | Description |
+| :--- | :--- | :--- |
+| host | http://localhost:8000 | The local / staging / production host as `protocol://host:port` |
+| sessionid | `<sessid>` | Your session id after you have logged in to the ePT interface, <br><br>_Use the network inspector in Chrome to extract the `sessid` portion of the `Cookie: PHPSESSID=<sessid>` request header after you have logged in_ |
+
+You should now be able to use Postman to debug respective endpoints. If you receive a `500 Internal Server Error` response, the chances are the `sessionid` parameter is incorrect or needs to be renewed.
+
+_Do not store secrets in the "Initial Value" of collection variables as these values are sharable. Use "Current Value" only unless you intend to share the values with others._
+
 ---
 
 ### Who do I talk to? ###

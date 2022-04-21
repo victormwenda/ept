@@ -568,6 +568,16 @@ if ($this->result['shipment'] != "") {
     $cdcDetails .= '</div>';
     $pdf->writeHTML('<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>'.$finalisedBy.$cdcDetails, true, false, true, false, '');
 
+    // If headers User-Agent: ^Postman and X-Debug: ^preview$
+    // We are using Postman to develop/debug the PDF generation
+    if (
+        preg_match('/^postman/i', @$_SERVER['HTTP_USER_AGENT']) &&
+        preg_match('/^preview$/i', @$_SERVER['HTTP_X_DEBUG'])
+    ) {
+        $pdf->Output("", "I");
+        exit;
+    }
+
     $fileName = $fileSafeShipmentCode . "-summary.pdf";
     $filePath = $shipmentFolderPath . DIRECTORY_SEPARATOR . $fileName;
     $pdf->Output($filePath, "F");
