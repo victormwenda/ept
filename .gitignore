@@ -5,14 +5,15 @@
 nbproject/
 live_web_logs/
 
+# Local configs
+application/configs/config.local.ini
+application/configs/application.local.ini
+
 # Generated Files
 application/cache
 
 # Uploads
 public/uploads
-
-application/configs/application.ini
-application/configs/config.ini
 
 # Unminified scripts
 public/js/jquery-1.10.2.min.map

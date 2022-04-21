@@ -1,15 +1,19 @@
 <?php
 include_once 'CronInit.php';
 
-$conf = new Zend_Config_Ini(APPLICATION_PATH . '/configs/application.ini', APPLICATION_ENV);
+$confFile = APPLICATION_PATH . '/configs/application.local.ini';
+if (!is_file($confFile)) {
+    $confFile = APPLICATION_PATH . '/configs/application.ini';
+}
+$conf = new Zend_Config_Ini($confFile, APPLICATION_ENV);
 
 try {
     $db = Zend_Db::factory($conf->resources->db);
     Zend_Db_Table::setDefaultAdapter($db);
-    
+
         $filename = UPLOAD_PATH . DIRECTORY_SEPARATOR . "participants-mail-new-eid.csv";
         if (!file_exists($filename) || !is_readable($filename))
-            return FALSE;    
+            return FALSE;
         $data = array();
         ini_set('auto_detect_line_endings', TRUE);
         if (($handle = fopen($filename, 'r')) !== false) {
@@ -20,7 +24,7 @@ try {
         }
         ini_set('auto_detect_line_endings', FALSE);
         unset($data[0]);
-        
+
         $commonService = new Application_Service_Common();
         foreach ($data as $participant) {
             if((isset($participant[0]) && trim($participant[0])!= '') && (isset($participant[1]) && trim($participant[1])!= '')

@@ -1,7 +1,11 @@
 <?php
 include_once 'CronInit.php';
 
-$conf = new Zend_Config_Ini(APPLICATION_PATH . '/configs/application.ini', APPLICATION_ENV);
+$confFile = APPLICATION_PATH . '/configs/application.local.ini';
+if (!is_file($confFile)) {
+    $confFile = APPLICATION_PATH . '/configs/application.ini';
+}
+$conf = new Zend_Config_Ini($confFile, APPLICATION_ENV);
 
 try {
     $db = Zend_Db::factory($conf->resources->db);

@@ -207,11 +207,15 @@ class Pt_Commons_General {
     }
 
     public static function getDateTime() {
-        $conf = new Zend_Config_Ini(APPLICATION_PATH . '/configs/application.ini', APPLICATION_ENV);
+        $file = APPLICATION_PATH . '/configs/application.local.ini';
+        if (!is_file($file)) {
+            $file = APPLICATION_PATH . '/configs/application.ini';
+        }
+        $conf = new Zend_Config_Ini($file, APPLICATION_ENV);
         $date = new DateTime(date('Y-m-d H:i:s'), new DateTimeZone($conf->timezone));
         return $date->format('Y-m-d H:i:s');
     }
-    
+
     public static function excelDateFormat($date) {
 
         if ($date == null || $date == "" || $date == "0000-00-00") {
@@ -223,4 +227,3 @@ class Pt_Commons_General {
         }
     }
 }
-

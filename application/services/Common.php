@@ -4,7 +4,11 @@ class Application_Service_Common {
 	public function sendMail($to, $cc, $bcc, $subject, $message, $fromMail = null, $fromName = null, $attachments = array()) {
         //Send to email
         $to = explode(",",$to);
-        $conf = new Zend_Config_Ini(APPLICATION_PATH . '/configs/application.ini', APPLICATION_ENV);
+        $confFile = APPLICATION_PATH . '/configs/application.local.ini';
+        if (!is_file($confFile)) {
+            $confFile = APPLICATION_PATH . '/configs/application.ini';
+        }
+        $conf = new Zend_Config_Ini($confFile, APPLICATION_ENV);
         $smtpTransportObj = new Zend_Mail_Transport_Smtp($conf->email->host, $conf->email->config->toArray());
 
         if ($fromMail == null || $fromMail == "") {
@@ -326,4 +330,3 @@ class Application_Service_Common {
         return $parsedDate;
     }
 }
-
