@@ -181,6 +181,6 @@ class SubmissionForm extends TcpdfFpdi {
         );
         $this->SetY(-12.5);
         $this->SetX(220);
-        $this->Write(0, 'Effective Date: ' . date("j F Y"));
+        $this->Write(0, 'Effective Date: March 2022');
     }
 }
