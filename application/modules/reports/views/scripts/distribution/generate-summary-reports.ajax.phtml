@@ -46,7 +46,7 @@ if ($this->result['shipment'] != "") {
             $this->SetFont('Helvetica', '', 8);
             $this->Cell(30, 10, 'Form: ILB-500-F29A', 0, false, 'L', 0, '', 0, false, 'T', 'M');
             $this->Cell(120, 10, 'Issuing Authority: David Turgeon, PhD', 0, false, 'C', 0, '', 0, false, 'T', 'M');
-            $this->Cell(30, 10, sprintf('Effective Date: %s', date('F Y')), 0, false, 'R', 0, '', 0, false, 'T', 'M');
+            $this->Cell(30, 10, 'Effective Date: March 2022', 0, false, 'R', 0, '', 0, false, 'T', 'M');
             $this->SetY(-10);
             $this->Cell(0, 10, sprintf('Page %s / %s', $this->getAliasNumPage(), $this->getAliasNbPages()), 0, false, 'C', 0, '', 0, false, 'T', 'M');
         }
