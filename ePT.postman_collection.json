@@ -1,0 +1,176 @@
+{
+	"info": {
+		"_postman_id": "e558e9cf-c478-420d-90de-790dc6d1c8de",
+		"name": "ePT",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Reports",
+			"item": [
+				{
+					"name": "Distribution - Generate (AJAX)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "PHPSESSID={{sessionid}}",
+								"type": "text"
+							},
+							{
+								"key": "X-Requested-With",
+								"value": "XMLHttpRequest",
+								"type": "text"
+							},
+							{
+								"key": "X-Debug",
+								"value": "preview",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "sId",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "comingFrom",
+									"value": "generateReport",
+									"type": "text"
+								},
+								{
+									"key": "format",
+									"value": "html",
+									"type": "text"
+								},
+								{
+									"key": "limitVal",
+									"value": "50",
+									"type": "text"
+								},
+								{
+									"key": "offsetVal",
+									"value": "0",
+									"type": "text"
+								},
+								{
+									"key": "startVal",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "endVal",
+									"value": "50",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{host}}/reports/distribution/generate-reports",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"reports",
+								"distribution",
+								"generate-reports"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Distribution - Generate Summary (AJAX)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "PHPSESSID={{sessionid}}",
+								"type": "text"
+							},
+							{
+								"key": "X-Requested-With",
+								"value": "XMLHttpRequest",
+								"type": "text"
+							},
+							{
+								"key": "X-Debug",
+								"value": "preview",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "sId",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "comingFrom",
+									"value": "generateReport",
+									"type": "text"
+								},
+								{
+									"key": "format",
+									"value": "html",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{host}}/reports/distribution/generate-summary-reports",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"reports",
+								"distribution",
+								"generate-summary-reports"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "host",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "sessionid",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

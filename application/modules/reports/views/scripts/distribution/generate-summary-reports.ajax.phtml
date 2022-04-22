@@ -44,10 +44,11 @@ if ($this->result['shipment'] != "") {
             $this->SetY(-15);
             // Set font
             $this->SetFont('Helvetica', '', 8);
-            // Page number
-            $this->Cell(0, 10, 'Form: ILB-500-F29B', 0, false, 'L', 0, '', 0, false, 'T', 'M');
-            // Generated at....
-            $this->Cell(0, 10, "CDC/ILB is currently preparing for accreditation by A2LA to the ISO 17043 Standard", 0, false, 'R', 0, '', 0, false, 'T', 'M');
+            $this->Cell(30, 10, 'Form: ILB-500-F29A', 0, false, 'L', 0, '', 0, false, 'T', 'M');
+            $this->Cell(120, 10, 'Issuing Authority: David Turgeon, PhD', 0, false, 'C', 0, '', 0, false, 'T', 'M');
+            $this->Cell(30, 10, sprintf('Effective Date: %s', date('F Y')), 0, false, 'R', 0, '', 0, false, 'T', 'M');
+            $this->SetY(-10);
+            $this->Cell(0, 10, sprintf('Page %s / %s', $this->getAliasNumPage(), $this->getAliasNbPages()), 0, false, 'C', 0, '', 0, false, 'T', 'M');
         }
     }
 
@@ -567,6 +568,16 @@ if ($this->result['shipment'] != "") {
     $cdcDetails .= '    </table>';
     $cdcDetails .= '</div>';
     $pdf->writeHTML('<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>'.$finalisedBy.$cdcDetails, true, false, true, false, '');
+
+    // If headers User-Agent: ^Postman and X-Debug: ^preview$
+    // We are using Postman to develop/debug the PDF generation
+    if (
+        preg_match('/^postman/i', @$_SERVER['HTTP_USER_AGENT']) &&
+        preg_match('/^preview$/i', @$_SERVER['HTTP_X_DEBUG'])
+    ) {
+        $pdf->Output("", "I");
+        exit;
+    }
 
     $fileName = $fileSafeShipmentCode . "-summary.pdf";
     $filePath = $shipmentFolderPath . DIRECTORY_SEPARATOR . $fileName;
