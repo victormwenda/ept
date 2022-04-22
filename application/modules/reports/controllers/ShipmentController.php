@@ -164,7 +164,7 @@ class SubmissionForm extends TcpdfFpdi {
     var $_tplIdx;
     function Header() {
         if (is_null($this->_tplIdx)) {
-            $this->numPages = $this->setSourceFile('./templates/ept_tb_submission_form_1.2.pdf');
+            $this->numPages = $this->setSourceFile('./templates/ept_tb_submission_form_1.3.pdf');
             $this->_tplIdx = $this->importPage(1);
         }
         $this->useTemplate($this->_tplIdx);
