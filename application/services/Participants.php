@@ -328,7 +328,7 @@ class Application_Service_Participants {
         $countryNames = array_unique(array_column($participants, 'iso_name'));
         $participantsGroupedByCountry = array();
 
-        
+
         foreach($countryNames as $countryName) {
             $participantsGroupedByCountry[$countryName] = array_filter($participants,
             function($participant) use ($countryName) {
@@ -965,6 +965,15 @@ class Application_Service_Participants {
                             "phone1" => null,
                             "semail" => null
                         );
+                        if (empty($newUser['userId'])) {
+                            $newUser['userId'] = sprintf('%s@ept.systemone.id', $participantTempRecord['unique_identifier']);
+                        }
+                        if (empty($newUser['status']) && empty($participantTempRecord['status'])) {
+                            switch ($participantTempRecord['participant_status']) {
+                                case 'active'  :  $newUser['status'] = 'active'; break;
+                                default        :  $newUser['status'] = 'inactive'; break;
+                            }
+                        }
                         $dataManagerIds[] = $userService->addUser($newUser);
                     }
                 }
@@ -1120,4 +1129,3 @@ class Application_Service_Participants {
         return $participantDb->generateParticipantDataForImportTemplate();
     }
 }
-

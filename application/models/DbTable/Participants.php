@@ -326,8 +326,10 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
 
         $db = Zend_Db_Table_Abstract::getAdapter();
 
-        foreach ($params['dataManager'] as $dataManager) {
-            $db->insert('participant_manager_map', array('dm_id' => $dataManager, 'participant_id' => $participantId));
+        if (isset($params['dataManager']) && is_array($params['dataManager'])) {
+            foreach ($params['dataManager'] as $dataManager) {
+                $db->insert('participant_manager_map', array('dm_id' => $dataManager, 'participant_id' => $participantId));
+            }
         }
 		if (isset($params['enrolledProgram']) && $params['enrolledProgram'] != "") {
             foreach ($params['enrolledProgram'] as $epId) {
@@ -1300,4 +1302,3 @@ class Application_Model_DbTable_Participants extends Zend_Db_Table_Abstract {
         return $db->fetchAll($sQuery);
     }
 }
-
