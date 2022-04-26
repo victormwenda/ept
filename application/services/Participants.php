@@ -966,7 +966,7 @@ class Application_Service_Participants {
                             "semail" => null
                         );
                         if (empty($newUser['userId'])) {
-                            $newUser['userId'] = sprintf('%s@systemone.id', $participantTempRecord['unique_identifier']);
+                            $newUser['userId'] = sprintf('%s@ept.systemone.id', $participantTempRecord['unique_identifier']);
                         }
                         if (empty($newUser['status']) && empty($participantTempRecord['status'])) {
                             switch ($participantTempRecord['participant_status']) {
