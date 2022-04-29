@@ -95,14 +95,14 @@ if (sizeof($this->result['shipment']) > 0) {
 
     $attestation = '<div>';
     $attestation .= '    <h5>Documentation of Report Review</h5>';
-    $attestation .= '    <p style="width:100%;font-size:10pt;">We the undersigned, have read and reviewed the above Xpert TB Proficiency Testing Individual Final Report. If the final score was less than 100%, we completed a root cause analysis.* The Individual Final Report and any attachments must be filed and retained as documentation. If needed, corrective action documentation should also be completed and filed alongside the Individual Final Report for reference.</p>';
-    $attestation .= '    <p style="width:100%;font-size:10pt;">Our individual site results are confidential and are only shared with our Proficiency Test Country Coordinators (PTCC) at the National or Regional level and the testing site. Each PTCC serves as a subcontractor to the Xpert TB Proficiency Testing Program for the following duties: site enrollment, panel receipt, panel distribution to individual testing sites, result submission assistance, report distribution assistance and corrective action follow-up in accordance our country’s National TB Program guidelines. Questions or comments concerning this report may be submitted to the PTCC or to the US Centers for Disease Control and Prevention (CDC), Center for Global Health, Division of Global HIV and TB, International Laboratory Branch (ILB) using the Contact Information listed below.</p>';
+    $attestation .= '    <p style="width:100%;font-size:10pt;">We the undersigned, have read and reviewed the above Xpert TB Proficiency Test Individual Performance Report. Expected results for which testing site’s submitted results are scored against are determined by the US Centers for Disease Control and Prevention (CDC)/ International Laboratory Branch (ILB) sample validation testing procedures prior to panel shipment. If the final score was less than 100%, we completed a root cause analysis. * The Individual Final Report and any attachments must be filed and retained as documentation. If needed, corrective action documentation should also be completed and filed alongside the Individual Performance Report for reference.</p>';
+    $attestation .= '    <p style="width:100%;font-size:10pt;">Our identifiable individual site results are confidential and are only shared with our Proficiency Test Country Coordinators (PTCC) at the National or Regional level, the testing site, or other PTCC-designated stakeholders. Each PTCC serves as a subcontractor to the Xpert TB Proficiency Test Program for the following duties: site enrollment, panel receipt, panel distribution to individual testing sites, result submission assistance, report distribution assistance and corrective action follow-up in accordance with the country’s National TB Program guidelines. Unidentified site results may be shared for XTPT program review and improvement purposes upon request to, and with approval from, CDC/ ILB. Questions or comments concerning this report may be submitted to the PTCC or to the CDC/ ILB using the Contact Information listed below.</p>';
     $attestation .= '    <p style="width:100%;font-size:10pt;">Testing Personnel ____________________________________________ Date:________________________</p>';
     $attestation .= '    <p style="width:100%;font-size:10pt;">';
     $attestation .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
     $attestation .= '____________________________________________ Date:________________________</p>';
     $attestation .= '    <p style="width:100%;font-size:10pt;">Laboratory Manager (or Designee) _______________________________ Date:________________________</p>';
-    $attestation .= '    <p style="width:100%;font-size:10pt;">* If corrective action forms are not available from your country’s National TB or Quality Assurance Program, corrective actions forms may be downloaded from ePT (<a href="http://ept.systemone.id/">http://ept.systemone.id/</a>).</p>';
+    $attestation .= '    <div style="width:100%;font-size:10pt;">* If corrective action forms are not available from your country’s National TB or Quality Assurance Program, corrective actions forms may be downloaded from ePT (<a href="http://ept.systemone.id/">http://ept.systemone.id/</a>).</div>';
     $attestation .= '</div>';
 
     foreach ($this->result['shipment'] as $result) {
@@ -458,7 +458,7 @@ if (sizeof($this->result['shipment']) > 0) {
         $pdf->ImageSVG('@' . $longitudinalPerformanceSvg, 15, 210, 180, 70);
         $pdf->AddPage();
 
-        $finalisedBy = '<br/><p style="width:100%;font-size:10pt;">Report Issued by: Patricia Hall&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Date:&nbsp;';
+        $finalisedBy = '<br/><p style="width:100%;font-size:10pt;">Report Issued by: Patricia Hall-Eidson&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Date:&nbsp;';
         if (trim($this->comingFrom)=="finalize") {
             $finalisedBy .= '<span style="text-decoration:underline;">'.date("d-M-Y").'</span>';
         } else {
@@ -512,7 +512,7 @@ if (sizeof($this->result['shipment']) > 0) {
         $cdcDetails .= '    	         <br/><a href="mailto:gsz4@cdc.gov">gsz4@cdc.gov</a>';
         $cdcDetails .= '    	     </td>';
         $cdcDetails .= '    	     <td>';
-        $cdcDetails .= '    	         <br/><span style="text-decoration:underline;font-style:italic;">Patricia Hall</span>';
+        $cdcDetails .= '    	         <br/><span style="text-decoration:underline;font-style:italic;">Patricia Hall-Eidson</span>';
         $cdcDetails .= '    	         <br/><span>Team Lead, TB and Clinical Monitoring Team</span>';
         $cdcDetails .= '    	         <br/><span>International Laboratory Branch</span>';
         $cdcDetails .= '    	         <br/><span>Division of Global HIV and TB</span>';
