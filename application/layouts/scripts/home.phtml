@@ -1,5 +1,10 @@
 <?php
 $authNameSpace = new Zend_Session_Namespace('datamanagers');
+$configFile = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.local.ini";
+if (!is_file($configFile)) {
+    $configFile = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini";
+}
+$config = new Zend_Config_Ini($configFile, APPLICATION_ENV);
 ?>
 <!DOCTYPE html>
 <html>
@@ -39,13 +44,13 @@ $authNameSpace = new Zend_Session_Namespace('datamanagers');
 	  .layout-boxed{
 		background: #fff;
 	  }
-	  
+
 	  .skin-blue .wrapper, .skin-blue .main-sidebar, .skin-blue .left-side,.content-wrapper{
 		background: #ecf0f5;
 		border:0;
 		box-shadow : none;
 	  }
-	  
+
 	  .layout-boxed .wrapper{
 		box-shadow : none;
 	  }
@@ -82,7 +87,7 @@ $authNameSpace = new Zend_Session_Namespace('datamanagers');
                       <i class="fa fa-bars"></i>
                     </button>
                   </div>
-      
+
                   <!-- Navbar Right Menu -->
                     <div class="navbar-custom-menu">
                   <ul class="nav navbar-nav">
@@ -93,9 +98,11 @@ $authNameSpace = new Zend_Session_Namespace('datamanagers');
                       </a>
                     </li>
                     <?php } else { ?>
+                    <?php if ($config->showRequestEnrolment) : ?>
                     <li>
                         <a href="<?php echo $this->url(array("controller"=>"contact-us","action"=>"index"),null,true) ?>"><i class="icon icon-group"></i> <span>Request for PT Enrollment</span></a>
                     </li>
+                    <?php endif ?>
                     <li>
                         <a href="<?php echo $this->url(array("controller"=>"auth","action"=>"login"),null,true) ?>"><i class="icon icon-lock"></i> <span>Participant Login</span></a>
                     </li>
@@ -124,15 +131,15 @@ $authNameSpace = new Zend_Session_Namespace('datamanagers');
 			   }
 			   ?>
 			</div>
-			<div class="col-lg-2" style="text-align: center;padding:10px;"><img src="<?php echo $this->baseUrl(); ?>/images/country/institute-logo.jpg" style="max-height:100px;"/></div>						
+			<div class="col-lg-2" style="text-align: center;padding:10px;"><img src="<?php echo $this->baseUrl(); ?>/images/country/institute-logo.jpg" style="max-height:100px;"/></div>
 		  </div>
 		  <?php echo $this->layout()->content; ?>
-		  
+
 		</section>
-      
+
       </div><!-- /.content-wrapper -->
       <footer class="main-footer" style="">
-		
+
         <div class="pull-right hidden-xs">
           <strong><a href="http://www.taskforce.org">Funded by TaskForce</a></strong>
         </div>
@@ -143,7 +150,7 @@ $authNameSpace = new Zend_Session_Namespace('datamanagers');
     </div><!-- ./wrapper -->
 
     <!-- jQuery 2.1.4 -->
-    
+
     <!-- jQuery UI 1.11.4 -->
     <script src="<?php echo $this->baseUrl("assets/plugins/jQueryUI/jquery-ui.min.js"); ?>"></script>
     <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
@@ -159,10 +166,10 @@ $authNameSpace = new Zend_Session_Namespace('datamanagers');
 <script type="text/javascript" src="<?php echo $this->baseUrl("js/jquery.blockUI.js"); ?>"></script>
 <script type="text/javascript" src="<?php echo $this->baseUrl("js/deforayValidation.js"); ?>"></script>
 <script type="text/javascript" src="<?php echo $this->baseUrl("js/moment.min.js"); ?>"></script>
-<script type="text/javascript" src="<?php echo $this->baseUrl("js/deforayModal.js"); ?>"></script>	
+<script type="text/javascript" src="<?php echo $this->baseUrl("js/deforayModal.js"); ?>"></script>
 
     <!-- AdminLTE App -->
     <script src="<?php echo $this->baseUrl('assets/dist/js/app.min.js'); ?>"></script>
-    
+
   </body>
 </html>
