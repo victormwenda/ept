@@ -72,12 +72,12 @@ class Application_Model_DbTable_ParticipantTemp extends Zend_Db_Table_Abstract {
             if ($participantTempRecords[$i]["insert"]) {
                 $participantTempRecords[$i]["import_action"] = "New";
             } else {
-                $participantTempRecords[$i]["update_lab_name"] = $participantTempRecords[$i]["lab_name"] != $participantTempRecords[$i]["old_lab_name"];
+                $participantTempRecords[$i]["update_lab_name"] = trim(strtolower($participantTempRecords[$i]["lab_name"])) != trim(strtolower($participantTempRecords[$i]["old_lab_name"]));
                 $participantTempRecords[$i]["update_country"] = $participantTempRecords[$i]["country"] != $participantTempRecords[$i]["old_country"];
                 $participantTempRecords[$i]["update_region"] = $participantTempRecords[$i]["region"] != $participantTempRecords[$i]["old_region"];
                 $participantTempRecords[$i]["update_username"] = $participantTempRecords[$i]["old_username"] &&
-                    $participantTempRecords[$i]["username"] != $participantTempRecords[$i]["old_username"];
-                $participantTempRecords[$i]["update_email"] = $participantTempRecords[$i]["email"] != $participantTempRecords[$i]["old_email"];
+                trim(strtolower($participantTempRecords[$i]["username"])) != trim(strtolower($participantTempRecords[$i]["old_username"]));
+                $participantTempRecords[$i]["update_email"] = trim(strtolower($participantTempRecords[$i]["email"])) != trim(strtolower($participantTempRecords[$i]["old_email"]));
                 $participantTempRecords[$i]["update_password"] = isset($participantTempRecords[$i]["password"]) &&
                     !!$participantTempRecords[$i]["password"] &&
                     $participantTempRecords[$i]["password"] != $participantTempRecords[$i]["old_password"] &&

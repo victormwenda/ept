@@ -690,7 +690,43 @@ class Application_Service_Participants {
             $accumulator[$country["iso_name"]] = $country;
             return $accumulator;
         }, $countriesMap);
+
+        $ptIdsInImport = array_column($tempParticipants, "PT ID");
+        $participantDb = new Application_Model_DbTable_Participants();
+        $existingParticipants = $participantDb->getParticipantsByUniqueIds($ptIdsInImport);
+        $existingParticipantsMap = array();
+        $existingParticipantsMap = array_reduce($existingParticipants, function($accumulator, $existingParticipant) {
+            if (!isset($accumulator[$existingParticipant["unique_identifier"]])) {
+                $accumulator[$existingParticipant["unique_identifier"]] = array();
+            }
+            if (isset($existingParticipant["username"]) && $existingParticipant["username"]) {
+                $accumulator[$existingParticipant["unique_identifier"]][$existingParticipant["username"]] = $existingParticipant;
+            } else {
+                $accumulator[$existingParticipant["unique_identifier"]]["none"] = $existingParticipant;
+            }
+            return $accumulator;
+        }, $existingParticipantsMap);
+        
         for($i = 0; $i < count($tempParticipants); $i++) {
+            if (!isset($tempParticipants[$i]["Username"]) ||
+                $tempParticipants[$i]["Username"] == null ||
+                trim($tempParticipants[$i]["Username"]) == "") {
+                if (isset($tempParticipants[$i]["Email"]) &&
+                    $tempParticipants[$i]["Email"] != null &&
+                    trim($tempParticipants[$i]["Email"]) != "") {
+                    $tempParticipants[$i]["Username"] = $tempParticipants[$i]["Email"];
+                } else if (isset($existingParticipantsMap[$tempParticipants[$i]["PT ID"]]) &&
+                            count($existingParticipantsMap[$tempParticipants[$i]["PT ID"]]) > 0) {
+                    $tempParticipants[$i]["Username"] = array_keys($existingParticipantsMap[$tempParticipants[$i]["PT ID"]])[0];
+                    if ($tempParticipants[$i]["Username"] == "none" &&
+                        count($existingParticipantsMap[$tempParticipants[$i]["PT ID"]]) > 1) {
+                        $tempParticipants[$i]["Username"] = array_keys($existingParticipantsMap[$tempParticipants[$i]["PT ID"]])[1];
+                    }
+                    if ($tempParticipants[$i]["Username"] == "none") {
+                        $tempParticipants[$i]["Username"] = null;
+                    }
+                }
+            }
             if (!isset($tempParticipants[$i]["Username"]) ||
                 $tempParticipants[$i]["Username"] == null ||
                 trim($tempParticipants[$i]["Username"]) == "") {
@@ -709,21 +745,6 @@ class Application_Service_Participants {
             return $accumulator;
         }, $existingDataManagersMap);
 
-        $ptIdsInImport = array_column($tempParticipants, "PT ID");
-        $participantDb = new Application_Model_DbTable_Participants();
-        $existingParticipants = $participantDb->getParticipantsByUniqueIds($ptIdsInImport);
-        $existingParticipantsMap = array();
-        $existingParticipantsMap = array_reduce($existingParticipants, function($accumulator, $existingParticipant) {
-            if (!isset($accumulator[$existingParticipant["unique_identifier"]])) {
-                $accumulator[$existingParticipant["unique_identifier"]] = array();
-            }
-            if (isset($existingParticipant["username"]) && $existingParticipant["username"]) {
-                $accumulator[$existingParticipant["unique_identifier"]][$existingParticipant["username"]] = $existingParticipant;
-            } else {
-                $accumulator[$existingParticipant["unique_identifier"]]["none"] = $existingParticipant;
-            }
-            return $accumulator;
-        }, $existingParticipantsMap);
         $usernamePasswordMap = array();
         $tempParticipantsMap = array();
         for($i = 0; $i < count($tempParticipants); $i++) {
