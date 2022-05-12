@@ -1138,6 +1138,18 @@ class Application_Service_Participants {
                     }
                     $participantDb->updateParticipant($updatedParticipant);
                 }
+            } else if ($participantTempRecord["insert_user_link"]) {
+                $participant = $participantDb->getParticipant($participantTempRecord["participant_id"]);
+                $dataManagerToLink = null;
+                if ($dataManagerToUpdate["dm_id"] != null) {
+                    $dataManagerToLink = $userService->getUserInfoBySystemId($dataManagerToUpdate["dm_id"]);
+                } else {
+                    $dataManagerToLink = $userService->getUserInfo($participantTempRecord["username"]);
+                }
+                $participantDb->addParticipantManager(array(
+                    "datamanagerId" => $dataManagerToLink["dm_id"],
+                    "participants" => array($participant["participant_id"])
+                ));
             }
         }
 
