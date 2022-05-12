@@ -690,7 +690,13 @@ class Application_Service_Participants {
             $accumulator[$country["iso_name"]] = $country;
             return $accumulator;
         }, $countriesMap);
-
+        for($i = 0; $i < count($tempParticipants); $i++) {
+            if (!isset($tempParticipants[$i]["Username"]) ||
+                $tempParticipants[$i]["Username"] == null ||
+                trim($tempParticipants[$i]["Username"]) == "") {
+                $tempParticipants[$i]["Username"] = $tempParticipants[$i]["PT ID"]."@ept.systemone.id";
+            }
+        }
         $emailAddressesInImport = array_column($tempParticipants, "Username");
         $dataManagerDb = new Application_Model_DbTable_DataManagers();
         $existingDataManagers = $dataManagerDb->getDataManagersByEmailAddresses($emailAddressesInImport);
@@ -930,7 +936,9 @@ class Application_Service_Participants {
                                 "phone1" => $dataManager["mobile"],
                                 "semail" => $dataManager["secondary_email"]
                             );
-                            if (!isset($dataManager["last_name"]) || $dataManager["last_name"] == null || $dataManager["last_name"] == "") {
+                            if (!isset($dataManager["last_name"]) ||
+                                $dataManager["last_name"] == null ||
+                                $dataManager["last_name"] == "") {
                                 $updatedUser["fname"] = $participantTempRecord["lab_name"];
                             }
                             if ($participantTempRecord["update_username"]) {
@@ -949,8 +957,12 @@ class Application_Service_Participants {
                         }
                         $dataManagerIds[] = $dataManager["dm_id"];
                     } else {
+                        $fname = $participantTempRecord["lab_name"];
+                        if (strlen($fname) > 45) {
+                            $fname = substr($fname, 0, 45);
+                        }
                         $newUser = array(
-                            'fname' => $participantTempRecord["lab_name"],
+                            'fname' => $fname,
                             'phone2' => $participantTempRecord['phone_number'],
                             'userId' => $participantTempRecord['username'],
                             'password' => $participantTempRecord['password'],
