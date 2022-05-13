@@ -3926,8 +3926,22 @@ class Application_Service_Reports {
                 ),
             )
         );
+
         $queryString = file_get_contents(sprintf('%s/Reports/getTbAllSitesResultsSheet.sql', __DIR__));
-        $query = $db->query($queryString, array($shipmentId));
+
+        $authNameSpace = new Zend_Session_Namespace('administrators');
+        if ($authNameSpace->is_ptcc_coordinator) {
+            // Strip out non-PTCC fields
+            $pattern = '/--\s[-]+ START NON-PTCC COORDINATOR FIELDS [-]+(?s).*--\s[-]+ END NON-PTCC COORDINATOR FIELDS [-]+/';
+            $queryString = preg_replace($pattern, '', $queryString);
+            $query = $db->query($queryString, [$shipmentId, sprintf('%s', implode(', ', $authNameSpace->countries))]);
+        } else {
+            // Strip out non-PTCC fields
+            $pattern = '/--\s[-]+ START PTCC COORDINATOR FILTER [-]+(?s).*--\s[-]+ END PTCC COORDINATOR FILTER [-]+/';
+            $queryString = preg_replace($pattern, '', $queryString);
+            $query = $db->query($queryString, [$shipmentId]);
+        }
+
         $results = $query->fetchAll();
 
         $sheet = new PHPExcel_Worksheet($excel, "All Sites' Results");
