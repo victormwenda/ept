@@ -86,9 +86,12 @@ SELECT
     flattenedevaluationresults.`2 - score`,
     flattenedevaluationresults.`3 - score`,
     flattenedevaluationresults.`4 - score`,
-    flattenedevaluationresults.`5 - score`,
+    flattenedevaluationresults.`5 - score`
+-- --------------------------------------- START NON-PTCC COORDINATOR FIELDS ------------------------------------------
+    ,
     flattenedevaluationresults.`fin score`,
     flattenedevaluationresults.`sat / unsat`
+-- ---------------------------------------- END NON-PTCC COORDINATOR FIELDS -------------------------------------------
 
 FROM
     (
@@ -845,6 +848,10 @@ FROM
                 AND response_result_tb_5.sample_id = '5'
         WHERE
             shipment.shipment_id = ?
+-- ----------------------------------------- START PTCC COORDINATOR FILTER --------------------------------------------
+        AND
+            countries.id IN (?)
+-- ------------------------------------------ END PTCC COORDINATOR FILTER ---------------------------------------------
         GROUP BY
             shipment_participant_map.map_id
     )
