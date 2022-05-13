@@ -81,14 +81,14 @@ SELECT
     flattenedevaluationresults.`5-Probe 5`,
     flattenedevaluationresults.`5-Probe 6`,
     flattenedevaluationresults.`Comments`,
-    flattenedevaluationresults.`Comments for reports`,
+    flattenedevaluationresults.`Comments for reports`
+-- --------------------------------------- START NON-PTCC COORDINATOR FIELDS ------------------------------------------
+    ,
     flattenedevaluationresults.`1-Score`,
     flattenedevaluationresults.`2-Score`,
     flattenedevaluationresults.`3-Score`,
     flattenedevaluationresults.`4-Score`,
-    flattenedevaluationresults.`5-Score`
--- --------------------------------------- START NON-PTCC COORDINATOR FIELDS ------------------------------------------
-    ,
+    flattenedevaluationresults.`5-Score`,
     flattenedevaluationresults.`Fin Score`,
     flattenedevaluationresults.`Sat/Unsat`
 -- ---------------------------------------- END NON-PTCC COORDINATOR FIELDS -------------------------------------------
