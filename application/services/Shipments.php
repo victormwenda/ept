@@ -90,6 +90,7 @@ class Application_Service_Shipments {
         $authNameSpace = new Zend_Session_Namespace('administrators');
         if ($authNameSpace->is_ptcc_coordinator) {
             $sQuery = $sQuery->where("p.country IS NULL OR p.country IN (".implode(",",$authNameSpace->countries).")");
+            $sQuery = $sQuery->where("s.is_official = 1");
         }
 
         if (isset($parameters['scheme']) && $parameters['scheme'] != "") {
