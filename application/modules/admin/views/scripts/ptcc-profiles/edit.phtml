@@ -38,8 +38,7 @@ $authNameSpace = new Zend_Session_Namespace('administrators');
                 <div class="col-lg-5">
                     <input type="text" id="primaryEmail" name="primaryEmail" size="50" class="isRequired form-control isEmail"
                            title="Please enter the primary email id here" placeholder="Please enter the primary email id here"
-						   value="<?php echo $this->ptccProfile['primary_email']; ?>"
-                           onblur="checkDuplicate('system_admin', 'primary_email','primaryEmail','<?php echo "admin_id##" . (isset($this->ptccProfile['admin_id']) ? $this->ptccProfile['admin_id'] : '0'); ?>', 'This Email already exists for another Proficiency Testing Country Coordinator. Please try something else.');checkEmailId();"/>
+						   value="<?php echo $this->ptccProfile['primary_email']; ?>"/>
                 </div>
             </div>
             <div class="form-group">
@@ -55,8 +54,7 @@ $authNameSpace = new Zend_Session_Namespace('administrators');
                 <div class="col-lg-5">
                     <input type="password" id="password" name="password" size="50" value=""
                            class="form-control<?php if (!isset($this->ptccProfile['admin_id'])) { echo " isRequired"; } ?>"
-                           title="Please enter a password" placeholder="Please enter a password"
-                           onchange="validatePassword(this)"/>
+                           title="Please enter a password" onchange="validatePassword(this)" placeholder="Please enter a password"/>
                 </div>
             </div>
             <div class="form-group">
@@ -175,7 +173,7 @@ $authNameSpace = new Zend_Session_Namespace('administrators');
                 if (data > 0) {
                     alert(msg, "err");
                     duplicated = true;
-                    $("#"+obj).focus();
+                    // $("#"+obj).focus();
                 } else {
                     duplicated = false;
                 }
@@ -184,6 +182,8 @@ $authNameSpace = new Zend_Session_Namespace('administrators');
     }
 
     function validateNow() {
+        checkDuplicate('system_admin', 'primary_email','primaryEmail','<?php echo "admin_id##" . (isset($this->ptccProfile['admin_id']) ? $this->ptccProfile['admin_id'] : '0'); ?>', 'This Email already exists for another Proficiency Testing Country Coordinator. Please try something else.');
+        checkEmailId();
 	    flag = deforayValidator.init({
             formId: 'editPtccProfileForm'
 	    });
