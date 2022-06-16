@@ -757,8 +757,8 @@ class Application_Service_Participants {
             $username = "none";
             if (isset($tempParticipants[$i]["Username"]) && $tempParticipants[$i]["Username"]) {
                 $username = trim($tempParticipants[$i]["Username"]);
-                if (!preg_match("~^[\dA-Za-z@\.-]*$~", $username)) {
-                    throw new Exception("The sheet contains an invalid username ".$username." for PT ID ".$tempParticipants[$i]["PT ID"].". Usernames may only contain numbers, letters, @ signs, hyphens and periods. No spaces, semi colons or other special characters are allowed.");
+                if (!preg_match("~^[\dA-Za-z@\.\-_]*$~", $username)) {
+                    throw new Exception("The sheet contains an invalid username ".$username." for PT ID ".$tempParticipants[$i]["PT ID"].". Usernames may only contain numbers, letters, @ signs, hyphens, underscores and periods. No spaces, semi colons or other special characters are allowed.");
                 }
             }
             if (isset($tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$username])) {
@@ -803,7 +803,7 @@ class Application_Service_Participants {
             } else {
                 throw new Exception("The sheet contains a record where the country cannot be determined. Please check ".$tempParticipants[$i]["PT ID"]." in ".$tempParticipants[$i]["Country"]." to make sure that the country name is correctly spelled?");
             }
-            if (isset($existingDataManagersMap[$tempParticipants[$i]["Username"]])) {
+            if (isset($existingDataManagersMap[$tempParticipants[$i]["Username"]]) && isset($existingDataManagersMap[$username])) {
                 $tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$username]["dm_id"] = $existingDataManagersMap[$username]["dm_id"];
             }
             if (isset($existingParticipantsMap[$tempParticipants[$i]["PT ID"]])) {
