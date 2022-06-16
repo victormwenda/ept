@@ -889,12 +889,17 @@ class Application_Service_Participants {
                     $tempParticipantsMap[$ptId][$participantUsername]["Username"] &&
                     (strlen($participantUsername) < 12 || substr($participantUsername, -12, 10) != "systemone.") &&
                     (strlen($participantEmailAddress) < 12 || substr($participantEmailAddress, -12, 10) != "systemone.")) {
-                    $tempParticipantsMap[$ptId][$participantUsername]["Username"] = $participantEmailAddress;
+                    $tempParticipantsMap[$ptId][$participantUsername]["Username"] = trim($participantEmailAddress);
                 }
                 if ($tempParticipantsMap[$ptId][$participantUsername]["Username"]) {
                     $tempParticipantsMap[$ptId][$participantUsername]["status"] = $tempParticipantsMap[$ptId][$participantUsername]["Active"] == "No" ? "inactive" : "active";
                 }
                 $tempParticipantsMap[$ptId][$participantUsername]["participant_status"] = $participantActive == "No" ? "inactive" : "active";
+                if (!isset($tempParticipantsMap[$ptId][$participantUsername]["password"])
+                    || $tempParticipantsMap[$ptId][$participantUsername]["password"] == null
+                    || trim($tempParticipantsMap[$ptId][$participantUsername]["password"]) == "") {
+                    $record["password"] = "XTPT2022!";
+                }
                 $tempParticipantInserts[] = $tempParticipantsMap[$ptId][$participantUsername];
             }
         }
