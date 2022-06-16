@@ -901,7 +901,7 @@ class Application_Service_Participants {
                 if (!isset($tempParticipantsMap[$ptId][$participantUsername]["password"])
                     || $tempParticipantsMap[$ptId][$participantUsername]["password"] == null
                     || trim($tempParticipantsMap[$ptId][$participantUsername]["password"]) == "") {
-                    $record["password"] = "XTPT2022!";
+                    $tempParticipantsMap[$ptId][$participantUsername]["password"] = "XTPT2022!";
                 }
                 $tempParticipantInserts[] = $tempParticipantsMap[$ptId][$participantUsername];
             }
@@ -1064,8 +1064,8 @@ class Application_Service_Participants {
                         "fundingSource" => $participant["funding_source"]
                     );
                     $dataManagerToUpdate = null;
-                    if ($dataManagerToUpdate["dm_id"] != null) {
-                        $dataManagerToUpdate = $userService->getUserInfoBySystemId($dataManagerToUpdate["dm_id"]);
+                    if ($participantTempRecord["dm_id"] != null) {
+                        $dataManagerToUpdate = $userService->getUserInfoBySystemId($participantTempRecord["dm_id"]);
                     } else {
                         $dataManagerToUpdate = $userService->getUserInfo($participantTempRecord["username"]);
                     }
@@ -1149,8 +1149,8 @@ class Application_Service_Participants {
             } else if ($participantTempRecord["insert_user_link"]) {
                 $participant = $participantDb->getParticipant($participantTempRecord["participant_id"]);
                 $dataManagerToLink = null;
-                if ($dataManagerToUpdate["dm_id"] != null) {
-                    $dataManagerToLink = $userService->getUserInfoBySystemId($dataManagerToUpdate["dm_id"]);
+                if ($participantTempRecord["dm_id"] != null) {
+                    $dataManagerToLink = $userService->getUserInfoBySystemId($participantTempRecord["dm_id"]);
                 } else {
                     $dataManagerToLink = $userService->getUserInfo($participantTempRecord["username"]);
                 }
