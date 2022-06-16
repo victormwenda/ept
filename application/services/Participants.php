@@ -756,7 +756,10 @@ class Application_Service_Participants {
             }
             $username = "none";
             if (isset($tempParticipants[$i]["Username"]) && $tempParticipants[$i]["Username"]) {
-                $username = $tempParticipants[$i]["Username"];
+                $username = trim($tempParticipants[$i]["Username"]);
+                if (!preg_match("~^[\dA-Za-z@\.-]*$~", $username)) {
+                    throw new Exception("The sheet contains an invalid username ".$username." for PT ID ".$tempParticipants[$i]["PT ID"].". Usernames may only contain numbers, letters, @ signs, hyphens and periods. No spaces, semi colons or other special characters are allowed.");
+                }
             }
             if (isset($tempParticipantsMap[$tempParticipants[$i]["PT ID"]][$username])) {
                 throw new Exception("The sheet contains a duplicate records for ".$tempParticipants[$i]["PT ID"]." and ".$username.".");
