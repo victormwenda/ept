@@ -89,7 +89,8 @@ class Application_Service_Shipments {
 
         $authNameSpace = new Zend_Session_Namespace('administrators');
         if ($authNameSpace->is_ptcc_coordinator) {
-            $sQuery = $sQuery->where("p.country IS NULL OR p.country IN (".implode(",",$authNameSpace->countries).")");
+            $sQuery = $sQuery->where("p.country IN (".implode(",",$authNameSpace->countries).")");
+            $sQuery = $sQuery->where("s.is_official = 1");
         }
 
         if (isset($parameters['scheme']) && $parameters['scheme'] != "") {
@@ -160,9 +161,11 @@ class Application_Service_Shipments {
             $row[] = Application_Service_Common::ParseDateHumanFormat($rResult[$i]['distribution_date']);
             $row[] = Application_Service_Common::ParseDateHumanFormat($rResult[$i]['lastdate_response']);
             $row[] = $rResult[$i]['number_of_samples'];
-            $row[] = $rResult[$i]['total_participants'];
-            $row[] = $responseSwitch;
-            $row[] = ucfirst($rResult[$i]['status']);
+            if ($authNameSpace->is_ptcc_coordinator == 0) {
+                $row[] = $rResult[$i]['total_participants'];
+                $row[] = $responseSwitch;
+                $row[] = ucfirst($rResult[$i]['status']);
+            }
             $enrolled = '';
             $shipped = '';
             $announcementMail = '';
@@ -185,14 +188,17 @@ class Application_Service_Shipments {
             if ($rResult[$i]['status'] == 'configured') {
                 $manageResponses .= '&nbsp;<a class="btn btn-primary btn-xs" href="javascript:void(0);" onclick="shipDistribution(\'' . base64_encode($rResult[$i]['distribution_id']) . '\')"><span><i class="icon-ambulance"></i> Ship Now</span></a>';
             }
-            $delete = '';
-            if (!$authNameSpace->is_ptcc_coordinator) {
-                $delete = '&nbsp;<a class="btn btn-primary btn-xs" href="javascript:void(0);" onclick="removeShipment(\'' . base64_encode($rResult[$i]['shipment_id']) . '\', \'' . $rResult[$i]['shipment_id'] . '\')"><span><i class="icon-remove"></i> Delete</span></a>';
-            }
+            $delete = '&nbsp;<a class="btn btn-primary btn-xs" href="javascript:void(0);" onclick="removeShipment(\'' . base64_encode($rResult[$i]['shipment_id']) . '\', \'' . $rResult[$i]['shipment_id'] . '\')"><span><i class="icon-remove"></i> Delete</span></a>';
             $generateForms = '';
             if (!$authNameSpace->is_ptcc_coordinator) {
                 $generateForms = '&nbsp;<a class="btn btn-success btn-xs" href="javascript:void(0);" onclick="generateForms(\'' . base64_encode($rResult[$i]['shipment_id']) . '\')"><span><i class="icon-file"></i> Generate Forms</span></a>';
             }
+
+            // Disable specific actions if PTCC coordinator
+            if ($authNameSpace->is_ptcc_coordinator == 1) {
+                $edit = $delete = $manageResponses = $shipped = '';
+            }
+
             $row[] = $edit . $shipped . $enrolled . $delete . $announcementMail . $manageResponses . $generateForms;
             $output['aaData'][] = $row;
         }
@@ -2019,6 +2025,7 @@ class Application_Service_Shipments {
     }
 
     public function sendEmailToParticipants($params) {
+        $authNameSpace = new Zend_Session_Namespace('administrators');
         $commonServices = new Application_Service_Common();
         $general = new Pt_Commons_General();
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
@@ -2028,6 +2035,11 @@ class Application_Service_Shipments {
             ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array('p.email','participantName' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT p.lab_name ORDER BY p.lab_name SEPARATOR ', ')")))
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('SCHEME' => 'sl.scheme_name'))
             ->where("sp.shipment_id = ?", $params["shipmentId"]);
+
+        if (1 == $authNameSpace->is_ptcc_coordinator) {
+            $sQuery = $sQuery->where(new Zend_Db_Expr("p.country IN (".implode(',', $authNameSpace->countries).")"));
+        }
+
         if ($params["sendTo"] == "notSubmitted") {
             $sQuery = $sQuery->where(new Zend_Db_Expr("substr(sp.evaluation_status, 3, 1) = '9'"));
         }
