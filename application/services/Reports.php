@@ -3934,9 +3934,9 @@ class Application_Service_Reports {
             // Strip out non-PTCC fields
             $pattern = '/--\s[-]+ START NON-PTCC COORDINATOR FIELDS [-]+(?s).*--\s[-]+ END NON-PTCC COORDINATOR FIELDS [-]+/';
             $queryString = preg_replace($pattern, '', $queryString);
-            $query = $db->query($queryString, [$shipmentId, sprintf('%s', implode(', ', $authNameSpace->countries))]);
+            $query = $db->query($queryString, [$shipmentId, implode(',', $authNameSpace->countries)]);
         } else {
-            // Strip out non-PTCC fields
+            // Strip out non-PTCC filters
             $pattern = '/--\s[-]+ START PTCC COORDINATOR FILTER [-]+(?s).*--\s[-]+ END PTCC COORDINATOR FILTER [-]+/';
             $queryString = preg_replace($pattern, '', $queryString);
             $query = $db->query($queryString, [$shipmentId]);
