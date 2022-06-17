@@ -1147,7 +1147,6 @@ class Application_Service_Participants {
                     $participantDb->updateParticipant($updatedParticipant);
                 }
             } else if ($participantTempRecord["insert_user_link"]) {
-                $participant = $participantDb->getParticipant($participantTempRecord["participant_id"]);
                 $dataManagerToLink = null;
                 if ($participantTempRecord["dm_id"] != null) {
                     $dataManagerToLink = $userService->getUserInfoBySystemId($participantTempRecord["dm_id"]);
@@ -1156,8 +1155,22 @@ class Application_Service_Participants {
                 }
                 $participantDb->addParticipantManager(array(
                     "datamanagerId" => $dataManagerToLink["dm_id"],
-                    "participants" => array($participant["participant_id"])
+                    "participantId" => $participantTempRecord["participant_id"],
+                    "participants" => array($participantTempRecord["participant_id"])
                 ));
+                if ((isset($participantTempRecord["username"]) && $participantTempRecord["username"]) ||
+                    (isset($participantTempRecord["password"]) && $participantTempRecord["password"])) {
+                    $updatedUser = array(
+                        "userSystemId" => $dataManagerToLink["dm_id"]
+                    );
+                    if (isset($participantTempRecord["username"]) && $participantTempRecord["username"]) {
+                        $updatedUser["userId"] = $participantTempRecord["username"];
+                    }
+                    if (isset($participantTempRecord["username"]) && $participantTempRecord["username"]) {
+                        $updatedUser["password"] = $participantTempRecord['password'];
+                    }
+                    $userService->updateUser($updatedUser);
+                }
             }
         }
 
