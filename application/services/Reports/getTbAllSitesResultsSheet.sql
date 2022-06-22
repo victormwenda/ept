@@ -850,7 +850,7 @@ FROM
             shipment.shipment_id = ?
 -- ----------------------------------------- START PTCC COORDINATOR FILTER --------------------------------------------
         AND
-            countries.id IN (?)
+            FIND_IN_SET(countries.id, ?)
 -- ------------------------------------------ END PTCC COORDINATOR FILTER ---------------------------------------------
         GROUP BY
             shipment_participant_map.map_id

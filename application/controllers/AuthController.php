@@ -15,11 +15,11 @@ class AuthController extends Zend_Controller_Action
             $params = $this->getRequest()->getPost();
             $username = "";
             if (isset($params['username'])) {
-                $username = trim($params['username']);
+                $username = rtrim(ltrim($params['username']));
             }
             $password = "";
             if (isset($params['password'])) {
-                $password = trim($params['password']);
+                $password = rtrim(ltrim($params['password']));
             }
     		$db = Zend_Db_Table_Abstract::getDefaultAdapter();
     		$adapter = new Zend_Auth_Adapter_DbTable($db, "data_manager", "primary_email", "password");

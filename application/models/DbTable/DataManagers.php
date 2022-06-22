@@ -197,14 +197,24 @@ class Application_Model_DbTable_DataManagers extends Zend_Db_Table_Abstract {
     public function updateUser($params) {
 	    $authNameSpace = new Zend_Session_Namespace('administrators');
         $data = array(
-            'first_name' => $params['fname'],
-            'last_name' => $params['lname'],
-            'phone' => $params['phone2'],
-            'mobile' => $params['phone1'],
-            'secondary_email' => $params['semail'],
-	        'updated_by' => $authNameSpace->admin_id,
-            'updated_on' => new Zend_Db_Expr('now()')
+            "updated_by" => $authNameSpace->admin_id,
+            "updated_on" => new Zend_Db_Expr("now()")
         );
+        if (isset($params["fname"])) {
+            $data["first_name"] = $params["fname"];
+        }
+        if (isset($params["lname"])) {
+            $data["last_name"] = $params["lname"];
+        }
+        if (isset($params["phone2"])) {
+            $data["phone"] = $params["phone2"];
+        }
+        if (isset($params["phone1"])) {
+            $data["mobile"] = $params["phone1"];
+        }
+        if (isset($params["semail"])) {
+            $data["secondary_email"] = $params["semail"];
+        }
 	    if (isset($params['institute']) && $params['institute'] != "") {
             $data['institute'] = $params['institute'];
         }
