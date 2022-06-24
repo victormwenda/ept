@@ -696,13 +696,20 @@ class Application_Service_Participants {
         $ptIdsInImport = array_map(function ($ptId) {
             return trim($ptId);
         }, array_column($tempParticipants, "PT ID"));
+        $validUsernamePattern = "~^[\dA-Za-z@\.\-_]*$~";
         $participantDb = new Application_Model_DbTable_Participants();
         $existingParticipants = $participantDb->getParticipantsByUniqueIds($ptIdsInImport);
         $existingParticipantsMap = array();
-        $existingParticipantsMap = array_reduce($existingParticipants, function($accumulator, $existingParticipant) {
+        $existingParticipantsMap = array_reduce($existingParticipants, function($accumulator, $existingParticipant) use($validUsernamePattern) {
             $existingParticipant["unique_identifier"] = trim($existingParticipant["unique_identifier"]);
             if (!isset($accumulator[$existingParticipant["unique_identifier"]])) {
                 $accumulator[$existingParticipant["unique_identifier"]] = array();
+            }
+            if (isset($existingParticipant["username"]) && $existingParticipant["username"]) {
+                $existingParticipant["username"] = strtolower(trim($existingParticipant["username"]));
+                if (!preg_match($validUsernamePattern, $existingParticipant["username"])) {
+                    $existingParticipant["username"] = null;
+                }
             }
             if (isset($existingParticipant["username"]) && $existingParticipant["username"]) {
                 $accumulator[$existingParticipant["unique_identifier"]][$existingParticipant["username"]] = $existingParticipant;
@@ -711,21 +718,38 @@ class Application_Service_Participants {
             }
             return $accumulator;
         }, $existingParticipantsMap);
-        
         for($i = 0; $i < count($tempParticipants); $i++) {
+            if (isset($tempParticipants[$i]["Email"]) &&
+                $tempParticipants[$i]["Email"] != null &&
+                trim($tempParticipants[$i]["Email"]) != "") {
+                $tempParticipants[$i]["Email"] = strtolower(trim($tempParticipants[$i]["Email"]));
+                if (!preg_match($validUsernamePattern, $tempParticipants[$i]["Email"])) {
+                    $tempParticipants[$i]["Email"] = null;
+                }
+            }
+            if (isset($tempParticipants[$i]["Username"]) &&
+                $tempParticipants[$i]["Username"]) {
+                $tempParticipants[$i]["Username"] = strtolower(trim($tempParticipants[$i]["Username"]));
+            }
             if (!isset($tempParticipants[$i]["Username"]) ||
                 $tempParticipants[$i]["Username"] == null ||
                 trim($tempParticipants[$i]["Username"]) == "") {
                 if (isset($tempParticipants[$i]["Email"]) &&
                     $tempParticipants[$i]["Email"] != null &&
                     trim($tempParticipants[$i]["Email"]) != "") {
-                    $tempParticipants[$i]["Username"] = $tempParticipants[$i]["Email"];
+                    $tempParticipants[$i]["Username"] = trim($tempParticipants[$i]["Email"]);
                 } else if (isset($existingParticipantsMap[$tempParticipants[$i]["PT ID"]]) &&
                             count($existingParticipantsMap[$tempParticipants[$i]["PT ID"]]) > 0) {
-                    $tempParticipants[$i]["Username"] = array_keys($existingParticipantsMap[$tempParticipants[$i]["PT ID"]])[0];
-                    if ($tempParticipants[$i]["Username"] == "none" &&
+                    $tempParticipants[$i]["Username"] = trim(array_keys($existingParticipantsMap[$tempParticipants[$i]["PT ID"]])[0]);
+                    if (($tempParticipants[$i]["Username"] == "none" ||
+                         !preg_match($validUsernamePattern, trim($tempParticipants[$i]["Username"]))) &&
                         count($existingParticipantsMap[$tempParticipants[$i]["PT ID"]]) > 1) {
-                        $tempParticipants[$i]["Username"] = array_keys($existingParticipantsMap[$tempParticipants[$i]["PT ID"]])[1];
+                        for ($ii = 1; $ii < count($existingParticipantsMap[$tempParticipants[$i]["PT ID"]]); $ii++) {
+                            if (preg_match($validUsernamePattern, trim(array_keys($existingParticipantsMap[$tempParticipants[$i]["PT ID"]])[$ii]))) {
+                                $tempParticipants[$i]["Username"] = trim(array_keys($existingParticipantsMap[$tempParticipants[$i]["PT ID"]])[$ii]);
+                                break;
+                            }
+                        }
                     }
                     if ($tempParticipants[$i]["Username"] == "none") {
                         $tempParticipants[$i]["Username"] = null;
@@ -764,7 +788,7 @@ class Application_Service_Participants {
             $username = "none";
             if (isset($tempParticipants[$i]["Username"]) && $tempParticipants[$i]["Username"]) {
                 $username = trim($tempParticipants[$i]["Username"]);
-                if (!preg_match("~^[\dA-Za-z@\.\-_]*$~", $username)) {
+                if (!preg_match($validUsernamePattern, $username)) {
                     throw new Exception("The sheet contains an invalid username ".$username." for PT ID ".$tempParticipants[$i]["PT ID"].". Usernames may only contain numbers, letters, @ signs, hyphens, underscores and periods. No spaces, semi colons or other special characters are allowed.");
                 }
             }
@@ -917,7 +941,11 @@ class Application_Service_Participants {
                 if (!isset($tempParticipantsMap[$ptId][$participantUsername]["password"])
                     || $tempParticipantsMap[$ptId][$participantUsername]["password"] == null
                     || trim($tempParticipantsMap[$ptId][$participantUsername]["password"]) == "") {
-                    $tempParticipantsMap[$ptId][$participantUsername]["password"] = "XTPT2022!";
+                    if (isset($usernamePasswordMap[$participantUsername]) && $usernamePasswordMap[$participantUsername]) {
+                        $tempParticipantsMap[$ptId][$participantUsername]["password"] = $usernamePasswordMap[$participantUsername];
+                    } else {
+                        $tempParticipantsMap[$ptId][$participantUsername]["password"] = "XTPT2022!";
+                    }
                 }
                 $tempParticipantInserts[] = $tempParticipantsMap[$ptId][$participantUsername];
             }
