@@ -1,0 +1,125 @@
+{
+    "heading": "XTPT Participant Feedback Survey",
+    "description": "Take the satisfaction survey and provide feedback for each shipment",
+    "questions": [
+        {
+            "text": "The Xpert TB Proficiency Testing (XTPT) Panel was received in good condition.",
+            "type": "choice",
+            "choices": {
+                "Strongly Agree": 5,
+                "Agree": 4,
+                "Neutral": 3,
+                "Disagree": 2,
+                "Strongly Disagree": 1
+            }
+        },
+        {
+            "text": "The XTPT panel testing instructions were well organized and easy to understand.",
+            "type": "choice",
+            "choices": {
+                "Strongly Agree": 5,
+                "Agree": 4,
+                "Neutral": 3,
+                "Disagree": 2,
+                "Strongly Disagree": 1
+            }
+        },
+        {
+            "text": "The Dried Tube Specimen (DTS) sample type is easy to rehydrate and test.",
+            "type": "choice",
+            "choices": {
+                "Strongly Agree": 5,
+                "Agree": 4,
+                "Neutral": 3,
+                "Disagree": 2,
+                "Strongly Disagree": 1
+            }
+        },
+        {
+            "text": "Result submission using ePT is simple to complete.",
+            "type": "choice",
+            "choices": {
+                "Strongly Agree": 5,
+                "Agree": 4,
+                "Neutral": 3,
+                "Disagree": 2,
+                "Strongly Disagree": 1
+            }
+        },
+        {
+            "text": "The turnaround time between result submission and performance report receipt for this round of XTPT was within the estimated time frame indicated on the annual invitation.",
+            "type": "choice",
+            "choices": {
+                "Strongly Agree": 5,
+                "Agree": 4,
+                "Neutral": 3,
+                "Disagree": 2,
+                "Strongly Disagree": 1
+            }
+        },
+        {
+            "text": "The XTPT Participant Summary Report, including the analysis of all participants' results, is easy to read and interpret.",
+            "type": "choice",
+            "choices": {
+                "Strongly Agree": 5,
+                "Agree": 4,
+                "Neutral": 3,
+                "Disagree": 2,
+                "Strongly Disagree": 1
+            }
+        },
+        {
+            "text": "The XTPT Individual Performance Report, including my site's score and test results, is easy to read and interpret.",
+            "type": "choice",
+            "choices": {
+                "Strongly Agree": 5,
+                "Agree": 4,
+                "Neutral": 3,
+                "Disagree": 2,
+                "Strongly Disagree": 1
+            }
+        },
+        {
+            "text": "How can the XTPT panel testing instructions, dried tube specimen sample type, ePT result submission process, or performance and summary reports be improved?",
+            "type": "text",
+            "max_length": 200
+        },
+        {
+            "text": "If my site receives an unsatisfactory score (or less than 100% on an XTPT panel), a representative from the national or subnational TB or quality assurance program(s) contacts me to follow up and helps me to determine the cause.",
+            "type": "choice",
+            "choices": {
+                "Strongly Agree": 5,
+                "Agree": 4,
+                "Neutral": 3,
+                "Disagree": 2,
+                "Strongly Disagree": 1
+            }
+        },
+        {
+            "text": "How can follow-up and corrective action for unsatisfactory scores be improved?",
+            "type": "text",
+            "max_length": 200
+        },
+        {
+            "text": "My testing site uses XTPT program results to improve the quality of patient testing.",
+            "type": "choice",
+            "choices": {
+                "Strongly Agree": 5,
+                "Agree": 4,
+                "Neutral": 3,
+                "Disagree": 2,
+                "Strongly Disagree": 1
+            }
+        },
+        {
+            "text": "Were there any challenges or barriers to participating in the XTPT program? If yes, please list the specific challenges (i.e., instrument operational status, facility access, equipment availability, reagent availability, personnel availability to conduct tests or report results).",
+            "type": "text",
+            "max_length": 200
+        },
+        {
+            "text": "Do you have additional suggestions or comments to help improve the XTPT program?",
+            "type": "text",
+            "max_length": 200
+        }
+    ]
+}

@@ -1237,6 +1237,7 @@ class Application_Service_Shipments {
         $data = array(
             'shipment_code' => $params['shipmentCode'],
             'distribution_id' => $distro['distribution_id'],
+            "cs_survey" => empty(trim($params["cs_survey"])) ? null : trim($params["cs_survey"]),
             'scheme_type' => 'tb',
             'shipment_date' => $distro['distribution_date'],
             'number_of_samples' => count($params['sampleName']) - $controlCount,
@@ -1448,6 +1449,17 @@ class Application_Service_Shipments {
     }
 
     public function updateShipment($params) {
+
+        if (!empty(trim($params["cs_survey"]))) {
+            $json_decoded = json_decode($params["cs_survey"]);
+            if (0 !== json_last_error()) {
+                $sessionAlert = new Zend_Session_Namespace('alertSpace');
+                $sessionAlert->message = "The survey data is malformed";
+                $sessionAlert->status = "failure";
+                return false;
+            }
+        }
+
         $dbAdapter = Zend_Db_Table_Abstract::getDefaultAdapter();
         $shipmentRow = $dbAdapter->fetchRow($dbAdapter->select()
             ->from(array("s" => "shipment"))
@@ -1628,12 +1640,14 @@ class Application_Service_Shipments {
         $dbAdapter->update("shipment", array(
             "number_of_samples" => $size - $controlCount,
             "number_of_controls" => $controlCount,
+            "cs_survey" => empty(trim($params["cs_survey"])) ? null : trim($params["cs_survey"]),
 			"shipment_code" => $params["shipmentCode"],
 			"lastdate_response" => Application_Service_Common::ParseDate($params["lastDate"]),
             "is_official" => $params["isOfficial"] == "yes" ? 1 : 0,
             "updated_by_admin" => $admin,
             "updated_on_admin" => new Zend_Db_Expr("now()")
         ), "shipment_id = " . $params["shipmentId"]);
+        return true;
     }
 
     public function receiveShipment($params) {
