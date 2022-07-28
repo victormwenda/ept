@@ -1225,6 +1225,12 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
          * SQL queries
          * Get data to display
          */
+
+        $csSurveyAvailable = 's.cs_survey IS NOT NULL';
+        $csSurveyWindowOpen = 'spm.shipment_test_report_date IS NOT NULL AND DATE_ADD(CAST(spm.shipment_test_report_date AS DATE), INTERVAL 2 WEEK) > NOW()';
+        $csSurveyCanRespond = 'spm.report_generated=\'no\' AND s.status=\'shipped\' AND ' . $csSurveyAvailable . ' AND ' . $csSurveyWindowOpen;
+        $csSurveyHasResponded = 'spm.cs_survey_response IS NOT NULL';
+
         $sQuery = $this->getAdapter()->select()->from(array('s' => 'shipment'), array(
                 'SHIP_YEAR' => 'year(s.shipment_date)',
                 's.scheme_type',
@@ -1240,7 +1246,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
                 "RESPONSEDATE" => "DATE_FORMAT(spm.shipment_test_report_date,'%Y-%m-%d')",
                 "RESPONSE" => new Zend_Db_Expr("CASE substr(spm.evaluation_status,3,1) WHEN 1 THEN 'View' WHEN '9' THEN 'Enter Result' END"),
                 "REPORT" => new Zend_Db_Expr("CASE WHEN spm.report_generated='yes' AND s.status='finalized' THEN 'Report' END"),
-                "SURVEY" => new Zend_Db_Expr("CASE WHEN COALESCE(spm.report_generated, 'no') != 'yes' AND s.cs_survey IS NOT NULL THEN CASE WHEN spm.cs_survey_response IS NULL THEN 'Answer Survey' ELSE 'Survey Response' END END")
+                "SURVEY" => new Zend_Db_Expr("CASE WHEN $csSurveyCanRespond THEN CASE WHEN $csSurveyHasResponded THEN 'Edit Survey' ELSE 'Answer Survey' END END")
             ))
             ->join(array('p' => 'participant'), 'p.participant_id=spm.participant_id', array(
                 'p.unique_identifier',
