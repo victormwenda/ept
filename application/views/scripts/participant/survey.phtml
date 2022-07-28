@@ -59,8 +59,8 @@ foreach ($this->survey['questions'] as $k => $question) {
     <select class="form-control" name="response[<?php echo $k; ?>]" required>
         <?php foreach (array_merge(['Please select...' => ''], $question['choices']) as $label => $value) { ?>
             <option
-                <?php if ($value == @($this->response[$k])) echo 'selected '; ?>
-                <?php if (empty($value)) echo 'disabled '; ?>
+                <?php if ("$value" === @trim($this->response[$k])) echo 'selected '; ?>
+                <?php if ('' === trim($value)) echo 'disabled '; ?>
                 value="<?php echo htmlentities($value) ?>"
             ><?php echo htmlentities($label) ?></option>
         <?php } ?>
