@@ -90,7 +90,8 @@ SELECT
     flattenedevaluationresults.`4-Score`,
     flattenedevaluationresults.`5-Score`,
     flattenedevaluationresults.`Fin Score`,
-    flattenedevaluationresults.`Sat/Unsat`
+    flattenedevaluationresults.`Sat/Unsat`,
+    flattenedevaluationresults.`cs_survey_response`
 -- ---------------------------------------- END NON-PTCC COORDINATOR FIELDS -------------------------------------------
 
 FROM
@@ -799,7 +800,8 @@ FROM
                 ELSE
                     'Unsatisfactory'
             END
-            AS `Sat/Unsat`
+            AS `Sat/Unsat`,
+            shipment_participant_map.cs_survey_response
         FROM
             shipment
             JOIN
