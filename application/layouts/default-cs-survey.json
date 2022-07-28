@@ -92,7 +92,8 @@
                 "Agree": 4,
                 "Neutral": 3,
                 "Disagree": 2,
-                "Strongly Disagree": 1
+                "Strongly Disagree": 1,
+                "N/A": 0
             }
         },
         {
