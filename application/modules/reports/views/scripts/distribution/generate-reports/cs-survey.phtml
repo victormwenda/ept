@@ -1,0 +1,50 @@
+
+<?php
+
+$borderColour = '#000000';
+$selectedColour = '#B6DDE8';
+$disabledColour = '#888888';
+
+$qNoWidth = 5;
+$choiceWidth = round(55 / count($pdf->surveyData['main_choices']));
+$choicesWidth = count($pdf->surveyData['main_choices']) * $choiceWidth;
+$colTextWidth = 100 - $qNoWidth - $choicesWidth;
+
+?>
+
+<table cellpadding="2" style="width:100%; font-size:8pt;">
+    <tr>
+        <th rowspan="2" style="border:solid 1px <?php echo $borderColour; ?>; text-align:center;" width="<?php echo $qNoWidth; ?>%">No.</th>
+        <th rowspan="2" style="border:solid 1px <?php echo $borderColour; ?>; text-align:center;" width="<?php echo $colTextWidth; ?>%"><h3 style="margin: 0;">XTPT Participant Feedback Survey</h3></th>
+        <th colspan="<?php echo count($pdf->surveyData['main_choices']) ?>" style="border:solid 1px <?php echo $borderColour; ?>; text-align:center;" width="<?php echo $choicesWidth; ?>%">Rating System (Points assigned for each result)</th>
+    </tr>
+    <tr>
+<?php foreach ($pdf->surveyData['main_choices'] as $v) if ($v > 0) { ?>
+        <th style="border:solid 1px <?php echo $borderColour; ?>; text-align:center;" width="<?php echo $choiceWidth; ?>%"><?php echo $v; ?></th>
+<?php } else { ?>
+        <th style="border:solid 1px <?php echo $borderColour; ?>; text-align:center;" width="<?php echo $choiceWidth; ?>%" bgcolor="<?php echo $disabledColour; ?>"></th>
+<?php } ?>
+    </tr>
+<?php
+foreach ($pdf->surveyData['questions'] as $k => $Question) {
+$response = array_key_exists($k, $cs_survey_response) ? $cs_survey_response[$k] : null;
+?>
+    <tr>
+        <td style="border:solid 1px <?php echo $borderColour; ?>; text-align:center;"><?php echo $k + 1; ?></td>
+        <td style="border:solid 1px <?php echo $borderColour; ?>; text-align:left;"><?php echo htmlentities($Question['text']); ?></td>
+<?php if ('choice' === $Question['type']) { foreach ($Question['choices'] as $label => $value) { if ("$response" == "$value") { ?>
+        <td style="border:solid 1px <?php echo $borderColour; ?>; text-align:center;" bgcolor="<?php echo $selectedColour; ?>"><b><?php echo $label; ?></b></td>
+<?php } else { ?>
+        <td style="border:solid 1px <?php echo $borderColour; ?>; text-align:center;"><?php echo $label; ?></td>
+<?php } } for ($i = 0; $i <= (count($pdf->surveyData['main_choices']) - count($Question['choices'])); $i++) { ?>
+        <td style="border:solid 1px <?php echo $borderColour; ?>; text-align:center;" bgcolor="<?php echo $disabledColour; ?>"></td>
+<?php } } elseif ('text' === $Question['type']) { if (!empty(trim("$response"))) { ?>
+        <td style="border:solid 1px <?php echo $borderColour; ?>; text-align:left;" bgcolor="<?php echo $selectedColour; ?>" colspan="<?php echo count($pdf->surveyData['main_choices']) ?>"><?php echo htmlentities($response); ?></td>
+<?php } else { ?>
+        <td style="border:solid 1px <?php echo $borderColour; ?>; text-align:center;" bgcolor="<?php echo $disabledColour; ?>" colspan="<?php echo count($pdf->surveyData['main_choices']) ?>"></td>
+<?php } } ?>
+    </tr>
+<?php } ?>
+</table>
+
+<p style="font-size:8pt;"><b>* No scoring for N/A and Free Text responses.</b></p>

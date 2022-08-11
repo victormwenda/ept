@@ -1,4 +1,5 @@
 <?php
+
 require_once('tcpdf/tcpdf.php');
 $pdfNew = new Zend_Pdf();
 $extractor = new Zend_Pdf_Resource_Extractor();
@@ -12,6 +13,9 @@ if (sizeof($this->result['shipment']) > 0) {
         mkdir($reportsFolderPath);
     }
     class MYPDF extends TCPDF {
+
+        public $totalPageCount = 3, $surveyData;
+
         public $result = array();
         public function setSchemeName($header, $logo, $logoRight, $comingFrom) {
             $this->header = $header;
@@ -40,7 +44,7 @@ if (sizeof($this->result['shipment']) > 0) {
             }
             $html .= '       </td>';
             $html .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.htmlspecialchars($this->result['unique_identifier'], ENT_XML1).'</td>';
-            $html .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.$this->getAliasNumPage().'/3</td>';
+            $html .= '	     <td style="text-align:center;border-bottom:solid 10px #000000;">'.$this->getAliasNumPage().'/' . $this->totalPageCount . '</td>';
             $html .= '    </tr>';
             $html .= '</table>';
             $this->writeHTMLCell(0, 10, 15, 20, $html, 0, 0, 0, true, 'J', true);
@@ -116,6 +120,29 @@ if (sizeof($this->result['shipment']) > 0) {
         }
 
         $pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+
+        // --------------------- START CUSTOMER SATISFACTION SURVERY REPORT ---------------------
+        if (null !== $result['cs_survey']) {
+            $cs_survey = json_decode($result['cs_survey'], true);
+            if (0 === json_last_error()) {
+
+                $pdf->totalPageCount++;
+                $pdf->surveyData = $cs_survey;
+                $pdf->surveyData['questions'] = isset($pdf->surveyData['questions']) && is_array($pdf->surveyData['questions']) ? $pdf->surveyData['questions'] : [];
+                $pdf->surveyData['main_choices'] = [];
+
+                foreach ($pdf->surveyData['questions'] as &$question) {
+                    $question['type'] = isset($question['type']) ? $question['type'] : 'text';
+                    if ('choice' === $question['type']) {
+                        if (count($pdf->surveyData['main_choices']) < count($question['choices'])) {
+                            $pdf->surveyData['main_choices'] = $question['choices'];
+                        }
+                    }
+                }
+
+            }
+        }
+        // ---------------------- END CUSTOMER SATISFACTION SURVERY REPORT ----------------------
 
         $pdf->result = $result;
         $pdf->setSchemeName($this->header, $this->logo, $this->logoRight, $this->comingFrom);
@@ -456,6 +483,19 @@ if (sizeof($this->result['shipment']) > 0) {
         $longitudinalPerformanceSvg .= '    <text x="168" y="143" dominant-baseline="middle" style="fill:#666666;font-family:helvetica;font-size:5pt">Mean Score of All Participating Sites</text>';
         $longitudinalPerformanceSvg .= '</svg>';
         $pdf->ImageSVG('@' . $longitudinalPerformanceSvg, 15, 210, 180, 70);
+
+        // --------------------- START CUSTOMER SATISFACTION SURVERY REPORT ---------------------
+        if ($pdf->surveyData) {
+            $cs_survey_response = json_decode($result['cs_survey_response'], true);
+            if (0 !== json_last_error()) {
+                $cs_survey_response = [];
+            }
+            $pdf->AddPage();
+            ob_start(); include(sprintf('%s/generate-reports/cs-survey.phtml', __DIR__)); $satisfactionSurveyReport = ob_get_contents(); ob_end_clean();
+            $pdf->writeHTMLTogether($satisfactionSurveyReport, true, false, true, false, '');
+        }
+        // ---------------------- END CUSTOMER SATISFACTION SURVERY REPORT ----------------------
+
         $pdf->AddPage();
 
         $finalisedBy = '<br/><p style="width:100%;font-size:10pt;">Report Issued by: Patricia Hall-Eidson&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Date:&nbsp;';
