@@ -778,7 +778,7 @@ class Application_Service_Shipments {
         $evaluationStatus = $shipmentMapFromDatabase['evaluation_status'];
         $submitted = $evaluationStatus[2] == '1' ||
             (isset($params['submitAction']) && $params['submitAction'] == 'submit');
-        if (!$submitted && trim($params['submitResponse']) != 'yes') {
+        if (!$submitted && isset($params['submitResponse']) && trim($params['submitResponse']) != 'yes') {
             return "";
         }
         if (isset($params['unableToSubmit']) && $params['unableToSubmit'] == "yes") {
@@ -1037,7 +1037,7 @@ class Application_Service_Shipments {
             return "The submission cannot be edited at this point in time.";
         }
         $shipmentData = $this->getShipmentParticipantMap($params['shipmentId'], $params['participantId']);
-        $validationErrorMessages = $this->validateUpdateTbResultFooter($params, $shipmentData);
+        $validationErrorMessages = $this->validateUpdateTbResults($params, $shipmentData);
         if ($validationErrorMessages != "") {
             return $validationErrorMessages;
         }
