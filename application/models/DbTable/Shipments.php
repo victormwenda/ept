@@ -1227,10 +1227,10 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
          * Get data to display
          */
 
-        $csSurveyAvailable = 's.cs_survey IS NOT NULL';
-        $csSurveyWindowOpen = 'spm.shipment_test_report_date IS NOT NULL AND DATE_ADD(CAST(spm.shipment_test_report_date AS DATE), INTERVAL 2 WEEK) > NOW()';
-        $csSurveyCanRespond = 'spm.report_generated=\'no\' AND s.status=\'shipped\' AND ' . $csSurveyAvailable . ' AND ' . $csSurveyWindowOpen;
+        $csSurveyAvailable = 'spm.shipment_test_report_date IS NOT NULL AND s.cs_survey IS NOT NULL';
+        $csSurveyCanRespond = 'spm.report_generated=\'yes\' AND s.status=\'finalized\' AND ' . $csSurveyAvailable;
         $csSurveyHasResponded = 'spm.cs_survey_response IS NOT NULL';
+        $csSurveyHasExpired = 'DATE_ADD(CAST(spm.shipment_test_report_date AS DATE), INTERVAL +2 WEEK) < NOW()';
 
         $sQuery = $this->getAdapter()->select()->from(array('s' => 'shipment'), array(
                 'SHIP_YEAR' => 'year(s.shipment_date)',
@@ -1247,7 +1247,7 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
                 "RESPONSEDATE" => "DATE_FORMAT(spm.shipment_test_report_date,'%Y-%m-%d')",
                 "RESPONSE" => new Zend_Db_Expr("CASE substr(spm.evaluation_status,3,1) WHEN 1 THEN 'View' WHEN '9' THEN 'Enter Result' END"),
                 "REPORT" => new Zend_Db_Expr("CASE WHEN spm.report_generated='yes' AND s.status='finalized' THEN 'Report' END"),
-                "SURVEY" => new Zend_Db_Expr("CASE WHEN $csSurveyCanRespond THEN CASE WHEN $csSurveyHasResponded THEN 'Edit Survey' ELSE 'Answer Survey' END END")
+                "SURVEY" => new Zend_Db_Expr("CASE WHEN $csSurveyCanRespond THEN CASE WHEN $csSurveyHasExpired THEN 'Survey Expired' WHEN $csSurveyHasResponded THEN 'Edit Survey' ELSE 'Answer Survey' END END")
             ))
             ->join(array('p' => 'participant'), 'p.participant_id=spm.participant_id', array(
                 'p.unique_identifier',
