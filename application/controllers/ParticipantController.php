@@ -213,23 +213,23 @@ class ParticipantController extends Zend_Controller_Action {
                 ], sprintf('map_id = %u', $map_id));
                 $this->_redirect("/participant/report");
             }
-        $result = $db->fetchRow($db->select()
-            ->from(array('spm' => 'shipment_participant_map'), array('spm.map_id', 'spm.cs_survey_response'))
-            ->join(array('s' => 'shipment'), 's.shipment_id=spm.shipment_id', array('s.shipment_code', 's.cs_survey'))
-            ->join(array('p' => 'participant'), 'p.participant_id=spm.participant_id', array('p.lab_name'))
-            ->where("spm.map_id = ?", $map_id));
+            $result = $db->fetchRow($db->select()
+                ->from(array('spm' => 'shipment_participant_map'), array('spm.map_id', 'spm.cs_survey_response'))
+                ->join(array('s' => 'shipment'), 's.shipment_id=spm.shipment_id', array('s.shipment_code', 's.cs_survey'))
+                ->join(array('p' => 'participant'), 'p.participant_id=spm.participant_id', array('p.lab_name'))
+                ->where("spm.map_id = ?", $map_id));
 
-        if (!$result) {
-            $this->_redirect("/participant/report");
-        }
+            if (!$result) {
+                $this->_redirect("/participant/report");
+            }
 
-        $this->view->survey = json_decode($result['cs_survey'], true);
-        if (0 !== json_last_error()) {
-            throw new RuntimeException('Malformed survey data');
-        }
+            $this->view->survey = json_decode($result['cs_survey'], true);
+            if (0 !== json_last_error()) {
+                throw new RuntimeException('Malformed survey data');
+            }
 
-        $this->view->response = json_decode($result['cs_survey_response'], true);
-        if (0 !== json_last_error()) $this->view->response = null;
+            $this->view->response = json_decode($result['cs_survey_response'], true);
+            if (0 !== json_last_error()) $this->view->response = null;
 
         } else {
             $this->_redirect("/participant/report");
