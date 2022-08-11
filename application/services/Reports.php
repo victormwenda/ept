@@ -3967,7 +3967,7 @@ class Application_Service_Reports {
 
         if (is_array($csSurvey) && array_key_exists('questions', $csSurvey)) {
             foreach ($csSurvey['questions'] as $ix => $node) {
-                $sheet->getCellByColumnAndRow($columnIndex, 1)->setValueExplicit(html_entity_decode(sprintf('Survey Q%u', $ix + 1), ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $sheet->getCellByColumnAndRow($columnIndex, 1)->setValueExplicit(html_entity_decode($node['text'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
                 $sheet->getStyleByColumnAndRow($columnIndex, 1)->applyFromArray($borderStyle);
                 $columnIndex++;
             }
@@ -3991,7 +3991,7 @@ class Application_Service_Reports {
                         $answer = array_key_exists($ix, $csSurveryResponse) ? $csSurveryResponse[$ix] : '';
                         switch ($question['type']) {
                             case 'choice' :
-                                $answer = sprintf('%s: %s', $answer, array_search($answer, $question['choices']));
+                                // $answer = sprintf('%s: %s', $answer, array_search($answer, $question['choices']));
                             break;
                         }
                         $sheet->getCellByColumnAndRow($columnIndex, $rowNumber)->setValueExplicit(html_entity_decode($answer, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
