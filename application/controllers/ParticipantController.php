@@ -224,7 +224,7 @@ class ParticipantController extends Zend_Controller_Action {
             }
 
             $configFile = APPLICATION_PATH . '/configs/config.local.ini';
-            if (!is_file($conigfFile)) {
+            if (!is_file($configFile)) {
                 $configFile = APPLICATION_PATH . '/configs/config.ini';
             }
             $config = new Zend_Config_Ini($configFile, APPLICATION_ENV);

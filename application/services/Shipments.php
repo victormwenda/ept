@@ -8,7 +8,7 @@ class Application_Service_Shipments {
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
 
         $configFile = APPLICATION_PATH . '/configs/config.local.ini';
-        if (!is_file($conigFile)) {
+        if (!is_file($configFile)) {
             $configFile = APPLICATION_PATH . '/configs/config.ini';
         }
         $config = new Zend_Config_Ini($configFile, APPLICATION_ENV);
@@ -2057,7 +2057,7 @@ class Application_Service_Shipments {
     public function sendSurveyReminderEmail($params) {
 
         $configFile = APPLICATION_PATH . '/configs/config.local.ini';
-        if (!is_file($conigfFile)) {
+        if (!is_file($configFile)) {
             $configFile = APPLICATION_PATH . '/configs/config.ini';
         }
         $config = new Zend_Config_Ini($configFile, APPLICATION_ENV);
