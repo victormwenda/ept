@@ -16,7 +16,7 @@ class Pt_Helper_View_GetCaptcha extends Zend_View_Helper_Abstract {
         if (!function_exists('gd_info')) {
             throw new Exception('Required GD library is missing');
         }
-        
+
         // Default values
         $captcha_config = array(
             'code' => '',
@@ -59,12 +59,12 @@ class Pt_Helper_View_GetCaptcha extends Zend_View_Helper_Abstract {
 
         // Use milliseconds instead of seconds
         srand(microtime(true) * 100);
-        
+
         // if it is development environment, then let us keep it simple
-        if(APPLICATION_ENV == "development"){
+        if(APPLICATION_ENV == "development" || APPLICATION_ENV == "docker"){
             $captcha_config['code'] = "zaq";
         }
-        
+
         // Generate CAPTCHA code if not set by user
         if (empty($captcha_config['code'])) {
             $captcha_config['code'] = '';
