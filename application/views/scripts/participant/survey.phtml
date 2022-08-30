@@ -1,0 +1,124 @@
+<?php
+
+$heading = isset($this->survey['heading']) && !empty($this->survey['heading']) ? $this->survey['heading'] : 'Satisfaction Survey';
+$description = isset($this->survey['description']) && !empty($this->survey['description']) ? $this->survey['description'] : 'Take the satisfaction survey and provide feedback for each Shipment';
+
+?>
+<style>
+.box {
+    padding: 1em;
+    width: 100%;
+    max-width: 1200px;
+}
+table th, table td {
+    padding: 1em 0;
+    vertical-align: top;
+}
+table td {
+    border-top: 2px solid #d2d6de;
+}
+table tr:hover td {
+    background: rgba(0,0,0,0.05);
+}
+</style>
+<section class="content-header">
+    <h1>
+        <?php echo htmlentities($heading); ?>
+        <small><?php echo htmlentities($description); ?></small>
+    </h1>
+</section>
+<section class="content">
+<div class="box">
+
+<?php
+if ($this->expired) { ?>
+<h3 align="center" style="padding: 3em 0;">This survey has expired</h3>
+<?php } else
+if (isset($this->survey['questions']) && is_array($this->survey['questions'])) {
+?>
+<form id="surveyResponseForm" method="post">
+<table cellpadding="0" cellspacing="0" border="0">
+    <thead>
+        <tr>
+            <th width="10"></th>
+            <th width="60">No.</th>
+            <th>Question / Statement</th>
+            <th width="50"></th>
+            <th width="280">Your Response</th>
+            <th width="10"></th>
+        </tr>
+    </thead>
+    <tbody>
+<?php
+foreach ($this->survey['questions'] as $k => $question) {
+?>
+<tr>
+    <td></td>
+    <td><?php echo ((int) $k) + 1; ?>.</td>
+    <td><?php echo htmlentities($question['text']); ?></td>
+    <td></td>
+    <td>
+<?php if ('choice' === $question['type']) : ?>
+    <select class="form-control" name="response[<?php echo $k; ?>]" required>
+        <?php foreach (array_merge(['Please select...' => ''], $question['choices']) as $label => $value) { ?>
+            <option
+                <?php if ("$value" === @trim($this->response[$k])) echo 'selected '; ?>
+                <?php if ('' === trim($value)) echo 'disabled '; ?>
+                value="<?php echo htmlentities($value) ?>"
+            ><?php echo htmlentities($label) ?></option>
+        <?php } ?>
+    </select>
+<?php elseif ('text' === $question['type']) : ?>
+    <textarea
+        rows="5"
+        class="form-control"
+        name="response[<?php echo $k; ?>]"
+        <?php if ($question['max_length'] > 0) echo sprintf('maxlength="%u"', $question['max_length']) ?>
+        placeholder="Enter your response here..."
+        required
+    ><?php echo @htmlentities($this->response[$k]) ?></textarea>
+<?php else : ?>
+    <code><?php var_dump($question) ?></code>
+<?php endif; ?>
+    </td>
+    <td></td>
+</tr>
+<?php } ?>
+    </tbody>
+</table>
+<br>
+<div align="right" id="submitbar">
+    <input style="margin: 0 .25em" name="submitbtn" class="btn btn-primary" type="button" onclick="validateNow(); return false;" value="Submit" />
+    <input style="margin: 0 .25em" name="reset" class="btn btn-danger" type="button" onclick="document.location.href='/participant/report'" value="Cancel" />
+</div>
+</form>
+
+<?php } ?>
+</div>
+
+</section>
+<script type="text/javascript">
+    function validateNow(){
+        var focusTo;
+        var valid = true;
+        $('select[required], input[required], textarea[required]').each(function(){
+            var val = $(this).val();
+            if (undefined === val || null === val || 0 === `${val}`.length) {
+                if (undefined === focusTo) {
+                    focusTo = this;
+                }
+                valid = false;
+            }
+        });
+        flag = deforayValidator.init({
+            formId: 'surveyResponseForm'
+        });
+        if(flag && valid){
+            $.blockUI();
+            document.getElementById('surveyResponseForm').submit();
+        } else if (undefined !== focusTo) {
+            $(focusTo).focus();
+            alert("All fields are required");
+        }
+    }
+</script>

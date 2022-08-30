@@ -199,6 +199,45 @@ class ParticipantController extends Zend_Controller_Action {
         $this->view->globalQcAccess=$commonService->getConfig('qc_access');
     }
 
+    public function surveyAction() {
+        $this->_helper->layout()->activeMenu = 'view-reports';
+        $this->_helper->layout()->activeSubMenu = 'individual-reports';
+        if ($this->_hasParam('62cc026d0c2ab')) {
+            $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+            $map_id = (int) base64_decode($this->_getParam('62cc026d0c2ab'));
+            if ($this->getRequest()->isPost()) {
+                $params = $this->_getAllParams();
+                $response = isset($params['response']) ? json_encode($params['response']) : null;
+                $result = $db->update('shipment_participant_map', [
+                    'cs_survey_response' => empty($response) ? null : $response
+                ], sprintf('map_id = %u', $map_id));
+                $this->_redirect("/participant/report");
+            }
+            $result = $db->fetchRow($db->select()
+                ->from(array('spm' => 'shipment_participant_map'), array('spm.map_id', 'spm.cs_survey_response', "spm.shipment_test_report_date"))
+                ->join(array('s' => 'shipment'), 's.shipment_id=spm.shipment_id', array('s.shipment_code', 's.cs_survey'))
+                ->join(array('p' => 'participant'), 'p.participant_id=spm.participant_id', array('p.lab_name'))
+                ->where("spm.map_id = ?", $map_id));
+
+            if (!$result) {
+                $this->_redirect("/participant/report");
+            }
+
+            $this->view->expired = (new DateTime($result['shipment_test_report_date']))->modify('+2 weeks')->diff(new DateTime())->days > 14;
+
+            $this->view->survey = json_decode($result['cs_survey'], true);
+            if (0 !== json_last_error()) {
+                throw new RuntimeException('Malformed survey data');
+            }
+
+            $this->view->response = json_decode($result['cs_survey_response'], true);
+            if (0 !== json_last_error()) $this->view->response = null;
+
+        } else {
+            $this->_redirect("/participant/report");
+        }
+    }
+
     public function downloadAction() {
         $this->_helper->layout()->disableLayout();
         if ($this->_hasParam('d92nl9d8d')) {

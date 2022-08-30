@@ -961,6 +961,7 @@ class Application_Service_Evaluation {
             's.shipment_date',
             's.lastdate_response',
             's.max_score',
+            's.cs_survey',
             'shipment_status' => 's.status'
             ))
             ->join(array('d' => 'distributions'), 'd.distribution_id=s.distribution_id', array(
@@ -990,7 +991,8 @@ class Application_Service_Evaluation {
                 'sp.qc_done',
                 'sp.qc_date',
                 'sp.is_pt_test_not_performed',
-                'sp.pt_test_not_performed_comments'))
+                'sp.pt_test_not_performed_comments',
+                'sp.cs_survey_response'))
             ->join(array('sl' => 'scheme_list'), 'sl.scheme_id=s.scheme_type', array('sl.scheme_id', 'sl.scheme_name'))
             ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array(
                 'p.unique_identifier',

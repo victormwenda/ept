@@ -4,6 +4,12 @@ $vHelper = $this->getHelper('DateFormat');
 $dtFormat=  $vHelper->getDateFormat(); ?>
 <link rel="stylesheet" href="<?php echo $this->baseUrl("css/bootstrap-modal.css"); ?>" type="text/css" media="all">
 <style type="text/css">
+    #details {
+        padding-top: 2em;
+    }
+    #survey textarea {
+        min-height: 215px;
+    }
 	.modal-scrollable {
 		z-index: 1000 !important;
 	}
@@ -21,48 +27,56 @@ $dtFormat=  $vHelper->getDateFormat(); ?>
         <form class="form-horizontal" name="shipmentForm" id="shipmentForm" method="post"
               action="<?php echo $this->url(array('module' => 'admin', 'controller' => 'shipment', 'action' => 'edit')); ?>"
               autocomplete="off">
-            <div class="form-group">
-                <label class="col-lg-3 control-label">Distribution Code </label>
-                <div class="col-lg-5">
-					<input type='text' disabled='disabled' class ='form-control'
-                           value='<?php echo $shipmentData['shipment']['distribution_code']; ?>' />
-				</div>
-				<input type="hidden" name="shipmentId" id="shipmentId"
-                       value="<?php echo $shipmentData['shipment']['shipment_id']; ?>" class="isRequired"
-                       title="Please choose a Scheme Type on the top of this page" />
-				<input type="hidden" name="selectedDistribution" id="selectedDistribution" class=""
-                       value="<?php echo $this->selectedDistribution; ?>" />
-            </div>
-            <div class="form-group">
-                <label class="col-lg-3 control-label">Shipment Code </label>
-                <div class="col-lg-5">
-					<input type='text' name="shipmentCode" id="shipmentCode" class ='form-control isRequired' value='<?php echo $shipmentData['shipment']['shipment_code']; ?>' title="Please enter the Shipment Code" />
-				</div>
-            </div>
-            <div class="form-group">
-                <label class="col-lg-3 control-label">Result Due Date</label>
-                <div class="col-lg-5">
-                    <input type='text' readonly='readonly' name="lastDate" id="lastDate"
-                           class='form-control datepicker isRequired'
-                           value='<?php echo $this->dateFormat($shipmentData['shipment']['lastdate_response']); ?>'
-                           title="Please choose the last response date" />
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="col-lg-3 control-label">Is Official</label>
-                <div class="col-lg-5">
-                    <select name="isOfficial" class="isRequired form-control"
-                            title="Official?"
-                            placeholder="Official?">
-                        <option value="yes" <?php echo ($shipmentData['shipment']['is_official'] == "1" ? "selected='selected'" : ""); ?>>
-                            Yes
-                        </option>
-                        <option value="no" <?php echo ($shipmentData['shipment']['is_official'] == "0" ? "selected='selected'" : ""); ?>>
-                            No
-                        </option>
-                    </select>
-                </div>
-            </div>
+              <div class="row">
+                  <div id="details" class="col-md-8">
+                      <div class="form-group">
+                          <label class="col-lg-5 control-label">Distribution Code </label>
+                          <div class="col-lg-7">
+                              <input type='text' disabled='disabled' class ='form-control'
+                                     value='<?php echo $shipmentData['shipment']['distribution_code']; ?>' />
+                          </div>
+                          <input type="hidden" name="shipmentId" id="shipmentId"
+                                 value="<?php echo $shipmentData['shipment']['shipment_id']; ?>" class="isRequired"
+                                 title="Please choose a Scheme Type on the top of this page" />
+                          <input type="hidden" name="selectedDistribution" id="selectedDistribution" class=""
+                                 value="<?php echo $this->selectedDistribution; ?>" />
+                      </div>
+                      <div class="form-group">
+                          <label class="col-lg-5 control-label">Shipment Code </label>
+                          <div class="col-lg-7">
+                              <input type='text' name="shipmentCode" id="shipmentCode" class ='form-control isRequired' value='<?php echo $shipmentData['shipment']['shipment_code']; ?>' title="Please enter the Shipment Code" />
+                          </div>
+                      </div>
+                      <div class="form-group">
+                          <label class="col-lg-5 control-label">Result Due Date</label>
+                          <div class="col-lg-7">
+                              <input type='text' readonly='readonly' name="lastDate" id="lastDate"
+                                     class='form-control datepicker isRequired'
+                                     value='<?php echo $this->dateFormat($shipmentData['shipment']['lastdate_response']); ?>'
+                                     title="Please choose the last response date" />
+                          </div>
+                      </div>
+                      <div class="form-group">
+                          <label class="col-lg-5 control-label">Is Official</label>
+                          <div class="col-lg-7">
+                              <select name="isOfficial" class="isRequired form-control"
+                                      title="Official?"
+                                      placeholder="Official?">
+                                  <option value="yes" <?php echo ($shipmentData['shipment']['is_official'] == "1" ? "selected='selected'" : ""); ?>>
+                                      Yes
+                                  </option>
+                                  <option value="no" <?php echo ($shipmentData['shipment']['is_official'] == "0" ? "selected='selected'" : ""); ?>>
+                                      No
+                                  </option>
+                              </select>
+                          </div>
+                      </div>
+                  </div>
+                  <div class="col-md-1"></div>
+                  <div id="survey" class="col-md-3">
+                      <input type="hidden" name="cs_survey" value="<?php echo htmlentities($shipmentData['shipment']['cs_survey']); ?>">
+                  </div>
+              </div>
             <div class="form-group" id="sampleFormFragment">
                 <table style="width: 1050px;margin: 0 auto;" border="1" class="table table-bordered table-striped clearfix">
                     <tbody>

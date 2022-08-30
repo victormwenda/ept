@@ -3927,6 +3927,15 @@ class Application_Service_Reports {
             )
         );
 
+        if ($csSurvey = $db->query('SELECT cs_survey FROM shipment WHERE shipment_id = ?', [$shipmentId])) {
+            if (!empty($csSurvey = (string) $csSurvey->fetchColumn(0))) {
+                $csSurvey = json_decode($csSurvey, true);
+                if (0 !== json_last_error()) {
+                    $csSurvey = null;
+                }
+            }
+        }
+
         $queryString = file_get_contents(sprintf('%s/Reports/getTbAllSitesResultsSheet.sql', __DIR__));
 
         $authNameSpace = new Zend_Session_Namespace('administrators');
@@ -3943,13 +3952,22 @@ class Application_Service_Reports {
         }
 
         $results = $query->fetchAll();
+        $columnExcludes = ['cs_survey_response'];
 
         $sheet = new PHPExcel_Worksheet($excel, "All Sites' Results");
         $excel->addSheet($sheet, $sheetIndex);
         $columnIndex = 0;
         if (count($results) > 0 && count($results[0]) > 0) {
-            foreach($results[0] as $columnName => $value) {
+            foreach(array_diff_key($results[0], array_flip($columnExcludes)) as $columnName => $value) {
                 $sheet->getCellByColumnAndRow($columnIndex, 1)->setValueExplicit(html_entity_decode($columnName, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                $sheet->getStyleByColumnAndRow($columnIndex, 1)->applyFromArray($borderStyle);
+                $columnIndex++;
+            }
+        }
+
+        if (is_array($csSurvey) && array_key_exists('questions', $csSurvey)) {
+            foreach ($csSurvey['questions'] as $ix => $node) {
+                $sheet->getCellByColumnAndRow($columnIndex, 1)->setValueExplicit(html_entity_decode($node['text'], ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
                 $sheet->getStyleByColumnAndRow($columnIndex, 1)->applyFromArray($borderStyle);
                 $columnIndex++;
             }
@@ -3962,9 +3980,24 @@ class Application_Service_Reports {
         foreach($results as $result){
             $rowNumber++;
             $columnIndex = 0;
-            foreach($result as $columnName => $value) {
+            foreach(array_diff_key($result, array_flip($columnExcludes)) as $columnName => $value) {
                 $sheet->getCellByColumnAndRow($columnIndex, $rowNumber)->setValueExplicit(html_entity_decode($value, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
                 $columnIndex++;
+            }
+            if ($csSurvey && !empty($csSurveryResponse = (string) $result['cs_survey_response'])) {
+                $csSurveryResponse = json_decode($csSurveryResponse, true);
+                if (0 === json_last_error()) {
+                    foreach ($csSurvey['questions'] as $ix => $question) {
+                        $answer = array_key_exists($ix, $csSurveryResponse) ? $csSurveryResponse[$ix] : '';
+                        switch ($question['type']) {
+                            case 'choice' :
+                                // $answer = sprintf('%s: %s', $answer, array_search($answer, $question['choices']));
+                            break;
+                        }
+                        $sheet->getCellByColumnAndRow($columnIndex, $rowNumber)->setValueExplicit(html_entity_decode($answer, ENT_QUOTES, 'UTF-8'), PHPExcel_Cell_DataType::TYPE_STRING);
+                        $columnIndex++;
+                    }
+                }
             }
         }
 
