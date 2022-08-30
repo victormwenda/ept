@@ -7,6 +7,12 @@ class Application_Service_Shipments {
         */
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
 
+        $configFile = APPLICATION_PATH . '/configs/config.local.ini';
+        if (!is_file($conigfFile)) {
+            $configFile = APPLICATION_PATH . '/configs/config.ini';
+        }
+        $config = new Zend_Config_Ini($configFile, APPLICATION_ENV);
+
         $aColumns = array("sl.scheme_name", "shipment_code", 'distribution_code', "DATE_FORMAT(distribution_date,'%d-%b-%Y')", 'number_of_samples', 's.status');
         $orderColumns = array("sl.scheme_name", "shipment_code", 'distribution_code', 'distribution_date', 'number_of_samples', 's.status');
 
@@ -178,6 +184,16 @@ class Application_Service_Shipments {
                 $edit = '&nbsp;<a class="btn btn-danger btn-xs disabled" href="javascript:void(0);"><span><i class="icon-check"></i> Finalized</span></a>';
             }
 
+            // If shipment is finalized and has a CS survey
+            $surveryReminders = '';
+            if ($rResult[$i]['status'] == 'finalized' && null !== $rResult[$i]['cs_survey']) {
+                $days_since_finalized = (new DateTime($rResult[$i]['finalized_date']))->diff(new DateTime())->days;
+                // If currently within the submission window
+                if ($days_since_finalized <= (int) $config->customerSatisfactionSurvey->submissionWindow) {
+                    $surveryReminders = '&nbsp;<a class="btn btn-warning btn-xs" href="javascript:void(0);" onclick="mailSurveyReminder(\'' . base64_encode($rResult[$i]['shipment_id']) . '\')"><span><i class="icon-bullhorn"></i> Survey Reminder Mail</span></a>';
+                }
+            }
+
             if($rResult[$i]['status'] == 'shipped') {
                 $enrolled = '&nbsp;<a class="btn btn-primary btn-xs disabled" href="javascript:void(0);"><span><i class="icon-ambulance"></i> Shipped</span></a>';
                 $announcementMail = '&nbsp;<a class="btn btn-warning btn-xs" href="javascript:void(0);" onclick="mailShipment(\'' . base64_encode($rResult[$i]['shipment_id']) . '\')"><span><i class="icon-bullhorn"></i> New Shipment Mail</span></a>';
@@ -199,7 +215,7 @@ class Application_Service_Shipments {
                 $edit = $delete = $manageResponses = $shipped = '';
             }
 
-            $row[] = $edit . $shipped . $enrolled . $delete . $announcementMail . $manageResponses . $generateForms;
+            $row[] = $edit . $shipped . $enrolled . $delete . $announcementMail . $surveryReminders . $manageResponses . $generateForms;
             $output['aaData'][] = $row;
         }
 
@@ -2036,6 +2052,75 @@ class Application_Service_Shipments {
             error_log($e->getMessage());
             error_log($e->getTraceAsString());
         }
+    }
+
+    public function sendSurveyReminderEmail($params) {
+
+        $configFile = APPLICATION_PATH . '/configs/config.local.ini';
+        if (!is_file($conigfFile)) {
+            $configFile = APPLICATION_PATH . '/configs/config.ini';
+        }
+        $config = new Zend_Config_Ini($configFile, APPLICATION_ENV);
+
+        $authNameSpace = new Zend_Session_Namespace('administrators');
+        $commonServices = new Application_Service_Common();
+        $general = new Pt_Commons_General();
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $sQuery = $db->select()->from(array('sp' => 'shipment_participant_map'), array('sp.participant_id','sp.map_id','sp.new_shipment_mail_count'))
+            ->join(array('s' => 'shipment'), 's.shipment_id=sp.shipment_id', array('s.shipment_code','s.shipment_code'))
+            ->join(array('d' => 'distributions'), 'd.distribution_id = s.distribution_id', array('distribution_code', 'distribution_date'))
+            ->join(array('p' => 'participant'), 'p.participant_id=sp.participant_id', array('p.email','participantName' => new Zend_Db_Expr("GROUP_CONCAT(DISTINCT p.lab_name ORDER BY p.lab_name SEPARATOR ', ')")))
+            ->where("sp.shipment_id = ?", $params["shipmentId"]);
+
+        if (1 == $authNameSpace->is_ptcc_coordinator) {
+            $sQuery = $sQuery->where(new Zend_Db_Expr("p.country IN (".implode(',', $authNameSpace->countries).")"));
+        }
+
+        /**
+         * PE Participant Conditions:
+         * 1. The shipment is finalized
+         * 2. The shipment finalized date is known
+         * 3. The shipment contains a survey
+         * 4. The survey submission window is open
+         * 5. The participant has responded and has submitted PE results
+         */
+        $sQuery = $sQuery->where(new Zend_Db_Expr('s.status=\'finalized\''));
+        $sQuery = $sQuery->where(new Zend_Db_Expr('s.finalized_date IS NOT NULL'));
+        $sQuery = $sQuery->where(new Zend_Db_Expr('s.cs_survey IS NOT NULL'));
+        $sQuery = $sQuery->where(new Zend_Db_Expr(sprintf(
+            'DATE_ADD(CAST(s.finalized_date AS DATE), INTERVAL +%u DAY) >= NOW()',
+            $config->customerSatisfactionSurvey->submissionWindow
+        )));
+        $sQuery = $sQuery->where(new Zend_Db_Expr('sp.report_generated=\'yes\' AND sp.shipment_test_report_date IS NOT NULL'));
+
+        switch ($params['sendTo']) {
+            case 'notResponded' :
+                // The participant has not responded to the survey
+                $sQuery = $sQuery->where(new Zend_Db_Expr('sp.cs_survey_response IS NULL'));
+            break;
+        }
+
+        $sQuery = $sQuery->group("p.participant_id");
+
+        $participantEmails = $db->fetchAll($sQuery);
+        $mailContent = $commonServices->getEmailTemplate('cs_survey_reminder');
+        foreach($participantEmails as $participantDetails){
+            if ($participantDetails['email']!='') {
+                $surveyDate = $general->humanDateFormat($participantDetails['distribution_date']);
+                $search = array('##NAME##','##SHIPCODE##','##SHIPTYPE##','##SURVEYCODE##','##SURVEYDATE##',);
+                $replace = array($participantDetails['participantName'],$participantDetails['shipment_code'],$participantDetails['SCHEME'],$participantDetails['distribution_code'],$surveyDate);
+                $content = "<p>" . implode( "</p>\n\n<p>", preg_split( '/\n(?:\s*\n)+/', $params["emailBody"] ) ) . "</p>";;
+                $message = str_replace($search, $replace, $content);
+                $subject = $params["emailSubject"];
+                $fromEmail = $mailContent['mail_from'];
+                $fromFullName = $mailContent['from_name'];
+                $toEmail = $participantDetails['email'];
+                $cc = $mailContent['mail_cc'];
+                $bcc = $mailContent['mail_bcc'];
+                $commonServices->insertTempMail($toEmail,$cc,$bcc, $subject, $message, $fromEmail, $fromFullName);
+            }
+        }
+
     }
 
     public function sendEmailToParticipants($params) {

@@ -77,8 +77,6 @@ foreach ($this->survey['questions'] as $k => $question) {
         placeholder="Enter your response here..."
         required
     ><?php echo @htmlentities($this->response[$k]) ?></textarea>
-<?php else : ?>
-    <code><?php var_dump($question) ?></code>
 <?php endif; ?>
     </td>
     <td></td>
