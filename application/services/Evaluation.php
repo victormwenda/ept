@@ -763,6 +763,7 @@ class Application_Service_Evaluation {
         try {
             $noOfRows = $db->update('shipment', array(
                 'status' => $status,
+                'finalized_date' => 'finalized' === $status ? date('Y-m-d') : null,
                 'updated_by_admin' => $admin,
                 'updated_on_admin' => new Zend_Db_Expr('now()')),
                 "shipment_id = " . $shipmentId);
