@@ -215,7 +215,7 @@ class ParticipantController extends Zend_Controller_Action {
             }
             $result = $db->fetchRow($db->select()
                 ->from(array('spm' => 'shipment_participant_map'), array('spm.map_id', 'spm.cs_survey_response', "spm.shipment_test_report_date"))
-                ->join(array('s' => 'shipment'), 's.shipment_id=spm.shipment_id', array('s.shipment_code', 's.cs_survey'))
+                ->join(array('s' => 'shipment'), 's.shipment_id=spm.shipment_id', array('s.shipment_code', 's.cs_survey', 's.finalized_date'))
                 ->join(array('p' => 'participant'), 'p.participant_id=spm.participant_id', array('p.lab_name'))
                 ->where("spm.map_id = ?", $map_id));
 
@@ -223,7 +223,13 @@ class ParticipantController extends Zend_Controller_Action {
                 $this->_redirect("/participant/report");
             }
 
-            $this->view->expired = (new DateTime($result['shipment_test_report_date']))->modify('+2 weeks')->diff(new DateTime())->days > 14;
+            $configFile = APPLICATION_PATH . '/configs/config.local.ini';
+            if (!is_file($conigfFile)) {
+                $configFile = APPLICATION_PATH . '/configs/config.ini';
+            }
+            $config = new Zend_Config_Ini($configFile, APPLICATION_ENV);
+
+            $this->view->expired = (new DateTime($result['finalized_date']))->diff(new DateTime())->days > (int) $config->customerSatisfactionSurvey->submissionWindow;
 
             $this->view->survey = json_decode($result['cs_survey'], true);
             if (0 !== json_last_error()) {
