@@ -42,17 +42,17 @@
             <span>##NAME##, ##SHIPCODE##</span>
         </div>
         <div class="modal-footer">
-            <button id="sendReminderButton" class="btn btn-success" onclick="validateNow();return false;">Send</button>
+            <button id="sendReminderButton" class="btn btn-success" onclick="validateSendSurveyNow();return false;">Send</button>
             <button class="btn btn-danger" onclick="parent.closeLayoutModal();return false;">Cancel</button>
         </div>
     </form>
     <script type="text/javascript">
-      function validateNow() {
+      function validateSendSurveyNow() {
         var valid = deforayValidator.init({
           formId: 'sendSurveyReminderEmail'
         });
         if (valid) {
-          $('#sendReminderButton').innerText('Sending...').attr('disabled', true);
+          $('#sendReminderButton').attr('disabled', true);
           $.ajax({
             url: '<?php echo $this->url(array("module"=>"admin", "controller" => "shipment", "action" => "send-survey-reminder-email"), "default", true) ?>',
             type: 'POST',
@@ -61,7 +61,7 @@
               parent.closeLayoutModal();
             },
             complete: function() {
-              $('#sendReminderButton').innerText('Send').attr('disabled', false);
+              $('#sendReminderButton').attr('disabled', false);
             }
           });
         }
