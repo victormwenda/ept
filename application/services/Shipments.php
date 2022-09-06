@@ -186,11 +186,13 @@ class Application_Service_Shipments {
 
             // If shipment is finalized and has a CS survey
             $surveryReminders = '';
-            if ($rResult[$i]['status'] == 'finalized' && null !== $rResult[$i]['cs_survey']) {
-                $days_since_finalized = (new DateTime($rResult[$i]['finalized_date']))->diff(new DateTime())->days;
-                // If currently within the submission window
-                if ($days_since_finalized <= (int) $config->customerSatisfactionSurvey->submissionWindow) {
-                    $surveryReminders = '&nbsp;<a class="btn btn-warning btn-xs" href="javascript:void(0);" onclick="mailSurveyReminder(\'' . base64_encode($rResult[$i]['shipment_id']) . '\')"><span><i class="icon-bullhorn"></i> Survey Reminder Mail</span></a>';
+            if ($authNameSpace->is_ptcc_coordinator == 0) {
+                if ($rResult[$i]['status'] == 'finalized' && null !== $rResult[$i]['cs_survey']) {
+                    $days_since_finalized = (new DateTime($rResult[$i]['finalized_date']))->diff(new DateTime())->days;
+                    // If currently within the submission window
+                    if ($days_since_finalized <= (int) $config->customerSatisfactionSurvey->submissionWindow) {
+                        $surveryReminders = '&nbsp;<a class="btn btn-warning btn-xs" href="javascript:void(0);" onclick="mailSurveyReminder(\'' . base64_encode($rResult[$i]['shipment_id']) . '\')"><span><i class="icon-bullhorn"></i> Survey Reminder Mail</span></a>';
+                    }
                 }
             }
 
