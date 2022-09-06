@@ -224,9 +224,9 @@ class ParticipantController extends Zend_Controller_Action {
                 $this->_redirect("/participant/report");
             }
 
-            $configFile = APPLICATION_PATH . '/configs/config.local.ini';
+            $configFile = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.local.ini";
             if (!is_file($configFile)) {
-                $configFile = APPLICATION_PATH . '/configs/config.ini';
+                $configFile = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini";
             }
             $config = new Zend_Config_Ini($configFile, APPLICATION_ENV);
 

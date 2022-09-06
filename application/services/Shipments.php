@@ -7,9 +7,9 @@ class Application_Service_Shipments {
         */
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
 
-        $configFile = APPLICATION_PATH . '/configs/config.local.ini';
+        $configFile = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.local.ini";
         if (!is_file($configFile)) {
-            $configFile = APPLICATION_PATH . '/configs/config.ini';
+            $configFile = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini";
         }
         $config = new Zend_Config_Ini($configFile, APPLICATION_ENV);
 
@@ -185,13 +185,13 @@ class Application_Service_Shipments {
             }
 
             // If shipment is finalized and has a CS survey
-            $surveryReminders = '';
+            $surveyReminders = '';
             if ($authNameSpace->is_ptcc_coordinator == 0) {
                 if ($rResult[$i]['status'] == 'finalized' && null !== $rResult[$i]['cs_survey']) {
                     $days_since_finalized = (new DateTime($rResult[$i]['finalized_date']))->diff(new DateTime())->days;
                     // If currently within the submission window
                     if ($days_since_finalized <= (int) $config->customerSatisfactionSurvey->submissionWindow) {
-                        $surveryReminders = '&nbsp;<a class="btn btn-warning btn-xs" href="javascript:void(0);" onclick="mailSurveyReminder(\'' . base64_encode($rResult[$i]['shipment_id']) . '\')"><span><i class="icon-bullhorn"></i> Survey Reminder Mail</span></a>';
+                        $surveyReminders = '&nbsp;<a class="btn btn-warning btn-xs" href="javascript:void(0);" onclick="mailSurveyReminder(\'' . base64_encode($rResult[$i]['shipment_id']) . '\')"><span><i class="icon-bullhorn"></i> Survey Reminder Mail</span></a>';
                     }
                 }
             }
@@ -217,7 +217,7 @@ class Application_Service_Shipments {
                 $edit = $delete = $manageResponses = $shipped = '';
             }
 
-            $row[] = $edit . $shipped . $enrolled . $delete . $announcementMail . $surveryReminders . $manageResponses . $generateForms;
+            $row[] = $edit . $shipped . $enrolled . $delete . $announcementMail . $surveyReminders . $manageResponses . $generateForms;
             $output['aaData'][] = $row;
         }
 
@@ -2058,9 +2058,9 @@ class Application_Service_Shipments {
 
     public function sendSurveyReminderEmail($params) {
 
-        $configFile = APPLICATION_PATH . '/configs/config.local.ini';
+        $configFile = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.local.ini";
         if (!is_file($configFile)) {
-            $configFile = APPLICATION_PATH . '/configs/config.ini';
+            $configFile = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini";
         }
         $config = new Zend_Config_Ini($configFile, APPLICATION_ENV);
 

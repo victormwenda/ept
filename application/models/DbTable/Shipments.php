@@ -1227,9 +1227,9 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
          * Get data to display
          */
 
-        $configFile = APPLICATION_PATH . '/configs/config.local.ini';
+        $configFile = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.local.ini";
         if (!is_file($configFile)) {
-            $configFile = APPLICATION_PATH . '/configs/config.ini';
+            $configFile = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini";
         }
         $config = new Zend_Config_Ini($configFile, APPLICATION_ENV);
 
