@@ -211,6 +211,7 @@ class ParticipantController extends Zend_Controller_Action {
                 $result = $db->update('shipment_participant_map', [
                     'cs_survey_response' => empty($response) ? null : $response
                 ], sprintf('map_id = %u', $map_id));
+                $_SESSION['cs_survey_submitted'] = 1;
                 $this->_redirect("/participant/report");
             }
             $result = $db->fetchRow($db->select()

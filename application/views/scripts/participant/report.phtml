@@ -140,4 +140,7 @@
       }
       oTable.fnDraw();
     }
+<?php if (1 === $_SESSION['cs_survey_submitted']) : ?>
+setTimeout(() => alert('Survey saved, thank you for your input'), 300);
+<?php unset($_SESSION['cs_survey_submitted']); endif; ?>
 </script>
