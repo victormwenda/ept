@@ -1227,10 +1227,19 @@ class Application_Model_DbTable_Shipments extends Zend_Db_Table_Abstract {
          * Get data to display
          */
 
-        $csSurveyAvailable = 'spm.shipment_test_report_date IS NOT NULL AND s.cs_survey IS NOT NULL';
-        $csSurveyCanRespond = 'spm.report_generated=\'yes\' AND s.status=\'finalized\' AND ' . $csSurveyAvailable;
+        $configFile = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.local.ini";
+        if (!is_file($configFile)) {
+            $configFile = APPLICATION_PATH . DIRECTORY_SEPARATOR . "configs" . DIRECTORY_SEPARATOR . "config.ini";
+        }
+        $config = new Zend_Config_Ini($configFile, APPLICATION_ENV);
+
+        $csSurveyAvailable = 's.status=\'finalized\' AND s.finalized_date IS NOT NULL AND s.cs_survey IS NOT NULL';
+        $csSurveyCanRespond = 'spm.report_generated=\'yes\' AND ' . $csSurveyAvailable;
         $csSurveyHasResponded = 'spm.cs_survey_response IS NOT NULL';
-        $csSurveyHasExpired = 'DATE_ADD(CAST(spm.shipment_test_report_date AS DATE), INTERVAL +2 WEEK) < NOW()';
+        $csSurveyHasExpired = sprintf(
+            'DATE_ADD(CAST(s.finalized_date AS DATE), INTERVAL +%u DAY) < NOW()',
+            $config->customerSatisfactionSurvey->submissionWindow
+        );
 
         $sQuery = $this->getAdapter()->select()->from(array('s' => 'shipment'), array(
                 'SHIP_YEAR' => 'year(s.shipment_date)',

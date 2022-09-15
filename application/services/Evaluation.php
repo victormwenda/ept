@@ -301,7 +301,7 @@ class Application_Service_Evaluation {
 
         $db = Zend_Db_Table_Abstract::getDefaultAdapter();
         $configFile = APPLICATION_PATH . '/configs/config.local.ini';
-        if (!is_file($conigfFile)) {
+        if (!is_file($configFile)) {
             $configFile = APPLICATION_PATH . '/configs/config.ini';
         }
         $config = new Zend_Config_Ini($configFile, APPLICATION_ENV);
@@ -763,6 +763,7 @@ class Application_Service_Evaluation {
         try {
             $noOfRows = $db->update('shipment', array(
                 'status' => $status,
+                'finalized_date' => 'finalized' === $status ? date('Y-m-d') : null,
                 'updated_by_admin' => $admin,
                 'updated_on_admin' => new Zend_Db_Expr('now()')),
                 "shipment_id = " . $shipmentId);

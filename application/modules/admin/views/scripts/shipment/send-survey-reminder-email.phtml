@@ -1,0 +1,70 @@
+<div>
+    <form id="sendSurveyReminderEmail">
+        <h4 class="modal-title">Email Survey Reminders to PE Participants</h4>
+        <div class="modal-body">
+            <input id="shipmentId" name="shipmentId" type="hidden" value="<?php echo $this->shipmentId ?>"/>
+            <p>
+                <strong>PE Participants: </strong>
+                <span>Participants who have submitted PE results for the panel</span>
+            </p>
+            <table class="table table-bordered table-striped" style="width:100%;margin:0 auto 10px auto;">
+                <tr>
+                    <td style="width: 15%;">
+                        <label for="sendTo" class="fieldLabel">Send to:<span class='mandatory'>*</span></label>
+                    </td>
+                    <td>
+                        <select id="sendTo" name="sendTo" class="form-control" title="Who should this email go out to?">
+                            <option value="all">All PE Participants</option>
+                            <option value="notResponded" selected>PE Participants who have not responded to the Customer Satisfaction Survey</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="emailSubject" class="fieldLabel">Subject<span class='mandatory'>*</span></label>
+                    </td>
+                    <td>
+                        <input name="emailSubject" id="emailSubject" class="form-control isRequired" value="<?php echo $this->emailSubject;?>" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <label for="emailBody" class="fieldLabel">Body<span class='mandatory'>*</span></label>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <textarea name="emailBody" id="emailBody" class="form-control isRequired" style="height: 6.5em;"><?php echo $this->emailBody; ?></textarea>
+                    </td>
+                </tr>
+            </table>
+            <strong>Available Placeholders: </strong>
+            <span>##NAME##, ##SHIPCODE##</span>
+        </div>
+        <div class="modal-footer">
+            <button id="sendReminderButton" class="btn btn-success" onclick="validateSendSurveyNow();return false;">Send</button>
+            <button class="btn btn-danger" onclick="parent.closeLayoutModal();return false;">Cancel</button>
+        </div>
+    </form>
+    <script type="text/javascript">
+      function validateSendSurveyNow() {
+        var valid = deforayValidator.init({
+          formId: 'sendSurveyReminderEmail'
+        });
+        if (valid) {
+          $('#sendReminderButton').attr('disabled', true);
+          $.ajax({
+            url: '<?php echo $this->url(array("module"=>"admin", "controller" => "shipment", "action" => "send-survey-reminder-email"), "default", true) ?>',
+            type: 'POST',
+            data: $("#sendSurveyReminderEmail").serialize(),
+            success: function() {
+              parent.closeLayoutModal();
+            },
+            complete: function() {
+              $('#sendReminderButton').attr('disabled', false);
+            }
+          });
+        }
+      }
+    </script>
+</div>

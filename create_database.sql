@@ -1240,6 +1240,7 @@ CREATE TABLE `shipment` (
   `scheme_type` varchar(10) DEFAULT NULL,
   `shipment_date` date DEFAULT NULL,
   `lastdate_response` date DEFAULT NULL,
+  `finalized_date` date DEFAULT NULL,
   `distribution_id` int(11) NOT NULL,
   `number_of_samples` int(11) DEFAULT NULL,
   `number_of_controls` int(11) NOT NULL,

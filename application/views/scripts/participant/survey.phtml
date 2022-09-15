@@ -75,10 +75,7 @@ foreach ($this->survey['questions'] as $k => $question) {
         name="response[<?php echo $k; ?>]"
         <?php if ($question['max_length'] > 0) echo sprintf('maxlength="%u"', $question['max_length']) ?>
         placeholder="Enter your response here..."
-        required
     ><?php echo @htmlentities($this->response[$k]) ?></textarea>
-<?php else : ?>
-    <code><?php var_dump($question) ?></code>
 <?php endif; ?>
     </td>
     <td></td>

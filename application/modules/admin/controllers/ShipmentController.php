@@ -292,6 +292,23 @@ class Admin_ShipmentController extends Zend_Controller_Action {
         }
     }
 
+    public function sendSurveyReminderEmailAction() {
+        $this->_helper->layout()->setLayout('adminmodal');
+        $params = $this->_getAllParams();
+        if ($this->getRequest()->isPost()) {
+            $shipmentService = new Application_Service_Shipments();
+            $shipmentService->sendSurveyReminderEmail($params);
+        } else {
+            $this->view->shipmentId = base64_decode($this->_getParam('id'));
+            $commonServices = new Application_Service_Common();
+            $surveyReminderMailContent = $commonServices->getEmailTemplate('cs_survey_reminder');
+            $this->view->emailSubject = $surveyReminderMailContent['mail_subject'];
+            $this->view->emailBody = str_replace('<p>', '',
+                str_replace('</p>', '',
+                    str_replace('</p><p>', "\n\n", $surveyReminderMailContent['mail_content'])));
+        }
+    }
+
     public function editShipmentEmailAction() {
         $this->_helper->layout()->setLayout('adminmodal');
         $params = $this->_getAllParams();
@@ -314,4 +331,3 @@ class Admin_ShipmentController extends Zend_Controller_Action {
         }
     }
 }
-
