@@ -256,11 +256,12 @@ class Api_ResultsController extends Zend_Controller_Action {
             }
             $shipmentService = new Application_Service_Shipments();
             $validationMessages = $shipmentService->updateTbResultFooter($params);
-            if ($validationMessages == "") {
+            if ($validationMessages == "" || $validationMessages == true) {
                 $shipmentService->sendShipmentSavedEmailToParticipantsAndPTCC($pID, $sID);
                 $this->getResponse()->setBody('OK');
                 $this->getResponse()->setHttpResponseCode(200);
             } else {
+                error_log(json_encode($validationMessages), 0);
                 $this->getResponse()->setBody($validationMessages);
                 $this->getResponse()->setHttpResponseCode(400);
             }
