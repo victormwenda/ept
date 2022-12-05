@@ -811,10 +811,10 @@ class Application_Service_Shipments {
         if (!isset($shipmentMapFromDatabase["attributes"]["assay"]) || $shipmentMapFromDatabase["attributes"]["assay"] == "") {
             array_push($validationErrors,"Assay is a required field.");
         }
-        if (!isset($shipmentMapFromDatabase["attributes"]["cartridgeLotNo"]) || $shipmentMapFromDatabase["attributes"]["cartridgeLotNo"] == "") {
+        if (!isset($shipmentMapFromDatabase["attributes"]["cartridge_lot_no"]) || $shipmentMapFromDatabase["attributes"]["cartridge_lot_no"] == "") {
             array_push($validationErrors,"Cartridge Lot No is a required field.");
         }
-        if (!isset($shipmentMapFromDatabase["attributes"]['expiryDate']) || $params["expiryDate"] == "") {
+        if (!isset($shipmentMapFromDatabase["attributes"]['expiry_date']) || $shipmentMapFromDatabase["expiry_date"] == "") {
             array_push($validationErrors,"Expiration date of Cartridge is a required field.");
         }
         if (!isset($shipmentMapFromDatabase['shipment_test_report_date']) || $shipmentMapFromDatabase["shipment_test_report_date"] == "") {
